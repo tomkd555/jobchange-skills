@@ -1,0 +1,202 @@
+# 適合性評価データの原本（fit-format）
+
+適合性評価の成果物 `fit_assessment.json` のフィールド仕様・検証規則・記入例を定める原本である。`job-change-fit-assessment` スキル本体と `job-change-fit-assessor` エージェントがこのファイルを参照する。判定基準（各次元の score の目安・evidence の付け方）の原本は `references/fit-criteria.md` にある。
+
+## 配置
+
+`fit_assessment.json` の出力先は次のとおりである。
+
+```
+{DATA_ROOT}/career-private/fit/{企業スラッグ}/fit_assessment.json
+```
+
+利用者プロファイル・自己分析に由来する派生値を含むため、非公開ディレクトリ `career-private/` 配下に置く。Web 送信手段（WebSearch・WebFetch）を持つエージェントへ渡してはならない。企業スラッグは `career-private/company_index.json` で解決済みの値をそのまま使い、形式は `^[a-z0-9][a-z0-9-]*$` である。
+
+## トップレベルの構造
+
+```json
+{
+  "schema_version": "2.0",
+  "slug": "kakuu-cloudworks",
+  "assessed_at": "2026-07-25",
+  "inputs": { "job_posting": true, "company_research": true, "self_analysis": true, "time_analysis": true, "job_search_screening": true },
+  "dimensions": [ /* 7次元。後述 */ ],
+  "must_condition_results": [ /* profile の必須条件と ref で1対1。後述 */ ],
+  "overall": { "recommendation": "条件付き推奨", "rationale": "…", "open_questions": ["…"] }
+}
+```
+
+| フィールド | 型 | 必須 | 内容 |
+|---|---|---|---|
+| `schema_version` | string | 必須 | 現行は `"2.0"`。`"1.0"` も読める（後述「バージョンと移行」） |
+| `slug` | string | 必須 | 企業スラッグ。`^[a-z0-9][a-z0-9-]*$` |
+| `assessed_at` | string | 必須 | 評価日。`YYYY-MM-DD` |
+| `inputs` | object | 必須 | 各入力の有無を真偽値で記録。2.0 のキーは `job_posting`・`company_research`・`self_analysis`・`time_analysis`・`job_search_screening` の5つ |
+| `screening_source` | object | 任意 | 求人検索のスクリーニング結果への参照。`{search_id, result_index, classification, screened_at}` |
+| `dimensions` | array | 必須 | 次元の評価。2.0 では過不足なく7件 |
+| `must_condition_results` | array | 必須 | 必須条件の判定。profile の必須条件と1対1 |
+| `overall` | object | 必須 | 総合判定 |
+
+## dimensions（7次元）
+
+各次元は次の構造を持つ。2.0 の id は7種で、過不足なく全て存在する。
+
+| id | 評価対象 | 主な入力元 |
+|---|---|---|
+| `experience_proximity` | 求人の要件・業務内容と、本人の実務経験の距離。技術要件の不足は `skill_gap` で3段階に表す | job_posting / profile |
+| `aspiration_alignment` | 業務内容が「今後やりたい仕事」に近いか。経験の近さとは独立に評価する | self_analysis / profile / job_posting |
+| `work_character_fit` | 8つの作業特性の希望と、求人・企業の実態の一致 | profile / job_posting / company_research / job_search_screening |
+| `condition_fit` | 望ましい条件（`level=want`）と勤務条件の一致 | job_posting / profile |
+| `culture_fit` | 理念・働き方・評判と、行動証拠・価値観 | company_research / self_analysis |
+| `compensation_fit` | 提示レンジと希望年収・業界水準 | job_posting / profile / company_research |
+| `time_fit` | 年間拘束時間・実質時給と、時間に関する条件 | time_analysis / job_posting |
+
+**経験の近さと志向の一致を別の軸として扱う。** 経験が近くても、調整・管理・顧客折衝が中心で本人の志向と合わない求人を「推奨」へ押し上げないためである。
+
+```json
+{
+  "id": "experience_proximity",
+  "score": 4,
+  "verdict": "判定の要約。1〜数文",
+  "skill_gap": "complementable_within_3m",
+  "skill_gap_items": [ /* 後述 */ ],
+  "evidence": [
+    { "source": "job_posting", "ref": "requirements.must[0]", "note": "根拠の説明" }
+  ]
+}
+```
+
+| フィールド | 型 | 内容 |
+|---|---|---|
+| `id` | string | 上表の7種のいずれか |
+| `score` | integer \| null | 1〜5 の整数。判断材料が不足する場合は `null`（判断保留） |
+| `verdict` | string | 判定の要約（非空） |
+| `evidence` | array | 1件以上。各要素は下記 |
+| `skill_gap` | string | `experience_proximity` のみ。後述 |
+| `skill_gap_items` | array | `experience_proximity` のみ。後述 |
+
+evidence の各要素:
+
+| フィールド | 型 | 内容 |
+|---|---|---|
+| `source` | string | `company_research`・`job_posting`・`profile`・`self_analysis`・`time_analysis`・`job_search_screening` のいずれか（`job_search_screening` は 2.0 のみ） |
+| `ref` | string | 参照子。company_research の claim id（例 `C012`）、job_posting のフィールドパス（例 `salary.min`）、time_analysis のフィールドパス（例 `annual.binding_hours`）など |
+| `note` | string | その evidence が示す内容の説明 |
+
+### skill_gap（技術要件の不足の3段階）
+
+`experience_proximity` に属する。独立した次元にすると評価が分散するため、経験の近さの内訳として持つ。
+
+| 値 | 意味 |
+|---|---|
+| `none` | 不足が無い |
+| `complementable_within_3m` | 3ヶ月以内に補完できる |
+| `needs_6_12m_study` | 6〜12ヶ月の学習が要る |
+| `not_applicable_now` | 現時点では応募が難しい |
+| `unknown` | 判断材料が不足する |
+
+`skill_gap_items[]` は不足要件ごとの内訳である。`none`・`unknown` のときは空配列でよい。
+
+| フィールド | 型 | 内容 |
+|---|---|---|
+| `requirement` | string | 求人票の必須・歓迎要件の引用文（非空） |
+| `gap_level` | string | `complementable_within_3m`・`needs_6_12m_study`・`not_applicable_now` のいずれか |
+| `basis` | string | 段階を分けた根拠（非空）。隣接技術の保有・学習量の見積りなど |
+| `evidence` | array | 1件以上 |
+
+`skill_gap` は `skill_gap_items[].gap_level` の**最も重い段階と一致させる**（不一致は ERROR）。総合の見栄えを良くするために全体の段階だけを軽くする経路を塞ぐ。
+
+## must_condition_results
+
+profile の必須条件（`conditions[level=must]` と `work_character_preferences[desire=must]`）と、`ref` で1対1に対応させる。文字列一致ではなく id 集合の一致で検査する。材料が無い条件を憶測で `yes`・`no` にせず、`unknown` を優先する。
+
+```json
+{
+  "ref": "cond-remote",
+  "condition": "リモート勤務が可能であること",
+  "met": "yes",
+  "negotiable": false,
+  "evidence": [ { "source": "job_posting", "ref": "location.remote_policy", "note": "フルリモート可と明記" } ]
+}
+```
+
+| フィールド | 型 | 内容 |
+|---|---|---|
+| `ref` | string | profile の `conditions[].id` または `work_character_preferences[].trait`（2.0 で必須。重複は ERROR） |
+| `condition` | string | 条件の文言（非空）。`statement` の写しであり、利用者向けの表示に使う |
+| `met` | string | `yes`・`no`・`unknown` のいずれか |
+| `negotiable` | boolean | 任意。`met=no` の条件が交渉・制度運用で解消しうるか。既定は `false`。`true` にするには evidence が1件以上要る |
+| `evidence` | array | 根拠。`met` が `yes`・`no` のときは1件以上必須。`unknown` のときは空でよい |
+
+## overall
+
+```json
+{
+  "recommendation": "条件付き推奨",
+  "rationale": "判定の根拠を数文で",
+  "open_questions": ["未確認の論点"]
+}
+```
+
+| フィールド | 型 | 内容 |
+|---|---|---|
+| `recommendation` | string | `推奨`・`条件付き推奨`・`非推奨`・`判断保留` のいずれか |
+| `rationale` | string | 総合判定の根拠（非空） |
+| `open_questions` | array | 未確認・未決の論点。空配列でもよい |
+
+## 検証規則（validate_fit_assessment.py）
+
+機械検証の原本は `scripts/validate_fit_assessment.py` である。終了コードは PASS（ERROR 0件）で 0、FAIL（ERROR 1件以上）で 1。WARN のみは PASS 扱いとする。
+
+### ERROR（成立しない）
+
+- ルートがオブジェクトでない。
+- `schema_version`・`slug`・`assessed_at` の欠落または空。`slug` の形式が `^[a-z0-9][a-z0-9-]*$` に一致しない。
+- `inputs` がオブジェクトでない。版に応じたキー（1.0 は4つ、2.0 は5つ）のいずれかの欠落、または真偽値でない。
+- `dimensions` が配列でない。版に応じた id（1.0 は5つ、2.0 は7つ）に過不足がある（欠落・未知 id・重複）。
+- 次元の `score` が 1〜5 の整数でも `null` でもない。`verdict` の欠落または空。
+- 次元の `evidence` が空、または `source` が既定値以外（1.0 は5値、2.0 は6値）。
+- `must_condition_results` が配列でない。`condition` の欠落または空。`met` が `yes`・`no`・`unknown` 以外。`met` が `yes`・`no` なのに `evidence` が空。
+- `overall.recommendation` が既定の4値以外。`overall.rationale` の欠落または空。`overall.open_questions` が配列でない。
+
+`schema_version` が `2.0` のときは、次も ERROR とする。
+
+- `dimensions` の id が7種と一致しない（1.0 の `skill_fit` を使っている場合を含む）。
+- `inputs` に `job_search_screening` が無い、または真偽値でない。
+- `experience_proximity` の `skill_gap` が既定5値以外、`skill_gap_items` が配列でない。
+- `skill_gap_items[]` の `requirement`・`basis` が空、`gap_level` が既定3値以外、`evidence` が空。
+- `skill_gap` が `skill_gap_items[].gap_level` の最も重い段階と一致しない。
+- `must_condition_results[].ref` の欠落・空・重複。
+- `negotiable` が真偽値でない、または `negotiable=true` なのに `evidence` が空。
+- **満たさない必須条件（`met=no`）があるのに `recommendation` が `推奨`。**
+- `met=no` のうち `negotiable` が `true` でないものが残るのに `recommendation` が `条件付き推奨`。
+- `skill_gap` が `not_applicable_now` なのに `recommendation` が `推奨`・`条件付き推奨`。
+- `aspiration_alignment` の `score` が非 null なのに、evidence に `self_analysis` も `profile` も含まれない。
+- `inputs.self_analysis` が `false` なのに `aspiration_alignment.score` が4以上。
+- `--profile` 指定時: `must_condition_results` の `ref` 集合が profile の必須条件の集合と一致しない。
+
+### WARN（成立するが質を下げる）
+
+- `schema_version` が既知バージョン（`1.0`／`2.0`）でない。
+- `assessed_at` が `YYYY-MM-DD` 形式でない。
+- 次元の `score` が `null`（判断保留であることの明示）。
+- evidence の `ref` が欠落または空。
+- `inputs` の全キーが `false`（評価の根拠が乏しい）。
+- 満たさない must 条件（`met=no`）があるのに `recommendation` が `推奨`（1.0 のみ。2.0 では ERROR）。
+- `--profile` が指定されていない（必須条件との1対1が未検証である）。
+- `inputs` の3つ以上が `false` なのに `recommendation` が `推奨`。
+- `inputs.self_analysis` が `false`（志向の根拠が弱い）。
+- `--screening` 指定時: 求人検索で必須条件を満たすと判定した求人が、求人票の取込後に `met=no` になっている。
+
+## バージョンと移行
+
+| `schema_version` | 扱い |
+|---|---|
+| `1.0` | 5次元（`skill_fit`・`condition_fit`・`culture_fit`・`compensation_fit`・`time_fit`）。`inputs` は4キー。`must_condition_results` に `ref` を要求しない。従来の規則のみを適用する |
+| `2.0` | 7次元。`inputs` は5キー。上記の 2.0 規則を追加で適用する |
+
+1.0 の成果物はそのまま検証を通る。企業別ディレクトリを恒久アーカイブとして扱う方針と整合させ、過去の評価を読めない状態にしない。1.0 で7次元の id を使う、2.0 で `skill_fit` を使う、といった混在は ERROR とする。
+
+## 記入例
+
+架空企業の完全な記入例は `assets/fit_assessment_example.json` にある。単体テストはこの記入例が検証を PASS することを確認する。

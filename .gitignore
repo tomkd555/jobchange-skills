@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# 利用者データ（設定ファイルの data_root 配下へ置く。リポジトリには含めない）
+career-private/
+companies/
+job-search/
+.job-change/
+
+# ローカルのハーネス設定
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db

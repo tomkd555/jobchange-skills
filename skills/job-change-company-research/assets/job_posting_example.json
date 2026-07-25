@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0",
+  "source_url": "https://recruit.kakuu-cloudworks.example.co.jp/mid-career/backend/",
+  "fetched_at": "2026-07-17",
+  "company_name": "架空クラウドワークス株式会社",
+  "title": "バックエンドエンジニア（中途採用）",
+  "employment_type": "正社員",
+  "location": {
+    "work_location": "東京都渋谷区（本社）",
+    "remote_policy": "週3日までリモート可（フルフレックス）"
+  },
+  "salary": {
+    "min": 6000000,
+    "max": 9000000,
+    "currency": "JPY",
+    "basis": "年収",
+    "notes": "経験・能力・前職給与を考慮のうえ決定。賞与年2回（6月・12月）。"
+  },
+  "working_hours": {
+    "scheduled_hours": 7.5,
+    "break_minutes": 60,
+    "discretionary": false,
+    "overtime_notes": "フレックスタイム制（コアタイム11:00〜15:00）。月平均残業20時間程度。"
+  },
+  "metrics": {
+    "annual_holidays": {
+      "value": 125,
+      "quote": "年間休日125日（完全週休2日制・祝日・年末年始）"
+    },
+    "monthly_overtime_h": {
+      "value": 20,
+      "quote": "月平均所定外労働時間 20時間"
+    },
+    "paid_leave_rate": {
+      "value": 71.0,
+      "quote": "年次有給休暇取得率 71.0%"
+    },
+    "paid_leave_days_granted": {
+      "value": 20,
+      "quote": "年次有給休暇 初年度20日付与"
+    }
+  },
+  "requirements": {
+    "must": [
+      "Webアプリケーションのバックエンド開発経験3年以上",
+      "RDB を用いた設計・実装経験"
+    ],
+    "want": [
+      "AWS を用いたクラウド環境の構築・運用経験",
+      "チームリード・メンタリングの経験"
+    ]
+  },
+  "benefits": [
+    { "name": "社会保険完備", "quote": "各種社会保険（健康・厚生年金・雇用・労災）完備" },
+    { "name": "書籍購入補助", "quote": "業務関連の技術書は全額会社負担" },
+    { "name": "リモート手当", "quote": "在宅勤務手当を月額支給" }
+  ],
+  "selection_process": [
+    "書類選考",
+    "適性検査（Webテスト）",
+    "一次面接（現場マネージャー）",
+    "最終面接（役員）"
+  ],
+  "open_questions": [
+    "みなし残業（固定残業代）の有無は求人ページに明記が無く、確認を要する。"
+  ]
+}
