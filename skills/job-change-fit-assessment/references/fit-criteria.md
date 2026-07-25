@@ -34,7 +34,7 @@ job_posting の `requirements.must[]`・`requirements.want[]` と、profile の 
 
 | 段階 | 判定基準 |
 |---|---|
-| `complementable_within_3m` | 隣接技術の実務経験があり、学習対象が固有の差分に限られる。独学と業務内での適用により3ヶ月以内に習得できる |
+| `complementable_within_3m` | 隣接技術の実務経験があり、学習対象が固有の差分に限られる。独学と業務内での適用により3か月以内に習得できる |
 | `needs_6_12m_study` | 隣接経験が乏しく、体系的な学習が必要である。または実務での適用機会を別途作る必要がある |
 | `not_applicable_now` | 必須要件の中核（経験年数・特定領域の実務）を満たさず、短期の学習では埋まらない |
 

@@ -7,7 +7,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 ## 配置
 
 - 原本の配置先: `{DATA_ROOT}/career-private/profile.json`
-- スキル本体フォルダ（`skills/job-change-support/`）に利用者データを置かない。`assets/profile_example.json` は記入例であり、実データではない。
+- スキル本体フォルダー（`skills/job-change-support/`）に利用者データを置かない。`assets/profile_example.json` は記入例であり、実データではない。
 
 ## ルート構造
 
@@ -79,7 +79,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 
 ## career_gaps
 
-空白期間（6ヶ月以上、職歴と職歴の間で在籍のない期間）の説明の配列。各要素は次のフィールドを持つ。
+空白期間（6か月以上、職歴と職歴の間で在籍のない期間）の説明の配列。各要素は次のフィールドを持つ。
 
 | フィールド | 型 | 必須/任意 | 意味・記入基準 |
 |---|---|---|---|
@@ -87,7 +87,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `explanation` | string | 必須 | 空白期間の理由。欠落・空は WARN |
 | `activities` | array | 任意 | 期間中に行った活動の文字列の配列 |
 
-職歴間に6ヶ月以上の空白があり、対応する `career_gaps` の記載がない場合、`validate_profile.py` は WARN を出す（`career_history[].period` が全件解析可能な場合に限る）。
+職歴間に6か月以上の空白があり、対応する `career_gaps` の記載がない場合、`validate_profile.py` は WARN を出す（`career_history[].period` が全件解析可能な場合に限る）。
 
 ## skills
 
@@ -219,7 +219,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 - `schema_version` が既知のバージョン（`1.0`／`1.1`／`2.0`）以外である
 - `schema_version` が `1.0` または `1.1` である（2.0 への移行を推奨する）
 - `career_history[].period` が `YYYY-MM〜YYYY-MM` または `YYYY-MM〜現在` の形式でない
-- `career_history[].period` が全件解析可能な場合に、隣接する職歴間に6ヶ月以上の空白があり、対応する `career_gaps`（期間が重なるもの）がない
+- `career_history[].period` が全件解析可能な場合に、隣接する職歴間に6か月以上の空白があり、対応する `career_gaps`（期間が重なるもの）がない
 - `skills.languages` の要素が `{"language","level"}` を持つオブジェクトでない
 - `salary.current` / `salary.desired` が number でも null でもない
 - 必須条件の件数が4件以上である（1.x では `must_conditions` の件数、2.0 では `conditions[level=must]` と `work_character_preferences[desire=must]` の合計）

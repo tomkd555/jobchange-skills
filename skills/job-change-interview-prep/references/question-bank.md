@@ -87,6 +87,9 @@ job-change-interview-coach が想定質問に付す `category` は、次の対�
 
 ## 出典
 
+<!-- textlint-disable -->
+<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる区画である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+
 - [E38] マイナビ転職. 転職の適性検査とは？新卒と中途の違いや目的、種類、対策法. 2026. グレードC. https://tenshoku.mynavi.jp/knowhow/caripedia/167/
 - [E62] マイナビ（HUMAN CAPITAL サポネット）. 中途採用面接で聞くべき厳選質問集［50選］｜面接官の心得. 2022-11-09. グレードB. https://saponet.mynavi.jp/column/detail/ty_saiyo_t03_50-interview-questions_210611.html
 - [E63] マイナビ（HUMAN CAPITAL サポネット）. 中途採用面接で聞くべき厳選質問集［50選］｜面接官の心得. 2022-11-09. グレードB. https://saponet.mynavi.jp/column/detail/ty_saiyo_t03_50-interview-questions_210611.html
@@ -96,3 +99,5 @@ job-change-interview-coach が想定質問に付す `category` は、次の対�
 - [E67] エン転職. 面接で使える逆質問45例！逆質問のコツや評価される立ち回りを紹介. 2026. グレードB. https://employment.en-japan.com/tenshoku-daijiten/41419/
 - [E80] Journal of Applied Psychology. Measuring faking in the employment interview: Development and validation of an interview faking behavior scale. 2007. グレードA（単一研究）. DOI:10.1037/0021-9010.92.6.1638 https://doi.org/10.1037/0021-9010.92.6.1638
 - [E97] リクルートエージェント. 職務経歴書に志望動機は必要？履歴書との違いや書き方を解説. 2024. グレードB. https://www.r-agent.com/guide/resume/article4402/
+
+<!-- textlint-enable -->

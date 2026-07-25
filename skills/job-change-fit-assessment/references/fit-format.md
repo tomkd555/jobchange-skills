@@ -90,8 +90,8 @@ evidence の各要素:
 | 値 | 意味 |
 |---|---|
 | `none` | 不足が無い |
-| `complementable_within_3m` | 3ヶ月以内に補完できる |
-| `needs_6_12m_study` | 6〜12ヶ月の学習が要る |
+| `complementable_within_3m` | 3か月以内に補完できる |
+| `needs_6_12m_study` | 6〜12か月の学習が要る |
 | `not_applicable_now` | 現時点では応募が難しい |
 | `unknown` | 判断材料が不足する |
 

@@ -73,7 +73,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | `job-search/{YYYYMMDD}-{条件の短いスラッグ}/job_search_results.json` | 求人検索の成果物。仕様は `references/job-search-format.md` |
 
 - 条件の短いスラッグは、主条件をローマ字・英数字で表した簡潔な識別子とする（例: `remote-saas-be`）。日付は検索実行日（`executed_at`）に合わせる。
-- スキル本体フォルダ（`skills/job-change-job-search/`）に実データを置かない。`assets/job_search_results_example.json` は架空の記入例である。
+- スキル本体フォルダー（`skills/job-change-job-search/`）に実データを置かない。`assets/job_search_results_example.json` は架空の記入例である。
 
 ## 中間成果物: job_search_results.json
 
@@ -137,14 +137,14 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 ### Step 3 現勤務先求人の除外（スキル本体）
 
-エージェントが返した job_search_results.json から、現勤務先の求人をスキル本体がローカルで除外する。`career-private/profile.json` の `career_history` のうち在職中（`period` が `〜現在`）のエントリの `company` に一致する `company_name` を持つ result を取り除く。除外した件数と企業名は、利用者への報告に含める（成果物には残さない）。
+エージェントが返した job_search_results.json から、現勤務先の求人をスキル本体がローカルで除外する。`career-private/profile.json` の `career_history` のうち在職中（`period` が `〜現在`）のエントリーの `company` に一致する `company_name` を持つ result を取り除く。除外した件数と企業名は、利用者への報告に含める（成果物には残さない）。
 
 ### Step 3.5 8軸判定と3分類（スキル本体）
 
 検索担当エージェントが書くのは観測層（求人票から読めた事実）までである。本人の条件との突き合わせは、`profile.json` を読めるスキル本体がローカルで行う。この分担により、個人情報を Web ツール保持エージェントへ渡さずに条件判定が成立する。
 
 1. `{DATA_ROOT}/career-private/profile.json` を Read で読み、`schema_version` を確認する。
-2. `job_change_axis.conditions[]` と `work_character_preferences[]` から、8軸ごとの必須度（`must` / `want` / `none`）と閾値を取り出す。同じ軸に必須条件が複数ある場合は、最も厳しい閾値を採る。
+2. `job_change_axis.conditions[]` と `work_character_preferences[]` から、8軸ごとの必須度（`must` / `want` / `none`）と閾値を読み取る。同じ軸に必須条件が複数ある場合は、最も厳しい閾値を採る。
 3. 各 result の `axis_observations` と閾値を突き合わせ、`axis_judgements` を書く。観測が `stated=false`、または `value` が `null` の軸は `unknown` にする。**記載が無いことを、条件を満たす証拠にも満たさない証拠にも使わない。**
 4. `references/job-search-format.md` の決定表から `classification` を導き、`classification_reasons` を書く。導出結果を手で変える場合は、厳格化する方向にのみ `classification_override` を付ける。
 5. `screening` を導出値として書く。`counts`・`unmet_axis_summary` は実集計と一致させる。`current_employer_exclusion` には Step 3 の実施結果を記録する（未実施なら `performed: false`・`excluded_count: null`）。

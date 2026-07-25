@@ -87,7 +87,7 @@ python {SKILL_DIR}/scripts/jc_config.py --show
 | `job-search/{検索ID}/job_search_results.json` | 求人検索の結果。匿名化済み条件で作る。作成は `job-change-job-search` が担う |
 
 - 企業スラッグは、Tier接頭辞（大文字1字＋`_`、任意）＋日本語会社名を基本とする短い識別子とする（形式・許容文字は `references/company-index-format.md` を原本とする。例: `S_アクメクラウド`）。同じ企業を別表記で指し得るため、企業名→スラッグ対応は `company_index.json` を原本とし、各スキルは Step 0 でこの index を引いてスラッグを解決する。
-- スキル本体フォルダ（`skills/job-change-support/`）に利用者データを置かない。`assets/profile_example.json` は記入例であり、実データではない。
+- スキル本体フォルダー（`skills/job-change-support/`）に利用者データを置かない。`assets/profile_example.json` は記入例であり、実データではない。
 - `career-private/` や `companies/` が未作成の場合は、必要になった時点で本スキルが作る。
 
 ## 設定ゲート
@@ -107,7 +107,7 @@ python {SKILL_DIR}/scripts/jc_config.py --show
 未設定の場合は、`AskUserQuestion` で利用者データの置き場所を1問だけ尋ねる。この置き場所には、現年収・居住地・在籍企業名を含む個人情報が保存される旨を質問文に添える。選択肢は次を提示し、いずれも「その他」から任意の絶対パスを入力できる。
 
 - ホームディレクトリ配下（`~/job-change-data`）
-- 書類フォルダ配下（`~/Documents/job-change-data`）
+- 書類フォルダー配下（`~/Documents/job-change-data`）
 - 現在の作業ディレクトリ配下（`./job-change-data`）
 
 回答を絶対パスへ直したうえで、設定ファイルを作る。
@@ -229,9 +229,9 @@ python {SKILL_DIR}/scripts/check_freshness.py {DATA_ROOT}/companies/{企業ス�
 
 ## 通勤情報の門番
 
-拘束時間・実質時給の算定（`job-change-fit-assessment`）は通勤片道時間を入力に使う。`career-private/commute.json`（利用者入力のみで作り、Web ツール保持エージェントへ渡さない）の当該企業スラッグのエントリを確認する。
+拘束時間・実質時給の算定（`job-change-fit-assessment`）は通勤片道時間を入力に使う。`career-private/commute.json`（利用者入力のみで作り、Web ツール保持エージェントへ渡さない）の当該企業スラッグのエントリーを確認する。
 
-- エントリがあればその `one_way_minutes` を使う。
+- エントリーがあればその `one_way_minutes` を使う。
 - 未入力の場合は、`AskUserQuestion` で片道通勤時間を1回だけ確認する。
 - それでも不明なら、統計フォールバック（社会生活基本調査由来の既定値）を適用し、`time_analysis.json` の `fallbacks_used` に明示する。
 

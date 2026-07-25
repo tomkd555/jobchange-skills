@@ -37,7 +37,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 - 機械検証: validate_profile.py を Bash で再実行し、PASS（ERROR 0件）を確認する。ERROR が残る場合は must_fix の finding とする。WARN は成果物の質に関わるため、内容を確認し、必要なら should_fix または note とする。
 - 創作・誇張の検出: profile.json の各記述（経歴・実績・数値・役職・期間）が、聞き取りメモに裏付けを持つかを検査する。メモにない数値・役職・期間・規模が profile.json にあれば指摘する。`summary` がメモの範囲を超えていないかを検査する。
 - metric の検証可能性: `achievements[].metric` が、利用者が出所を説明できる検証可能な数値になっているか、「〜に貢献」だけの空疎な記述や裏付けのない数値になっていないかを検査する。規模・範囲・主体を表す語（大規模・全社・主導など）が、メモで裏付けられる範囲かを検査する。
-- 時系列の整合: `career_history[].period` の重なり・逆転がないか、隣接する職歴間の6ヶ月以上の空白に対応する `career_gaps` エントリ（期間が重なるもの）があるかを検査する。
+- 時系列の整合: `career_history[].period` の重なり・逆転がないか、隣接する職歴間の6か月以上の空白に対応する `career_gaps` エントリー（期間が重なるもの）があるかを検査する。
 - 軸の整合: 必須条件が3件程度に収まっているか、4件以上なら `priority_note` に優先順位と再評価時期があるかを検査する。件数は、`schema_version` が 1.x なら `job_change_axis.must_conditions`、2.0 なら `conditions[level=must]` と `work_character_preferences[desire=must]` の合計で数える。
 - 条件の構造化（schema_version 2.0）: `conditions[]` の `axis`・`operator`・`value` が聞き取りメモの記録と一致するかを検査する。**メモにない軸・閾値が入っていれば創作である。** 自由文の条件を機械的に軸へ割り付けた形跡（メモに閾値の記録がないのに `operator` が比較演算子である）は must_fix とする。
 - 作業特性（schema_version 2.0）: `work_character_preferences` が8件あり、各 `desire` がメモの記録と一致するかを検査する。メモに記録がない特性へ値が入っていれば創作である。

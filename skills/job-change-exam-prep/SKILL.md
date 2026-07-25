@@ -6,7 +6,7 @@ description: >-
   ドメイン判別と job-change-exam-scout エージェントの調査で特定し、検査種別ごとに対策計画（科目別の
   学習項目・時間配分・教材方針・スケジュール）を作り、出題形式を模した自作問題で演習する。確定情報と
   推定を区別し、能力検査は反復練習、性格検査は一貫した正直な回答という、検査種別ごとの対策差に従う。実在の
-  検査問題は複製しない。job-change-support ハブから振り分けられて使う。
+  検査問題は複製しない。hub（job-change-support）から振り分けられて使う。
   Use when the user prepares for a written test or aptitude assessment in a Japanese mid-career job change
   (including foreign-affiliated online assessments) — identifying which test a company uses, building a
   study plan, and practicing question formats.
@@ -127,7 +127,7 @@ Step 0 から Step 3 を順に進める。
 
 対策可能性の差（`references/prep-methods.md`）に従い、性格検査・TAL・内田クレペリンには過度な対策を勧めない。性格検査は一貫した正直な回答を助言する。
 
-確定情報と推定の区別を維持する。`confidence` が「推定」の種別は、対策計画に「推定である旨・根拠件数・確度」を明記し、確定種別と同等に断定しない。Step 0 の URL 暫定判別と Step 1 の調査結果が食い違う場合は、両方を提示し、確度の高い方を優先する。
+確定情報と推定の区別を維持する。`confidence` が「推定」の種別は、対策計画に「推定である旨・根拠件数・確度」を明記し、確定種別と同等に断定しない。Step 0 の URL 暫定判別と Step 1 の調査結果が食い違う場合は、両方を提示し、確度の高いほうを優先する。
 
 計画を `companies/{企業スラッグ}/exam-prep-plan.md`（汎用時は `_general/exam-prep-plan.md`）へ書き出す。
 

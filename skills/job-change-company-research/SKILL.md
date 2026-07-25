@@ -159,7 +159,7 @@ ERROR が1件でもあれば Step 1 へ差し戻す。PASS（ERROR 0件）にな
 監査は次を行う。判定は `BLOCK` / `CONCERNS` / `CLEAN` で返る。
 
 - `validate_company_research.py` の再実行（結果を `validation_rerun`＝ERROR 0件なら PASS、そうでなければ FAIL として記録）。`validation_rerun` が FAIL の場合、verdict は無条件で BLOCK である。
-- claims の層化抽出による出典URLの実在・引用と原文の一致の確認（グレードAの財務系 claim と confidence=high の claim を必ず標本に含める）。
+- claims を層化抽出し、出典URLが実在するか、引用が原文と一致するかを確認する（グレードAの財務系 claim と confidence=high の claim を必ず標本に含める）。
 - グレード付与の妥当性（口コミをA・Bへ格上げしていないか、一次情報をCへ格下げしていないか）。
 - グレードC・D単独の断定、企業自身の自己宣伝的主張への confidence high 付与の有無。
 - 必須7トピック（`philosophy`・`business`・`financials`・`compensation`・`benefits`・`workstyle`・`reputation`）の網羅状況と、`selection_process` の充足状況（0件は WARN 相当で、収集を推奨）。`selection_process` の欠落は重大扱いにしない。
@@ -178,7 +178,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 
 納品時に、`companies/{企業スラッグ}/_manifest.json` の `artifacts.company_research` を更新する（後述「_manifest.json の更新」）。`updated_at` を調査日にし、調査したトピックそれぞれの `last_researched` を調査日にする。
 
-あわせて、`company_research.json` の `tier.level` を `career-private/company_index.json` の当該エントリの `tier` フィールドへ転記する（分類・一覧用の機械可読な写し。仕様は job-change-support の `references/company-index-format.md`）。企業スラッグの接頭辞（ディレクトリ名）は変更しない。トピック限定の差分再調査で `tier` を再算出した場合も、index の `tier` を更新する。
+あわせて、`company_research.json` の `tier.level` を `career-private/company_index.json` の当該エントリーの `tier` フィールドへ転記する（分類・一覧用の機械可読な写し。仕様は job-change-support の `references/company-index-format.md`）。企業スラッグの接頭辞（ディレクトリ名）は変更しない。トピック限定の差分再調査で `tier` を再算出した場合も、index の `tier` を更新する。
 
 最終メッセージには、Tier（`level`・`provisional`・4軸の要点）、主要トピックの要点、検証結果（validate の PASS・監査の verdict）、残る未決事項（差し戻し2回で解消しなかった論点があれば）を要約する。
 

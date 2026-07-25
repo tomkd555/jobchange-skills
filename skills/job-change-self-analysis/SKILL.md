@@ -73,7 +73,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | `career-private/self_analysis.json` | 自己分析成果物の原本 | 出力（本スキルが作る） |
 
 - `self_analysis.json` のフィールド仕様・記入基準・検証規則の原本は `references/self-analysis-format.md` にある。記入例は `assets/self_analysis_example.json`（架空の人物）にある。
-- スキル本体フォルダ（`skills/job-change-self-analysis/`）に利用者データを置かない。
+- スキル本体フォルダー（`skills/job-change-self-analysis/`）に利用者データを置かない。
 - `career-private/` が未作成の場合は、必要になった時点で本スキルが作る。
 
 ## パイプライン

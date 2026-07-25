@@ -294,7 +294,7 @@ python validate_job_search_results.py <job_search_results.json> [--json] [--prof
 
 | 抽出対象 | 抽出元 |
 |---|---|
-| 現勤務先名 | `career_history` のうち在職中（`period` が `〜現在`）のエントリの `company`。在職中を特定できない場合は先頭エントリの `company`。 |
+| 現勤務先名 | `career_history` のうち在職中（`period` が `〜現在`）のエントリーの `company`。在職中を特定できない場合は先頭エントリーの `company`。 |
 | 氏名らしき値 | `basic` 内の `name`・`full_name` 等。 |
 | 現年収 | `salary.current`（数値）。希望年収の下限は検査対象に含めない（条件化を許容する）。 |
 

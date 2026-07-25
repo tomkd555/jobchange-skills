@@ -22,7 +22,7 @@ job-change-self-analysis スキルが採用する分析軸の実証的裏付け�
 
 ### 興味・興味適合（Holland の枠組み）
 
-- 職業興味は職務業績（r=.14）・訓練成績（r=.26）と相関し、職務に焦点化した興味尺度では業績妥当性が .23 へ高まる[E1]。60研究・約568相関を統合したメタ分析で、興味-環境適合（congruence）指標は個別の興味得点より業績予測力が高い[E2]。
+- 職業興味は職務業績（r=.14）・訓練成績（r=.26）と相関し、職務に焦点化した興味尺度では業績妥当性が .23 へ高まる[E1]。60研究・約568相関を統合したメタ分析で、興味と環境の適合（congruence）指標は個別の興味得点より業績予測力が高い[E2]。
 - ただし興味適合と「全体的な職務満足」の関係は弱い。65年・105研究（N=39,602）のメタ分析で相関は ρ=0.19 にとどまり、適合は一般的職務満足よりも成果・キャリア満足との関連が強い[E11]。
 - 運用: 興味は RIASEC の6領域（Realistic・Investigative・Artistic・Social・Enterprising・Conventional）の枠組みを軸名として使う。適合の高さを満足の保証と扱わない。興味診断の結果は確定ラベルとせず、内省と行動の裏付けを併せる。
 
@@ -78,6 +78,9 @@ job-change-self-analysis スキルが採用する分析軸の実証的裏付け�
 
 ## 出典一覧
 
+<!-- textlint-disable -->
+<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる区画である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+
 - [E1] Journal of Applied Psychology (APA). Are you interested? A meta-analysis of relations between vocational interests and performance/turnover. 2011. グレードA. DOI:10.1037/a0024343. https://doi.org/10.1037/a0024343
 - [E2] Perspectives on Psychological Science (SAGE/APS). Vocational Interests and Performance: A Quantitative Summary. 2012. グレードA. DOI:10.1177/1745691612449021. https://doi.org/10.1177/1745691612449021
 - [E6] 組織科学（組織学会）. キャリア・アンカー9因子モデルの適合性の検証. 2024. グレードA. DOI:10.11207/soshikikagaku.20240702-4. https://doi.org/10.11207/soshikikagaku.20240702-4
@@ -103,3 +106,5 @@ job-change-self-analysis スキルが採用する分析軸の実証的裏付け�
 - [E52] Perspectives on Psychological Science. Rethinking Rumination. 2008. グレードA. DOI:10.1111/j.1745-6924.2008.00088.x. https://doi.org/10.1111/j.1745-6924.2008.00088.x
 - [E54] 感情心理学研究（日本感情心理学会）. 自己反すうと自己内省が社交不安に及ぼす影響. 2017. グレードA. DOI:10.4092/jsre.25.1_17. https://doi.org/10.4092/jsre.25.1_17
 - [E55] Current Directions in Psychological Science. Affective forecasting: Knowing what to want. 2005. グレードA. DOI:10.1111/j.0963-7214.2005.00355.x. https://doi.org/10.1111/j.0963-7214.2005.00355.x
+
+<!-- textlint-enable -->

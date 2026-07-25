@@ -8,7 +8,7 @@ self_analysis.json は、profile.json（利用者データの原本。hub が管
 
 - 原本の配置先: `{DATA_ROOT}/career-private/self_analysis.json`（非公開ディレクトリ）。
 - career-private 配下のパスは、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ渡さない。本スキルの writer・auditor は Web 送信手段を持たないため、渡してよい。
-- スキル本体フォルダに利用者データを置かない。`assets/self_analysis_example.json` は記入例であり、実データではない。
+- スキル本体フォルダーに利用者データを置かない。`assets/self_analysis_example.json` は記入例であり、実データではない。
 
 ## ルート構造
 

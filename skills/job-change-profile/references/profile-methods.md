@@ -73,6 +73,9 @@ must/want の分離は要件工学の MoSCoW と同じ構造を持つ実務標�
 
 ## 出典一覧
 
+<!-- textlint-disable -->
+<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる区画である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+
 - [E1] doda（パーソルキャリア）. 中途採用の履歴書・職務経歴書で一番見られているのはどこ？. 2024. グレードB（単一ソース）. https://doda.jp/guide/saiyo/007.html
 - [E2] Geekly（ギークリー）. 【採用担当150名に聞いた】応募書類で重視するポイントとは？. 2021-12. グレードC（単一ソース・自己報告）. https://www.geekly.co.jp/column/cat-jobsearch/resume_point_byrecruiter/
 - [E7] マイナビ（マイナビ転職）. 書類選考とは？通過率は？突破する履歴書・職務経歴書の書き方を解説. 2025. グレードB（disputed）. https://tenshoku.mynavi.jp/knowhow/caripedia/276/
@@ -105,3 +108,5 @@ must/want の分離は要件工学の MoSCoW と同じ構造を持つ実務標�
 - [E97] ResumeBuilder.com. 1 in 3 Americans admit to lying on resume. 2021-07-16. グレードB. https://www.resumebuilder.com/1-in-3-americans-admit-to-lying-on-resume/
 - [E101] ベンナビ刑事事件（アシロ）. 経歴詐称とは｜成立要件と問われる罪. 2025. グレードC. https://keiji-pro.com/columns/213/
 - [E102] ASHIATO（エン・ジャパン）. バックグラウンドチェックで経歴詐称や転職活動はバレない？. 2024-09-19. グレードC. https://ashiatohr.com/news/7ecucee-k
+
+<!-- textlint-enable -->
