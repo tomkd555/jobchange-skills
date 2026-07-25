@@ -1,5 +1,8 @@
 # 実績の定量化ガイド（型・代替表現・限界）
 
+<!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
+<!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
+
 job-change-profile スキルの Step 2 で実績（achievements）を聞き取り・起草・監査するときに参照する原本である。SKILL.md の原則3・question-bank.md の Step 2・エージェント2体がこのファイルを参照する。証拠グレードは A〜D の4段階で表記し、学術研究には DOI を記す。
 
 ## 定量化を推奨しつつ、検証可能性を優先する
@@ -8,9 +11,9 @@ job-change-profile スキルの Step 2 で実績（achievements）を聞き取�
 
 - 人材紹介会社は、実績を定量的な数字で表し、前年度比などで示すことを推奨する[E25]。
 - 学術的には、応募書類に competency statements（能力・実績の記述）を加えると評価が上がり、書類選考を通過する確率が高まる。ただしこの効果は記述の場所に依存せず、「一般的な書き方でも」生じた[E34]。**すなわち定量化そのものを単離した効果ではなく、記述の存在自体の効果が大きい。**
-- 過剰な数値や捏造した数値は逆効果である。箇条書きの全項目への機械的な数値付与や、捏造した数値は採用担当の不信を招く。採用側視点の記事は、1つの捏造数値が書類全体の信頼を毀損すると指摘する[E29]。
+- 過剰な数値や事実と異なる数値は逆効果である。箇条書きの全項目への機械的な数値付与や、事実と異なる数値は採用担当の不信を招く。採用側視点の記事は、事実と異なる数値が1つあるだけで書類全体の信頼を毀損すると指摘する[E29]。
 
-運用: `metric` は「検証可能な数値」を優先する。後で証憑（人事評価資料・社内報告）で確認できない数値は書かない。数値が出ない実績を無理に数値化せず、`metric` を `null` にして工夫した点と評価された点を `description` で具体化する。
+運用: `metric` は「検証可能な数値」を優先する。後でエビデンス（人事評価資料・社内報告）で確認できない数値は書かない。数値が出ない実績を無理に数値化せず、`metric` を `null` にして工夫した点と評価された点を `description` で具体化する。
 
 ## 定量化の型
 
@@ -50,6 +53,9 @@ job-change-profile スキルの Step 2 で実績（achievements）を聞き取�
 
 ## 出典一覧
 
+<!-- textlint-disable -->
+<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる区画である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+
 - [E2] Geekly（ギークリー）. 【採用担当150名に聞いた】応募書類で重視するポイントとは？. 2021-12. グレードC（単一ソース・自己報告）. https://www.geekly.co.jp/column/cat-jobsearch/resume_point_byrecruiter/
 - [E25] JAC Recruitment. 職務経歴書「実績」の書き方とは？職種別の記入例も解説. 2022-11-25. グレードC. https://www.jac-recruitment.jp/market/knowhow/resume/achievements/
 - [E26] JAC Recruitment. 職務経歴書「実績」の書き方とは？職種別の記入例も解説. 2022-11-25. グレードC. https://www.jac-recruitment.jp/market/knowhow/resume/achievements/
@@ -61,3 +67,5 @@ job-change-profile スキルの Step 2 で実績（achievements）を聞き取�
 - [E34] International Journal of Selection and Assessment. The Impact of Competency Statements on Resumes for Short-listing Decisions. 2000. グレードA. DOI:10.1111/1468-2389.00132. https://doi.org/10.1111/1468-2389.00132
 - [E36] Strategic Management Journal. Give it to us straight (most of the time). 2018. グレードA. DOI:10.1002/smj.2733. https://doi.org/10.1002/smj.2733
 - [E37] Judgment and Decision Making. Cultivating credibility with probability words and numbers. 2019. グレードA. DOI:10.1017/S1930297500005404. https://doi.org/10.1017/S1930297500005404
+
+<!-- textlint-enable -->

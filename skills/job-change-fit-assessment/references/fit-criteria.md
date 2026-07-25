@@ -4,7 +4,7 @@
 
 ## 全次元に共通するルール
 
-1. **evidence のない主張を書かない。** 各次元の verdict は evidence（1件以上）に紐付ける。裏付けのない印象・憶測を score や verdict に反映しない。
+1. **evidence のない主張を書かない。** 各次元の verdict は evidence（1件以上）に対応づける。裏付けのない印象・憶測を score や verdict に反映しない。
 2. **証拠グレードC・D単独で断定しない。** 口コミ・伝聞（company_research 内でグレードC・Dが付いた claim）のみを根拠に、その次元を高い、または低いと断定しない。C・D を根拠にする場合は verdict を限定表現にする（「口コミでは〜という声がある。傍証にとどめる」）。グレードの定義と限定表現の書き方は evidence-grading.md に従う。
 3. **企業自身の自己宣伝的主張に高い確度を置かない。** 採用サイトの「風通しが良い」等は、company_research 側でグレードAでも confidence を high にしていない。これを culture_fit の断定材料にしない。
 4. **材料が無いときは score を null（判断保留）にする。** 憶測で数値を埋めない。unknown を優先する方針を守る。
@@ -34,7 +34,7 @@ job_posting の `requirements.must[]`・`requirements.want[]` と、profile の 
 
 | 段階 | 判定基準 |
 |---|---|
-| `complementable_within_3m` | 隣接技術の実務経験があり、学習対象が固有の差分に限られる。独学と業務内での適用により3ヶ月以内に習得できる |
+| `complementable_within_3m` | 隣接技術の実務経験があり、学習対象が固有の差分に限られる。独学と業務内での適用により3か月以内に習得できる |
 | `needs_6_12m_study` | 隣接経験が乏しく、体系的な学習が必要である。または実務での適用機会を別途作る必要がある |
 | `not_applicable_now` | 必須要件の中核（経験年数・特定領域の実務）を満たさず、短期の学習では埋まらない |
 
@@ -73,7 +73,7 @@ job_posting の勤務条件（`location`・`employment_type`・`working_hours` �
 
 company_research の philosophy・workstyle・reputation トピックと、self_analysis の行動証拠・価値観を突き合わせる。
 
-- **内省単独に重みを置かない。** self_analysis の主観的な自己申告だけで断定せず、self_analysis に記録された行動証拠（過去の具体的な行動・実績）との紐付けを優先する。
+- **内省単独に重みを置かない。** self_analysis の主観的な自己申告だけで断定せず、self_analysis に記録された行動証拠（過去の具体的な行動・実績）との対応づけを優先する。
 - 企業側の材料は、自己宣伝的主張（グレードAでも confidence が high でないもの）を断定に使わず、事実（制度の有無・開示数値・認定）と分けて扱う。
 - 口コミ由来（グレードC）は限定表現にとどめる。
 - self_analysis が無い場合（inputs.self_analysis=false）は、行動証拠を欠くため score を高くせず、verdict にその旨を書くか null にする。

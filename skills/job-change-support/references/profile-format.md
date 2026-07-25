@@ -7,7 +7,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 ## 配置
 
 - 原本の配置先: `{DATA_ROOT}/career-private/profile.json`
-- スキル本体フォルダ（`skills/job-change-support/`）に利用者データを置かない。`assets/profile_example.json` は記入例であり、実データではない。
+- スキル本体フォルダー（`skills/job-change-support/`）に利用者データを置かない。`assets/profile_example.json` は記入例であり、実データではない。
 
 ## ルート構造
 
@@ -75,11 +75,11 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `description` | string | 任意 | 実績の説明 |
 | `metric` | string または null | 任意 | 定量値。「応答時間を40%短縮」「売上を年3000万円増」のように、数値・割合・金額で示す。定量化できない実績は `null` にする |
 
-`metric` は可能な限り定量値で埋める。応募書類・面接では、定量化された実績が採否を分ける。全職歴を通して定量的な `metric` が1件もない場合、`validate_profile.py` は WARN を出す。`metric` には検証可能な数値を優先する。裏付けのない数値の捏造や過大な誇張は、書類・面接全体の信頼を毀損する。
+`metric` は可能な限り定量値で埋める。応募書類・面接では、定量化された実績が採否を分ける。全職歴を通して定量的な `metric` が1件もない場合、`validate_profile.py` は WARN を出す。`metric` には検証可能な数値を優先する。裏付けのない数値の創作や過大な誇張は、書類・面接全体の信頼を毀損する。
 
 ## career_gaps
 
-空白期間（6ヶ月以上、職歴と職歴の間で在籍のない期間）の説明の配列。各要素は次のフィールドを持つ。
+空白期間（6か月以上、職歴と職歴の間で在籍のない期間）の説明の配列。各要素は次のフィールドを持つ。
 
 | フィールド | 型 | 必須/任意 | 意味・記入基準 |
 |---|---|---|---|
@@ -87,7 +87,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `explanation` | string | 必須 | 空白期間の理由。欠落・空は WARN |
 | `activities` | array | 任意 | 期間中に行った活動の文字列の配列 |
 
-職歴間に6ヶ月以上の空白があり、対応する `career_gaps` の記載がない場合、`validate_profile.py` は WARN を出す（`career_history[].period` が全件解析可能な場合に限る）。
+職歴間に6か月以上の空白があり、対応する `career_gaps` の記載がない場合、`validate_profile.py` は WARN を出す（`career_history[].period` が全件解析可能な場合に限る）。
 
 ## skills
 
@@ -108,7 +108,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | フィールド | 型 | 必須/任意 | 意味・記入基準 |
 |---|---|---|---|
 | `reasons` | array | 必須 | 転職理由の文字列の配列。1件以上必須（空だと ERROR）。現状の不満ではなく、次に実現したいことで書く。建設的な言い換えへの深化は `job-change-self-analysis` で行える（原本は同スキルの `self_analysis.json` の `reason_for_change`。ここへは短文のみを反映する） |
-| `conditions` | array | **2.0 で必須** | 条件の配列。譲れない条件と望ましい条件を、軸・演算子・閾値の形で構造化して持つ。後述 |
+| `conditions` | array | **2.0 で必須** | 条件の配列。譲れない条件と望ましい条件を、軸・演算子・しきい値の形で構造化して持つ。後述 |
 | `work_character_preferences` | array | **2.0 で必須** | 8つの作業特性それぞれへの希望度。過不足なく8件持つ。後述 |
 | `must_conditions` | array | 1.x のみ | 譲れない条件の自由文の配列。2.0 では `conditions` へ移す。2.0 で非空なら WARN |
 | `want_conditions` | array | 1.x のみ | 望ましい条件の自由文の配列。2.0 では `conditions` へ移す。2.0 で非空なら WARN |
@@ -168,7 +168,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 
 ### 年収の扱い
 
-譲れない年収下限は `conditions`（`axis=salary_condition`）に、希望額は `salary.desired` に置く。前者は求人検索の閾値として使い、後者は適合性評価の報酬次元が使う。下限が希望額を上回る場合は WARN とする。
+譲れない年収下限は `conditions`（`axis=salary_condition`）に、希望額は `salary.desired` に置く。前者は求人検索のしきい値として使い、後者は適合性評価の報酬次元が使う。下限が希望額を上回る場合は WARN とする。
 
 ## targets
 
@@ -219,7 +219,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 - `schema_version` が既知のバージョン（`1.0`／`1.1`／`2.0`）以外である
 - `schema_version` が `1.0` または `1.1` である（2.0 への移行を推奨する）
 - `career_history[].period` が `YYYY-MM〜YYYY-MM` または `YYYY-MM〜現在` の形式でない
-- `career_history[].period` が全件解析可能な場合に、隣接する職歴間に6ヶ月以上の空白があり、対応する `career_gaps`（期間が重なるもの）がない
+- `career_history[].period` が全件解析可能な場合に、隣接する職歴間に6か月以上の空白があり、対応する `career_gaps`（期間が重なるもの）がない
 - `skills.languages` の要素が `{"language","level"}` を持つオブジェクトでない
 - `salary.current` / `salary.desired` が number でも null でもない
 - 必須条件の件数が4件以上である（1.x では `must_conditions` の件数、2.0 では `conditions[level=must]` と `work_character_preferences[desire=must]` の合計）
@@ -229,7 +229,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 `schema_version` が `2.0` のときは、次も WARN とする。
 
 - `conditions` に `level=must` が1件もない（必須条件がないと求人検索の選別が働かない）
-- 同じ `axis` に `level=must` の条件が複数ある（判定では最も厳しい閾値を採る）
+- 同じ `axis` に `level=must` の条件が複数ある（判定では最も厳しいしきい値を採る）
 - `level=must` の条件に `priority` がない、または `priority` が重複している
 - `must_conditions` / `want_conditions` が空でないまま残っている（移行漏れ）
 - 必須の年収下限が `salary.desired` を上回っている
@@ -248,4 +248,4 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `job-change-job-search` | 求人の観測は通常どおり行うが、8軸の判定ができないため全件を「追加調査候補」とし、総合判定を「判定不能」にする |
 | `job-change-fit-assessment` | 作業特性の一致と志向の一致の score を `null`（判断保留）にし、理由を verdict に書く |
 
-**自動移行は行わない。** 自由文の条件（例「モダンな技術スタックが整備されていること」）を軸・演算子・閾値へ機械的に割り付けることは推測であり、「事実を創作しない」原則に反する。移行は `job-change-profile` の対話（条件の構造化）で行う。
+**自動移行は行わない。** 自由文の条件（例「モダンな技術スタックが整備されていること」）を軸・演算子・しきい値へ機械的に割り付けることは推測であり、「事実を創作しない」原則に反する。移行は `job-change-profile` の対話（条件の構造化）で行う。

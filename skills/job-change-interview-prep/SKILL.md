@@ -15,7 +15,7 @@ allowed-tools: Read, Write, Glob, Grep, Agent, AskUserQuestion
 
 # job-change-interview-prep
 
-転職の面接対策を行うとき、本スキルが想定質問の生成・模擬面接・回答評価・総括までの手順を揃える。転職支援 hub（job-change-support）の面接対策として振り分けられて起動される。対象は日本の中途採用面接を中心とし、外資系のビヘイビアラル面接・ケース面接へ対応する。
+転職の面接対策を行うとき、本スキルが想定質問の生成・模擬面接・回答評価・総括までの手順をそろえる。転職支援 hub（job-change-support）の面接対策として振り分けられて起動される。対象は日本の中途採用面接を中心とし、外資系のビヘイビアラル面接・ケース面接へ対応する。
 
 想定質問の生成（Step 1）と回答の評価（Step 3）は専用エージェント job-change-interview-coach（opus）が担う。本スキルはその起動、模擬面接の進行、総括を担う。
 
@@ -44,7 +44,7 @@ allowed-tools: Read, Write, Glob, Grep, Agent, AskUserQuestion
 hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、次の順に設定ファイルを探し、最初に見つかったものを Read で読む。
 
 1. 環境変数 `JOB_CHANGE_CONFIG` が指すファイル
-2. カレントディレクトリから上位へ辿った最初の `.job-change/config.json`
+2. カレントディレクトリから上位へたどった最初の `.job-change/config.json`
 3. `~/.job-change/config.json`
 
 いずれの場所にも設定ファイルが無ければ未設定である。その場合は作業へ進まず、hub（job-change-support）へ戻して設定の作成を先行させる。
@@ -70,10 +70,10 @@ Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-chan
 
 ### Step 0 読込とゲート
 
-1. `{DATA_ROOT}/career-private/profile.json` の所在を Read / Glob で確認する。無ければハブ（job-change-support）へ戻し、プロファイルの初回作成を先行させる。
-2. プロファイルゲート（必須）を通す。profile.json は `validate_profile.py`（job-change-support の scripts）が PASS（ERROR 0件）であることを前提とする。ハブ経由で本スキルへ入る場合、ハブがルーティング前に PASS を確認済みである。本スキルは Bash を持たないため検証を自ら実行しない。検証状態が未確認または FAIL の場合は、ハブへ戻して整備と PASS 確認を先行させ、PASS を確認できない限り Step 1 へ進まない。
-3. 対象企業の企業スラッグを `career-private/company_index.json` で解決したうえで（詳細は job-change-support の `references/company-index-format.md`）、company_research.json（`companies/{企業スラッグ}/company_research.json`）の有無を確認する。同フォルダに `interview_answers.json` が存在する場合は、残りの質問からの再開を利用者へ提案する。company_research.json が無い場合は、AskUserQuestion で次を利用者へ明示して選ばせる。
-   - (A) 企業研究を先に実施する。ハブへ戻して `job-change-company-research` を起動し、company_research.json を得てから本スキルへ戻る。
+1. `{DATA_ROOT}/career-private/profile.json` の所在を Read / Glob で確認する。無ければ hub（job-change-support）へ戻し、プロファイルの初回作成を先行させる。
+2. プロファイルゲート（必須）を通す。profile.json は `validate_profile.py`（job-change-support の scripts）が PASS（ERROR 0件）であることを前提とする。hub 経由で本スキルへ入る場合、hub がルーティング前に PASS を確認済みである。本スキルは Bash を持たないため検証を自ら実行しない。検証状態が未確認または FAIL の場合は、hub へ戻して整備と PASS 確認を先行させ、PASS を確認できない限り Step 1 へ進まない。
+3. 対象企業の企業スラッグを `career-private/company_index.json` で解決したうえで（詳細は job-change-support の `references/company-index-format.md`）、company_research.json（`companies/{企業スラッグ}/company_research.json`）の有無を確認する。同フォルダーに `interview_answers.json` が存在する場合は、残りの質問からの再開を利用者へ提案する。company_research.json が無い場合は、AskUserQuestion で次を利用者へ明示して選ばせる。
+   - (A) 企業研究を先に実施する。hub へ戻して `job-change-company-research` を起動し、company_research.json を得てから本スキルへ戻る。
    - (B) 縮退モードを選ぶ。企業非依存の一般対策として進め、以降は企業固有の想定質問を生成せず、企業理解観点の評価も対象外とする。
 4. `career-private/self_analysis.json` の有無を確認する。あれば Step 1・Step 3 の入力に加える。無くても進行できるが、自己分析（`job-change-self-analysis`）を先に実行すればキャリア・ナラティブと転職理由の建設的な言語化を一貫性観点の根拠に使えることを、利用者へ明示する。
 5. `career-private/fit/{企業スラッグ}/fit_assessment.json` の有無を確認する。あれば Step 1 の入力に加える。想定質問の生成時に、`condition_fit` の `met: "unknown"` の項目と `overall.open_questions` を、逆質問・確認事項の質問素材として用いる。無くても進行できる。fit_assessment.json は career-private 配下の成果物であり、Web ツール保持エージェントへは渡さない。
@@ -106,13 +106,13 @@ Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-chan
 
 1. 全評価を観点別に集計し、強み（充足の多い観点）と優先改善点（不足の観点と、その具体的な補い方）を整理する。改善案は `references/evaluation-rubric.md` のアンカーに沿い、STAR の欠落要素の補い方や、企業理解の反映方法を含める。
 2. 再演習の提案（評価の弱い観点・質問類型に絞った再度の模擬面接）を添える。
-3. 観点別の強み・優先改善点・再演習の提案を `interview-prep-report.md` にまとめる（company モード時は company フォルダへ保存する）。総括の判断・改善案は評価アンカーと根拠参照に基づき、profile.json・company_research.json に無い事実を前提に置かない。
+3. 観点別の強み・優先改善点・再演習の提案を `interview-prep-report.md` にまとめる（company モード時は company フォルダーへ保存する）。総括の判断・改善案は評価アンカーと根拠参照に基づき、profile.json・company_research.json に無い事実を前提に置かない。
 
 ## 合否ゲートと差し戻し
 
 パイプラインには2つのゲートがある。
 
-- Step 0 のプロファイルゲート（必須）では、`validate_profile.py` が PASS でなければ Step 1 へ進まない。profile.json が未作成、または FAIL（ERROR 1件以上）の場合は、ハブ（job-change-support）でのプロファイル整備を先行させ、PASS を確認してから戻る。
+- Step 0 のプロファイルゲート（必須）では、`validate_profile.py` が PASS でなければ Step 1 へ進まない。profile.json が未作成、または FAIL（ERROR 1件以上）の場合は、hub（job-change-support）でのプロファイル整備を先行させ、PASS を確認してから戻る。
 - コーチ出力ゲート（Step 1・Step 3）では、job-change-interview-coach の返す JSON が次を満たすことを確認する。満たさない場合は、不足内容を指示書へ添えてコーチを再起動する。
   - `{"error": ...}` でない（入力の欠落による返答でない）。
   - スキーマに適合する（Step 1 は `questions`、Step 3 は `evaluations`）。
@@ -149,7 +149,7 @@ Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-chan
 
 ## スクリプトのCLI使用例
 
-本スキルは検証スクリプトを持たない。Step 0 のプロファイルゲートは、ハブ（job-change-support）の `validate_profile.py` の PASS を前提とする。次のコマンドはハブがルーティング前に実行するものであり、本スキルは Bash を持たないため自ら実行しない（掲載は前提確認のため）。`{HUB_SKILL_DIR}` はハブスキルの絶対パスに読み替える。
+本スキルは検証スクリプトを持たない。Step 0 のプロファイルゲートは、hub（job-change-support）の `validate_profile.py` の PASS を前提とする。次のコマンドはhub がルーティング前に実行するものであり、本スキルは Bash を持たないため自ら実行しない（掲載は前提確認のため）。`{HUB_SKILL_DIR}` は hub スキルの絶対パスに読み替える。
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/profile.json --json

@@ -74,7 +74,7 @@
 
 ### HireVue（録画面接＋ゲーム課題）
 
-動画で提示される質問に、応募者が録画で回答する非同期の録画面接である。ゲーム形式の課題を含む場合がある。AI による顔の表情分析は、HireVue が 2021 年初頭に新規のアセスメントから削除した（削除の前に、電子プライバシー情報センター（EPIC）が米連邦取引委員会（FTC）へ不公正・欺瞞的であると申し立てていた）。ベンダーが公表する完了率などの数値は自己報告値として扱う。
+動画で提示される質問に、応募者が録画で回答する非同期の録画面接である。ゲーム形式の課題を含む場合がある。AI による顔の表情分析は、HireVue が 2021 年初頭に新規のアセスメントから削除した（削除の前に、電子プライバシー情報センター（EPIC）が米連邦取引委員会（FTC）へ不公正であり人を欺くものであると申し立てていた）。ベンダーが公表する完了率などの数値は自己報告値として扱う。
 
 - 出典（概要）: TechTarget「What Is HireVue?」 https://www.techtarget.com/searchhrsoftware/definition/HireVue （グレード C）
 - 出典（顔分析の撤回）: Fortune「HireVue stops using facial expressions to assess job candidates amid audit of its A.I. algorithms」 2021-01-19 https://fortune.com/2021/01/19/hirevue-drops-facial-monitoring-amid-a-i-algorithm-audit/ （グレード C）

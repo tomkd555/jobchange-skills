@@ -8,7 +8,7 @@ self_analysis.json は、profile.json（利用者データの原本。hub が管
 
 - 原本の配置先: `{DATA_ROOT}/career-private/self_analysis.json`（非公開ディレクトリ）。
 - career-private 配下のパスは、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ渡さない。本スキルの writer・auditor は Web 送信手段を持たないため、渡してよい。
-- スキル本体フォルダに利用者データを置かない。`assets/self_analysis_example.json` は記入例であり、実データではない。
+- スキル本体フォルダーに利用者データを置かない。`assets/self_analysis_example.json` は記入例であり、実データではない。
 
 ## ルート構造
 
@@ -44,7 +44,7 @@ self_analysis.json は、profile.json（利用者データの原本。hub が管
 
 ## behavioral_episodes
 
-行動エピソード（STAR素材）の配列。1件以上必須。前提として、内省より行動の観察のほうが信頼できる自己知識の経路である（self-analysis-methods.md 参照）。強み・価値観・career adaptability は、ここへ紐付けて裏付ける。
+行動エピソード（STAR素材）の配列。1件以上必須。前提として、内省より行動の観察のほうが信頼できる自己知識の経路である（self-analysis-methods.md 参照）。強み・価値観・career adaptability は、ここへ対応づけて裏付ける。
 
 | フィールド | 型 | 必須/任意 | 意味・記入基準 |
 |---|---|---|---|
@@ -69,7 +69,7 @@ self_analysis.json は、profile.json（利用者データの原本。hub が管
 |---|---|---|---|
 | `id` | string | 必須 | フィードバックの識別子（例 `fb-1`）。strengths の参照先になる |
 | `source_type` | string | 任意 | 出所。`上司`／`同僚`／`部下`／`顧客`／`友人・家族`／`評価面談` のいずれか |
-| `content` | string | 任意 | 受け取った内容。人格評価ではなく、行動と結果への紐付けで記録する |
+| `content` | string | 任意 | 受け取った内容。人格評価ではなく、行動と結果への対応づけで記録する |
 | `context` | string | 任意 | いつ・どの場面で受け取ったか |
 | `linked_episode_ids` | array | 任意 | 関連する behavioral_episodes の id の配列 |
 
@@ -91,7 +91,7 @@ self_analysis.json は、profile.json（利用者データの原本。hub が管
 | フィールド | 型 | 意味・記入基準 |
 |---|---|---|
 | `value` | string | 価値観の記述 |
-| `evidence_episode_ids` | array | 裏付けとなる behavioral_episodes の id の配列。内省単独に高い重みを与えないため、可能な限りエピソードへ紐付ける |
+| `evidence_episode_ids` | array | 裏付けとなる behavioral_episodes の id の配列。内省単独に高い重みを与えないため、可能な限りエピソードへ対応づける |
 
 ## career_adaptability
 
@@ -113,7 +113,7 @@ career adaptability の4次元。次元名の枠組みのみを用い、尺度�
 
 ## strengths
 
-根拠づけた強みの配列。**内省単独の強みは認めない。** 各要素は、行動証拠（episode_ids）または他者証言（feedback_ids）の少なくとも一方へ紐付ける。
+根拠づけた強みの配列。**内省単独の強みは認めない。** 各要素は、行動証拠（episode_ids）または他者証言（feedback_ids）の少なくとも一方へ対応づける。
 
 | フィールド | 型 | 必須/任意 | 意味・記入基準 |
 |---|---|---|---|

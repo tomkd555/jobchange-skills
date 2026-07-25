@@ -1,5 +1,8 @@
 # 外資系選考の面接（ビヘイビアラル面接・ケース面接）
 
+<!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
+<!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
+
 外資系選考で用いられるビヘイビアラル（コンピテンシー）面接とケース面接の進め方・評価観点をまとめる。日本の中途採用面接に通じる質問類型は `question-bank.md` を、回答評価のアンカーは `evaluation-rubric.md` を原本とする。job-change-interview-coach は外資系選考でこれらの質問類型（category=ビヘイビアラル・ケース）を加える。
 
 ## ビヘイビアラル面接（コンピテンシー面接）
@@ -38,8 +41,13 @@
 
 ## 出典
 
+<!-- textlint-disable -->
+<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる区画である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+
 - [E42] Management Consulted. BCG Case Interview | Land A BCG Career. 2026. グレードC. https://managementconsulted.com/bcg-case-interview/
 - [E43] ワンキャリア. フェルミ推定・ケース面接を対策！ポイントは「論理性・コミュ力・楽しむ姿勢」. 2026. グレードC. https://www.onecareer.jp/articles/298
 - [E68] コンサルGO. ケース面接の例題と対策を解説！考え方や回答のコツ、よくある失敗例も紹介. 2026-02-16. グレードB. https://consulgo.jp/article/case-interview-example/
 - [E69] CareerTestPrep. Behavioural Interview Questions: The Complete STAR Method Guide 2026. 2026-05-31. グレードB. https://www.careertestprep.com/blog/behavioural-interview-questions-star-method
 - [E70] The Thinksters. How to structure a consulting case interview: frameworks, tips, and examples. 2025-09-26. グレードB. https://thethinksters.com/how-to-structure-a-consulting-case-interview-frameworks-tips-and-examples/
+
+<!-- textlint-enable -->

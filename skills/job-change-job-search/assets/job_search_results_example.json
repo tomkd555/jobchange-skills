@@ -100,7 +100,7 @@
           "level": "must",
           "judgement": "meets",
           "threshold_ref": "cond-remote",
-          "rationale": "観測は guaranteed であり、条件の閾値（guaranteed）を満たす"
+          "rationale": "観測は guaranteed であり、条件のしきい値（guaranteed）を満たす"
         },
         {
           "axis": "overtime_hours",
@@ -245,7 +245,7 @@
           "level": "must",
           "judgement": "not_meets",
           "threshold_ref": "cond-remote",
-          "rationale": "観測は hybrid であり、必須条件の閾値（guaranteed）を満たさない"
+          "rationale": "観測は hybrid であり、必須条件のしきい値（guaranteed）を満たさない"
         },
         {
           "axis": "overtime_hours",

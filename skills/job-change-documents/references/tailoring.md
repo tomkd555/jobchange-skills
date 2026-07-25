@@ -12,8 +12,8 @@
 | 対応する実績 | その要件に対応する `profile.json` の職歴・実績。`career_history[].achievements` の該当項目を指す |
 | 裏付け | 対応を裏付ける具体的事実（担当範囲・`metric` の定量値・資格など） |
 
-- 訴求点は必ず求人要件に紐づける。要件に結び付かない自己PRを並べない。
-- 求人要件に対応する実績が `profile.json` に無い場合、その行は空のままにする。創作で埋めない。空欄が多い場合は、応募職と経歴の乖離として利用者へ示す（応募判断や経歴の補強は利用者の判断事項）。
+- 訴求点は必ず求人要件に対応づける。要件に結び付かない自己PRを並べない。
+- 求人要件に対応する実績が `profile.json` に無い場合、その行は空のままにする。創作で埋めない。空欄が多い場合は、応募職と経歴の隔たりとして利用者へ示す（応募判断や経歴の補強は利用者の判断事項）。
 
 ## 志望動機の構成
 
@@ -26,7 +26,7 @@
 - その企業だからこそ実現できることを書く。志望動機が競合他社にも通じる内容であれば、「自社でなくてもよいのでは」と判断されうる。対象企業の理念・事業に固有の要素に結び付ける（同 リクルートエージェント）。
 - 企業研究の結果と実績を結び付ける。`company_research.json` の理念（`claims` の `topic=philosophy`）・事業・求める人物像と、`profile.json` の実績を対応づける。志望動機で参照した企業側の要素は、`company_research.json` の claim を根拠とする。伝聞や推測で企業像を作らない。
 - `company_research.json` が無い場合、企業固有の志望動機は書けない。汎用の骨子（自身の転職の軸・強みの整理）に留め、企業固有化は企業研究の後に行う旨を利用者へ明示する。
-- `career-private/self_analysis.json`（`job-change-self-analysis` の成果物）がある場合、志望動機書・自己PRの「背景」段には `career_narrative`（ライフテーマ・転機・一貫する動機）を、「結論」「入社後の貢献」の裏付けには根拠付きの `strengths`（episode_id・feedback_id に紐づく強み）を用いる。転職理由に触れる箇所は `reason_for_change.constructive_version`（発揮したい価値を軸にした言い換え）を基調とし、profile.json の `job_change_axis.reasons` と矛盾しないことを確認する。self_analysis.json が無い場合は profile.json の `strengths`・`job_change_axis` のみを素材とする。
+- `career-private/self_analysis.json`（`job-change-self-analysis` の成果物）がある場合、志望動機書・自己PRの「背景」段には `career_narrative`（ライフテーマ・転機・一貫する動機）を、「結論」「入社後の貢献」の裏付けには根拠付きの `strengths`（episode_id・feedback_id に対応づけられた強み）を用いる。転職理由に触れる箇所は `reason_for_change.constructive_version`（発揮したい価値を軸にした言い換え）を基調とし、profile.json の `job_change_axis.reasons` と矛盾しないことを確認する。self_analysis.json が無い場合は profile.json の `strengths`・`job_change_axis` のみを素材とする。
 
 ## 誇張禁止の基準
 

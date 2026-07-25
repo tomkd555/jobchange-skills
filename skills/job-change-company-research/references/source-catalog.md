@@ -36,12 +36,17 @@
 
 いずれも根拠法と所管官庁が明確で、認定の有無自体はグレードAの事実である（topic=benefits/workstyle）。
 
+<!-- textlint-disable ja-technical-writing/max-kanji-continuous-len -->
+<!-- 法令名を逐語で載せる表である。「次世代育成支援対策推進法」の漢字連続はこの表でのみ許容する。 -->
+
 | 認定 | 根拠法・所管 | 出典URL |
 |---|---|---|
 | くるみん／プラチナくるみん／トライくるみん | 次世代育成支援対策推進法・厚生労働省 | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kodomo/shokuba_kosodate/kurumin/index.html |
 | えるぼし／プラチナえるぼし | 女性活躍推進法（5基準）・厚生労働省 | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000091025_00002.html |
 | 健康経営優良法人（ホワイト500） | 経済産業省・日本健康会議（2016年度創設、大規模法人上位500社がホワイト500） | https://www.meti.go.jp/policy/mono_info_service/healthcare/kenkoukeiei_yuryouhouzin.html |
 | ユースエール | 若者雇用促進法・厚生労働省（中小企業対象） | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000100266.html |
+
+<!-- textlint-enable ja-technical-writing/max-kanji-continuous-len -->
 
 認定の有無は事実だが、認定は最低基準の充足を示すもので、企業の総合的な働きやすさを保証するものではない。認定を根拠に「働きやすい」と断定しない。
 

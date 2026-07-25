@@ -140,7 +140,7 @@ coordination_ratio = (coordinate + manage + customer_facing) / duty_items の全
 
 - 求人検索では、これらの特性に対応する軸を持たないため、分類に関与しない。
 - 適合性評価では、`work_character_fit` 次元の `verdict` で「求人票・企業研究からは判定できない」と明記し、`overall.open_questions` へ面接での確認事項として挙げる。
-- 面接対策では、逆質問の素材として扱う（例:「このポジションで、着任後3ヶ月の成果として何が期待されるか」）。
+- 面接対策では、逆質問の素材として扱う（例:「このポジションで、着任後3か月の成果として何が期待されるか」）。
 
 ### 希望度（desire）
 
@@ -159,4 +159,4 @@ coordination_ratio = (coordinate + manage + customer_facing) / duty_items の全
 
 `axis` が `null` の条件は、求人票からの機械的な判定ができない。`operator` を `qualitative` にし、`verification` を `research`（企業研究で確認）または `interview`（面接で確認）にする。この種の条件は求人検索の分類には用いず、適合性評価と面接での確認へ回す。
 
-`axis` を持つ条件だけが、求人検索の8軸判定と閾値の突き合わせに使われる。
+`axis` を持つ条件だけが、求人検索の8軸判定としきい値の突き合わせに使われる。

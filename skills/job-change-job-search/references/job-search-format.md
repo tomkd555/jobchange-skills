@@ -152,7 +152,7 @@
 | `level` | 必須 | `must` / `want` / `none`。profile の条件・作業特性の必須度を転記する |
 | `judgement` | 必須 | `meets` / `not_meets` / `unknown` |
 | `threshold_ref` | 条件付き必須 | 判定に用いた profile の `conditions[].id` または `work_character_preferences[].trait`。`level` が `must`・`want` のときは必須 |
-| `rationale` | 必須 | 判定の根拠。観測値と閾値の対比で書く。本人の経歴・現年収を書かない |
+| `rationale` | 必須 | 判定の根拠。観測値としきい値の対比で書く。本人の経歴・現年収を書かない |
 
 **推測を禁じる規則。** 次はいずれも ERROR とする。
 
@@ -278,7 +278,7 @@ python validate_job_search_results.py <job_search_results.json> [--json] [--prof
 **WARN（成立するが不足・整合上の注意）**
 
 - `schema_version` が既知の2値以外
-- `--profile` が指定されていない（PII リントと閾値の突き合わせが未実施である）
+- `--profile` が指定されていない（PII リントとしきい値の突き合わせが未実施である）
 - すべての result が `excluded` である（必須条件が厳しすぎる可能性）
 - 判定の半数超が `unknown` である（求人票の情報密度が低い）
 - `conditions` が空オブジェクト
@@ -294,7 +294,7 @@ python validate_job_search_results.py <job_search_results.json> [--json] [--prof
 
 | 抽出対象 | 抽出元 |
 |---|---|
-| 現勤務先名 | `career_history` のうち在職中（`period` が `〜現在`）のエントリの `company`。在職中を特定できない場合は先頭エントリの `company`。 |
+| 現勤務先名 | `career_history` のうち在職中（`period` が `〜現在`）のエントリーの `company`。在職中を特定できない場合は先頭エントリーの `company`。 |
 | 氏名らしき値 | `basic` 内の `name`・`full_name` 等。 |
 | 現年収 | `salary.current`（数値）。希望年収の下限は検査対象に含めない（条件化を許容する）。 |
 

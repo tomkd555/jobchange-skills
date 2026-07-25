@@ -330,7 +330,7 @@ def _validate_axis_judgements(
         if level in ("must", "want") and not _is_nonempty_str(judgement.get("threshold_ref")):
             result.add_error(
                 f"{j_path}.threshold_ref",
-                "level が must・want の判定には、閾値の出所（profile の条件 id または特性 id）が必須である",
+                "level が must・want の判定には、しきい値の出所（profile の条件 id または特性 id）が必須である",
             )
         if not _is_nonempty_str(judgement.get("rationale")):
             result.add_error(f"{j_path}.rationale", "rationale は必須（非空）である")
@@ -694,7 +694,7 @@ def validate(
     if pii_terms is None:
         result.add_warning(
             "(root)",
-            "--profile が指定されていない。PII リントと閾値の突き合わせは未実施である",
+            "--profile が指定されていない。PII リントとしきい値の突き合わせは未実施である",
         )
     else:
         _run_pii_lint(document, pii_terms, result)

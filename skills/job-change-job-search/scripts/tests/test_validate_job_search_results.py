@@ -423,7 +423,7 @@ def _judgement(axis: str, level: str = "want", verdict: str = "meets") -> dict:
         "level": level,
         "judgement": verdict,
         "threshold_ref": None if level == "none" else f"ref-{axis}",
-        "rationale": "観測値と閾値を対比した根拠",
+        "rationale": "観測値としきい値を対比した根拠",
     }
 
 

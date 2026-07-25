@@ -15,7 +15,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Agent, AskUserQuestion, Skill
 
 # job-change-documents
 
-転職の応募書類を作成するとき、このスキル1つで受付から納品までの手順が揃う。求人要件と利用者の実績を対応づけ、書類種別ごとの標準形式で起草し、起草担当とは独立した監査を通してから納品する。日本の中途採用を中心とし、外資系選考向けの英文レジュメにも対応する。
+転職の応募書類を作成するとき、このスキル1つで受付から納品までの手順がそろう。求人要件と利用者の実績を対応づけ、書類種別ごとの標準形式で起草し、起草担当とは独立した監査を通してから納品する。日本の中途採用を中心とし、外資系選考向けの英文レジュメにも対応する。
 
 起草と監査はそれぞれ専用エージェント（`job-change-document-writer`・`job-change-document-auditor`）が担い、本スキルはその起動・差し戻し・納品を統括する。書類種別ごとの記述基準は `references/` で完結する。
 
@@ -23,7 +23,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Agent, AskUserQuestion, Skill
 
 1. **実績は profile.json の範囲内でのみ書く。** 書類に載せる経歴・実績・数値は、すべて `profile.json` に記載のある範囲に限る。記載のない実績・経歴を創作しない（虚偽記載の禁止）。定量値は `profile.json` の `achievements[].metric` と厳密一致させ、丸め・上振れをしない。規模・範囲・主体を表す語（大規模・全社・主導など）は、`profile.json` の記述で裏付けられる範囲を超えて用いない。
 
-2. **求人要件と実績を対応づけてから書く。** 起草の前に、求人要件と `profile.json` の実績を突き合わせたアピールマッピング（要件・対応する実績・裏付け）を作る。訴求点は必ず求人要件に紐づける。要件に対応する実績が profile.json に無い項目は、該当なしとして扱い、創作で埋めない。
+2. **求人要件と実績を対応づけてから書く。** 起草の前に、求人要件と `profile.json` の実績を突き合わせたアピールマッピング（要件・対応する実績・裏付け）を作る。訴求点は必ず求人要件に対応づける。要件に対応する実績が profile.json に無い項目は、該当なしとして扱い、創作で埋めない。
 
 3. **起草と監査を分離する。** 起草担当の判断理由を渡さない新規コンテキストで監査担当を起動し、成果物そのものに基づいて検査させる。監査は書類を書き換えず、指摘（findings）だけを返す。反映は起草担当が行う。
 
@@ -45,7 +45,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Agent, AskUserQuestion, Skill
 hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、次の順に設定ファイルを探し、最初に見つかったものを Read で読む。
 
 1. 環境変数 `JOB_CHANGE_CONFIG` が指すファイル
-2. カレントディレクトリから上位へ辿った最初の `.job-change/config.json`
+2. カレントディレクトリから上位へたどった最初の `.job-change/config.json`
 3. `~/.job-change/config.json`
 
 いずれの場所にも設定ファイルが無ければ未設定である。その場合は作業へ進まず、hub（job-change-support）へ戻して設定の作成を先行させる。
@@ -116,13 +116,20 @@ fit_assessment.json の確認は任意である。
 
 起草担当には次を行う責務がある。求人要件と（あれば）企業研究の理念・求める人物像を抽出し、`profile.json` の実績と突き合わせてアピールマッピングを作り、書類種別ごとの標準形式を理由とともに選定して起草する。書類は `{OUT_DIR}` の下に書き出す。`company_research.json` が無い場合は企業固有の調整をせず、その旨を成果物と出力 JSON（`company_research_used: false`・`degraded_reason`）に明記する。`fit_assessment.json` がある場合、アピールマッピングの訴求点選定に `dimensions` の `evidence` と `must_condition_results` を参照材料として加える。無い場合は求人要件と `profile.json` の実績の突き合わせのみで進める。
 
-志望動機書・自己PRでは、`self_analysis.json` がある場合、`career_narrative`（ライフテーマ・一貫する動機）と根拠付きの `strengths`（episode_id・feedback_id に紐づく強み）、`reason_for_change.constructive_version`（発揮したい価値を軸にした転職理由の言い換え）を、profile.json の実績と併せて素材に用いる。`self_analysis.json` が無い場合は profile.json の `strengths`・`job_change_axis.reasons` のみを素材とし、この場合は、企業固有の調整のときとは異なり、縮退した旨を明示する必要はない。
+志望動機書・自己PRでは、`self_analysis.json` がある場合、`career_narrative`（ライフテーマ・一貫する動機）と根拠付きの `strengths`（episode_id・feedback_id に対応づけられた強み）、`reason_for_change.constructive_version`（発揮したい価値を軸にした転職理由の言い換え）を、profile.json の実績と併せて素材に用いる。`self_analysis.json` が無い場合は profile.json の `strengths`・`job_change_axis.reasons` のみを素材とし、この場合は、企業固有の調整のときとは異なり、縮退した旨を明示する必要はない。
 
 ### Step 2 独立監査
 
 `job-change-document-auditor` エージェント（model: sonnet）を、起草担当の判断理由を渡さない新規コンテキストで起動し、Step 2（監査）を指示する。指示書には監査対象の書類ファイルの絶対パス・書類種別・`{PROFILE}`・求人票（あれば）を渡す。
 
-監査担当は次を検査する。和文書類（職務経歴書・履歴書・志望動機書）は、役割プロンプトの「判断の原本」に挙げた観点（助詞・主述の対応・係り受け・並列・冗長表現・表記揺れ・誤字脱字）で日本語の文法と表記を検査する。`profile.json` と突き合わせて誇張・創作（記載のない実績・数値、metric との不一致、裏付けを超えた規模・範囲・主体の語）を検出する。求人要件との対応・定量性・分量を検査する。英文レジュメについては、英語の文法・時制、アクション動詞（action verb）の適否（動詞始まり・主語省略）、定量性、ATS適合（表・画像・グラフィックの回避、求人票キーワードとの文脈整合）、分量（1〜2枚）を検査する（日本語の文法・表記の検査の対象外とする）。判定は `verdict`（BLOCK / CONCERNS / CLEAN）と `findings`（各 finding に `severity` = 重大 / 警告 / 軽微）で返る。
+監査担当が検査するのは次の4点である。
+
+- **和文の文法と表記。** 職務経歴書・履歴書・志望動機書を対象に、役割プロンプトの「判断の原本」に挙げた観点（助詞・主述の対応・係り受け・並列・冗長表現・表記揺れ・誤字脱字）で見る。
+- **誇張・創作。** `profile.json` と突き合わせ、記載のない実績・数値、metric との不一致、裏付けを超えた規模・範囲・主体の語を検出する。
+- **求人要件との対応・定量性・分量。**
+- **英文レジュメ。** 英語の文法・時制、アクション動詞（action verb）の適否（動詞始まり・主語省略）、定量性、ATS適合（表・画像・グラフィックの回避、求人票キーワードとの文脈整合）、分量（1〜2枚）を見る。和文の文法・表記の検査は対象外とする。
+
+判定は `verdict`（BLOCK / CONCERNS / CLEAN）と `findings`（各 finding に `severity` = 重大 / 警告 / 軽微）で返る。
 
 ### Step 3 監査指摘の反映
 

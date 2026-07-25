@@ -511,7 +511,7 @@ def _validate_v2_recommendation(document: dict, result: ValidationResult) -> Non
 
 
 def _validate_aspiration_alignment(document: dict, result: ValidationResult) -> None:
-    """2.0: 志向の一致が、自己分析・profile の材料に紐付いているかを検査する。"""
+    """2.0: 志向の一致が、自己分析・profile の材料に対応づいているかを検査する。"""
     dimension = _dimension_by_id(document, "aspiration_alignment")
     if not isinstance(dimension, dict):
         return
