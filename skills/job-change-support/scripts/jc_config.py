@@ -5,7 +5,7 @@
 hub（job-change-support）が対話で作る。設定ファイルの探索順序は次のとおりである。
 
     1. 環境変数 JOB_CHANGE_CONFIG が指すファイル
-    2. カレントディレクトリから上位へ辿った最初の .job-change/config.json
+    2. カレントディレクトリから上位へたどった最初の .job-change/config.json
     3. ~/.job-change/config.json
 
 標準ライブラリのみを用いる。仕様の詳細は docs/configuration.md にある。

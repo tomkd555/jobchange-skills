@@ -6,7 +6,7 @@ description: >-
   求人票 metrics と企業研究の働き方指標から拘束時間・実質時給を算定し、profile の必須条件を
   1対1で判定し、推奨・条件付き推奨・非推奨・判断保留の総合判定を根拠つきで起草する。経験の近さと
   志向の一致を別軸で評価し、不足する技術要件を3段階（3か月以内に補完可能・6〜12か月の学習が必要・
-  現時点では応募困難）で示す。すべての判定を evidence に紐付け、証拠グレードC・D単独での断定を禁じ、材料が無い項目は創作せず unknown
+  現時点では応募困難）で示す。すべての判定を evidence に対応づけ、証拠グレードC・D単独での断定を禁じ、材料が無い項目は創作せず unknown
   とする。評価は fit_assessor エージェント（Web ツールなし・opus）が起草し、機械検証
   （validate_fit_assessment.py）を PASS させてから納品する。成果物 fit_assessment.json・
   time_analysis.json は個人情報の派生値のため career-private 配下に置き、Web ツール保持エージェント
@@ -23,7 +23,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion
 
 # job-change-fit-assessment
 
-転職の応募先候補について、その企業・求人が利用者にどれだけ適合するかを評価するとき、本スキル1つで入力確認から納品までの手順が揃う。求人票・企業研究・自己分析・時間分析を突き合わせ、7次元で評価し、証拠に紐付けた推奨判定を納品する。
+転職の応募先候補について、その企業・求人が利用者にどれだけ適合するかを評価するとき、本スキル1つで入力確認から納品までの手順がそろう。求人票・企業研究・自己分析・時間分析を突き合わせ、7次元で評価し、証拠に対応づけた推奨判定を納品する。
 
 本スキルは hub（job-change-support）から振り分けられて動く。適合性評価の起草は fit-assessor エージェント（job-change-fit-assessor）が担う。判断基準は `references/` で自己完結する。
 
@@ -38,7 +38,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion
 
 ## 目的と原則
 
-1. **すべての判定を evidence に紐付ける。** 7次元の score・verdict、必須条件の met、総合判定は、evidence（求人票・企業研究・profile・自己分析・時間分析の参照）に紐付ける。裏付けのない印象で評価しない。
+1. **すべての判定を evidence に対応づける。** 7次元の score・verdict、必須条件の met、総合判定は、evidence（求人票・企業研究・profile・自己分析・時間分析の参照）に対応づける。裏付けのない印象で評価しない。
 2. **証拠グレードC・D単独で断定しない。** 口コミ・伝聞のみを根拠に次元を高く/低く断定しない。C・D を使う場合は限定表現にする。グレードの原本は `job-change-company-research` の `references/evidence-grading.md`。
 3. **材料が無い項目は創作せず unknown / null にする。** 必須条件の根拠が無ければ `unknown`、次元の判断材料が不足すれば score を `null`（判断保留）にする。求人票から判定できない作業特性を推測で埋めない。
 4. **経験の近さと志向の一致を混ぜない。** 経験が近いことを、その仕事を望んでいる根拠に使わない。経験に近い内容であっても、調整・管理・顧客折衝が中心の求人を、経験の近さだけで推奨しない。
@@ -57,7 +57,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion
 hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、次の順に設定ファイルを探し、最初に見つかったものを Read で読む。
 
 1. 環境変数 `JOB_CHANGE_CONFIG` が指すファイル
-2. カレントディレクトリから上位へ辿った最初の `.job-change/config.json`
+2. カレントディレクトリから上位へたどった最初の `.job-change/config.json`
 3. `~/.job-change/config.json`
 
 Bash が使える場合は、次のコマンドでも解決できる（`paths` に各データの絶対パスが入る）。
@@ -170,7 +170,7 @@ ERROR が1件でもあれば Step 3 へ差し戻す。PASS（ERROR 0件）にな
 |---|---|---|
 | `job-change-fit-assessor` | opus | 数値抽出 → 拘束時間算定の起動 → 7次元評価・必須条件の判定・総合判定の起草 → validate_fit_assessment.py を PASS |
 
-グレードに応じた数値の取捨・evidence への紐付け・過剰断定の抑制という判断を要するため opus とする。この方針はエージェントの frontmatter に固定済みであり、起動時に model を上書きしない。
+グレードに応じた数値の取捨・evidence への対応づけ・過剰断定の抑制という判断を要するため opus とする。この方針はエージェントの frontmatter に固定済みであり、起動時に model を上書きしない。
 
 ## スクリプトのCLI使用例
 

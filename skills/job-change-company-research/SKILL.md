@@ -24,7 +24,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion
 
 # job-change-company-research
 
-転職の企業研究に取り組むとき、本スキル1つで収集から納品までの手順が揃う。すべての企業情報に出典URLと証拠グレードを付し、機械検証と独立監査で妥当性を担保したうえで、トピック別の企業研究レポートを納品する。
+転職の企業研究に取り組むとき、本スキル1つで収集から納品までの手順がそろう。すべての企業情報に出典URLと証拠グレードを付し、機械検証と独立監査で妥当性を担保したうえで、トピック別の企業研究レポートを納品する。
 
 本スキルは hub（job-change-support）から振り分けられて動く。収集・起草は企業研究担当エージェント（job-change-company-researcher）が、独立監査は企業研究監査担当エージェント（job-change-research-auditor）が担う。判断基準は `references/` で自己完結する。
 
@@ -56,7 +56,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion
 hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、次の順に設定ファイルを探し、最初に見つかったものを Read で読む。
 
 1. 環境変数 `JOB_CHANGE_CONFIG` が指すファイル
-2. カレントディレクトリから上位へ辿った最初の `.job-change/config.json`
+2. カレントディレクトリから上位へたどった最初の `.job-change/config.json`
 3. `~/.job-change/config.json`
 
 Bash が使える場合は、次のコマンドでも解決できる（`paths` に各データの絶対パスが入る）。
@@ -211,7 +211,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 
 1. 指定トピックのみを重点観点として Step 1 の researcher を起動し、当該トピックの claims を得る。
 2. 既存の company_research.json を読み、指定トピックの claims だけを差し替え（マージ）、他トピックの claims は温存する。数値を再取得した場合は `workstyle_metrics` の該当メトリックも更新する。
-3. マージ後の claims 全体を根拠に `tier` を再算出する（差し替えたトピックが Tier の軸に影響し得るため）。`tier` の軸のうち、差し替えなかったトピックに紐づく評価は原則維持し、変わった軸だけ更新する。
+3. マージ後の claims 全体を根拠に `tier` を再算出する（差し替えたトピックが Tier の軸に影響し得るため）。`tier` の軸のうち、差し替えなかったトピックに対応づく評価は原則維持し、変わった軸だけ更新する。
 4. Step 2 の機械検証を再度通す（PASS を確認する）。
 5. `_manifest.json` の `artifacts.company_research.topics.<指定トピック>.last_researched` のみを更新する（他トピックの `last_researched` は変えない）。`updated_at` は今回の調査日にする。`tier.level` が変わった場合は `company_index.json` の `tier` も更新する。
 

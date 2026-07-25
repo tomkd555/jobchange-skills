@@ -15,7 +15,7 @@ allowed-tools: Read, Write, Glob, Grep, Agent, AskUserQuestion
 
 # job-change-interview-prep
 
-転職の面接対策を行うとき、本スキルが想定質問の生成・模擬面接・回答評価・総括までの手順を揃える。転職支援 hub（job-change-support）の面接対策として振り分けられて起動される。対象は日本の中途採用面接を中心とし、外資系のビヘイビアラル面接・ケース面接へ対応する。
+転職の面接対策を行うとき、本スキルが想定質問の生成・模擬面接・回答評価・総括までの手順をそろえる。転職支援 hub（job-change-support）の面接対策として振り分けられて起動される。対象は日本の中途採用面接を中心とし、外資系のビヘイビアラル面接・ケース面接へ対応する。
 
 想定質問の生成（Step 1）と回答の評価（Step 3）は専用エージェント job-change-interview-coach（opus）が担う。本スキルはその起動、模擬面接の進行、総括を担う。
 
@@ -44,7 +44,7 @@ allowed-tools: Read, Write, Glob, Grep, Agent, AskUserQuestion
 hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、次の順に設定ファイルを探し、最初に見つかったものを Read で読む。
 
 1. 環境変数 `JOB_CHANGE_CONFIG` が指すファイル
-2. カレントディレクトリから上位へ辿った最初の `.job-change/config.json`
+2. カレントディレクトリから上位へたどった最初の `.job-change/config.json`
 3. `~/.job-change/config.json`
 
 いずれの場所にも設定ファイルが無ければ未設定である。その場合は作業へ進まず、hub（job-change-support）へ戻して設定の作成を先行させる。

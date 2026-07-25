@@ -21,7 +21,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion
 
 # job-change-job-search
 
-転職の求人を探すとき、本スキル1つで条件の組み立てから検索・検証・納品までの手順が揃う。無償の公開Web検索だけで求人を探し、すべての求人に掲載ページの引用と出典URLを付す。
+転職の求人を探すとき、本スキル1つで条件の組み立てから検索・検証・納品までの手順がそろう。無償の公開Web検索だけで求人を探し、すべての求人に掲載ページの引用と出典URLを付す。
 
 本スキルは hub（job-change-support）から振り分けられて動く。検索の実行（Web調査）は求人検索担当エージェント（job-change-job-searcher）が担う。判断基準は `references/` で自己完結する。
 
@@ -51,7 +51,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion
 hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、次の順に設定ファイルを探し、最初に見つかったものを Read で読む。
 
 1. 環境変数 `JOB_CHANGE_CONFIG` が指すファイル
-2. カレントディレクトリから上位へ辿った最初の `.job-change/config.json`
+2. カレントディレクトリから上位へたどった最初の `.job-change/config.json`
 3. `~/.job-change/config.json`
 
 Bash が使える場合は、次のコマンドでも解決できる（`paths` に各データの絶対パスが入る）。
@@ -131,7 +131,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 - 本スキルの絶対パス `{SKILL_DIR}`（`references/query-catalog.md`・`references/job-search-format.md` の所在）と、hub の絶対パス `{HUB_SKILL_DIR}`（`references/screening-axes.md` の所在）。
 - **観測層まで**を書く指示（`duty_items` の引用文と分類、8軸の `axis_observations`）。判定層と `screening` は書かせない。
 
-**profile.json は渡さない**（原則5。searcher は WebSearch・WebFetch を持つ）。**閾値も渡さない。** 残業の上限・年間休日の下限・作業特性の希望は本人の条件であり、判定はスキル本体が Step 3.5 で行う。既に匿名化条件として許容されている `salary_min` だけは例外とし、検索条件に含めてよい。
+**profile.json は渡さない**（原則5。searcher は WebSearch・WebFetch を持つ）。**しきい値も渡さない。** 残業の上限・年間休日の下限・作業特性の希望は本人の条件であり、判定はスキル本体が Step 3.5 で行う。既に匿名化条件として許容されている `salary_min` だけは例外とし、検索条件に含めてよい。
 
 エージェントは `references/query-catalog.md` の検索方法に従って求人を集め、`references/job-search-format.md` の形式で job_search_results.json を作る。8軸と業務分類の語彙は `{HUB_SKILL_DIR}/references/screening-axes.md` を読む。
 
@@ -144,8 +144,8 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 検索担当エージェントが書くのは観測層（求人票から読めた事実）までである。本人の条件との突き合わせは、`profile.json` を読めるスキル本体がローカルで行う。この分担により、個人情報を Web ツール保持エージェントへ渡さずに条件判定が成立する。
 
 1. `{DATA_ROOT}/career-private/profile.json` を Read で読み、`schema_version` を確認する。
-2. `job_change_axis.conditions[]` と `work_character_preferences[]` から、8軸ごとの必須度（`must` / `want` / `none`）と閾値を読み取る。同じ軸に必須条件が複数ある場合は、最も厳しい閾値を採る。
-3. 各 result の `axis_observations` と閾値を突き合わせ、`axis_judgements` を書く。観測が `stated=false`、または `value` が `null` の軸は `unknown` にする。**記載が無いことを、条件を満たす証拠にも満たさない証拠にも使わない。**
+2. `job_change_axis.conditions[]` と `work_character_preferences[]` から、8軸ごとの必須度（`must` / `want` / `none`）としきい値を読み取る。同じ軸に必須条件が複数ある場合は、最も厳しいしきい値を採る。
+3. 各 result の `axis_observations` としきい値を突き合わせ、`axis_judgements` を書く。観測が `stated=false`、または `value` が `null` の軸は `unknown` にする。**記載が無いことを、条件を満たす証拠にも満たさない証拠にも使わない。**
 4. `references/job-search-format.md` の決定表から `classification` を導き、`classification_reasons` を書く。導出結果を手で変える場合は、厳格化する方向にのみ `classification_override` を付ける。
 5. `screening` を導出値として書く。`counts`・`unmet_axis_summary` は実集計と一致させる。`current_employer_exclusion` には Step 3 の実施結果を記録する（未実施なら `performed: false`・`excluded_count: null`）。
 

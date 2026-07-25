@@ -43,7 +43,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 - `skills.portable`: 各要素は `{"skill": 要素名, "category": "対課題"|"対人", "note": string}`。厚労省ポータブルスキル9要素の範囲で、メモに発揮経験の記録があるものだけを書く。
 - `career_history[].period`: `YYYY-MM〜YYYY-MM` 形式。在職中は `〜現在`。
 - `achievements[].metric`: メモにある検証可能な数値だけを書く。数値がなければ `null` にする。
-- `job_change_axis.conditions[]`（schema_version 2.0）: メモに記録された `level`・`axis`・`operator`・`value`・`verification` をそのまま書く。**メモに無い軸・閾値を推測で補わない。** 軸や閾値が確定していない条件は、`axis` を `null`・`operator` を `qualitative`・`value` を `null` にし、確定していない旨を戻り値の申し送りへ記す。`id` には、条件の内容から `cond-` で始まる短い識別子を付け、重複させない。
+- `job_change_axis.conditions[]`（schema_version 2.0）: メモに記録された `level`・`axis`・`operator`・`value`・`verification` をそのまま書く。**メモに無い軸・しきい値を推測で補わない。** 軸やしきい値が確定していない条件は、`axis` を `null`・`operator` を `qualitative`・`value` を `null` にし、確定していない旨を戻り値の申し送りへ記す。`id` には、条件の内容から `cond-` で始まる短い識別子を付け、重複させない。
 - `job_change_axis.work_character_preferences[]`（schema_version 2.0）: 8特性を過不足なく8件書く。メモに希望度の記録が無い特性は `neutral` にはせず、記録が無い旨を戻り値の申し送りへ記す（推測で埋めない）。`desire=must` の特性には、メモにある本人の言葉を `statement` に写す。
 - 必須条件（`conditions[level=must]` と `work_character_preferences[desire=must]`）の合計が4件以上の場合、メモの優先順位に従い、順位と再評価時期を `priority_note` に残す（メモに優先順位の記録がなければ、絞り込みは起草側で判断せず、申し送りとして戻り値に記す）。
 - `job_change_axis.must_conditions` / `want_conditions`（schema_version 1.x）: 3件程度までに絞る。2.0 へ移行する場合は、文言を `conditions[].statement` へ移し、この2つを空配列にする。

@@ -1,5 +1,8 @@
 # キャリア・ナラティブと退職理由の建設的言語化
 
+<!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
+<!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
+
 job-change-self-analysis スキルが、自己分析の素材（エピソード・他者証言・興味・価値観・career adaptability）を「一貫したキャリア・ナラティブ」と「退職理由の建設的な言語化」へ統合する基準の原本である。writer エージェントが career_narrative と reason_for_change を起草するとき、また面接対策・志望動機の深化（interview-prep / documents）が一貫性の根拠として読むときに参照する。証拠グレードと DOI 表記は self-analysis-methods.md と同じ規約に従う。
 
 ## なぜナラティブへ接続するのか

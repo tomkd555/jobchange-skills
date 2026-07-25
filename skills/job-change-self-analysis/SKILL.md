@@ -5,7 +5,7 @@ description: >-
   内省と対等の必須要素として集め、興味・価値観・career adaptability の4次元・過去の行動の4軸で構造化し、
   根拠づけた強み、キャリア・ナラティブ、退職理由の建設的な言い換えの3点を持つ self_analysis.json を作る。
   面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が読める成果物にする。
-  強みは行動証拠または他者証言への紐付けを必須とし、内省単独に高い重みを与えない。質問を有限の構造化された問いに限って反芻を防ぎ、診断結果を確定ラベルとして扱わず、事実の捏造・誇張をせず、metric を厳密に一致させる。
+  強みは行動証拠または他者証言への対応づけを必須とし、内省単独に高い重みを与えない。質問を有限の構造化された問いに限って反すうを防ぎ、診断結果を確定ラベルとして扱わず、事実の創作・誇張をせず、metric を厳密に一致させる。
   起草と独立監査は専用エージェント（job-change-self-analysis-writer / job-change-self-analysis-auditor）が担う。
   job-change-support（hub）から振り分けられて動く。
   Use when the user does self-analysis for a job change in Japan — organizing strengths, taking stock of
@@ -18,19 +18,19 @@ allowed-tools: Read, Write, Glob, Grep, Bash, AskUserQuestion, Agent, Skill
 
 # job-change-self-analysis
 
-転職の自己分析に取り組むとき、このスキル1つで棚卸しから成果物の納品までの手順が揃う。profile.json を土台に、行動エピソード（STAR素材）と他者フィードバックを内省と対等に集め、興味・価値観・career adaptability の4次元・過去の行動の4軸で構造化し、根拠づけた強み、キャリア・ナラティブ、退職理由の建設的な言い換えの3点を持つ self_analysis.json を作る。成果物は面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が入力として読む。
+転職の自己分析に取り組むとき、このスキル1つで棚卸しから成果物の納品までの手順がそろう。profile.json を土台に、行動エピソード（STAR素材）と他者フィードバックを内省と対等に集め、興味・価値観・career adaptability の4次元・過去の行動の4軸で構造化し、根拠づけた強み、キャリア・ナラティブ、退職理由の建設的な言い換えの3点を持つ self_analysis.json を作る。成果物は面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が入力として読む。
 
-自己分析は、内省だけでは系統的に歪む。他者評価は自己評価より予測妥当性が高く、過度な内省（反芻）は有害である（根拠は `references/self-analysis-methods.md`）。本スキルは、行動証拠と他者視点を内省と併用する設計でこの限界を緩和する。起草と独立監査はそれぞれ専用エージェント（`job-change-self-analysis-writer`・`job-change-self-analysis-auditor`）が担い、本スキルはその起動・差し戻し・納品を統括する。
+自己分析は、内省だけでは系統的にゆがむ。他者評価は自己評価より予測妥当性が高く、過度な内省（反すう）は有害である（根拠は `references/self-analysis-methods.md`）。本スキルは、行動証拠と他者視点を内省と併用する設計でこの限界を緩和する。起草と独立監査はそれぞれ専用エージェント（`job-change-self-analysis-writer`・`job-change-self-analysis-auditor`）が担い、本スキルはその起動・差し戻し・納品を統括する。
 
 ## 目的と原則
 
-1. **他者視点と行動証拠を内省と併用する。** 内省は無意識過程への直接経路を持たず、他者評価のほうが自己評価より予測妥当性が高い。強み（strengths）は、行動エピソード（behavioral_episodes）または他者証言（others_feedback）への紐付けを必須とし、内省単独の強みは認めない（検証器が ERROR とする）。他者フィードバックの受け取りは課題志向で行い、人格評価としてではなく行動と結果への紐付けとして記録する。
+1. **他者視点と行動証拠を内省と併用する。** 内省は無意識過程への直接経路を持たず、他者評価のほうが自己評価より予測妥当性が高い。強み（strengths）は、行動エピソード（behavioral_episodes）または他者証言（others_feedback）への対応づけを必須とし、内省単独の強みは認めない（検証器が ERROR とする）。他者フィードバックの受け取りは課題志向で行い、人格評価としてではなく行動と結果への対応づけとして記録する。
 
-2. **有限の構造化された問いに限る（反芻防止）。** 質問は `references/question-bank.md` の有限の問いに限定し、無制限の「なぜ」の反復を促さない。深掘りは感情の反芻へ落とさず、必ず行動・事実（エピソード）へ紐付ける。感情の将来予測（「転職すれば幸せになれる」）を確信・断定の根拠にしない。
+2. **有限の構造化された問いに限る（反すう防止）。** 質問は `references/question-bank.md` の有限の問いに限定し、無制限の「なぜ」の反復を促さない。深掘りは感情の反すうへ落とさず、必ず行動・事実（エピソード）へ対応づける。感情の将来予測（「転職すれば幸せになれる」）を確信・断定の根拠にしない。
 
 3. **診断結果を確定ラベルとして扱わない。** 妥当性の弱い枠組み（Schein のキャリア・アンカー、商用の strengths ツール、RIASEC 自己診断ツール）は、内省を促す呼び水として限定的に使い、結果を「確定した自分」として扱わない。実務手法（Will-Can-Must・モチベーショングラフ・他己分析・ジョハリの窓）は進行の足場として使い、その出力は内省・行動・他者証言で裏付けてから成果物へ採り入れる。
 
-4. **事実を捏造・誇張しない。** 成果物に載せる経歴・実績・数値は profile.json に記載のある範囲に限る。behavioral_episodes の `metric`（定量値）は profile.json の実績と厳密一致させ、丸め・上振れをしない。規模・範囲・主体を表す語（大規模・全社・主導など）は、profile.json の記述で裏付けられる範囲を超えて用いない。
+4. **事実を創作・誇張しない。** 成果物に載せる経歴・実績・数値は profile.json に記載のある範囲に限る。behavioral_episodes の `metric`（定量値）は profile.json の実績と厳密一致させ、丸め・上振れをしない。規模・範囲・主体を表す語（大規模・全社・主導など）は、profile.json の記述で裏付けられる範囲を超えて用いない。
 
 5. **個人情報を外部へ送信しない。** `profile.json`・`self_analysis.json` に含まれる個人情報（現年収・希望年収・居住地・学歴・在籍企業名・実績など）は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。非公開ディレクトリ `career-private/` 配下のパス（`profile.json`・`self_analysis.json`）は、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ一切渡さない。本スキルの writer・auditor は Web 送信手段を持たないため、これらのパスを渡してよい。
 
@@ -39,7 +39,7 @@ allowed-tools: Read, Write, Glob, Grep, Bash, AskUserQuestion, Agent, Skill
 次は本スキルの範囲外とする。依頼された場合は、対応できない旨と、代わりの担当・行動を伝える。
 
 - **適性検査の受検代行。** 心理検査・適性検査を利用者に代わって受検しない。検査対策は `job-change-exam-prep` が担う。
-- **心理療法的な内省支援・メンタルヘルスの相談。** 本スキルは転職のための自己分析に限る。抑うつ・強い不安などメンタルヘルス不調は範囲外とし、専門家（医師・臨床心理士・カウンセラー等）への相談を促す。過度な内省（反芻）は有害であり、本スキルは有限の構造化された問いに範囲を限定する。
+- **心理療法的な内省支援・メンタルヘルスの相談。** 本スキルは転職のための自己分析に限る。抑うつ・強い不安などメンタルヘルス不調は範囲外とし、専門家（医師・臨床心理士・カウンセラー等）への相談を促す。過度な内省（反すう）は有害であり、本スキルは有限の構造化された問いに範囲を限定する。
 - **企業研究。** 企業の理念・事業・評判の調査は `job-change-company-research` が担う。本スキルは利用者自身の分析に限る。
 - **応募書類の執筆。** 職務経歴書・志望動機書などの執筆は `job-change-documents` が担う。本スキルはその素材（根拠づけた強み・ナラティブ・退職理由）を作り、渡す。
 
@@ -50,7 +50,7 @@ allowed-tools: Read, Write, Glob, Grep, Bash, AskUserQuestion, Agent, Skill
 hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、次の順に設定ファイルを探し、最初に見つかったものを Read で読む。
 
 1. 環境変数 `JOB_CHANGE_CONFIG` が指すファイル
-2. カレントディレクトリから上位へ辿った最初の `.job-change/config.json`
+2. カレントディレクトリから上位へたどった最初の `.job-change/config.json`
 3. `~/.job-change/config.json`
 
 Bash が使える場合は、次のコマンドでも解決できる（`paths` に各データの絶対パスが入る）。
@@ -92,19 +92,19 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 ### Step 2 他者フィードバックの取り込み
 
-過去の評価面談・他者から言われたことを、`others_feedback` として記録する（他己分析・ジョハリの窓）。question-bank.md の Step 2 の問いを使う。フィードバックは課題志向で受け取り、人格評価ではなく行動と結果への紐付けで記録し、`linked_episode_ids` でエピソードへ紐付ける。この場で他者フィードバックが入手できない場合は、成果物を WARN のまま先へ進め、利用者へ収集を今後の課題として提示する（依頼文は `assets/feedback_request_template.md` を使う）。
+過去の評価面談・他者から言われたことを、`others_feedback` として記録する（他己分析・ジョハリの窓）。question-bank.md の Step 2 の問いを使う。フィードバックは課題志向で受け取り、人格評価ではなく行動と結果への対応づけで記録し、`linked_episode_ids` でエピソードへ対応づける。この場で他者フィードバックが入手できない場合は、成果物を WARN のまま先へ進め、利用者へ収集を今後の課題として提示する（依頼文は `assets/feedback_request_template.md` を使う）。
 
 ### Step 3 興味・価値観・career adaptability の構造化質問
 
-`references/question-bank.md` の Step 3 の有限の問いだけを使い、興味（RIASEC の枠組み）・価値観（エピソードへ紐付ける）・career adaptability の4次元（concern / control / curiosity / confidence）を構造化する。無制限の「なぜ」の反復を禁じ、深掘りは必ずエピソード（事実）へ紐付ける。Schein の8分類・CCI 型5問は呼び水として使い、結果を確定ラベルにしない。
+`references/question-bank.md` の Step 3 の有限の問いだけを使い、興味（RIASEC の枠組み）・価値観（エピソードへ対応づける）・career adaptability の4次元（concern / control / curiosity / confidence）を構造化する。無制限の「なぜ」の反復を禁じ、深掘りは必ずエピソード（事実）へ対応づける。Schein の8分類・CCI 型5問は呼び水として使い、結果を確定ラベルにしない。
 
 ### Step 4 統合（起草）
 
-`job-change-self-analysis-writer` エージェント（model: opus）を起動し、Step 1〜3 で集めた素材（episodes / feedback / interests / values / adaptability）と `{PROFILE}`・出力先 `{SELF}` を渡す。起草担当は、strengths の根拠づけ（episode / feedback への紐付け必須）、career_narrative の作成（ライフテーマ・転機・一貫する動機）、reason_for_change.constructive_version の作成（不満の列挙でなく発揮したい価値を軸に）を行う。戻り値を利用者へ提示し、AskUserQuestion の選択式で修正点を確認する。
+`job-change-self-analysis-writer` エージェント（model: opus）を起動し、Step 1〜3 で集めた素材（episodes / feedback / interests / values / adaptability）と `{PROFILE}`・出力先 `{SELF}` を渡す。起草担当は、strengths の根拠づけ（episode / feedback への対応づけ必須）、career_narrative の作成（ライフテーマ・転機・一貫する動機）、reason_for_change.constructive_version の作成（不満の列挙でなく発揮したい価値を軸に）を行う。戻り値を利用者へ提示し、AskUserQuestion の選択式で修正点を確認する。
 
 ### Step 5 機械検証＋独立監査
 
-`validate_self_analysis.py` で `{SELF}` を検証し、PASS（ERROR 0件）を確認する。続いて `job-change-self-analysis-auditor` エージェント（model: opus、起草担当の判断理由を渡さない新規コンテキスト）を起動し、誇張・創作／一貫性／内省単独の重み／反芻・感情予測型の記述を監査する。指摘は Step 4 へ差し戻す（最大2回。以降は利用者の判断による）。
+`validate_self_analysis.py` で `{SELF}` を検証し、PASS（ERROR 0件）を確認する。続いて `job-change-self-analysis-auditor` エージェント（model: opus、起草担当の判断理由を渡さない新規コンテキスト）を起動し、誇張・創作／一貫性／内省単独の重み／反すう・感情予測型の記述を監査する。指摘は Step 4 へ差し戻す（最大2回。以降は利用者の判断による）。
 
 ### Step 6 反映と接続案内
 
@@ -146,7 +146,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | エージェント | model | 責務 |
 |---|---|---|
 | `job-change-self-analysis-writer` | opus | strengths の根拠づけ・career_narrative の起草・reason_for_change の建設的言い換え（Step 4）と監査指摘の反映 |
-| `job-change-self-analysis-auditor` | opus | 独立コンテキストでの誇張・一貫性・内省単独の重み・反芻/感情予測型記述の監査、検証器の再実行（Step 5） |
+| `job-change-self-analysis-auditor` | opus | 独立コンテキストでの誇張・一貫性・内省単独の重み・反すう/感情予測型記述の監査、検証器の再実行（Step 5） |
 
 統合起草とナラティブ構築、および誇張・一貫性の質的監査は、いずれも判断負荷が高い。そのため起草担当と監査担当の双方を opus とする。機械的検査は `validate_self_analysis.py` が担う。model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
 
@@ -165,7 +165,7 @@ python {SKILL_DIR}/scripts/validate_self_analysis.py {DATA_ROOT}/career-private/
 
 | ファイル | 何を | いつ読むか |
 |---|---|---|
-| `references/self-analysis-methods.md` | 採用4軸の実証的裏付けと限界、内省の限界と他者視点併用の根拠、反芻防止の運用規則、論争点の両論併記、DOI 付き出典 | 原則の根拠を確認するとき、監査の観点を定めるとき |
+| `references/self-analysis-methods.md` | 採用4軸の実証的裏付けと限界、内省の限界と他者視点併用の根拠、反すう防止の運用規則、論争点の両論併記、DOI 付き出典 | 原則の根拠を確認するとき、監査の観点を定めるとき |
 | `references/self-analysis-format.md` | self_analysis.json のフィールド仕様・記入基準・検証規則（ERROR/WARN 一覧） | 成果物を作る/更新する/検証する全段階 |
 | `references/question-bank.md` | Step 1〜3 で使う有限の構造化質問（STAR 棚卸し・他己分析・興味/価値観/adaptability・Schein 呼び水・CCI 型5問） | ヒアリングの各 Step で質問を選ぶとき |
 | `references/narrative-guide.md` | キャリア・ナラティブの構成、退職理由の建設的言い換え手順、企業側評価との接続と留保、DOI 付き出典 | career_narrative・reason_for_change を起草/監査するとき |

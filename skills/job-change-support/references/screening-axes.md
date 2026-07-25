@@ -159,4 +159,4 @@ coordination_ratio = (coordinate + manage + customer_facing) / duty_items の全
 
 `axis` が `null` の条件は、求人票からの機械的な判定ができない。`operator` を `qualitative` にし、`verification` を `research`（企業研究で確認）または `interview`（面接で確認）にする。この種の条件は求人検索の分類には用いず、適合性評価と面接での確認へ回す。
 
-`axis` を持つ条件だけが、求人検索の8軸判定と閾値の突き合わせに使われる。
+`axis` を持つ条件だけが、求人検索の8軸判定としきい値の突き合わせに使われる。

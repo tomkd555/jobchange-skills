@@ -43,7 +43,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 
 - STAR: 状況・課題・行動・結果の4要素の有無。4要素がそろうなら充足、一部の欠落なら一部、大半の欠落なら不足。
 - 具体性: 数値・固有名詞による裏付けの有無。裏付けがあるなら充足、部分的なら一部、抽象論のみなら不足。
-- 一貫性: 転職理由と志望動機の矛盾の有無。矛盾がないなら充足、軽微な齟齬なら一部、明確な矛盾なら不足。根拠参照先は profile.json の `job_change_axis` に加え、self_analysis.json（あれば）の `career_narrative`（一貫する動機）と `reason_for_change`（建設的な言い換えと `job_change_axis.reasons` との整合の説明）とする。
+- 一貫性: 転職理由と志望動機の矛盾の有無。矛盾がないなら充足、軽微な食い違いなら一部、明確な矛盾なら不足。根拠参照先は profile.json の `job_change_axis` に加え、self_analysis.json（あれば）の `career_narrative`（一貫する動機）と `reason_for_change`（建設的な言い換えと `job_change_axis.reasons` との整合の説明）とする。
 - 企業理解: 回答が company_research の claim に結び付いているか。claim への明確な結び付きがあるなら充足、断片的なら一部、結び付きがないなら不足。
 
 企業固有の想定質問は、company_research.json の claims（特に topic=selection_process と topic=philosophy）を根拠とする。
