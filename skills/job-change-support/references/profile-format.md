@@ -13,7 +13,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 
 ```json
 {
-  "schema_version": "1.1",
+  "schema_version": "2.0",
   "updated_at": "2026-07-12",
   "summary": "",
   "basic": { },

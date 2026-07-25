@@ -10,7 +10,7 @@
 {DATA_ROOT}/career-private/fit/{企業スラッグ}/fit_assessment.json
 ```
 
-利用者プロファイル・自己分析に由来する派生値を含むため、非公開ディレクトリ `career-private/` 配下に置く。Web 送信手段（WebSearch・WebFetch）を持つエージェントへ渡してはならない。企業スラッグは `career-private/company_index.json` で解決済みの値をそのまま使い、形式は `^[a-z0-9][a-z0-9-]*$` である。
+利用者プロファイル・自己分析に由来する派生値を含むため、非公開ディレクトリ `career-private/` 配下に置く。Web 送信手段（WebSearch・WebFetch）を持つエージェントへ渡してはならない。企業スラッグは `career-private/company_index.json` で解決済みの値をそのまま使う。形式の原本は job-change-support の `references/company-index-format.md` にある。
 
 ## トップレベルの構造
 
@@ -29,7 +29,7 @@
 | フィールド | 型 | 必須 | 内容 |
 |---|---|---|---|
 | `schema_version` | string | 必須 | 現行は `"2.0"`。`"1.0"` も読める（後述「バージョンと移行」） |
-| `slug` | string | 必須 | 企業スラッグ。`^[a-z0-9][a-z0-9-]*$` |
+| `slug` | string | 必須 | 企業スラッグ。形式の原本は job-change-support の `references/company-index-format.md` にある |
 | `assessed_at` | string | 必須 | 評価日。`YYYY-MM-DD` |
 | `inputs` | object | 必須 | 各入力の有無を真偽値で記録。2.0 のキーは `job_posting`・`company_research`・`self_analysis`・`time_analysis`・`job_search_screening` の5つ |
 | `screening_source` | object | 任意 | 求人検索のスクリーニング結果への参照。`{search_id, result_index, classification, screened_at}` |
@@ -151,7 +151,7 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 ### ERROR（成立しない）
 
 - ルートがオブジェクトでない。
-- `schema_version`・`slug`・`assessed_at` の欠落または空。`slug` の形式が `^[a-z0-9][a-z0-9-]*$` に一致しない。
+- `schema_version`・`slug`・`assessed_at` の欠落または空。`slug` が企業スラッグの形式（原本は job-change-support の `references/company-index-format.md`）に一致しない。
 - `inputs` がオブジェクトでない。版に応じたキー（1.0 は4つ、2.0 は5つ）のいずれかの欠落、または真偽値でない。
 - `dimensions` が配列でない。版に応じた id（1.0 は5つ、2.0 は7つ）に過不足がある（欠落・未知 id・重複）。
 - 次元の `score` が 1〜5 の整数でも `null` でもない。`verdict` の欠落または空。

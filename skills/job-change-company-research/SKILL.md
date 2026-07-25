@@ -71,7 +71,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 ## 中間成果物: company_research.json
 
-企業研究の判断はすべて `company_research.json` に集約する。出力先は `{DATA_ROOT}/companies/{企業スラッグ}/company_research.json` である（企業スラッグは、企業名を半角英数字とハイフンで表した識別子で、Step 0 で `career-private/company_index.json` を引いて解決し、以後は再導出しない。例: 架空クラウドワークス株式会社 → `kakuu-cloudworks`）。
+企業研究の判断はすべて `company_research.json` に集約する。出力先は `{DATA_ROOT}/companies/{企業スラッグ}/company_research.json` である（企業スラッグは企業別ディレクトリ名に使う識別子であり、形式の原本は job-change-support の `references/company-index-format.md` にある。Step 0 で `career-private/company_index.json` を引いて解決し、以後は再導出しない。例: 架空クラウドワークス株式会社 → `kakuu-cloudworks`、`S_アクメクラウド`）。
 
 ```json
 {

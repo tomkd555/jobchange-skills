@@ -20,7 +20,13 @@ from dataclasses import dataclass, field
 from typing import Any
 
 VALID_MODES = {"fuzzy", "similar_better"}
-_SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+# 企業スラッグの形式。原本は job-change-support の references/company-index-format.md にある。
+# 任意の接頭辞（大文字1文字とアンダースコア）＋本体（英数字・ハイフン・日本語文字）。
+_SLUG_RE = re.compile(
+    r"^([A-Z]_)?"
+    r"[0-9A-Za-z぀-ヿ㐀-鿿＀-￯]"
+    r"[0-9A-Za-z぀-ヿ㐀-鿿＀-￯-]*$"
+)
 
 _V1_SCHEMA_VERSION = "1.0"
 _V2_SCHEMA_VERSION = "2.0"
@@ -128,7 +134,8 @@ def _validate_baseline(document: dict, mode: str | None, result: ValidationResul
     if has_slug and not _SLUG_RE.match(slug):
         result.add_error(
             "baseline.slug",
-            f"slug は ^[a-z0-9][a-z0-9-]*$ に一致しなければならない（実値: {slug!r}）",
+            "slug は「任意の接頭辞（大文字1字＋_）＋本体（英数字・ハイフン・日本語文字）」で、"
+            f"本体の先頭はハイフン不可・空白や記号は不可である（実値: {slug!r}）",
         )
 
 

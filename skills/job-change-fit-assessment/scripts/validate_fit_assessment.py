@@ -53,7 +53,13 @@ _GAP_LEVELS = {
 }
 _GAP_VALUES = tuple(_GAP_LEVELS) + ("unknown",)
 _GAP_ITEM_LEVELS = tuple(k for k in _GAP_LEVELS if k != "none")
-_SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+# 企業スラッグの形式。原本は job-change-support の references/company-index-format.md にある。
+# 任意の接頭辞（大文字1文字とアンダースコア）＋本体（英数字・ハイフン・日本語文字）。
+_SLUG_RE = re.compile(
+    r"^([A-Z]_)?"
+    r"[0-9A-Za-z぀-ヿ㐀-鿿＀-￯]"
+    r"[0-9A-Za-z぀-ヿ㐀-鿿＀-￯-]*$"
+)
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
@@ -129,7 +135,11 @@ def _validate_top_level(document: dict, result: ValidationResult) -> None:
     if not _is_nonempty_str(slug):
         result.add_error("slug", "slug は必須（非空）である")
     elif not _SLUG_RE.match(slug):
-        result.add_error("slug", "slug は ^[a-z0-9][a-z0-9-]*$ の形式でなければならない")
+        result.add_error(
+            "slug",
+            "slug は「任意の接頭辞（大文字1字＋_）＋本体（英数字・ハイフン・日本語文字）」で、"
+            "本体の先頭はハイフン不可・空白や記号は不可である",
+        )
 
     assessed_at = document.get("assessed_at")
     if not _is_nonempty_str(assessed_at):

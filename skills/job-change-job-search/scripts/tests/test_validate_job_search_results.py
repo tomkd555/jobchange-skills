@@ -242,8 +242,8 @@ def _profile_with_pii() -> dict:
         "schema_version": "1.1",
         "basic": {"current_role": "エンジニア", "name": "山田太郎"},
         "career_history": [
-            {"company": "現職プロダクツ株式会社", "period": "2021-04〜現在", "role": "エンジニア"},
-            {"company": "前職システム株式会社", "period": "2018-04〜2021-03", "role": "エンジニア"},
+            {"company": "架空プロダクツ株式会社", "period": "2021-04〜現在", "role": "エンジニア"},
+            {"company": "架空システムズ株式会社", "period": "2018-04〜2021-03", "role": "エンジニア"},
         ],
         "job_change_axis": {"reasons": ["裁量拡大"]},
         "salary": {"current": 5500000, "desired": 7000000},
@@ -254,7 +254,7 @@ class CollectPiiTermsTest(unittest.TestCase):
     def test_collects_current_employer_name_and_salary(self):
         terms = vj.collect_pii_terms(_profile_with_pii())
         values = [v for _, v in terms]
-        self.assertIn("現職プロダクツ株式会社", values)
+        self.assertIn("架空プロダクツ株式会社", values)
         self.assertIn("山田太郎", values)
         self.assertIn("5500000", values)
 
@@ -262,21 +262,21 @@ class CollectPiiTermsTest(unittest.TestCase):
         terms = vj.collect_pii_terms(_profile_with_pii())
         labels = {label: v for label, v in terms}
         current_values = [v for label, v in terms if label == "現勤務先名"]
-        self.assertIn("現職プロダクツ株式会社", current_values)
-        self.assertNotIn("前職システム株式会社", current_values)
+        self.assertIn("架空プロダクツ株式会社", current_values)
+        self.assertNotIn("架空システムズ株式会社", current_values)
 
     def test_fallback_to_first_when_no_ongoing(self):
         p = _profile_with_pii()
         p["career_history"][0]["period"] = "2021-04〜2026-06"
         terms = vj.collect_pii_terms(p)
         current_values = [v for label, v in terms if label == "現勤務先名"]
-        self.assertEqual(current_values, ["現職プロダクツ株式会社"])
+        self.assertEqual(current_values, ["架空プロダクツ株式会社"])
 
 
 class PiiLintTest(unittest.TestCase):
     def test_current_employer_leak_is_error(self):
         doc = _valid_fuzzy()
-        doc["results"][0]["match_notes"] = "現職プロダクツ株式会社より好条件である。"
+        doc["results"][0]["match_notes"] = "架空プロダクツ株式会社より好条件である。"
         terms = vj.collect_pii_terms(_profile_with_pii())
         result = vj.validate(doc, pii_terms=terms)
         self.assertFalse(result.ok)
@@ -348,7 +348,7 @@ class CliTest(unittest.TestCase):
 
     def test_main_profile_flag_detects_leak(self):
         doc = _valid_fuzzy()
-        doc["results"][0]["match_notes"] = "現職プロダクツ株式会社の同業。"
+        doc["results"][0]["match_notes"] = "架空プロダクツ株式会社の同業。"
         doc_path = self._write_tmp(doc)
         profile_path = self._write_tmp(_profile_with_pii(), bom=True)
         self.assertEqual(vj.main([doc_path, "--profile", profile_path]), 1)

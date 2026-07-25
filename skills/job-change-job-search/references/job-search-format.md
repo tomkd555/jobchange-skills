@@ -8,7 +8,7 @@
 
 ```json
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "mode": "fuzzy",
   "executed_at": "YYYY-MM-DD",
   "conditions": {
@@ -32,13 +32,21 @@
       "annual_holidays": 125,
       "match_notes": "年収下限・リモート・自社SaaSの3条件に合致する。",
       "better_points": [],
-      "quote": "年収650万〜900万円／フルリモート可／年間休日125日"
+      "quote": "年収650万〜900万円／フルリモート可／年間休日125日",
+      "duty_items": [ ],
+      "axis_observations": [ ],
+      "axis_judgements": [ ],
+      "classification": "apply_candidate",
+      "classification_reasons": ["必須の3軸をいずれも満たす。"]
     }
   ],
+  "screening": { },
   "coverage_notes": "求人ボックスの検索結果1ページ目を対象とした。",
   "open_questions": [ "" ]
 }
 ```
+
+`duty_items`・`axis_observations`・`axis_judgements`・`screening` は、上では骨格を示すために空で置いてある。実際の中身は後述の各節が定める。記入済みの全体像は `assets/job_search_results_example.json` にある。
 
 ## フィールド仕様
 
@@ -73,7 +81,7 @@
 
 - `similar_better` で `baseline` が無い場合は WARN（基準求人の記録を推奨する）。
 - `fuzzy` で `baseline` がある場合は WARN（fuzzy では用いない）。
-- `url` も `slug` も無い場合は ERROR。`slug` は `^[a-z0-9][a-z0-9-]*$` に一致しなければならない（不一致は ERROR）。
+- `url` も `slug` も無い場合は ERROR。`slug` は企業スラッグの形式（原本は job-change-support の `references/company-index-format.md`）に一致しなければならない（不一致は ERROR）。
 
 ### results（配列・必須）
 

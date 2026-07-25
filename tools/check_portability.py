@@ -39,6 +39,13 @@ ENV_SPECIFIC_NAMES = [
 ]
 # 記入例に実在の企業名が混ざっていないかの手掛かり
 FICTIONAL_MARKERS = ("架空", "kakuu", "アクメ", "ベータ", "ガンマ", "acme", "beta", "gamma", "example")
+# 企業を指す値を文字列リテラルから取り出すパターン。記入例・仕様・テストのどこに書かれていても拾う。
+_SLUG_BODY = r"[0-9A-Za-zぁ-ヿ一-龯][0-9A-Za-zぁ-ヿ一-龯-]*"
+_CORPORATE_FORMS = r"株式会社|有限会社|合同会社|Inc\.|Corporation"
+COMPANY_VALUE_PATTERNS = [
+    re.compile(rf'["`]([SABCD]_{_SLUG_BODY})["`]'),
+    re.compile(rf'"([^"\n]*(?:{_CORPORATE_FORMS})[^"\n]*)"'),
+]
 
 
 def iter_files() -> list[Path]:
@@ -89,10 +96,15 @@ def check_artifacts(errors: list[dict]) -> None:
             )
 
 
+def _is_fictional(value: str) -> bool:
+    lowered = value.lower()
+    return any(marker in value or marker in lowered for marker in FICTIONAL_MARKERS)
+
+
 def check_examples(warnings: list[dict]) -> None:
     for path in sorted(REPO_ROOT.glob("skills/*/assets/*.json")):
         text = path.read_text(encoding="utf-8")
-        if any(marker in text for marker in FICTIONAL_MARKERS):
+        if _is_fictional(text):
             continue
         warnings.append(
             {
@@ -102,6 +114,34 @@ def check_examples(warnings: list[dict]) -> None:
                 "text": "",
             }
         )
+
+
+def check_company_values(path: Path, warnings: list[dict]) -> None:
+    """企業名・企業スラッグとして書かれた値が、架空であると分かる形かを調べる。
+
+    記入例（assets）だけでなく、仕様（references）・スキル本文・単体テストも対象にする。
+    作者が実際の応募先を書き写した箇所は、この3か所に紛れ込む。
+    """
+    rel = path.relative_to(REPO_ROOT).as_posix()
+    if rel == "tools/check_portability.py":
+        return
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (UnicodeDecodeError, OSError):
+        return
+    for number, line in enumerate(text.splitlines(), 1):
+        for pattern in COMPANY_VALUE_PATTERNS:
+            for value in pattern.findall(line):
+                if _is_fictional(value):
+                    continue
+                warnings.append(
+                    {
+                        "file": rel,
+                        "line": number,
+                        "reason": f"企業名・企業スラッグ「{value}」が架空と分からない（実在企業の混入を確認する）",
+                        "text": line.strip()[:160],
+                    }
+                )
 
 
 def check_roles_sync(errors: list[dict]) -> None:
@@ -133,6 +173,7 @@ def main(argv: list[str] | None = None) -> int:
     for path in iter_files():
         if path.suffix in TEXT_SUFFIXES:
             check_text(path, errors, warnings)
+            check_company_values(path, warnings)
     check_artifacts(errors)
     check_examples(warnings)
     check_roles_sync(errors)
