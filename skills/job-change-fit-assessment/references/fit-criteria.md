@@ -124,3 +124,5 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 - **経験が近いことだけを理由に推奨しない。** `experience_proximity` が高くても、`aspiration_alignment` または `work_character_fit` が低い場合は、その旨を rationale に明示し、`experience_proximity` の score の高さで打ち消さない。調整・管理・顧客折衝が中心の求人は、経験に近くても本人の希望と逆であることがある。
 - `skill_gap` が `not_applicable_now` の場合は `推奨`・`条件付き推奨` にしない。
 - rationale には、判定を分けた決め手と、条件付きの場合は解消すべき条件を書く。未確認の論点は `open_questions` に列挙する。求人票から判定できない作業特性（完了条件の明確さ・一人で完結しやすさ・結果を短期で確認できる度合い）は、必ず `open_questions` へ面接での確認事項として入れる。
+- **直属上司の関与のしかたを必ず `open_questions` へ入れる。** 日本の従業員標本では上司との適合が定着と満足を左右するが、求人票と企業研究からは判定できない。8番目の次元を作らず、`culture_fit` の score にも織り込まず、面接での確認事項として立てる（根拠は `references/fit-methods.md`）。
+- **判定の時点性を rationale に明記する。** 判定は現時点で得られている材料に基づくものであり、入社直後の満足の高さがそのまま持続するとは限らない。この注記を rationale の末尾へ置く（根拠は `references/fit-methods.md`）。

@@ -81,7 +81,7 @@ job_posting.json・company_research.json・profile.json のいずれかが欠け
    - **求人票から判定できない作業特性を推測で埋めない。** `clear_completion`・`solo_completable`・`short_feedback` は求人票にも企業研究にもまず書かれない。`work_character_fit` の verdict にその旨を書き、`overall.open_questions` へ面接での確認事項として入れる。
 
 6. profile の必須条件（`job_change_axis.conditions[level=must]` と `work_character_preferences[desire=must]`）を `ref` で1対1に判定し、must_condition_results（ref・condition・met（`yes`/`no`/`unknown`）・evidence・任意の negotiable）を作る。根拠が無い条件は憶測で yes/no にせず `unknown` にする。`negotiable` を `true` にするには根拠を evidence へ添える。
-7. overall（recommendation（`推奨`/`条件付き推奨`/`非推奨`/`判断保留`）・rationale・open_questions）を根拠つきで付す。**満たさない必須条件があるのに `推奨` にしない。** 交渉で解消できない必須条件が残る場合は `非推奨` にする。`skill_gap` が `not_applicable_now` の場合も応募を勧めない。
+7. overall（recommendation（`推奨`/`条件付き推奨`/`非推奨`/`判断保留`）・rationale・open_questions）を根拠つきで付す。**満たさない必須条件があるのに `推奨` にしない。** 交渉で解消できない必須条件が残る場合は `非推奨` にする。`skill_gap` が `not_applicable_now` の場合も応募を勧めない。`open_questions` には、求人票から判定できない作業特性に加えて、直属上司の関与のしかたを必ず入れる。rationale の末尾には、判定が現時点の材料に基づくものであり、入社直後の満足の高さは持続を意味しない旨を書く。
 8. `career-private/fit/{企業スラッグ}/fit_assessment.json` を fit-format.md の形式で Write する。`schema_version` は `2.0` とする。
 9. 自分で次を実行し、PASS させてから返す。
 

@@ -140,6 +140,7 @@ ERROR が1件でもあれば Step 3 へ差し戻す。PASS（ERROR 0件）にな
 - 総合判定（推奨/条件付き推奨/非推奨/判断保留）と、その根拠（rationale）・7次元の要点・未確認の論点（open_questions）を利用者へ提示する。
 - 経験の近さと志向の一致は別々に伝える。経験が近いことを推奨の理由にまとめない。
 - `skill_gap` が `none` 以外の場合は、不足する要件と補完に要する期間の段階を明示する。
+- 判定が現時点で得られている材料に基づくものであり、入社直後の満足の高さは持続を意味しないことを添える。未確認の論点として直属上司の関与のしかたを必ず挙げる（根拠は `references/fit-methods.md`）。
 - `company_research.json` に `tier` があれば、その `level` と4軸の `rating` を参考として併記する。Tier は企業そのものの質を表す格付けであり、利用者とその企業との適合を表すものではない。7次元の score や総合判定の根拠へ持ち込まず、別の情報として示す。
 - `companies/{企業スラッグ}/_manifest.json` の `artifacts` に `fit_assessment` の所在と日付を記録する（`{updated_at: "YYYY-MM-DD"}`）。値そのもの（評価内容）は非個人情報側（`companies/` 等）に置かず、fit_assessment.json は career-private 配下に留める。manifest には所在と日付のみを書く。
 
