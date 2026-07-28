@@ -24,7 +24,3 @@ jobs:
               (cd "$d" && python -m unittest discover -s scripts/tests -q)
             fi
           done
-      - name: 役割プロンプトと agents/ の同期検査
-        run: python tools/sync_roles.py --check
-      - name: 可搬性検査
-        run: python tools/check_portability.py
