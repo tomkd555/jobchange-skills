@@ -4,6 +4,9 @@
 ビルド生成物が残っていると、そのまま導入しても動かず、作者の環境情報も漏れる。
 本ツールはそれらを機械的に検出する。
 
+検査対象は git が追跡しているファイルに限る。公開されるのはこの範囲であり、
+`.gitignore` で除外したナレッジグラフ・利用者データ・`__pycache__` は対象外である。
+
 CLI:
     python tools/check_portability.py [--json]
 
@@ -20,8 +23,10 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# 検査対象から外すディレクトリ
-SKIP_DIRS = {".git", "__pycache__", ".pytest_cache", "node_modules"}
+# 追跡されていてはならないビルド生成物のディレクトリ名
+ARTIFACT_DIR_NAMES = {"__pycache__", ".pytest_cache"}
+# 記入例（架空であることを確かめる対象）のパス形式
+EXAMPLE_ASSET_PATTERN = re.compile(r"skills/[^/]+/assets/[^/]+\.json")
 # 本文の検査対象にする拡張子
 TEXT_SUFFIXES = {".md", ".json", ".py", ".txt", ".yml", ".yaml"}
 
@@ -49,14 +54,15 @@ COMPANY_VALUE_PATTERNS = [
 
 
 def iter_files() -> list[Path]:
-    files = []
-    for path in REPO_ROOT.rglob("*"):
-        if not path.is_file():
-            continue
-        if any(part in SKIP_DIRS for part in path.relative_to(REPO_ROOT).parts):
-            continue
-        files.append(path)
-    return sorted(files)
+    """git が追跡しているファイルを返す。"""
+    result = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "ls-files", "-z"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise SystemExit("追跡ファイルの一覧を取得できない。git リポジトリの作業ツリーで実行する。")
+    return sorted(REPO_ROOT / name for name in result.stdout.split("\0") if name)
 
 
 def check_text(path: Path, errors: list[dict], warnings: list[dict]) -> None:
@@ -81,19 +87,19 @@ def check_text(path: Path, errors: list[dict], warnings: list[dict]) -> None:
                 errors.append(entry)
 
 
-def check_artifacts(errors: list[dict]) -> None:
-    for path in REPO_ROOT.rglob("*"):
-        if not path.is_dir():
+def check_artifacts(files: list[Path], errors: list[dict]) -> None:
+    for path in files:
+        rel = path.relative_to(REPO_ROOT).as_posix()
+        if not ARTIFACT_DIR_NAMES.intersection(rel.split("/")[:-1]):
             continue
-        if path.name in {"__pycache__", ".pytest_cache"}:
-            errors.append(
-                {
-                    "file": path.relative_to(REPO_ROOT).as_posix(),
-                    "line": 0,
-                    "reason": "ビルド生成物が同梱されている（.pyc に作者のビルドパスが埋まる）",
-                    "text": "",
-                }
-            )
+        errors.append(
+            {
+                "file": rel,
+                "line": 0,
+                "reason": "ビルド生成物が追跡されている（.pyc に作者のビルドパスが埋まる）",
+                "text": "",
+            }
+        )
 
 
 def _is_fictional(value: str) -> bool:
@@ -101,14 +107,16 @@ def _is_fictional(value: str) -> bool:
     return any(marker in value or marker in lowered for marker in FICTIONAL_MARKERS)
 
 
-def check_examples(warnings: list[dict]) -> None:
-    for path in sorted(REPO_ROOT.glob("skills/*/assets/*.json")):
-        text = path.read_text(encoding="utf-8")
-        if _is_fictional(text):
+def check_examples(files: list[Path], warnings: list[dict]) -> None:
+    for path in files:
+        rel = path.relative_to(REPO_ROOT).as_posix()
+        if not EXAMPLE_ASSET_PATTERN.fullmatch(rel):
+            continue
+        if _is_fictional(path.read_text(encoding="utf-8")):
             continue
         warnings.append(
             {
-                "file": path.relative_to(REPO_ROOT).as_posix(),
+                "file": rel,
                 "line": 0,
                 "reason": "記入例に架空であることを示す語が無い（実在の企業名の混入を確認する）",
                 "text": "",
@@ -170,12 +178,13 @@ def main(argv: list[str] | None = None) -> int:
     errors: list[dict] = []
     warnings: list[dict] = []
 
-    for path in iter_files():
+    files = iter_files()
+    for path in files:
         if path.suffix in TEXT_SUFFIXES:
             check_text(path, errors, warnings)
             check_company_values(path, warnings)
-    check_artifacts(errors)
-    check_examples(warnings)
+    check_artifacts(files, errors)
+    check_examples(files, warnings)
     check_roles_sync(errors)
 
     status = "PASS" if not errors else "FAIL"
