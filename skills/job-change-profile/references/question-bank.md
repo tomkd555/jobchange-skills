@@ -23,6 +23,8 @@ job-change-profile スキルの Step 1〜4 で使う、有限の構造化され�
 | 4 | 転職で次に実現したいこと（転職理由） | `job_change_axis.reasons` | 選択式＋自由記述 |
 | 4 | 譲れない条件・望ましい条件と、その軸・しきい値・確認手段 | `job_change_axis.conditions[]` | 選択式＋自由記述 |
 | 4 | 8つの作業特性それぞれの希望度 | `job_change_axis.work_character_preferences[]` | 選択式 |
+| 4 | 企業品質の候補軸7つのうち重視するもの | `company_quality_axes[].axis` | 選択式 |
+| 4 | 選んだ軸の順位（2社の比較で確かめる）と、その段階にした理由 | `company_quality_axes[].emphasis`, `company_quality_axes[].note` | 選択式（2社比較）＋自由記述 |
 | 4 | 必須条件の優先順位・再評価時期 | `job_change_axis.priority_note` | 選択式＋自由記述 |
 | 4 | 志望する業界・職種・企業 | `targets.industries`, `targets.roles`, `targets.companies` | 選択式＋自由記述 |
 | 4 | 現年収・希望年収 | `salary.current`, `salary.desired` | 自由記述（数値） |
@@ -70,7 +72,7 @@ Step 2 の発話から逆引きで候補を提示し、選ばせる。棚卸し�
 
 ## Step 4: 転職の軸・志望対象・年収
 
-reasons → conditions → work_character_preferences → targets → salary の順で聞く。
+reasons → conditions → work_character_preferences → company_quality_axes → targets → salary の順で聞く。
 
 呼び水の問い:
 
@@ -88,6 +90,16 @@ reasons → conditions → work_character_preferences → targets → salary の
 
 - 8つの作業特性それぞれについて、必須か・重視するか・どちらでもよいか・不要かを選ぶ（2回に分けて4特性ずつ）。「どちらでもよい」「不要」も明示して選ばせる。
 - （必須条件の合計が4件以上になった場合）このうち、絶対に譲れない順に3件を選ぶとどれか。選に漏れたものは望ましい条件へ移す。順位と、次に軸を見直す時期を `priority_note` に残す。
+
+企業品質の重視軸は、候補軸の選択・2社の比較・3段階への置き換えの順で確かめる。重みを百分率などの数値で申告させない。候補軸と3段階の定義は `job-change-company-research` の `references/tier-rubric.md` にある。
+
+| 確定する項目 | 問い |
+|---|---|
+| `axis` | 処遇水準・財務健全性・定着・働き方・雇用の安定性・成長性・技術先進性のうち、企業を選ぶときに重視するものはどれか（4軸・3軸の2回に分けて提示する） |
+| `emphasis` | （選ばれた軸を2つずつ組んで）この2社ならどちらを選ぶか。例:「A社は年収が現職より120万円高いが残業が月30時間、B社は年収が現職と同水準で残業が月5時間」。最後まで譲らなかった軸が `top`、譲る場面はあるが判断に効いた軸が `high`、見ておきたいだけの軸が `reference` である |
+| `note` | その段階にした理由を一文でどう言い表すか |
+
+- （重視軸が必須条件・作業特性の希望度と食い違う場合）この2つが食い違っている。重視軸を足すか、必須条件を見直すか、両方このままにするか。どちらが本当かはこちらで決めず、両方を提示して選ばせる。
 - 志望する業界・職種・企業はあるか（`targets`。企業名は企業研究サブスキルの起点になる）。
 - 現年収・希望年収はいくらか（数値。円単位）。譲れない年収下限は `conditions` に、希望額は `salary.desired` に置く。
 

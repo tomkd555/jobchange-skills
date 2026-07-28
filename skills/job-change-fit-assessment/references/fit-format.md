@@ -22,6 +22,7 @@
   "inputs": { "job_posting": true, "company_research": true, "self_analysis": true, "time_analysis": true, "job_search_screening": true },
   "dimensions": [ /* 7次元。後述 */ ],
   "must_condition_results": [ /* profile の必須条件と ref で1対1。後述 */ ],
+  "company_tier": { /* 企業品質 Tier の総合の格付け。任意。後述 */ },
   "overall": { "recommendation": "条件付き推奨", "rationale": "…", "open_questions": ["…"] }
 }
 ```
@@ -35,6 +36,7 @@
 | `screening_source` | object | 任意 | 求人検索のスクリーニング結果への参照。`{search_id, result_index, classification, screened_at}` |
 | `dimensions` | array | 必須 | 次元の評価。2.0 では過不足なく7件 |
 | `must_condition_results` | array | 必須 | 必須条件の判定。profile の必須条件と1対1 |
+| `company_tier` | object | 任意 | 企業品質 Tier の総合の格付け。`{level, provisional, rubric_version, assessed_date, axes, rationale}` |
 | `overall` | object | 必須 | 総合判定 |
 
 ## dimensions（7次元）
@@ -128,6 +130,46 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 | `negotiable` | boolean | 任意。`met=no` の条件が交渉・制度運用で解消しうるか。既定は `false`。`true` にするには evidence が1件以上要る |
 | `evidence` | array | 根拠。`met` が `yes`・`no` のときは1件以上必須。`unknown` のときは空でよい |
 
+## company_tier
+
+企業品質 Tier の総合の格付けである。軸ごとの `rating` と `basis` は企業側の事実であり企業研究が `company_research.json` の `tier.axes` へ書くが、総合の `level` は利用者が重んじる軸に依存するため、`profile.json` を読める適合性評価がこのフィールドへ書く。
+
+算出は `scripts/calculate_company_tier.py` が決定的に行う。候補7軸・重視の3段階・格付け規則の原本は、job-change-company-research の `references/tier-rubric.md` にある。
+
+```json
+"company_tier": {
+  "level": "S",
+  "provisional": false,
+  "rubric_version": 2,
+  "assessed_date": "2026-07-20",
+  "axes": [
+    { "axis": "work_style", "emphasis": "top", "rating": "high" },
+    { "axis": "compensation_level", "emphasis": "high", "rating": "medium" },
+    { "axis": "growth", "emphasis": "reference", "rating": "unknown" }
+  ],
+  "rationale": "格付けに至った根拠を1〜3文で"
+}
+```
+
+| フィールド | 型 | 内容 |
+|---|---|---|
+| `level` | string \| null | `S`・`A`・`B`・`C` のいずれか。利用者が重視する軸（`top`・`high`）を申告していない場合と、重視する軸がすべて `unknown` で対象軸が1件も無い場合は `null` とし、重みも評価も仮定した格付けをしない |
+| `provisional` | boolean | 暫定の格付けであること。段階が `top`・`high` の軸のうち `rating` が `unknown` のものが2以上あるか、`top` の軸に `unknown` があるとき `true` |
+| `rubric_version` | integer | 依拠した格付け規則のバージョン。現行は `2` |
+| `assessed_date` | string \| null | 企業研究が軸を評価した日付（`YYYY-MM-DD`）。企業研究に `tier` が無ければ `null` |
+| `axes` | array | 利用者が申告した軸を申告順に並べる。`reference` の軸も並べる |
+| `rationale` | string | どの軸のどの `rating` が格付けを分けたかを書く（非空） |
+
+`axes` の各要素:
+
+| フィールド | 型 | 内容 |
+|---|---|---|
+| `axis` | string | 候補7軸（`compensation_level`・`financial_soundness`・`retention`・`work_style`・`employment_stability`・`growth`・`tech_advancement`）のいずれか |
+| `emphasis` | string | `top`（最重視）・`high`（重視）・`reference`（参考）のいずれか。profile の `company_quality_axes` の申告をそのまま写す |
+| `rating` | string | `high`・`medium`・`low`・`unknown` のいずれか。企業研究が評価していない軸は `unknown` |
+
+`reference` の軸は格付けの集計に入らず、報告で併記するために並べる。企業研究に `tier` が無い場合は全軸を `unknown` として扱う。
+
 ## overall
 
 ```json
@@ -158,6 +200,7 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 - 次元の `evidence` が空、または `source` が既定値以外（1.0 は5値、2.0 は6値）。
 - `must_condition_results` が配列でない。`condition` の欠落または空。`met` が `yes`・`no`・`unknown` 以外。`met` が `yes`・`no` なのに `evidence` が空。
 - `overall.recommendation` が既定の4値以外。`overall.rationale` の欠落または空。`overall.open_questions` が配列でない。
+- `company_tier` があってオブジェクトでない。`level` が `S`・`A`・`B`・`C`・`null` 以外。`axes` が配列でない。`axes[]` の `axis` が候補7軸以外、`emphasis` が3段階以外、`rating` が4値以外。`rationale` の欠落または空。
 
 `schema_version` が `2.0` のときは、次も ERROR とする。
 
@@ -186,6 +229,7 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 - `--profile` が指定されていない（必須条件との1対1が未検証である）。
 - `inputs` の3つ以上が `false` なのに `recommendation` が `推奨`。
 - `inputs.self_analysis` が `false`（志向の根拠が弱い）。
+- `company_tier.level` が `null`（重視する軸が未申告であるか、重視する軸をすべて評価できておらず、総合の格付けができていない）。
 - `--screening` 指定時: 求人検索で必須条件を満たすと判定した求人が、求人票の取込後に `met=no` になっている。
 
 ## バージョンと移行

@@ -22,6 +22,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
   "skills": { },
   "strengths": [ ],
   "job_change_axis": { },
+  "company_quality_axes": [ ],
   "targets": { },
   "salary": { },
   "notes": ""
@@ -39,6 +40,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `skills` | object | 任意 | 保有スキル。全カテゴリが空だと WARN。後述 |
 | `strengths` | array | 任意 | 強みの短文の列挙。応募書類・面接の自己 PR の素材にする。行動証拠・他者フィードバックに基づく根拠付きの深化は `job-change-self-analysis` で行える（原本は同スキルの `self_analysis.json`。ここへは短文のみを反映する） |
 | `job_change_axis` | object | 必須 | 転職の軸。後述 |
+| `company_quality_axes` | array | 2.0 のみ任意 | 企業品質 Tier で重んじる軸の申告。`schema_version` が `2.0` のときにだけ有効。後述 |
 | `targets` | object | 任意 | 志望対象。全カテゴリが空だと WARN。後述 |
 | `salary` | object | 任意 | 年収。後述 |
 | `notes` | string | 任意 | 補足メモ。選考上の留意点など |
@@ -170,6 +172,32 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 
 譲れない年収下限は `conditions`（`axis=salary_condition`）に、希望額は `salary.desired` に置く。前者は求人検索のしきい値として使い、後者は適合性評価の報酬次元が使う。下限が希望額を上回る場合は WARN とする。
 
+## company_quality_axes（2.0）
+
+企業品質 Tier の評価で重んじる軸の申告である。トップレベルの任意の配列であり、`schema_version` が `2.0` のときにだけ有効である。`1.0` / `1.1` にはこのフィールドが無く、書かれていても検査しない。
+
+候補軸7つと重視の3段階の原本は `job-change-company-research/references/tier-rubric.md` にある。企業研究へ渡すのは、ここで選んだ軸の識別子の配列だけである。この配列は氏名・在籍企業名・現年収を含まないため、個人情報の境界を越えない。
+
+```json
+"company_quality_axes": [
+  {"axis": "compensation_level", "emphasis": "top", "note": "現年収からの上げ幅を最優先にしたい"},
+  {"axis": "retention", "emphasis": "high"},
+  {"axis": "growth", "emphasis": "reference"}
+]
+```
+
+| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+|---|---|---|---|
+| `axis` | string | 必須 | 候補軸のキー。`compensation_level`（処遇水準）／`financial_soundness`（財務健全性・規模）／`retention`（定着）／`work_style`（働き方）／`employment_stability`（雇用の安定性）／`growth`（成長性）／`tech_advancement`（技術先進性）のいずれか。他の値は ERROR。同じ軸が2回以上現れるのも ERROR |
+| `emphasis` | string | 必須 | `top`（最重視。ここが低い企業は候補にしない）／`high`（重視。総合の格付けに反映する）／`reference`（参考。格付けには反映しない）。他の値は ERROR |
+| `note` | string | 任意 | その段階にした理由を利用者の言葉で書く |
+
+重みを百分率などの数値では持たない。自己申告した数値は、実際の選択から推定した重みとずれるためである。候補の一覧から重視する軸を選び、「この2社ならどちらを選ぶか」という形の比較で順位を確かめ、その結果を3段階へ置き換える（聞き取りの手順は `job-change-profile` にある）。
+
+申告した重視軸が、`job_change_axis` の必須条件（`conditions[level=must]`）・作業特性の希望度（`work_character_preferences`）と食い違う場合は、どちらが本当かをこの文書の側で決めない。両方を利用者へ提示し、本人に選ばせる。
+
+配列が無い場合は、重視軸の申告が無いものとして扱う。企業品質 Tier の総合の格付けは算出せず、重みを仮定して格付けしない。
+
 ## targets
 
 志望対象。全カテゴリが空だと WARN。
@@ -209,6 +237,8 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 - `work_character_preferences` が配列でない、または欠落している
 - `work_character_preferences` が8特性を過不足なく持たない（欠落・重複・未知の `trait`）
 - `desire` の値域外、または `desire=must` なのに `statement` が空
+- `company_quality_axes` があるのに配列でない、またはその要素がオブジェクトでない
+- `company_quality_axes[].axis` の値域外・重複、`emphasis` の値域外
 
 ### WARN（成立するが情報不足で成果物の質を下げる）
 
@@ -233,12 +263,15 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 - `level=must` の条件に `priority` がない、または `priority` が重複している
 - `must_conditions` / `want_conditions` が空でないまま残っている（移行漏れ）
 - 必須の年収下限が `salary.desired` を上回っている
+- `company_quality_axes` が空配列である（重視軸を1つも選んでいない）
+- `company_quality_axes` に `emphasis=top` の軸が1件もない
+- `emphasis=top` の軸が4件以上ある（最重視の意味が薄れる）
 
 ## バージョンと移行
 
 | `schema_version` | 扱い |
 |---|---|
-| `1.0` / `1.1` | 従来の検査規則だけを適用する。`conditions` / `work_character_preferences` の欠落を検査しない。移行を促す WARN を1件出す |
+| `1.0` / `1.1` | 従来の検査規則だけを適用する。`conditions` / `work_character_preferences` の欠落を検査せず、`company_quality_axes` も検査しない。移行を促す WARN を1件出す |
 | `2.0` | 従来の規則に加え、上記の 2.0 規則を適用する |
 
 **1.x のプロファイルは、そのままでも検証を PASS する。** 門番は壊れない。ただし 1.x のままでは下流が縮退動作になる。
@@ -246,6 +279,6 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | スキル | 1.x のときの動き |
 |---|---|
 | `job-change-job-search` | 求人の観測は通常どおり行うが、8軸の判定ができないため全件を「追加調査候補」とし、総合判定を「判定不能」にする |
-| `job-change-fit-assessment` | 作業特性の一致と志向の一致の score を `null`（判断保留）にし、理由を verdict に書く |
+| `job-change-fit-assessment` | 作業特性の一致と志向の一致の score を `null`（判断保留）にし、理由を verdict に書く。重視軸の申告が無いため、企業品質 Tier の総合の格付けも算出しない |
 
 **自動移行は行わない。** 自由文の条件（例「モダンな技術スタックが整備されていること」）を軸・演算子・しきい値へ機械的に割り付けることは推測であり、「事実を創作しない」原則に反する。移行は `job-change-profile` の対話（条件の構造化）で行う。

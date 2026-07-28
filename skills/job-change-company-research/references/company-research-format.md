@@ -28,17 +28,12 @@
     }
   ],
   "tier": {
-    "level": "A",
-    "provisional": false,
-    "rubric_version": 1,
+    "rubric_version": 2,
     "assessed_date": "YYYY-MM-DD",
     "axes": {
-      "financial_soundness": { "rating": "high",   "basis": "…", "claim_ids": ["C010"] },
-      "growth":              { "rating": "high",   "basis": "…", "claim_ids": ["C011"] },
-      "tech_advancement":    { "rating": "medium", "basis": "…", "claim_ids": ["C003"] },
-      "compensation_level":  { "rating": "high",   "basis": "…", "claim_ids": ["C020"] }
-    },
-    "rationale": "総合判定の根拠。"
+      "compensation_level": { "rating": "high",   "basis": "…", "claim_ids": ["C020"] },
+      "retention":          { "rating": "medium", "basis": "…", "claim_ids": ["C011"] }
+    }
   },
   "open_questions": [ "" ]
 }
@@ -148,18 +143,15 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 
 ### tier（オブジェクト・必須）
 
-企業研究の結論として付す、**企業そのものの質**の格付けである。トップレベルの必須フィールドで、欠落は機械検証で ERROR となる。利用者プロファイル（希望年収・スキル・転職の軸）には依存せず、`claims` と `workstyle_metrics` だけから算出する。軸の定義・評価ルール・格付け基準・記入形式の原本は `references/tier-rubric.md` にある。
+企業研究の結論として付す、**企業そのものの質**の軸評価である。トップレベルの必須フィールドで、欠落は機械検証で ERROR となる。利用者プロファイル（希望年収・スキル・転職の軸）には依存せず、`claims` と `workstyle_metrics` だけから評価する。候補軸の定義・評価ルール・記入形式の原本は `references/tier-rubric.md` にある。
 
-4軸（`financial_soundness`・`growth`・`tech_advancement`・`compensation_level`）を `high`/`medium`/`low`/`unknown` で評価し、その集計から総合 `level`（`S`/`A`/`B`/`C`）を付す。
+指示書で渡された軸だけを `high`/`medium`/`low`/`unknown` で評価する。軸のキーは候補7軸（`compensation_level`・`financial_soundness`・`retention`・`work_style`・`employment_stability`・`growth`・`tech_advancement`）のいずれかでなければならない。総合の格付け（`level`）は利用者の重視段階に依存するため、企業研究では算出せず、適合性評価（job-change-fit-assessment）が `fit_assessment.json` の `company_tier` へ書く。
 
 | フィールド | 必須 | 記入基準 |
 |---|---|---|
-| `level` | 必須 | `S`/`A`/`B`/`C` のいずれか。格付け基準は `references/tier-rubric.md` |
-| `provisional` | 必須 | 真偽値。`unknown` 軸が2以上なら `true`、1以下なら `false` |
-| `rubric_version` | 推奨 | ルーブリックのバージョン（現行 `1`）。欠落は WARN |
-| `assessed_date` | 推奨 | 格付けを行った日付（`YYYY-MM-DD`）。欠落は WARN |
-| `axes` | 必須 | 4軸すべてを持つオブジェクト。各軸は `{rating, basis, claim_ids}` |
-| `rationale` | 必須 | 総合 `level` に至った根拠（非空） |
+| `rubric_version` | 推奨 | ルーブリックのバージョン（現行 `2`）。欠落は WARN |
+| `assessed_date` | 推奨 | 軸を評価した日付（`YYYY-MM-DD`）。欠落は WARN |
+| `axes` | 必須 | 評価した軸のオブジェクト。1軸以上。各軸は `{rating, basis, claim_ids}` |
 
 各軸（`axes.<軸>`）のフィールド:
 
@@ -192,8 +184,8 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 - `workstyle_metrics` が存在し、オブジェクトでない
 - `workstyle_metrics` の各メトリックが存在し（非 null）、`value` が非数値・`source_url` が `http` 始まりでない・`grade` が A〜D 以外のいずれか
 - `tier` の欠落、または `tier` が非オブジェクト
-- `tier.level` が `S`/`A`/`B`/`C` 以外、`tier.provisional` が非真偽値、`tier.rationale` が空
-- `tier.axes` が非オブジェクト、または4軸（`financial_soundness`・`growth`・`tech_advancement`・`compensation_level`）のいずれかが欠落
+- `tier.axes` が非オブジェクト、または軸が1つも無い
+- `tier.axes` のキーが候補7軸（`compensation_level`・`financial_soundness`・`retention`・`work_style`・`employment_stability`・`growth`・`tech_advancement`）以外
 - いずれかの軸の `rating` が `high`/`medium`/`low`/`unknown` 以外、`basis` が空、`claim_ids` が非配列、または `claim_ids` が `claims` に存在しない id を参照
 
 **WARN（成立するが根拠が弱い）**
@@ -204,6 +196,7 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 - `workstyle_metrics` 全体が欠落している
 - `workstyle_metrics` の個別メトリックが欠落または `null` である
 - `tier.rubric_version` または `tier.assessed_date` が未設定
+- `tier.level` が存在する（総合の格付けは適合性評価が算出するため、企業研究の `level` は使わない）
 - `rating` が `high`/`medium`/`low` の軸に根拠 `claim_ids` が無い
 
 記入例は `assets/company_research_example.json`（架空企業）にある。

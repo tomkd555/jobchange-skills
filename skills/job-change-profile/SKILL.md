@@ -105,7 +105,7 @@ technical / business / languages / certifications を、Step 2 の発話から�
 
 ### Step 4 転職の軸・志望対象・年収
 
-reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希望（`work_character_preferences`）→ targets → salary の順で聞く。軸の建設的言い換え・根拠づけは `job-change-self-analysis` へ誘導する。根拠は `references/profile-methods.md` の must/want の節による。
+reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希望（`work_character_preferences`）→ 企業品質の重視軸（`company_quality_axes`）→ targets → salary の順で聞く。軸の建設的言い換え・根拠づけは `job-change-self-analysis` へ誘導する。根拠は `references/profile-methods.md` の must/want の節による。
 
 #### 条件の構造化
 
@@ -132,11 +132,30 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 
 `conditions[level=must]` と `work_character_preferences[desire=must]` の合計が4件以上になったら、優先順位を付けて絞る対話を挟む。必須条件が多いほど、求人検索が「応募推奨なし」を返しやすくなる。順位と再評価時期を `job_change_axis.priority_note` へ残す。
 
+#### 企業品質の重視軸
+
+企業のどの側面を重んじるかを聞き、`company_quality_axes[]` へ入れる。候補軸7つと重視の3段階の定義は `job-change-company-research` の `references/tier-rubric.md`、フィールド仕様は hub の `references/profile-format.md` にある。
+
+重みを百分率などの数値では申告させない。自己申告した数値は、実際の選択から推定した重みとずれる。次の順で確かめる。
+
+1. 候補軸7つ（処遇水準・財務健全性・定着・働き方・雇用の安定性・成長性・技術先進性）を提示し、重視するものを選ばせる（2回の AskUserQuestion で4軸・3軸に分ける）。
+2. 選ばれた軸を2つずつ組み、「この2社ならどちらを選ぶか」という形の比較で順位を確かめる。軸名どうしの抽象的な比較ではなく、企業像の比較で聞く（例: 「A社は年収が現職より120万円高いが残業が月30時間、B社は年収が現職と同水準で残業が月5時間。どちらを選ぶか」）。
+3. 比較の結果を3段階へ置き換える。最後まで譲らなかった軸を `top`（最重視）、譲る場面はあるが判断に効いた軸を `high`（重視）、見ておきたいだけの軸を `reference`（参考）とする。
+4. その段階にした理由を本人の言葉で1文聞き、`note` へ入れる（任意）。
+
+`top` は1軸を基本とし、4件以上にはしない。4件以上になったら、2の比較をもう一度行って絞る。重視軸を1つも選ばない場合は、企業品質 Tier の総合の格付けが出ない旨をその場で伝える。
+
+#### 重視軸と必須条件の食い違い
+
+選んだ重視軸が、`conditions[level=must]` や `work_character_preferences` の希望度と食い違うことがある（例: 残業の上限を必須条件にしているのに `work_style` を選んでいない、`compensation_level` を `top` にしたのに年収の条件が `want` のままである）。
+
+どちらが本当かをスキルの側で決めない。食い違う組み合わせをそのまま利用者へ提示し、どう扱うか（重視軸を足す・必須条件を見直す・両方このままにする）を本人に選ばせる。聞き取りメモには、提示した食い違いと、利用者が選んだ扱いの両方を残す。
+
 #### 1.x からの移行
 
 既存の `profile.json` が `schema_version` `1.0` または `1.1` の場合、`must_conditions` / `want_conditions` の自由文が残っている。**機械的に軸へ割り付けない。** 自由文からしきい値を推測することは事実の創作に当たる。
 
-移行モードでは、既存の自由文を1件ずつ提示し、上記「条件の構造化」の4項目を対話で確定する。全件を移し終えたら `must_conditions` / `want_conditions` を空配列にし、続けて作業特性8件を確認する。最後に `schema_version` を `2.0` へ、`updated_at` を当日へ書き換える。
+移行モードでは、既存の自由文を1件ずつ提示し、上記「条件の構造化」の4項目を対話で確定する。全件を移し終えたら `must_conditions` / `want_conditions` を空配列にし、続けて作業特性8件と企業品質の重視軸を確認する。最後に `schema_version` を `2.0` へ、`updated_at` を当日へ書き換える。
 
 利用者が移行を望まない場合は 1.x のまま残す。その場合、求人検索の8軸判定と適合性評価の作業特性の次元が働かない旨を1回だけ伝える。
 

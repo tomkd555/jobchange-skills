@@ -42,9 +42,16 @@ WORKSTYLE_METRIC_KEYS = (
     "avg_paid_leave_days_taken",
     "avg_annual_salary",
 )
-# tier（企業品質の格付け）。仕様の原本は references/tier-rubric.md。
-TIER_AXES = ("financial_soundness", "growth", "tech_advancement", "compensation_level")
-VALID_TIER_LEVELS = {"S", "A", "B", "C"}
+# tier（企業品質の軸評価）。仕様の原本は references/tier-rubric.md。
+CANDIDATE_TIER_AXES = {
+    "compensation_level",
+    "financial_soundness",
+    "retention",
+    "work_style",
+    "employment_stability",
+    "growth",
+    "tech_advancement",
+}
 VALID_AXIS_RATINGS = {"high", "medium", "low", "unknown"}
 RATED_AXIS_RATINGS = {"high", "medium", "low"}
 
@@ -131,16 +138,17 @@ def _validate_workstyle_metrics(document: dict, result: ValidationResult) -> Non
 def _validate_tier(
     document: dict, result: ValidationResult, claim_ids_present: set[str]
 ) -> None:
-    """必須フィールド tier（企業品質の格付け）の構造・列挙・参照を検査する。
+    """必須フィールド tier（評価した軸ごとの rating・basis）の構造・列挙・参照を検査する。
 
-    格付けそのものの妥当性（rating が証拠グレードに照らして妥当か、level が4軸から
-    基準どおり導かれているか）は機械検査せず、独立監査（job-change-research-auditor）の
-    領分とする。仕様の原本は references/tier-rubric.md。
+    評価そのものの妥当性（rating が証拠グレードに照らして妥当か）は機械検査せず、
+    独立監査（job-change-research-auditor）の領分とする。総合の格付け（level）は
+    利用者の重視段階に依存するため適合性評価が算出し、ここでは扱わない。仕様の原本は
+    references/tier-rubric.md。
     """
     if "tier" not in document:
         result.add_error(
             "tier",
-            "tier（企業品質の格付け）は必須である。references/tier-rubric.md に従って付す",
+            "tier（企業品質の軸評価）は必須である。references/tier-rubric.md に従って付す",
         )
         return
     tier = document.get("tier")
@@ -148,21 +156,11 @@ def _validate_tier(
         result.add_error("tier", "tier はオブジェクトでなければならない")
         return
 
-    level = tier.get("level")
-    if level not in VALID_TIER_LEVELS:
-        result.add_error(
+    if "level" in tier:
+        result.add_warning(
             "tier.level",
-            f"level は S・A・B・C のいずれかでなければならない（実値: {level!r}）",
+            "総合の格付け（level）は適合性評価が算出する。企業研究の level は使わない",
         )
-
-    if not isinstance(tier.get("provisional"), bool):
-        result.add_error(
-            "tier.provisional",
-            f"provisional は真偽値でなければならない（実値: {tier.get('provisional')!r}）",
-        )
-
-    if not _is_nonempty_str(tier.get("rationale")):
-        result.add_error("tier.rationale", "rationale は必須（非空）である")
 
     if "rubric_version" not in tier:
         result.add_warning("tier.rubric_version", "rubric_version が未設定である")
@@ -171,15 +169,20 @@ def _validate_tier(
 
     axes = tier.get("axes")
     if not isinstance(axes, dict):
-        result.add_error("tier.axes", "axes はオブジェクトが必須である（4軸すべてを持つ）")
+        result.add_error("tier.axes", "axes はオブジェクトが必須である")
+        return
+    if not axes:
+        result.add_error("tier.axes", "axes は1軸以上を評価しなければならない")
         return
 
-    for axis in TIER_AXES:
+    for axis, entry in axes.items():
         apath = f"tier.axes.{axis}"
-        if axis not in axes:
-            result.add_error(apath, f"軸 {axis} が無い（4軸すべてが必須である）")
+        if axis not in CANDIDATE_TIER_AXES:
+            result.add_error(
+                apath,
+                f"軸のキーは候補軸 {sorted(CANDIDATE_TIER_AXES)} のいずれかでなければならない（実値: {axis!r}）",
+            )
             continue
-        entry = axes[axis]
         if not isinstance(entry, dict):
             result.add_error(
                 apath, "各軸は {rating, basis, claim_ids} のオブジェクトでなければならない"

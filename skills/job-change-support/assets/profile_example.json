@@ -167,6 +167,12 @@
     ],
     "priority_note": "優先順位は「モダンな技術スタックと CI/CD」＞「リモートワーク可」。次回の再評価は2027-01を予定。"
   },
+  "company_quality_axes": [
+    {"axis": "work_style", "emphasis": "top", "note": "リモートと残業の少なさは他の条件と引き換えにしない"},
+    {"axis": "tech_advancement", "emphasis": "high", "note": "内製開発とクラウド活用の度合いを見たい"},
+    {"axis": "compensation_level", "emphasis": "high"},
+    {"axis": "growth", "emphasis": "reference", "note": "伸びていれば望ましいが、格付けまでは求めない"}
+  ],
   "targets": {
     "industries": ["SaaS", "フィンテック"],
     "roles": ["テックリード", "エンジニアリングマネージャー", "シニアバックエンドエンジニア"],

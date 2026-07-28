@@ -48,7 +48,7 @@ company_index.json は「企業名からスラッグを解決するための単�
 | `aliases` | array | 必須 | 別表記の文字列の配列。別表記が無ければ空配列 `[]` にする。配列でない・文字列以外を含むと ERROR |
 | `created` | string | 任意 | `YYYY-MM-DD` 形式の登録日。欠落は WARN |
 | `status` | string | 任意 | 選考状況。`"active"`（選考中）または `"closed"`（選考終了・見送り）のいずれか。欠落時は `active` 扱いとする。`closed` になっても成果物は保持し続け、削除・アーカイブ移動は行わない。値の型不正・許容値外は ERROR |
-| `tier` | string | 任意 | 企業品質の格付け。`"S"`・`"A"`・`"B"`・`"C"` のいずれか。`company_research.json` の `tier.level` を写した機械可読な値で、原本は `company_research.json` 側にある（一覧・グルーピング用の写し）。企業研究スキル（job-change-company-research）の Step 4 が転記・更新する。欠落は許容（未調査・未格付けの企業）。値の型不正・許容値外は ERROR。スラッグ接頭辞（例 `A_`）とは独立で、Tier が変わってもスラッグ（ディレクトリ名）はリネームしない |
+| `tier` | string | 任意 | 企業品質の格付け。`"S"`・`"A"`・`"B"`・`"C"` のいずれか。`fit_assessment.json` の `company_tier.level` を写した機械可読な値で、原本は `fit_assessment.json` 側にある（一覧・グルーピング用の写し）。適合性評価スキル（job-change-fit-assessment）が転記・更新する。`company_tier.level` が `null`（重視軸の未申告、または軸を評価できていない）のときは転記しない。欠落は許容（未調査・未格付けの企業）。値の型不正・許容値外は ERROR。スラッグ接頭辞（例 `A_`）とは独立で、Tier が変わってもスラッグ（ディレクトリ名）はリネームしない |
 
 `name` と全エントリーの `aliases` は、台帳全体で企業を一意に指す識別子として働く。同一の文字列が複数のスラッグに現れると、同じ名前が別々のスラッグへ解決され得るため ERROR とする。
 

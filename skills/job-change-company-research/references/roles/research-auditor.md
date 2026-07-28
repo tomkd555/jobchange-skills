@@ -29,6 +29,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 ## 入力（指示書から受領する）
 
 - company_research.json の絶対パス。
+- 企業研究担当へ評価を指示した軸の識別子の配列（例 `["compensation_level", "retention"]`）。
 - job-change-company-research スキルの絶対パス（`{SKILL_DIR}`）。scripts の所在。
 
 いずれかが欠けている場合は、推測で補わず `{"error": "欠けている項目"}` の JSON だけを返す。
@@ -37,7 +38,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 
 証拠グレード（A=一次公式／B=信頼できる二次／C=口コミ集約／D=個人ブログ・伝聞・未確認）の定義と付与ルールは、原本 `{SKILL_DIR}/references/evidence-grading.md` に従って検査する。グレードC・Dのみを根拠とする claim の confidence が high であれば指摘する。企業自身の評価的・自己宣伝的主張に confidence high が付いていないかを検査する。必須トピックは philosophy・business・financials・compensation・benefits・workstyle・reputation の7種であり、claims 全体でその網羅状況を検査する。selection_process は充足が望ましいが、欠落は WARN 相当とし、重大（severity=重大）として扱わない。
 
-Tier（`tier`）の妥当性は、原本 `{SKILL_DIR}/references/tier-rubric.md` に従って検査する。各軸の `rating` が根拠 claim（`claim_ids`）の証拠グレードに照らして妥当か（C・D単独や企業の自己宣伝的主張を根拠に `high` にしていないか）、`level` が4軸の rating から格付け基準どおりに導かれているか、`unknown` 軸が2以上のとき `provisional` が true になっているかを検査する。Tier は企業そのものの質の格付けである。利用者への個人適合を混入させていないかも検査する。
+Tier（`tier`）の妥当性は、原本 `{SKILL_DIR}/references/tier-rubric.md` に従って検査する。指示された軸を過不足なく評価しているか、各軸の `rating` が根拠 claim（`claim_ids`）の証拠グレードに照らして妥当か（C・D単独や企業の自己宣伝的主張を根拠に `high` にしていないか）を検査する。軸の評価は企業側の事実に基づくものである。利用者への個人適合を混入させていないかも検査する。
 
 ## 手順
 
@@ -49,7 +50,7 @@ Tier（`tier`）の妥当性は、原本 `{SKILL_DIR}/references/tier-rubric.md`
 6. グレード付与の妥当性を検査する（口コミ・伝聞をA・Bへ格上げしていないか、一次情報をCへ格下げしていないか等）。グレードC・D単独を根拠とした断定表現の有無、および企業自身の評価的・自己宣伝的主張への confidence high 付与の有無を検査する。
 7. 必須トピック7種の網羅状況を検査する。selection_process の欠落は WARN 相当とし、重大（severity=重大）として扱わない。
 8. `workstyle_metrics` が存在する場合は、各メトリック（`annual_holidays`・`monthly_overtime_h`・`paid_leave_rate`・`avg_paid_leave_days_taken`・`avg_annual_salary`）の `value` が、併記された `source_url` の出典・対応する claim の evidence と一致するかを裏取りする。あわせて `grade` の付与が妥当か（口コミ集計値をA・Bへ格上げしていないか、有報等の一次値をCへ格下げしていないか）を検査する。値と出典が食い違うものと、グレードが過大なものは finding 化する。
-9. `tier` を `{SKILL_DIR}/references/tier-rubric.md` に照らして検査する。各軸の `rating` が根拠 `claim_ids` の証拠グレードで支持されるか（C・D単独や自己宣伝を根拠に `high` にしていないか）、`level` が4軸の rating から格付け基準どおりか、`provisional` の要否が正しいかを確認する。根拠に足りない `high`、基準と食い違う `level`、要否の誤った `provisional` は finding 化する。
+9. `tier` を `{SKILL_DIR}/references/tier-rubric.md` に照らして検査する。指示された軸を過不足なく評価しているか、各軸の `rating` が根拠 `claim_ids` の証拠グレードで支持されるか（C・D単独や自己宣伝を根拠に `high` にしていないか）を確認する。評価されていない指示軸、指示外の軸、根拠に足りない `high` は finding 化する。
 
 ## 禁止事項
 

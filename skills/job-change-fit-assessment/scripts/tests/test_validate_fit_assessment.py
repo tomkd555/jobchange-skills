@@ -633,6 +633,99 @@ class V2AspirationTest(unittest.TestCase):
         self.assertEqual(result.errors, [])
 
 
+def _company_tier(**overrides) -> dict:
+    tier = {
+        "level": "A",
+        "provisional": False,
+        "rubric_version": 2,
+        "assessed_date": "2026-07-29",
+        "axes": [
+            {"axis": "compensation_level", "emphasis": "top", "rating": "high"},
+            {"axis": "retention", "emphasis": "high", "rating": "high"},
+            {"axis": "growth", "emphasis": "reference", "rating": "unknown"},
+        ],
+        "rationale": "重視する軸の high が2軸あり low が無いため A とする。",
+    }
+    tier.update(overrides)
+    return tier
+
+
+class CompanyTierTest(unittest.TestCase):
+    """任意フィールド company_tier（総合の格付け）の検査。"""
+
+    def test_absent_company_tier_passes(self):
+        result = vf.validate(_valid_v2_fit(), profile=_v2_profile())
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_valid_company_tier_passes(self):
+        document = _valid_v2_fit(company_tier=_company_tier())
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_non_object_company_tier_is_an_error(self):
+        document = _valid_v2_fit(company_tier="A")
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertFalse(result.ok)
+        self.assertTrue(any("company_tier" in e for e in result.errors))
+
+    def test_unknown_level_is_an_error(self):
+        document = _valid_v2_fit(company_tier=_company_tier(level="AA"))
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertFalse(result.ok)
+        self.assertTrue(any("company_tier.level" in e for e in result.errors))
+
+    def test_null_level_warns_but_passes(self):
+        document = _valid_v2_fit(
+            company_tier=_company_tier(level=None, axes=[], rationale="重視する軸の申告が無い。")
+        )
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertTrue(result.ok)
+        self.assertTrue(any("company_tier.level" in w for w in result.warnings))
+
+    def test_axes_not_list_is_an_error(self):
+        document = _valid_v2_fit(company_tier=_company_tier(axes={}))
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertFalse(result.ok)
+        self.assertTrue(any("company_tier.axes" in e for e in result.errors))
+
+    def test_unknown_axis_is_an_error(self):
+        tier = _company_tier()
+        tier["axes"][0]["axis"] = "salary_level"
+        document = _valid_v2_fit(company_tier=tier)
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertFalse(result.ok)
+        self.assertTrue(any("axes[0].axis" in e for e in result.errors))
+
+    def test_unknown_emphasis_is_an_error(self):
+        tier = _company_tier()
+        tier["axes"][1]["emphasis"] = "highest"
+        document = _valid_v2_fit(company_tier=tier)
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertFalse(result.ok)
+        self.assertTrue(any("axes[1].emphasis" in e for e in result.errors))
+
+    def test_unknown_rating_is_an_error(self):
+        tier = _company_tier()
+        tier["axes"][2]["rating"] = "none"
+        document = _valid_v2_fit(company_tier=tier)
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertFalse(result.ok)
+        self.assertTrue(any("axes[2].rating" in e for e in result.errors))
+
+    def test_axis_entry_not_object_is_an_error(self):
+        document = _valid_v2_fit(company_tier=_company_tier(axes=["compensation_level"]))
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertFalse(result.ok)
+
+    def test_empty_rationale_is_an_error(self):
+        document = _valid_v2_fit(company_tier=_company_tier(rationale=""))
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertFalse(result.ok)
+        self.assertTrue(any("company_tier.rationale" in e for e in result.errors))
+
+
 class ExampleAssetTest(unittest.TestCase):
     def test_bundled_example_passes(self):
         base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

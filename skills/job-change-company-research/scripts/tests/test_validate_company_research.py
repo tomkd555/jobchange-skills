@@ -73,33 +73,25 @@ def _valid_tier() -> dict:
     claim_ids は _valid_research() の claims（C001〜C008）に実在する id を指す。
     """
     return {
-        "level": "A",
-        "provisional": False,
-        "rubric_version": 1,
+        "rubric_version": 2,
         "assessed_date": "2026-07-12",
         "axes": {
-            "financial_soundness": {
-                "rating": "high",
-                "basis": "増収増益で利益率も高水準。",
-                "claim_ids": ["C003"],
-            },
-            "growth": {
-                "rating": "high",
-                "basis": "中期計画を上回る成長トレンド。",
-                "claim_ids": ["C002", "C003"],
-            },
-            "tech_advancement": {
-                "rating": "medium",
-                "basis": "AWSパートナーだが受託依存で自由度は中位。",
-                "claim_ids": ["C002"],
-            },
             "compensation_level": {
                 "rating": "high",
                 "basis": "平均年間給与が業界上位。",
                 "claim_ids": ["C004"],
             },
+            "financial_soundness": {
+                "rating": "high",
+                "basis": "増収増益で利益率も高水準。",
+                "claim_ids": ["C003"],
+            },
+            "retention": {
+                "rating": "medium",
+                "basis": "平均勤続年数は同業と同水準。",
+                "claim_ids": ["C007"],
+            },
         },
-        "rationale": "財務・成長・処遇が高く技術先進性が中位のため A。",
     }
 
 
@@ -444,33 +436,12 @@ class TierTest(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("tier" in e for e in result.errors))
 
-    def test_level_invalid_errors(self):
+    def test_level_present_warns(self):
         r = _valid_research()
-        r["tier"]["level"] = "AA"
+        r["tier"]["level"] = "A"
         result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier.level" in e for e in result.errors))
-
-    def test_level_missing_errors(self):
-        r = _valid_research()
-        del r["tier"]["level"]
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier.level" in e for e in result.errors))
-
-    def test_provisional_not_bool_errors(self):
-        r = _valid_research()
-        r["tier"]["provisional"] = "false"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier.provisional" in e for e in result.errors))
-
-    def test_rationale_empty_errors(self):
-        r = _valid_research()
-        r["tier"]["rationale"] = "  "
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier.rationale" in e for e in result.errors))
+        self.assertTrue(result.ok)
+        self.assertTrue(any("tier.level" in w for w in result.warnings))
 
     def test_axes_missing_errors(self):
         r = _valid_research()
@@ -479,19 +450,43 @@ class TierTest(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("tier.axes" in e for e in result.errors))
 
-    def test_missing_one_axis_errors(self):
+    def test_axes_empty_errors(self):
         r = _valid_research()
-        del r["tier"]["axes"]["growth"]
+        r["tier"]["axes"] = {}
         result = vcr.validate(r)
         self.assertFalse(result.ok)
-        self.assertTrue(any("tier.axes.growth" in e for e in result.errors))
+        self.assertTrue(any("tier.axes" in e for e in result.errors))
+
+    def test_single_axis_passes(self):
+        r = _valid_research()
+        r["tier"]["axes"] = {
+            "compensation_level": {
+                "rating": "high",
+                "basis": "平均年間給与が業界上位。",
+                "claim_ids": ["C004"],
+            }
+        }
+        result = vcr.validate(r)
+        self.assertTrue(result.ok)
+        self.assertFalse(any("tier" in w for w in result.warnings))
+
+    def test_unknown_axis_key_errors(self):
+        r = _valid_research()
+        r["tier"]["axes"]["brand_power"] = {
+            "rating": "high",
+            "basis": "知名度が高い。",
+            "claim_ids": ["C002"],
+        }
+        result = vcr.validate(r)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("tier.axes.brand_power" in e for e in result.errors))
 
     def test_axis_rating_invalid_errors(self):
         r = _valid_research()
-        r["tier"]["axes"]["tech_advancement"]["rating"] = "強い"
+        r["tier"]["axes"]["retention"]["rating"] = "強い"
         result = vcr.validate(r)
         self.assertFalse(result.ok)
-        self.assertTrue(any("tier.axes.tech_advancement.rating" in e for e in result.errors))
+        self.assertTrue(any("tier.axes.retention.rating" in e for e in result.errors))
 
     def test_axis_basis_empty_errors(self):
         r = _valid_research()
@@ -502,35 +497,35 @@ class TierTest(unittest.TestCase):
 
     def test_claim_ids_not_list_errors(self):
         r = _valid_research()
-        r["tier"]["axes"]["growth"]["claim_ids"] = "C002"
+        r["tier"]["axes"]["retention"]["claim_ids"] = "C007"
         result = vcr.validate(r)
         self.assertFalse(result.ok)
-        self.assertTrue(any("tier.axes.growth.claim_ids" in e for e in result.errors))
+        self.assertTrue(any("tier.axes.retention.claim_ids" in e for e in result.errors))
 
     def test_claim_ids_dangling_reference_errors(self):
         r = _valid_research()
-        r["tier"]["axes"]["growth"]["claim_ids"] = ["C999"]
+        r["tier"]["axes"]["retention"]["claim_ids"] = ["C999"]
         result = vcr.validate(r)
         self.assertFalse(result.ok)
-        self.assertTrue(any("tier.axes.growth.claim_ids" in e for e in result.errors))
+        self.assertTrue(any("tier.axes.retention.claim_ids" in e for e in result.errors))
 
-    def test_unknown_axis_with_empty_claim_ids_passes(self):
+    def test_unknown_rating_with_empty_claim_ids_passes(self):
         r = _valid_research()
-        r["tier"]["axes"]["tech_advancement"] = {
+        r["tier"]["axes"]["retention"] = {
             "rating": "unknown",
-            "basis": "技術先進性を判定できる一次・二次情報が得られなかった。",
+            "basis": "定着を判定できる一次・二次情報が得られなかった。",
             "claim_ids": [],
         }
         result = vcr.validate(r)
         self.assertTrue(result.ok)
-        self.assertFalse(any("tech_advancement.claim_ids" in w for w in result.warnings))
+        self.assertFalse(any("retention.claim_ids" in w for w in result.warnings))
 
     def test_rated_axis_with_empty_claim_ids_warns(self):
         r = _valid_research()
-        r["tier"]["axes"]["growth"]["claim_ids"] = []
+        r["tier"]["axes"]["retention"]["claim_ids"] = []
         result = vcr.validate(r)
         self.assertTrue(result.ok)
-        self.assertTrue(any("tier.axes.growth.claim_ids" in w for w in result.warnings))
+        self.assertTrue(any("tier.axes.retention.claim_ids" in w for w in result.warnings))
 
     def test_rubric_version_missing_warns(self):
         r = _valid_research()

@@ -214,6 +214,35 @@
       ]
     }
   ],
+  "company_tier": {
+    "level": "S",
+    "provisional": false,
+    "rubric_version": 2,
+    "assessed_date": "2026-07-20",
+    "axes": [
+      {
+        "axis": "work_style",
+        "emphasis": "top",
+        "rating": "high"
+      },
+      {
+        "axis": "tech_advancement",
+        "emphasis": "high",
+        "rating": "medium"
+      },
+      {
+        "axis": "compensation_level",
+        "emphasis": "high",
+        "rating": "medium"
+      },
+      {
+        "axis": "growth",
+        "emphasis": "reference",
+        "rating": "unknown"
+      }
+    ],
+    "rationale": "最重視の軸「働き方」が high であり、重視する軸に low が無いため S とする。参考として申告された「成長性」は格付けに反映していない。"
+  },
   "overall": {
     "recommendation": "条件付き推奨",
     "rationale": "必須条件は3件とも満たす。経験の近さと志向の一致がいずれも高く、作業特性も手を動かす比率が高い点で合う。ただし夜間・休日対応の有無が求人票・企業研究のいずれからも確認できず、作業特性の3項目（完了条件の明確さ・一人で完結しやすさ・結果を短期で確認できるか）は面接でしか判定できないため、条件付きとした。",

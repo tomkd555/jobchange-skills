@@ -53,6 +53,20 @@ _GAP_LEVELS = {
 }
 _GAP_VALUES = tuple(_GAP_LEVELS) + ("unknown",)
 _GAP_ITEM_LEVELS = tuple(k for k in _GAP_LEVELS if k != "none")
+# 企業品質 Tier の語彙。原本は job-change-company-research の references/tier-rubric.md、
+# 総合の格付けの算出は scripts/calculate_company_tier.py。
+_TIER_LEVELS = ("S", "A", "B", "C")
+_TIER_AXES = (
+    "compensation_level",
+    "financial_soundness",
+    "retention",
+    "work_style",
+    "employment_stability",
+    "growth",
+    "tech_advancement",
+)
+_TIER_EMPHASES = ("top", "high", "reference")
+_TIER_RATINGS = ("high", "medium", "low", "unknown")
 # 企業スラッグの形式。原本は job-change-support の references/company-index-format.md にある。
 # 任意の接頭辞（大文字1文字とアンダースコア）＋本体（英数字・ハイフン・日本語文字）。
 _SLUG_RE = re.compile(
@@ -297,6 +311,60 @@ def _validate_overall(document: dict, result: ValidationResult) -> None:
     open_questions = overall.get("open_questions")
     if not isinstance(open_questions, list):
         result.add_error("overall.open_questions", "open_questions は配列でなければならない")
+
+
+def _validate_company_tier(document: dict, result: ValidationResult) -> None:
+    """任意フィールド company_tier（企業品質 Tier の総合の格付け）を検査する。
+
+    無ければ検査しない（PASS）。level が null のときは、重視する軸が未申告で格付けが
+    できていないことを WARN で示す。
+    """
+    if "company_tier" not in document:
+        return
+    tier = document.get("company_tier")
+    if not isinstance(tier, dict):
+        result.add_error("company_tier", "company_tier はオブジェクトでなければならない")
+        return
+
+    level = tier.get("level")
+    if level is None:
+        result.add_warning(
+            "company_tier.level",
+            "重視する軸が未申告のため総合の格付けができていない。profile の company_quality_axes を整える",
+        )
+    elif level not in _TIER_LEVELS:
+        result.add_error(
+            "company_tier.level",
+            f"level は {'/'.join(_TIER_LEVELS)} または null でなければならない",
+        )
+
+    axes = tier.get("axes")
+    if not isinstance(axes, list):
+        result.add_error("company_tier.axes", "axes は配列でなければならない")
+    else:
+        for i, entry in enumerate(axes):
+            path = f"company_tier.axes[{i}]"
+            if not isinstance(entry, dict):
+                result.add_error(path, "axes の各要素はオブジェクトでなければならない")
+                continue
+            if entry.get("axis") not in _TIER_AXES:
+                result.add_error(
+                    f"{path}.axis",
+                    f"axis は候補軸 {'/'.join(_TIER_AXES)} のいずれかでなければならない",
+                )
+            if entry.get("emphasis") not in _TIER_EMPHASES:
+                result.add_error(
+                    f"{path}.emphasis",
+                    f"emphasis は {'/'.join(_TIER_EMPHASES)} のいずれかでなければならない",
+                )
+            if entry.get("rating") not in _TIER_RATINGS:
+                result.add_error(
+                    f"{path}.rating",
+                    f"rating は {'/'.join(_TIER_RATINGS)} のいずれかでなければならない",
+                )
+
+    if not _is_nonempty_str(tier.get("rationale")):
+        result.add_error("company_tier.rationale", "rationale は必須（非空）である")
 
 
 def _warn_recommendation_consistency(document: dict, result: ValidationResult) -> None:
@@ -554,6 +622,7 @@ def validate(document: Any, profile: Any = None, screening: Any = None) -> Valid
     _validate_dimensions(document, result)
     _validate_must_conditions(document, result)
     _validate_overall(document, result)
+    _validate_company_tier(document, result)
 
     _warn_recommendation_consistency(document, result)
 

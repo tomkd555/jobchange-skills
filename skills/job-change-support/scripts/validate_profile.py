@@ -48,12 +48,24 @@ _WORK_CHARACTER_TRAITS = (
     "solo_completable",
     "short_feedback",
 )
+# 語彙の原本は job-change-company-research/references/tier-rubric.md にある。
+_COMPANY_QUALITY_AXES = (
+    "compensation_level",
+    "financial_soundness",
+    "retention",
+    "work_style",
+    "employment_stability",
+    "growth",
+    "tech_advancement",
+)
+_QUALITY_EMPHASIS_LEVELS = ("top", "high", "reference")
 _CONDITION_LEVELS = ("must", "want")
 _CONDITION_OPERATORS = (">=", "<=", "==", "in", "qualitative")
 _CONDITION_VERIFICATIONS = ("posting", "research", "interview", "unverifiable")
 _DESIRE_LEVELS = ("must", "important", "neutral", "not_required")
 _CONDITION_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 _MUST_CONDITION_SOFT_LIMIT = 4
+_TOP_EMPHASIS_SOFT_LIMIT = 4
 
 
 @dataclass
@@ -512,6 +524,62 @@ def _validate_v2_axis(profile: dict, result: ValidationResult) -> None:
             )
 
 
+def _validate_company_quality_axes(profile: dict, result: ValidationResult) -> None:
+    """v2: トップレベルの company_quality_axes[] を検査する。
+
+    任意フィールドであり、欠落は検査しない（重視軸の申告が無い状態を許す）。
+    """
+    if schema_version_of(profile) != _V2_SCHEMA_VERSION or "company_quality_axes" not in profile:
+        return
+
+    axes = profile.get("company_quality_axes")
+    if not isinstance(axes, list):
+        result.add_error("company_quality_axes", "company_quality_axes は配列でなければならない")
+        return
+    if not axes:
+        result.add_warning(
+            "company_quality_axes",
+            "重視軸を1つも選んでいない。企業品質 Tier の総合の格付けが算出されない",
+        )
+        return
+
+    seen: set[str] = set()
+    top_count = 0
+    for i, entry in enumerate(axes):
+        path = f"company_quality_axes[{i}]"
+        if not isinstance(entry, dict):
+            result.add_error(path, "各要素はオブジェクトでなければならない")
+            continue
+
+        axis_key = entry.get("axis")
+        if axis_key not in _COMPANY_QUALITY_AXES:
+            result.add_error(f"{path}.axis", "axis は tier-rubric.md の候補軸7つのいずれかである")
+        elif axis_key in seen:
+            result.add_error(f"{path}.axis", f"axis が重複している: {axis_key}")
+        else:
+            seen.add(axis_key)
+
+        emphasis = entry.get("emphasis")
+        if emphasis not in _QUALITY_EMPHASIS_LEVELS:
+            result.add_error(
+                f"{path}.emphasis",
+                f"emphasis は {'/'.join(_QUALITY_EMPHASIS_LEVELS)} のいずれかである",
+            )
+        elif emphasis == "top":
+            top_count += 1
+
+    if top_count == 0:
+        result.add_warning(
+            "company_quality_axes",
+            "emphasis=top の軸が1件も無い。最重視する軸を1つは選ぶことを推奨する",
+        )
+    elif top_count >= _TOP_EMPHASIS_SOFT_LIMIT:
+        result.add_warning(
+            "company_quality_axes",
+            f"emphasis=top の軸が{top_count}件ある。最重視の意味が薄れるため絞ることを推奨する",
+        )
+
+
 def _warn_v1_migration(profile: dict, result: ValidationResult) -> None:
     """v1 のプロファイルへ、v2 への移行を促す。"""
     if schema_version_of(profile) not in _V1_SCHEMA_VERSIONS:
@@ -595,6 +663,7 @@ def validate(document: Any) -> ValidationResult:
     _validate_career_history(document, result)
     _validate_job_change_axis(document, result)
     _validate_v2_axis(document, result)
+    _validate_company_quality_axes(document, result)
 
     _warn_achievements(document, result)
     _warn_skills(document, result)

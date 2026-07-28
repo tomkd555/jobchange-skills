@@ -175,33 +175,25 @@
     }
   },
   "tier": {
-    "level": "B",
-    "provisional": false,
-    "rubric_version": 1,
+    "rubric_version": 2,
     "assessed_date": "2026-07-12",
     "axes": {
-      "financial_soundness": {
+      "compensation_level": {
         "rating": "medium",
-        "basis": "勤怠管理SaaS単一セグメントで従業員842名と規模は中位。黒字だが事業集中リスクがある。",
-        "claim_ids": ["C002", "C003"]
+        "basis": "等級制・業績連動賞与（年2回）を整備し平均年間給与は6,120千円だが、突出はしない。",
+        "claim_ids": ["C004", "C003"]
+      },
+      "retention": {
+        "rating": "medium",
+        "basis": "平均勤続年数5.8年、3年後新卒定着率88.0%で、同業と同水準にある。",
+        "claim_ids": ["C003", "C007"]
       },
       "growth": {
         "rating": "high",
         "basis": "勤怠管理SaaSの契約社数が前年比118%（12,400社）と拡大している。",
         "claim_ids": ["C002"]
-      },
-      "tech_advancement": {
-        "rating": "unknown",
-        "basis": "クラウド/AIの内製度・パートナー等級・技術発信を示す一次・二次情報が本収集では得られなかった。",
-        "claim_ids": []
-      },
-      "compensation_level": {
-        "rating": "medium",
-        "basis": "等級制・業績連動賞与（年2回）を整備し平均年収は約620万円だが、突出はしない。",
-        "claim_ids": ["C004", "C003"]
       }
-    },
-    "rationale": "成長性は高い一方、規模・処遇は中位で技術先進性は証拠不足。財務に懸念はなく際立った強みも限定的なため B とした。技術先進性が unknown だが1軸のみのため provisional にはしない。"
+    }
   },
   "open_questions": [
     "有価証券報告書の平均年間給与は全従業員平均であり、応募職種の給与水準は判別できない。求人票の提示レンジと照合が必要である。",

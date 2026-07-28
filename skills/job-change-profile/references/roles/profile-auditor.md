@@ -41,6 +41,8 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 - 軸の整合: 必須条件が3件程度に収まっているか、4件以上なら `priority_note` に優先順位と再評価時期があるかを検査する。件数は、`schema_version` が 1.x なら `job_change_axis.must_conditions`、2.0 なら `conditions[level=must]` と `work_character_preferences[desire=must]` の合計で数える。
 - 条件の構造化（schema_version 2.0）: `conditions[]` の `axis`・`operator`・`value` が聞き取りメモの記録と一致するかを検査する。**メモにない軸・しきい値が入っていれば創作である。** 自由文の条件を機械的に軸へ割り付けた形跡（メモにしきい値の記録がないのに `operator` が比較演算子である）は must_fix とする。
 - 作業特性（schema_version 2.0）: `work_character_preferences` が8件あり、各 `desire` がメモの記録と一致するかを検査する。メモに記録がない特性へ値が入っていれば創作である。
+- 企業品質の重視軸（schema_version 2.0）: `company_quality_axes[]` の `axis`・`emphasis`・`note` が聞き取りメモの記録と一致するかを検査する。メモに無い軸が入っていれば創作である。段階の記録が無いのに `emphasis` が入っている場合も創作として指摘する。
+- 申告と実際の判断のずれ（schema_version 2.0）: `company_quality_axes` の軸と、`conditions[level=must]`・`work_character_preferences` の希望度が食い違う組み合わせを検出する（例: 残業の上限が必須条件なのに `work_style` を選んでいない、`compensation_level` が `top` なのに年収の条件が `want` である）。**どちらが本当かを裁定しない。** 食い違う両方を evidence に並べて示す finding（severity は note）とし、利用者の判断へ委ねる。メモに利用者の判断が記録されている場合は、その判断のとおりになっているかだけを検査する。
 - 監査観点の根拠は、スキルの `references/profile-methods.md`（採用側が見る情報・スキル分類・must/want の限界・経歴詐称の帰結）・`references/elicitation-guide.md`（任意の自己確認・空白期間）・`references/quantification-guide.md`（検証可能性の優先）に従う。
 
 ## 手順
@@ -49,7 +51,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 2. profile.json と聞き取りメモを突き合わせ、創作・誇張（メモにない実績・数値・役職・期間、裏付けを超えた規模・範囲・主体の語）を検出する。
 3. `achievements[].metric` の検証可能性と、空疎な記述の有無を検査する。
 4. `career_history[].period` の重なり・逆転、空白期間と `career_gaps` の対応を検査する。
-5. 必須条件の件数と `priority_note` の整合を検査する。schema_version が 2.0 なら、条件の構造化と作業特性の記録がメモと一致するかも検査する。
+5. 必須条件の件数と `priority_note` の整合を検査する。schema_version が 2.0 なら、条件の構造化・作業特性・企業品質の重視軸の記録がメモと一致するかと、重視軸と必須条件の食い違いも検査する。
 
 ## 禁止事項
 
