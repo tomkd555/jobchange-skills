@@ -18,7 +18,7 @@ description: >-
   compensation / time dimensions — and needs an evidence-backed recommendation rather than an impression.
   trigger words: 適合性評価, 適合度, フィット, この会社は自分に合うか, 応募するか判断, 拘束時間,
   実質時給, 求人と自分の突き合わせ, 必須条件の充足, 推奨判定, やりたい仕事に近いか, スキルギャップ。
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
 ---
 
 # job-change-fit-assessment
@@ -90,7 +90,8 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 ### Step 1 入力確認
 
-- `companies/{企業スラッグ}/job_posting.json` と `company_research.json` の存在を確認する。いずれかが無ければ、`job-change-company-research` へ差し戻す（求人票が無ければ求人票の取得、企業研究が無ければ企業研究の実行）。
+- `companies/{企業スラッグ}/job_posting.json` の存在を確認する。無ければ `job-change-company-research` の Step 0.5（求人票取込）へ差し戻す。求人票は企業ごとの工程の1段目で必ず作るため、これが無い状態で評価を始めない。
+- `companies/{企業スラッグ}/company_research.json` の存在を確認する。無ければ、既定では `job-change-company-research` へ差し戻す。ただし、企業の公開情報が集まらない場合、または利用者が求人票だけでの評価を明示的に希望した場合は、縮退して評価を続けてよい。縮退時は `culture_fit` の score を `null`（判断保留）にし、`compensation_fit` は求人票の提示額だけを根拠に評価する。いずれについても理由を verdict に書き、未確認のまま残る点を `overall.open_questions` へ企業研究で確認すべき事項として挙げる。縮退したことを利用者へ1回だけ伝える。
 - `career-private/self_analysis.json` は任意入力である。無くても進めるが、culture_fit の行動証拠と aspiration_alignment（志向の一致）の根拠が弱くなる旨を利用者に伝え、`job-change-self-analysis` の実施を促してよい。自己分析が無い場合、志向の一致に4以上の score は付けられない。
 - `career-private/profile.json` の `schema_version` を確認する。`1.0` または `1.1` の場合、`work_character_preferences` が無いため `work_character_fit` の score を `null`（判断保留）にし、その理由を verdict に書く。`aspiration_alignment` も、自己分析が無ければ同様に扱う。縮退している旨を利用者へ1回だけ伝え、`job-change-profile` での条件の構造化を案内する。
 - `job-search/{検索ID}/job_search_results.json` があり、当該求人がその結果に含まれる場合は、`inputs.job_search_screening` を `true` にし、`screening_source`（`search_id`・`result_index`・`classification`・`screened_at`）を記録する。fit-assessor は Web ツールを持たないため、このファイルのパスを渡してよい。
@@ -136,6 +137,7 @@ ERROR が1件でもあれば Step 3 へ差し戻す。PASS（ERROR 0件）にな
 - 総合判定（推奨/条件付き推奨/非推奨/判断保留）と、その根拠（rationale）・7次元の要点・未確認の論点（open_questions）を利用者へ提示する。
 - 経験の近さと志向の一致は別々に伝える。経験が近いことを推奨の理由にまとめない。
 - `skill_gap` が `none` 以外の場合は、不足する要件と補完に要する期間の段階を明示する。
+- `company_research.json` に `tier` があれば、その `level` と4軸の `rating` を参考として併記する。Tier は企業そのものの質を表す格付けであり、利用者とその企業との適合を表すものではない。7次元の score や総合判定の根拠へ持ち込まず、別の情報として示す。
 - `companies/{企業スラッグ}/_manifest.json` の `artifacts` に `fit_assessment` の所在と日付を記録する（`{updated_at: "YYYY-MM-DD"}`）。値そのもの（評価内容）は非個人情報側（`companies/` 等）に置かず、fit_assessment.json は career-private 配下に留める。manifest には所在と日付のみを書く。
 
 ## 合否ゲートと差し戻し

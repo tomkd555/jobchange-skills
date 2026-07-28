@@ -12,7 +12,7 @@ description: >-
   study plan, and practicing question formats.
   trigger words: 適性検査, 適性検査対策, 筆記試験, SPI, SPI3, 玉手箱, GAB, CAB, TG-WEB, TAL,
   内田クレペリン, WEBテスト, テストセンター, ケース面接, フェルミ推定。
-allowed-tools: Read, Write, Glob, Grep, Agent, AskUserQuestion
+allowed-tools: Read, Write, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
 ---
 
 # job-change-exam-prep
@@ -52,7 +52,7 @@ hub（job-change-support）から振り分けられた場合は、hub が解決�
 2. カレントディレクトリから上位へたどった最初の `.job-change/config.json`
 3. `~/.job-change/config.json`
 
-いずれの場所にも設定ファイルが無ければ未設定である。その場合は作業へ進まず、hub（job-change-support）へ戻して設定の作成を先行させる。
+いずれの場所にも設定ファイルが無ければ未設定である。その場合は作業へ進まず、Skill ツールで `job-change-support` を起動して設定を作らせ、`{DATA_ROOT}` を解決してから戻る。
 
 `{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。設定ファイルの仕様は `docs/configuration.md` にある。
 
@@ -89,7 +89,8 @@ Step 0 から Step 3 を順に進める。
 
 `job-change-exam-scout` エージェント（model: sonnet）を Agent ツールで起動し、対象企業の中途採用で使われる検査種別を調査させる。
 
-- 指示書に渡すもの: 企業名（正式名称）・応募職種（あれば）・求人票（あれば）。`profile.json` は渡さない（原則 4）。
+- 指示書に渡すもの: 企業名（正式名称）・応募職種（あれば）・求人票（あれば）。`companies/{企業スラッグ}/company_research.json` があれば、topic=selection_process の claims の要約（主張・出典URL・証拠グレード）も渡す。既に集めた証拠を捨てて調査をやり直させないためである。この要約は企業についての公開情報であり個人情報を含まないため、Web ツールを持つ調査担当へ渡してよい。`profile.json` は渡さない（原則 4）。
+- 調査結果が、渡した claims と食い違う場合は、証拠グレードの高いほうを採る。同じグレードなら調査日の新しいほうを採り、`exam_assessment.json` の備考に双方の主張と採否の理由を残す。
 - 出力先: エージェントは `{DATA_ROOT}/companies/{企業スラッグ}/exam_assessment.json` へ結果を書き出し、同一の JSON を返す。
 - 出力 JSON の骨格（原本はエージェント定義）:
 

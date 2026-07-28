@@ -16,7 +16,7 @@ description: >-
   and current salary kept out of the query.
   trigger words: 求人検索, 求人を探す, 求人を探して, 転職先を探す, リモートの求人, 年収600万以上の求人,
   似た求人でもっと良い条件, 今より良い条件の求人, この求人より良いところ, 求人を絞り込む。
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
 ---
 
 # job-change-job-search
@@ -103,7 +103,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 基準求人から条件を抽出し、どの軸の改善を狙うかを確認してから検索する。
 
-1. 基準求人を受け取る。所在は `companies/{企業スラッグ}/job_posting.json`（企業研究で取込済みの求人票）または URL のいずれか。
+1. 基準求人を受け取る。所在は `companies/{企業スラッグ}/job_posting.json`（取込済みの求人票）または URL のいずれかである。URL を渡された場合、本スキルは WebFetch を持たないため条件を抽出できない。先に Skill ツールで `job-change-company-research` を起動して Step 0.5 の求人票取込を実行させ、作られた `job_posting.json` を基準求人にする。
 2. 基準求人から職種・年収・年間休日・リモート方針・残業などの条件を抽出する。抽出時も、現勤務先名・氏名・現年収は条件へ持ち込まない。
 3. どの軸の改善を狙うか（年収・休日・リモート・残業）を AskUserQuestion で確認する。
 4. 抽出した基準条件と改善軸を匿名化した文字列として、求人検索担当エージェントへ渡し、`mode=similar_better` で検索させる。`baseline`（基準求人の URL または企業スラッグ）を成果物へ記録するよう指示する。エージェントは、基準求人の条件を上回る点を各求人の `better_points` に列挙する。
@@ -171,7 +171,7 @@ python {SKILL_DIR}/scripts/validate_job_search_results.py {results.json} --profi
 2. `classification` が `apply_candidate` の求人を、満たしている必須条件とともに列挙する。
 3. `needs_more_research` の求人を、判定できなかった軸（`unknown` の軸）と、それを確認する手段（企業研究か面接か）とともに列挙する。
 4. `excluded` の求人を、満たさなかった必須条件とともに簡潔に列挙する。注意書きを付け、応募候補と同じ表には並べない。
-5. 利用者が企業を選んだら、hub（job-change-support）の Step 0 手順で `career-private/company_index.json` へ企業スラッグを登録し、`companies/{企業スラッグ}/` を作り、当該 result の `slug` へ追記する。続いて job-change-company-research の URL 取込へ接続する。
+5. 利用者が企業を選んだら、hub（job-change-support）の Step 0 手順で `career-private/company_index.json` へ企業スラッグを登録し、`companies/{企業スラッグ}/` を作り、当該 result の `slug` へ追記する。続いて job-change-company-research の Step 0.5（求人票取込）へ接続する。求人ページの URL があればそれを入口とし、無ければ、検索結果へ写し取った掲載内容を本文として渡す。
 
 similar_better では各求人の `better_points`（基準求人より改善している点）を併記する。
 
@@ -192,7 +192,7 @@ similar_better では各求人の `better_points`（基準求人より改善し�
 | ゲート | 通過条件と差し戻し先 |
 |---|---|
 | Step 4 の機械検証・PII リント | `validate_job_search_results.py --profile` が PASS（ERROR 0件）でなければ納品しない。PII 混入の ERROR は匿名化の漏れであり、成果物から除去してから再検証する。 |
-| 応募推奨 | `screening.recommendation` が `応募推奨なし` の場合、企業研究・適合性評価へ接続しない。必須条件の見直し（`job-change-profile` の条件更新）、または検索条件・検索経路の見直しへ戻す。応募候補が0件のときに、除外候補や追加調査候補から最有力候補を仕立てない。 |
+| 応募推奨 | `screening.recommendation` が `応募推奨なし` の場合、既定では企業研究・適合性評価へ接続しない。必須条件の見直し（`job-change-profile` の条件更新）、または検索条件・検索経路の見直しへ戻す。応募候補が0件のときに、除外候補や追加調査候補から最有力候補を仕立てない。**例外**: 満たさない必須条件を求人ごとにすべて列挙したうえで、利用者が特定の求人について先へ進むことを明示的に希望した場合は、その求人を企業研究へ接続してよい。この判定の材料は求人票の記載だけであり、判定そのものが企業研究や面接で覆りうるためである。接続する場合は、どの必須条件が未充足のままかを引き継ぎに明記する。利用者が希望していないのに、本スキルから接続を提案しない。 |
 | 縮退の明示 | `screening.recommendation` が `判定不能`（profile が 1.x）の場合、判定できていない旨を明示する。分類結果を「応募候補」として提示せず、`job-change-profile` での条件の構造化を案内する。 |
 
 ## 役割の実行（ハーネス別）

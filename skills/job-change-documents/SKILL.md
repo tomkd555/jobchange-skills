@@ -10,7 +10,7 @@ description: >-
   foreign-affiliated selection) — a shokumu-keirekisho (work-history CV), rirekisho (resume), English
   resume, or statement of motivation — based on their profile and the target company's requirements.
   trigger words: 職務経歴書, 履歴書, 応募書類, 志望動機, レジュメ, 英文レジュメ, 職務要約, 自己PR。
-allowed-tools: Read, Write, Edit, Glob, Grep, Agent, AskUserQuestion, Skill
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
 ---
 
 # job-change-documents
@@ -93,8 +93,9 @@ hub（job-change-support）から振り分けられた場合は、hub が解決�
 
 profile.json のゲートは必須である。
 
-- `profile.json` は `validate_profile.py`（hub の scripts）が PASS（ERROR 0件）であることを前提とする。hub がルーティング前に PASS を確認済みであり、本スキルは Bash を持たないため検証を自ら実行しない。
-- `profile.json` が未作成、または検証が FAIL（ERROR 1件以上）の場合は、本スキルで先へ進まない。hub（`job-change-support`）のプロファイル整備へ戻し、PASS を確認してから再開する（プロファイルの作成・検証は hub の責務である）。
+- `profile.json` は `validate_profile.py`（hub の scripts）が PASS（ERROR 0件）であることを前提とする。hub 経由で入る場合は、hub がルーティング前に確認済みである。本スキルが単独で起動された場合は、自分で `validate_profile.py` を実行して PASS を確かめる。
+- `profile.json` が未作成の場合は先へ進まない。hub（`job-change-support`）のプロファイル整備へ戻し、作成してから再開する（プロファイルの作成は hub と `job-change-profile` の責務である）。
+- 検証が FAIL（ERROR 1件以上）の場合は、ERROR の内容を利用者へ示し、`job-change-profile` での整備を勧める。ただし、利用者が欠落を承知のうえで着手を希望する場合は、欠けた項目に依存する記述を作らないという条件で進めてよい。その場合は、どの項目が欠けたままかを納品時に明記する。
 
 company_research.json の確認は任意であり、無い場合は縮退を明示する。
 
@@ -192,7 +193,7 @@ fit_assessment.json の確認は任意である。
 
 ## スクリプトのCLI使用例
 
-本スキルは固有のスクリプトを持たない。Step 0 のプロファイルゲートで用いる `validate_profile.py` は hub（`job-change-support`）のスクリプトである。次のコマンドは hub がルーティング前に実行するものであり、本スキルは Bash を持たないため自ら実行しない（掲載は前提確認のため）。終了コードは PASS で 0、FAIL で 1（WARN のみは PASS 扱い）である。
+本スキルは固有のスクリプトを持たない。Step 0 のプロファイルゲートで用いる `validate_profile.py` は hub（`job-change-support`）のスクリプトである。hub 経由で入る場合は hub がルーティング前に実行済みであり、単独で起動された場合は本スキルが次を実行する。終了コードは PASS で 0、FAIL で 1（WARN のみは PASS 扱い）である。
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/profile.json

@@ -23,6 +23,7 @@ def _valid_posting() -> dict:
     """ERROR 0件・WARN 0件になる完全な job_posting.json を返す。"""
     return {
         "schema_version": "1.0",
+        "source_type": "url",
         "source_url": "https://recruit.example.co.jp/jobs/1234",
         "fetched_at": "2026-07-17",
         "company_name": "架空クラウドワークス株式会社",
@@ -65,10 +66,24 @@ def _minimal_posting() -> dict:
     """必須項目のみを持つ最小の job_posting.json を返す。"""
     return {
         "schema_version": "1.0",
+        "source_type": "url",
         "source_url": "https://recruit.example.co.jp/jobs/1",
         "fetched_at": "2026-07-17",
         "company_name": "架空株式会社",
         "title": "エンジニア",
+    }
+
+
+def _dialogue_posting() -> dict:
+    """対話で聞き取った、URL を持たない最小の job_posting.json を返す。"""
+    return {
+        "schema_version": "1.0",
+        "source_type": "dialogue",
+        "source_url": None,
+        "fetched_at": "2026-07-17",
+        "company_name": "架空株式会社",
+        "title": "エンジニア",
+        "open_questions": ["年間休日と残業時間は未確認である"],
     }
 
 
@@ -90,6 +105,58 @@ class RootErrorTest(unittest.TestCase):
     def test_root_not_object(self):
         result = vjp.validate(["not", "an", "object"])
         self.assertFalse(result.ok)
+
+
+class SourceTypeTest(unittest.TestCase):
+    """取込の入口を表す source_type と、それに応じた source_url の検査。"""
+
+    def test_dialogue_posting_passes(self):
+        result = vjp.validate(_dialogue_posting())
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(result.warnings, [])
+
+    def test_missing_source_type(self):
+        p = _valid_posting()
+        del p["source_type"]
+        result = vjp.validate(p)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("source_type" in e for e in result.errors))
+
+    def test_unknown_source_type(self):
+        p = _valid_posting()
+        p["source_type"] = "scraped"
+        result = vjp.validate(p)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("source_type" in e for e in result.errors))
+
+    def test_text_source_allows_null_source_url(self):
+        p = _valid_posting()
+        p["source_type"] = "text"
+        p["source_url"] = None
+        result = vjp.validate(p)
+        self.assertTrue(result.ok, result.errors)
+
+    def test_file_source_allows_absent_source_url(self):
+        p = _valid_posting()
+        p["source_type"] = "file"
+        del p["source_url"]
+        result = vjp.validate(p)
+        self.assertTrue(result.ok, result.errors)
+
+    def test_dialogue_source_allows_absent_source_url(self):
+        p = _valid_posting()
+        p["source_type"] = "dialogue"
+        del p["source_url"]
+        result = vjp.validate(p)
+        self.assertTrue(result.ok, result.errors)
+
+    def test_non_url_source_keeps_reference_url(self):
+        """URL 以外の入口でも、参考の URL を持つこと自体は妨げない。"""
+        p = _valid_posting()
+        p["source_type"] = "text"
+        p["source_url"] = "https://recruit.example.co.jp/jobs/1234"
+        result = vjp.validate(p)
+        self.assertTrue(result.ok, result.errors)
 
 
 class RequiredFieldErrorTest(unittest.TestCase):

@@ -1,7 +1,7 @@
 """job-change-company-research: job_posting.json の決定的（非LLM）検証ツール。
 
 標準ライブラリのみで、求人情報の取込成果物 job_posting.json を機械検査する。
-求人URLから取り込んだ求人票が、必須項目（schema_version・source_url・fetched_at・
+取り込んだ求人票が、必須項目（schema_version・source_type・fetched_at・
 company_name・title）を備え、metrics（年間休日・月平均残業・有給取得率・付与日数）を
 仕様どおりの型で持つかを、ERROR（成果物として成立しない欠落・型違反）と WARN
 （成立するが情報が不足する点）に分けて報告する。仕様の原本は
@@ -24,6 +24,8 @@ from typing import Any
 
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _KNOWN_SCHEMA_VERSIONS = ("1.0",)
+# 取込の入口。url 以外の入口では source_url を必須にしないため、URL の検査は url のときだけ行う。
+SOURCE_TYPES = ("url", "text", "file", "dialogue")
 # metrics の4キー。各値は {value(number), quote(非空str)} または null。
 METRIC_KEYS = (
     "annual_holidays",
@@ -78,7 +80,10 @@ def _is_valid_date(value: Any) -> bool:
 
 
 def _validate_required(document: dict, result: ValidationResult) -> None:
-    """必須スカラー項目（schema_version・source_url・fetched_at・company_name・title）を検査する。"""
+    """必須スカラー項目（schema_version・source_type・fetched_at・company_name・title）を検査する。
+
+    source_url は source_type が url のときのみ必須である。
+    """
     if not _is_nonempty_str(document.get("schema_version")):
         result.add_error("schema_version", "schema_version は必須（非空）である")
     elif document.get("schema_version") not in _KNOWN_SCHEMA_VERSIONS:
@@ -87,12 +92,22 @@ def _validate_required(document: dict, result: ValidationResult) -> None:
             f"schema_version が既知のバージョン（{'/'.join(_KNOWN_SCHEMA_VERSIONS)}）ではない",
         )
 
-    url = document.get("source_url")
-    if not isinstance(url, str) or not url.startswith("http"):
+    source_type = document.get("source_type")
+    if not _is_nonempty_str(source_type):
+        result.add_error("source_type", "source_type は必須（非空）である")
+    elif source_type not in SOURCE_TYPES:
         result.add_error(
-            "source_url",
-            f"source_url は http で始まる文字列でなければならない（実値: {url!r}）",
+            "source_type",
+            f"source_type は {'/'.join(SOURCE_TYPES)} のいずれかである（実値: {source_type!r}）",
         )
+
+    if source_type == "url":
+        url = document.get("source_url")
+        if not isinstance(url, str) or not url.startswith("http"):
+            result.add_error(
+                "source_url",
+                f"source_url は http で始まる文字列でなければならない（実値: {url!r}）",
+            )
 
     fetched_at = document.get("fetched_at")
     if fetched_at is None or (isinstance(fetched_at, str) and fetched_at.strip() == ""):

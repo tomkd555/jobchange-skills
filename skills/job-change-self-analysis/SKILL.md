@@ -116,7 +116,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 | ゲート | 通過条件と差し戻し先 |
 |---|---|
-| Step 0 のプロファイルゲート | `profile.json` が `validate_profile.py` で PASS していなければ着手しない。未作成・FAIL は hub（`job-change-support`）経由で `job-change-profile` サブスキルへ戻す。 |
+| Step 0 のプロファイルゲート | `profile.json` が `validate_profile.py` で PASS していなければ着手しない。未作成・FAIL は hub（`job-change-support`）経由で `job-change-profile` サブスキルへ戻す。ただし FAIL の場合は、ERROR の内容を示し、利用者が欠落を承知で着手を希望するなら、欠けた項目に依存する記述を作らないという条件で進めてよい。どの項目が欠けたままかを成果物に明記する。 |
 | Step 5 の検証・監査ゲート | `validate_self_analysis.py` が FAIL（ERROR 1件以上）の場合、または `job-change-self-analysis-auditor` の `verdict` が BLOCK の場合、または `severity` = must_fix の finding がある場合は、Step 4 で起草担当へ差し戻す。差し戻しは同一成果物につき最大2回まで行う。 |
 
 差し戻し時は、監査の findings（target・evidence・fix）をそのまま起草担当へ渡し、反映後に Step 5 から再度通す。2回の差し戻しで解消しない指摘は、未決事項として利用者へ判断を委ねてから納品する（例: profile.json の実績だけでは強みの裏付けが足りない、という指摘は、他者フィードバックの追加収集か訴求の見直しが要るため利用者の判断事項とする）。

@@ -19,7 +19,7 @@ description: >-
   rather than unverified hearsay.
   trigger words: 企業研究, 会社を調べる, 企業分析, 事業内容, 財務, 平均年収, 有価証券報告書, 評判, 口コミ,
   選考プロセス, 理念, パーパス, 求人URL, 求人票の取り込み, この求人を調べて。
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
 ---
 
 # job-change-company-research
@@ -108,24 +108,39 @@ topic は `philosophy`・`business`・`financials`・`compensation`・`benefits`
 
 - 対象企業名（正式名称）。曖昧な場合（グループ会社・持株会社・同名企業がある等）は候補を挙げて確認する。
 - 重点観点（あれば）。理念・事業・財務・給与・福利厚生・働き方・評判・選考のどれを厚く見るか。指定が無ければ8トピックを均等に扱う。
-- 求人票の有無。あれば所在を受け取り、選考プロセス・求める人物像の照合に使う。
+- 求人票の入手経路。求人情報URL・求人票の本文・PDF や画像のファイルのいずれかを受け取る。どれも無い場合は Step 0.5 で対話により埋めるため、その旨だけを確認する。
 
 企業スラッグは `career-private/company_index.json` で解決する。企業名が index の `name` または `aliases` に一致すればそのスラッグを使い、一致が無いときのみ一度だけ導出して index へ登録し、`companies/{企業スラッグ}/` を作る（詳細は job-change-support の `references/company-index-format.md` を参照）。
 
-### Step 0.5 求人URLからの取込（求人URLがある場合のみ・job-change-posting-parser, sonnet）
+### Step 0.5 求人票の取込（必須）
 
-利用者が求人情報URLを渡した場合、企業名を手入力する前に、このステップで求人票を取り込む。求人URLが無い場合はこのステップを飛ばす。
+企業ごとの工程の1段目である。ここで作る `job_posting.json` は、この後の企業研究と適合性評価が入力として読む。取込を飛ばして先へ進まない。
 
-1. 求人票取込担当エージェント（job-change-posting-parser）を Agent ツールで起動し、求人URLと `{SKILL_DIR}`（`references/job-posting-format.md` の所在）を渡す。エージェントは WebFetch でページを取得し、`{company_name, aliases, job_posting}` の JSON を返す（ファイルは書かない。仕様は `references/job-posting-format.md`）。**利用者の個人情報（現年収・氏名・在籍企業名等）は渡さない**（原則5。posting-parser は WebFetch を持つ）。
-2. 返却された `company_name`・`aliases` を使い、Step 0 と同じ手順で `career-private/company_index.json` によりスラッグを解決する（一致が無ければ一度だけ導出して登録する）。
-3. 返却された `job_posting` オブジェクトを、本スキルが `companies/{企業スラッグ}/job_posting.json` へ Write で書く（スラッグ解決後にのみ書く）。
-4. 次で検証し、PASS（ERROR 0件）を確認する。ERROR があれば posting-parser へ差し戻すか、欠損を open_questions に残す。
+入口は4通りある。利用者が用意できる材料に応じて選び、いずれの場合も同じ `job_posting.json` を作る。仕様は `references/job-posting-format.md` にある。
+
+| 入口 | `source_type` | 担い手 |
+|---|---|---|
+| 求人情報URL | `url` | job-change-posting-parser |
+| 求人票の本文（貼り付け） | `text` | 本スキル |
+| 求人票の PDF・画像 | `file` | 本スキル |
+| 企業名のみ（求人が特定できない） | `dialogue` | 本スキル |
+
+**求人情報URLの場合（job-change-posting-parser, sonnet）。** 求人票取込担当エージェントを Agent ツールで起動し、求人URLと `{SKILL_DIR}`（`references/job-posting-format.md` の所在）を渡す。エージェントは WebFetch でページを取得し、`{company_name, aliases, job_posting}` の JSON を返す（ファイルは書かない）。**利用者の個人情報（現年収・氏名・在籍企業名等）は渡さない**（原則5。posting-parser は WebFetch を持つ）。返却された `company_name`・`aliases` を使い、Step 0 と同じ手順でスラッグを解決する（一致が無いときのみ一度だけ導出して登録する）。
+
+**求人票の本文・ファイルの場合。** 本スキルが仕様に従って `job_posting` オブジェクトを組み立てる。本文は利用者が貼り付けたものをそのまま読み、ファイルは Read で読む。`source_type` を `text` または `file` とし、`source_url` は null にする。企業名とスラッグは Step 0 で確認・解決したものを使う。
+
+**企業名しか無い場合。** 応募職種（`title`）を対話で確認し、給与・勤務地・雇用形態・要件のうち利用者が答えられる項目だけを埋める。`source_type` を `dialogue`、`source_url` を null にする。答えられなかった項目を推定で補わず、`open_questions` に「何が未確認か」を書く。求人票の記載が少ないことは差し戻しの理由にならない。未確認の項目は、この後の企業研究と面接での確認事項へ回す。
+
+**共通の後処理。**
+
+1. 組み立てた `job_posting` オブジェクトを、本スキルが `companies/{企業スラッグ}/job_posting.json` へ Write で書く（スラッグ解決後にのみ書く）。
+2. 次で検証し、PASS（ERROR 0件）を確認する。ERROR があれば、URL 入口なら posting-parser へ差し戻し、それ以外なら本スキルが埋め直し、埋められない欠損は `open_questions` に残す。
 
    ```bash
    python {SKILL_DIR}/scripts/validate_job_posting.py {job_posting.json} --json
    ```
 
-5. `companies/{企業スラッグ}/_manifest.json` の `artifacts.job_posting` を `{updated_at: 取得日, source_url: 取り込んだ求人URL}` に更新する（後述「_manifest.json の更新」）。
+3. `companies/{企業スラッグ}/_manifest.json` の `artifacts.job_posting` を `{updated_at: 取得日, source_url: 取り込んだ求人URL}` に更新する（後述「_manifest.json の更新」）。URL 以外の入口では `source_url` を null にする。
 
 取り込んだ求人票は、Step 1 の収集で選考プロセス・求める人物像の照合に使い、`job_posting.metrics`（年間休日・残業・有給取得率・付与日数）は company_research の `workstyle_metrics` を補強する材料になる。
 
@@ -286,4 +301,4 @@ cd {SKILL_DIR} && python -m unittest discover -s scripts/tests
 | `references/philosophy-analysis.md` | 理念・社是・パーパス分析の収集源と分析手順（明文→行動指針→人事制度→開示との一貫性検証）、自己宣伝的主張の確度制限との関係 | topic=philosophy の収集・分析 |
 | `references/compensation-benefits.md` | 給与・福利厚生・働き方の調査観点と情報源カタログ（有報・しょくばらぼ・認定制度・就職四季報・OpenWork・公的統計）、workstyle_metrics への格納ルール | topic=compensation/benefits/workstyle の収集 |
 | `references/tier-rubric.md` | 企業品質 Tier（S/A/B/C）の4軸（財務健全性・成長性・技術先進性・処遇水準）の定義・評価ルール・格付け基準・記入形式。profile 非依存 | Step 1 の Tier 格付け、Step 3 の Tier 監査 |
-| `references/job-posting-format.md` | job_posting.json のフィールド仕様・記入基準・機械検証規則（求人URL取込の仕様） | Step 0.5 で求人票を取り込む/検証する段階 |
+| `references/job-posting-format.md` | job_posting.json のフィールド仕様・記入基準・機械検証規則（4通りの入口と `source_type` を含む） | Step 0.5 で求人票を取り込む/検証する段階 |

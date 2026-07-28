@@ -33,7 +33,7 @@
 |---|---|---|
 | `schema_version` | number | 仕様のバージョン。現行は `1` |
 | `artifacts` | object | 成果物名をキーとするオブジェクト |
-| `artifacts.job_posting` | object \| null | 求人票の取得状況。`updated_at`（`YYYY-MM-DD`）・`source_url` を持つ。未取得は `null` |
+| `artifacts.job_posting` | object \| null | 求人票の取得状況。`updated_at`（`YYYY-MM-DD`）・`source_url` を持つ。`source_url` は URL から取り込んだ場合のみ値を持ち、本文・ファイル・対話から作った場合は `null` である。未取得は `null` |
 | `artifacts.company_research` | object \| null | 企業研究の実施状況。`updated_at`（最終更新日）と、トピック名をキーとし `last_researched`（`YYYY-MM-DD`）を値に持つ `topics` オブジェクトを持つ。未実施は `null` |
 
 `artifacts` には、上記2件のほかに、`fit_assessment` 等の成果物を `{updated_at: "YYYY-MM-DD"}` の形で自由に追加してよい。`check_freshness.py` は `job_posting`・`company_research` の2件のみを既知成果物として判定対象にし、それ以外のキーは判定せず読み飛ばす。
