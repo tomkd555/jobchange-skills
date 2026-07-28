@@ -242,5 +242,6 @@ cd {SKILL_DIR} && python -m unittest discover -s scripts/tests
 |---|---|---|
 | `references/job-search-format.md` | job_search_results.json のフィールド仕様・記入基準・機械検証規則・PII リント | 成果物を作る/読む/検証する全段階 |
 | `references/query-catalog.md` | 無償の公開Web検索で求人を探す方法（サイト別のログイン要否・URL構造・取得項目・制約・縮退方法） | Step 2 の検索、検索担当エージェントへの指示 |
+| `references/search-methods.md` | 探索の量と就業の質の関係、満足化の運用、観測と判定を分ける理由の根拠（出典付き） | 報告のしかたを決める段階、応募推奨なしのときの提案を組み立てる段階 |
 | `{HUB_SKILL_DIR}/references/screening-axes.md` | 8スクリーニング軸・8作業特性・業務分類の語彙と境界例 | Step 2 の観測、Step 3.5 の判定 |
 | `references/roles/job-searcher.md` | 検索担当の役割プロンプト（観測層までを担う） | Step 2。サブエージェントを使えないハーネスでは本体が読む |

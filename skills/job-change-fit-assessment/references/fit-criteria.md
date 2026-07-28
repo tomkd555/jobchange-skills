@@ -86,7 +86,8 @@ company_research の philosophy・workstyle・reputation トピックと、self_
 - job_posting の `salary`（提示レンジ）と、profile の `salary.desired`（希望年収）を突き合わせる。
 - company_research の `workstyle_metrics.avg_annual_salary`（有価証券報告書の平均年間給与等）を参照点に加える。ただし全従業員平均であり職種別内訳を欠く限界を verdict または overall.open_questions に書く。
 - 提示レンジ下限が希望を下回る場合は score を高くしない。上限との差、昇給余地の不確実性も勘案する。
-- evidence の source は主に `job_posting`・`profile`・`company_research`。
+- time_analysis.json に `comparison` があれば、実質時給の現職との差分（`comparison.delta.hourly_wage_binding_basis`・同 `labor_basis`）を verdict の根拠にする。額面年収の増加だけを根拠に score を高くしない。
+- evidence の source は主に `job_posting`・`profile`・`company_research`・`time_analysis`。
 
 ### time_fit（時間適合）
 
@@ -96,6 +97,8 @@ time_analysis.json の年間拘束時間・実質時給と、must/want 条件（
 - 実質時給は、想定年収にグレード付きの根拠がある場合にのみ算出される（無ければ time_analysis 側で null）。null の場合は金額比較を断定に使わない。
 - time_analysis の入力に統計フォールバックが使われた項目（`fallbacks_used`）は、実測でない旨を verdict に反映し、確度を上げすぎない。
 - 残業・通勤・労働時間に関する must/want 条件との整合を見る。
+- time_analysis.json に `comparison` があれば、年間拘束時間の現職との差分（`comparison.delta.annual_binding_hours`）を verdict の根拠にする。`comparison` が無い場合は、現職と比較できていない旨を verdict に書く。
+- 通勤の負担を所要時間だけで表さない。commute.json の `transfers`（乗り換え回数）・`crowding`（混雑の程度）があれば verdict で触れる。長時間通勤は睡眠と運動を削るため、年収差で相殺できるとは限らない旨を、通勤片道が長い場合の verdict に書く（根拠は `references/fit-methods.md`）。
 - evidence の source は主に `time_analysis`・`job_posting`。
 
 ## must_condition_results の判定

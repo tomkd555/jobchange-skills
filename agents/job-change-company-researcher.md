@@ -48,9 +48,10 @@ Tier の格付けは、原本 `{SKILL_DIR}/references/tier-rubric.md` に従う�
 2. 企業公式サイト・採用サイト・社長メッセージ・サステナビリティ報告書から、理念・社是・パーパス・行動指針を収集し分析する。ただし企業自身の評価的・自己宣伝的主張（社風自賛等）には、出典がグレードAでも confidence を high にしない。
 3. 口コミサイト・認定制度（くるみん・えるぼし・健康経営優良法人等）から、給与実態・福利厚生・働き方の情報を収集する。給与・福利厚生・働き方を重点調査する際の観点と情報源は、原本 `{SKILL_DIR}/references/compensation-benefits.md` に従う。年間休日・月平均残業・有給取得率・平均有給取得日数・平均年間給与などの数値を見つけたら、散文の claim に埋めるだけで済ませず、必ず `company_research.json` の `workstyle_metrics`（`annual_holidays`・`monthly_overtime_h`・`paid_leave_rate`・`avg_paid_leave_days_taken`・`avg_annual_salary`）へ構造化して格納する（各値は `{value, source_url, grade}`。出典URL・グレードを併記する）。見つからない項目は `null` のままにし、創作しない。
 4. topic=selection_process として、選考プロセス（選考段階・筆記/適性検査の有無等）と面接体験記を、口コミ・選考体験記・採用ページから収集する（下流の面接対策が根拠として使う）。
-5. すべての主張を claims 配列（出典URL・引用・グレード・確度付き）へ集約し、原本 `{SKILL_DIR}/references/company-research-format.md` の形式で company_research.json を作成する。
-6. 収集した claims を根拠に `{SKILL_DIR}/references/tier-rubric.md` の4軸を評価し、企業品質の Tier（S/A/B/C）を `tier` フィールドへ付す。各軸に根拠 claim の id（`claim_ids`）と `basis` を記し、`level`・`provisional`・`rationale` を付す。
-7. 自分で次を実行し、PASS させてから返す。
+5. 負の情報を明示的に探す。厚生労働省「労働基準関係法令違反に係る公表事案」の月次 PDF に対象企業の記載がないかを確認し、あればグレードAの事実として claim にする。あわせて、離職・労働環境・処遇に関する報道と口コミの否定的な内容も、肯定的な内容と同じ手順で収集する。企業の自己開示だけを集めると、良い面に偏った像ができるためである。**該当が見つからないことを、問題がない証拠として扱わない。** 公表事案は掲載期間がおおむね1年に限られ、企業名での検索機能も無いため、掲載されていないことと違反がないことは同じではない。この点は原本 `{SKILL_DIR}/references/source-catalog.md` に記してある。
+6. すべての主張を claims 配列（出典URL・引用・グレード・確度付き）へ集約し、原本 `{SKILL_DIR}/references/company-research-format.md` の形式で company_research.json を作成する。
+7. 収集した claims を根拠に `{SKILL_DIR}/references/tier-rubric.md` の4軸を評価し、企業品質の Tier（S/A/B/C）を `tier` フィールドへ付す。各軸に根拠 claim の id（`claim_ids`）と `basis` を記し、`level`・`provisional`・`rationale` を付す。
+8. 自分で次を実行し、PASS させてから返す。
 
    ```bash
    python {SKILL_DIR}/scripts/validate_company_research.py {company_research.json} --json

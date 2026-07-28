@@ -394,6 +394,49 @@ def _load_sources(path: str | None) -> dict[str, Any]:
     return data if isinstance(data, dict) else {}
 
 
+# 現職と応募先を突き合わせる項目。応募先の拘束時間と実質時給を単体で示さず、
+# 現職との差分を添えるために用いる。
+_COMPARISON_KEYS = {
+    "annual_binding_hours": ("annual", "binding_hours"),
+    "annual_labor_hours": ("annual", "labor_hours"),
+    "hourly_wage_binding_basis": ("effective_hourly_wage", "binding_basis"),
+    "hourly_wage_labor_basis": ("effective_hourly_wage", "labor_basis"),
+}
+
+
+def _dig_number(document: dict, path: tuple[str, ...]) -> float | None:
+    """入れ子の辞書から数値を取り出す。数値でなければ None を返す。"""
+    node: Any = document
+    for key in path:
+        if not isinstance(node, dict):
+            return None
+        node = node.get(key)
+    if isinstance(node, bool) or not isinstance(node, (int, float)):
+        return None
+    return node
+
+
+def build_comparison(analysis: dict, baseline: dict) -> dict:
+    """現職の time_analysis（baseline）と応募先の算定結果を突き合わせる。
+
+    current は現職の値、delta は「応募先 − 現職」である。どちらかが欠けている
+    項目の delta は None にする。時間は小数第1位、円は整数へ丸める。
+    """
+    current: dict[str, Any] = {}
+    delta: dict[str, Any] = {}
+    for name, path in _COMPARISON_KEYS.items():
+        base_value = _dig_number(baseline, path)
+        offer_value = _dig_number(analysis, path)
+        current[name] = base_value
+        if base_value is None or offer_value is None:
+            delta[name] = None
+        elif name.startswith("annual_"):
+            delta[name] = round(offer_value - base_value, 1)
+        else:
+            delta[name] = int(round(offer_value - base_value))
+    return {"current": current, "delta": delta}
+
+
 def main(argv: list[str] | None = None) -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")
@@ -413,6 +456,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--commute-oneway-min", type=float, default=None, help="通勤片道（分）")
     parser.add_argument("--salary", type=float, default=None, help="想定年収（円）")
     parser.add_argument("--sources-json", default=None, help="各入力の出典メタJSONパス")
+    parser.add_argument(
+        "--baseline-json",
+        default=None,
+        help="現職の time_analysis.json のパス。渡すと comparison（現職の値と差分）を出力へ加える",
+    )
     parser.add_argument("--out", default=None, help="出力先パス（親ディレクトリは自動作成）")
     parser.add_argument("--json", action="store_true", help="結果をJSONで標準出力へ書き出す")
     args = parser.parse_args(argv)
@@ -440,6 +488,14 @@ def main(argv: list[str] | None = None) -> int:
     except CalcError as exc:
         print(f"[ERROR] 入力の矛盾: {exc}", file=sys.stderr)
         return 2
+
+    if args.baseline_json:
+        try:
+            baseline = _load_sources(args.baseline_json)
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"[ERROR] --baseline-json を読み込めない（{exc}）", file=sys.stderr)
+            return 2
+        analysis["comparison"] = build_comparison(analysis, baseline)
 
     payload = json.dumps(analysis, ensure_ascii=False, indent=2)
 

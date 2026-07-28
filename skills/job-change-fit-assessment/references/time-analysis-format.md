@@ -4,7 +4,7 @@
 
 ## 配置と扱い
 
-生成物は `career-private/fit/{企業スラッグ}/time_analysis.json` に置く。拘束時間・実質時給は年収・通勤時間などの個人情報から導く派生値であるため、`career-private/` 配下に隔離し、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ渡さない。
+生成物は `career-private/fit/{企業スラッグ}/time_analysis.json` に置く。比較の基準となる現職の算定結果は、応募先の企業に対応しないため `career-private/fit/current/time_analysis.json` に置き、全企業で使い回す。拘束時間・実質時給は年収・通勤時間などの個人情報から導く派生値であるため、`career-private/` 配下に隔離し、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ渡さない。
 
 ## 定義式
 
@@ -32,6 +32,21 @@
 - `commute_plus15min` / `commute_minus15min`: 通勤片道を ±15 分動かしたときの増減
 
 年間実出勤日数は残業・通勤に依存しないため、増減値はプラス側とマイナス側で符号が反転した対称値になり、基準の水準には依存しない。
+
+## 現職との比較
+
+応募先の拘束時間・実質時給は、単体の絶対値では良し悪しを判断できない。現職についても同じ式で算定し、その差分を time_fit と compensation_fit の判断材料にする。
+
+現職の算定結果を `--baseline-json` へ渡すと、出力へ `comparison` が加わる。渡さなければ `comparison` は出力しない。
+
+| キー | 内容 |
+|---|---|
+| `current` | 現職の値。`annual_binding_hours`・`annual_labor_hours`・`hourly_wage_binding_basis`・`hourly_wage_labor_basis` の4項目を持つ。 |
+| `delta` | 「応募先 − 現職」の差分。項目は `current` と同じ。 |
+
+どちらか一方でも数値として取れない項目は、`current`・`delta` ともに `null` にする。時間は小数第1位、円は整数へ丸める。
+
+現職の算定に使う年収・労働時間・通勤時間は利用者入力（`user`）で取り、通勤時間は下記「通勤時間が未入力のときの扱い」と同じ系統を使う。
 
 ## 入力の優先度
 
@@ -71,6 +86,7 @@
   "annual": {"working_days", "paid_leave_taken_days", "binding_hours", "labor_hours"},
   "effective_hourly_wage": {"binding_basis", "labor_basis"} | null,
   "sensitivity": {"overtime_plus10h", "overtime_minus10h", "commute_plus15min", "commute_minus15min"},
+  "comparison": {"current": {...}, "delta": {...}},
   "assumptions": [ ... ],
   "fallbacks_used": [ {"field", "value", ...}, ... ]
 }
@@ -87,7 +103,7 @@ python scripts/calculate_time_analysis.py \
     [--scheduled-hours H] [--break-minutes M] [--overtime-h-month H] \
     [--annual-holidays D] [--paid-leave-rate R] [--paid-leave-granted D] \
     [--paid-leave-taken D] [--commute-oneway-min M] [--salary YEN] \
-    [--sources-json PATH] [--out PATH] [--json]
+    [--sources-json PATH] [--baseline-json PATH] [--out PATH] [--json]
 ```
 
-指定しなかった項目にはフォールバックを適用する。`--out` は指定パスへ書き出し（親ディレクトリが無ければ作成する）、`--json` は結果を標準出力へ書き出す。年間休日が 365 以上、有給取得率が範囲外など、入力に矛盾があるときは終了コード 2 で明確なメッセージを返す。
+`--baseline-json` には現職の `time_analysis.json` のパスを渡す。指定しなかった項目にはフォールバックを適用する。`--out` は指定パスへ書き出し（親ディレクトリが無ければ作成する）、`--json` は結果を標準出力へ書き出す。年間休日が 365 以上、有給取得率が範囲外など、入力に矛盾があるときは終了コード 2 で明確なメッセージを返す。

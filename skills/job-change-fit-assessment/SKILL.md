@@ -78,6 +78,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | `companies/{企業スラッグ}/company_research.json` | 企業研究データ（入力） | job-change-company-researcher |
 | `career-private/self_analysis.json` | 自己分析（任意入力） | job-change-self-analysis |
 | `career-private/commute.json` | 通勤時間（入力・利用者入力のみ） | 本スキル（Step 1 で転記） |
+| `career-private/fit/current/time_analysis.json` | 現職の拘束時間・実質時給（比較の基準。全企業で共通） | scripts/calculate_time_analysis.py |
 | `career-private/fit/{企業スラッグ}/time_analysis.json` | 拘束時間・実質時給の算定結果（成果物） | scripts/calculate_time_analysis.py |
 | `career-private/fit/{企業スラッグ}/fit_assessment.json` | 適合性評価（成果物） | fit-assessor |
 
@@ -95,7 +96,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 - `career-private/self_analysis.json` は任意入力である。無くても進めるが、culture_fit の行動証拠と aspiration_alignment（志向の一致）の根拠が弱くなる旨を利用者に伝え、`job-change-self-analysis` の実施を促してよい。自己分析が無い場合、志向の一致に4以上の score は付けられない。
 - `career-private/profile.json` の `schema_version` を確認する。`1.0` または `1.1` の場合、`work_character_preferences` が無いため `work_character_fit` の score を `null`（判断保留）にし、その理由を verdict に書く。`aspiration_alignment` も、自己分析が無ければ同様に扱う。縮退している旨を利用者へ1回だけ伝え、`job-change-profile` での条件の構造化を案内する。
 - `job-search/{検索ID}/job_search_results.json` があり、当該求人がその結果に含まれる場合は、`inputs.job_search_screening` を `true` にし、`screening_source`（`search_id`・`result_index`・`classification`・`screened_at`）を記録する。fit-assessor は Web ツールを持たないため、このファイルのパスを渡してよい。
-- `career-private/commute.json` に `routes.{企業スラッグ}` があるか確認する。無ければ AskUserQuestion で片道通勤分数を1回だけ確認し、commute.json の `routes.{企業スラッグ}` へ本スキルが転記する（住所ジオコーディング・Web 経路検索はしない）。それでも不明なら統計フォールバックで進める（time_analysis 側の `fallbacks_used` に記録される）。この単一ポリシーを守る。
+- `career-private/commute.json` に `routes.{企業スラッグ}` があるか確認する。無ければ AskUserQuestion で片道通勤分数を1回だけ確認し、commute.json の `routes.{企業スラッグ}` へ本スキルが転記する（住所ジオコーディング・Web 経路検索はしない）。それでも不明なら統計フォールバックで進める（time_analysis 側の `fallbacks_used` に記録される）。この単一ポリシーを守る。片道分数を確認する際、乗り換え回数（`transfers`）と混雑の程度（`crowding`。`low`／`medium`／`high`）も任意項目として同時に聞き、答えがあれば `routes.{企業スラッグ}` へ併せて転記する。通勤の負担を所要時間だけで表さないための項目であり、拘束時間の算定式には入らない（`time_fit` の verdict で所要時間と併せて扱う）。
 
 ### Step 2 拘束時間算定
 
@@ -103,6 +104,7 @@ fit-assessor を Agent ツールで起動し、拘束時間・実質時給を算
 
 - 数値を、**求人票 metrics（job_posting.json の `metrics`）> 企業研究の働き方指標（company_research.json の `workstyle_metrics`。グレード順に選ぶ）> 統計フォールバック**の優先順で抽出する。各数値の出典（`posting`/`research`/`user`/`fallback`）・出典URL・グレードを、`--sources-json` に渡す出典メタ JSON へ記録する。
 - `scripts/calculate_time_analysis.py` を Bash で実行し、`career-private/fit/{企業スラッグ}/time_analysis.json` を生成する。CLI は全入力を引数で受ける（`--scheduled-hours`・`--break-minutes`・`--overtime-h-month`・`--annual-holidays`・`--paid-leave-rate`・`--paid-leave-granted`・`--paid-leave-taken`・`--commute-oneway-min`・`--salary`・`--sources-json <出典メタJSON>`・`--out <出力パス>`・`--json`）。未指定の項目のみ統計フォールバック定数が適用され、`fallbacks_used` に記録される。
+- **現職についても同じ式で算定し、差分を出す。** `career-private/fit/current/time_analysis.json` が無ければ、現職の年収・所定労働時間・年間休日・月平均残業・片道通勤分数を AskUserQuestion で1回だけまとめて確認し、同じ CLI で生成する（年収は profile.json の現年収を使い、重ねて聞かない）。応募先の算定では `--baseline-json career-private/fit/current/time_analysis.json` を渡し、出力へ `comparison`（現職の値と「応募先 − 現職」の差分）を含める。現職の入力がそろわない場合は `--baseline-json` を渡さず、差分を出せない旨を `time_fit` の verdict に書く。
 
 calculate_time_analysis.py の定義式・フォールバック定数・出力仕様の原本は `references/time-analysis-format.md` にある。
 
@@ -113,6 +115,7 @@ fit-assessor に、7次元の評価・必須条件の判定・総合判定を起
 - 7次元（experience_proximity・aspiration_alignment・work_character_fit・condition_fit・culture_fit・compensation_fit・time_fit）を過不足なく評価する。各次元は score（1〜5 または null）・verdict・evidence（1件以上）を持つ。
 - **経験の近さと志向の一致を別軸で評価する。** 経験があることを、その仕事を望んでいる根拠に使わない。志向の根拠は self_analysis の `career_narrative.future_direction`・`interests` に置く。
 - **不足する技術要件を3段階で示す。** `experience_proximity` の `skill_gap` を `complementable_within_3m`（3か月以内に補完できる）／`needs_6_12m_study`（6〜12か月の学習が要る）／`not_applicable_now`（現時点では応募が難しい）で表し、要件ごとの内訳を `skill_gap_items` へ書く。
+- **`time_fit` と `compensation_fit` の verdict は現職との差分で書く。** time_analysis.json の `comparison.delta` を根拠に、年間拘束時間と実質時給が現職より増えるか減るかを書く。応募先の絶対値だけを示して良し悪しを断じない。差分が出せていない場合は、その旨と理由を verdict に書く。
 - **求人票から判定できない作業特性を推測で埋めない。** 完了条件の明確さ・一人で完結しやすさ・結果を短期で確認できるかどうかは、`work_character_fit` の verdict に判定できない旨を書き、`overall.open_questions` へ面接での確認事項として入れる。
 - must_condition_results は profile の必須条件（`conditions[level=must]` と `work_character_preferences[desire=must]`）と `ref` で1対1に対応させ、`yes`/`no`/`unknown` で判定する。
 - overall で `推奨`/`条件付き推奨`/`非推奨`/`判断保留` を根拠付きで付す。満たさない必須条件があるのに `推奨` にしない。
@@ -197,6 +200,7 @@ cd {SKILL_DIR} && python -m unittest discover -s scripts/tests
 |---|---|---|
 | `references/fit-format.md` | fit_assessment.json のフィールド仕様・検証規則・配置 | fit_assessment.json を書く/読む/検証する全段階 |
 | `references/fit-criteria.md` | 7次元の判定基準・score の目安・evidence の付け方・unknown 優先 | Step 3 の評価の起草 |
+| `references/fit-methods.md` | 7次元の判定が依拠する知見（上司との適合・現職との比較・通勤・転職後の満足の推移）と、その限界（出典付き） | Step 3 の評価の起草、Step 5 の報告で留保を添える段階 |
 | `references/time-analysis-format.md` | time_analysis.json の定義式・フォールバック定数・CLI・出力仕様 | Step 2 の拘束時間算定 |
 | `{HUB_SKILL_DIR}/references/screening-axes.md` | 8作業特性の定義と、求人票から判定できない3特性の扱い | Step 3 の work_character_fit の評価 |
 | `references/roles/fit-assessor.md` | 適合性評価担当の役割プロンプト | Step 2・3。サブエージェントを使えないハーネスでは本体が読む |

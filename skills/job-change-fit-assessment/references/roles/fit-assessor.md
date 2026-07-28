@@ -58,7 +58,7 @@ job_posting.json・company_research.json・profile.json のいずれかが欠け
 1. 算定に要する数値（所定労働時間・休憩・月平均残業・年間休日・有給取得率・有給付与日数・有給取得日数・片道通勤分数・想定年収）を、次の優先順で抽出する。
    - 求人票 metrics（job_posting.json の `metrics`・`working_hours`・`salary`）を最優先。
    - 次に企業研究の働き方指標（company_research.json の `workstyle_metrics`）。複数候補があればグレードの高いものを選ぶ。
-   - 通勤片道分数は commute.json の `routes.{企業スラッグ}.one_way_minutes` を使う。
+   - 通勤片道分数は commute.json の `routes.{企業スラッグ}.one_way_minutes` を使う。同じ経路に任意項目の `transfers`（乗り換え回数）・`crowding`（混雑の程度）があれば読み、算定式には入れず `time_fit` の判断材料として使う。
    - いずれにも無い項目は指定せず、calculate_time_analysis.py の統計フォールバックに委ねる。
 2. 抽出した各数値の出典メタ（value・source（`posting`/`research`/`user`/`fallback`）・source_url・grade）を出典メタ JSON にまとめ、一時ファイルへ Write する。
 3. `calculate_time_analysis.py` を Bash で実行し、`career-private/fit/{企業スラッグ}/time_analysis.json` を生成する。抽出できた項目のみ引数で渡し、`--sources-json` に出典メタ JSON、`--out` に出力パスを渡す。
@@ -67,20 +67,23 @@ job_posting.json・company_research.json・profile.json のいずれかが欠け
    python {SKILL_DIR}/scripts/calculate_time_analysis.py --scheduled-hours ... --commute-oneway-min ... --sources-json {出典メタ.json} --out {time_analysis.json} --json
    ```
 
+4. 現職の算定結果 `career-private/fit/current/time_analysis.json` があれば、応募先の実行へ `--baseline-json {現職の time_analysis.json}` を加え、出力へ `comparison`（現職の値と「応募先 − 現職」の差分）を含める。無ければ渡さず、差分を出せない旨を後段の `time_fit` の verdict に書く。現職の算定に要する数値の聞き取りはスキル本体が行う。
+
 ### Step 3 適合性評価の起草
 
-4. profile・self_analysis・job_posting・company_research・time_analysis を突き合わせ、7次元（experience_proximity・aspiration_alignment・work_character_fit・condition_fit・culture_fit・compensation_fit・time_fit）を評価する。各次元は score（1〜5 または null）・verdict・evidence（1件以上。source は `company_research`/`job_posting`/`profile`/`self_analysis`/`time_analysis`/`job_search_screening`、ref は claim id やフィールドパス、note は内容）を持つ。判定基準は fit-criteria.md に従う。
+5. profile・self_analysis・job_posting・company_research・time_analysis を突き合わせ、7次元（experience_proximity・aspiration_alignment・work_character_fit・condition_fit・culture_fit・compensation_fit・time_fit）を評価する。各次元は score（1〜5 または null）・verdict・evidence（1件以上。source は `company_research`/`job_posting`/`profile`/`self_analysis`/`time_analysis`/`job_search_screening`、ref は claim id やフィールドパス、note は内容）を持つ。判定基準は fit-criteria.md に従う。
 
-   とくに次の3点を守る。
+   とくに次の4点を守る。
 
    - **経験の近さ（experience_proximity）と志向の一致（aspiration_alignment）を別に評価する。** 経験があることを、その仕事を望んでいる根拠に使わない。志向の根拠は self_analysis の `career_narrative.future_direction`・`interests` と profile の `job_change_axis.reasons` に置き、evidence へ必ず含める。
    - **不足する技術要件は3段階で示す。** `experience_proximity` の `skill_gap_items` へ要件ごとに `gap_level`（`complementable_within_3m` / `needs_6_12m_study` / `not_applicable_now`）と根拠を書き、`skill_gap` を内訳の最も重い段階に合わせる。
+   - **`time_fit` と `compensation_fit` の verdict は現職との差分で書く。** time_analysis.json に `comparison` があれば、`comparison.delta` の年間拘束時間と実質時給の増減を verdict の根拠にし、evidence の source を `time_analysis` として ref に該当パスを書く。`comparison` が無い場合は、現職との比較ができていない旨を verdict に書く。応募先の絶対値だけで良し悪しを断じない。
    - **求人票から判定できない作業特性を推測で埋めない。** `clear_completion`・`solo_completable`・`short_feedback` は求人票にも企業研究にもまず書かれない。`work_character_fit` の verdict にその旨を書き、`overall.open_questions` へ面接での確認事項として入れる。
 
-5. profile の必須条件（`job_change_axis.conditions[level=must]` と `work_character_preferences[desire=must]`）を `ref` で1対1に判定し、must_condition_results（ref・condition・met（`yes`/`no`/`unknown`）・evidence・任意の negotiable）を作る。根拠が無い条件は憶測で yes/no にせず `unknown` にする。`negotiable` を `true` にするには根拠を evidence へ添える。
-6. overall（recommendation（`推奨`/`条件付き推奨`/`非推奨`/`判断保留`）・rationale・open_questions）を根拠つきで付す。**満たさない必須条件があるのに `推奨` にしない。** 交渉で解消できない必須条件が残る場合は `非推奨` にする。`skill_gap` が `not_applicable_now` の場合も応募を勧めない。
-7. `career-private/fit/{企業スラッグ}/fit_assessment.json` を fit-format.md の形式で Write する。`schema_version` は `2.0` とする。
-8. 自分で次を実行し、PASS させてから返す。
+6. profile の必須条件（`job_change_axis.conditions[level=must]` と `work_character_preferences[desire=must]`）を `ref` で1対1に判定し、must_condition_results（ref・condition・met（`yes`/`no`/`unknown`）・evidence・任意の negotiable）を作る。根拠が無い条件は憶測で yes/no にせず `unknown` にする。`negotiable` を `true` にするには根拠を evidence へ添える。
+7. overall（recommendation（`推奨`/`条件付き推奨`/`非推奨`/`判断保留`）・rationale・open_questions）を根拠つきで付す。**満たさない必須条件があるのに `推奨` にしない。** 交渉で解消できない必須条件が残る場合は `非推奨` にする。`skill_gap` が `not_applicable_now` の場合も応募を勧めない。
+8. `career-private/fit/{企業スラッグ}/fit_assessment.json` を fit-format.md の形式で Write する。`schema_version` は `2.0` とする。
+9. 自分で次を実行し、PASS させてから返す。
 
    ```bash
    python {SKILL_DIR}/scripts/validate_fit_assessment.py {fit_assessment.json} --profile {profile.json} --json
