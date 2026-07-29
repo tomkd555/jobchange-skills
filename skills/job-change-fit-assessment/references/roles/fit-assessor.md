@@ -50,7 +50,7 @@ job_posting.json・company_research.json・profile.json のいずれかが欠け
 - 7次元の判定基準は、原本 `{SKILL_DIR}/references/fit-criteria.md` に従う。
 - 証拠グレード（A=一次公式／B=信頼できる二次／C=口コミ集約／D=個人ブログ・伝聞・未確認）の定義と付与ルールは、原本 `{SKILLS_ROOT}/job-change-company-research/references/evidence-grading.md` に従う。グレードC・Dのみを根拠に次元を断定しない。企業自身の評価的・自己宣伝的主張（company_research 側で confidence が high でないもの）を culture_fit の断定材料にしない。
 - 拘束時間算定の定義式・フォールバック定数・出力仕様は、原本 `{SKILL_DIR}/references/time-analysis-format.md` に従う。
-- 企業スコアの定量候補軸12個・点数への写し方・基準の決め方・重みの配分・総合点の規則は、原本 `{SKILLS_ROOT}/job-change-company-research/references/company-score-rubric.md` に従う。総合点は `calculate_company_score.py` が算出し、あなたはその結果を書き換えない。
+- 企業スコアの定量候補軸9個・点数への写し方・基準の決め方・重みの配分・総合点の規則は、原本 `{SKILLS_ROOT}/job-change-company-research/references/company-score-rubric.md` に従う。総合点は `calculate_company_score.py` が算出し、あなたはその結果を書き換えない。
 
 ## 手順
 

@@ -30,7 +30,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 ## 入力（指示書から受領する）
 
 - 企業名（正式名称）・重点観点（あれば）・出力先ディレクトリ（`{DATA_ROOT}/companies/{企業スラッグ}/`。企業スラッグは呼出元スキルが company_index.json で確定した値であり、自ら導出・変更しない）・求人票（あれば）。
-- 実測値を集める軸の識別子の配列（例 `["compensation_level", "avg_tenure"]`）。指定が無ければ `compensation_level` の実測値だけを集める。利用者が定義した定性軸の記述は渡されない。定性軸に関わる事柄は、利用者が自分の言葉で書いた重点観点として渡る場合がある。
+- 実測値を集める軸の識別子の配列（例 `["compensation_level", "annual_holidays"]`）。指定が無ければ `compensation_level` の実測値だけを集める。利用者が定義した定性軸の記述は渡されない。定性軸に関わる事柄は、利用者が自分の言葉で書いた重点観点として渡る場合がある。
 - job-change-company-research スキルの絶対パス（`{SKILL_DIR}`）。scripts の所在。
 
 いずれかが欠けている場合は、推測で補わず `{"error": "欠けている項目"}` の JSON だけを返す。
@@ -41,7 +41,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 
 company_research.json の形式は、原本 `{SKILL_DIR}/references/company-research-format.md` に従う。主要フィールドは company・research_date・claims（id・topic・statement・evidence[source_url・source_name・grade・quote・accessed]・confidence）・company_metrics（必須。定量候補軸の実測値）・open_questions とする。
 
-定量候補軸12個の軸キー・指標・単位・出所は、原本 `{SKILL_DIR}/references/company-score-rubric.md` に従う。**あなたは評価も格付けもしない。** 数値と出典だけを書き、確認できない項目は `value` を `null` にする。指示書で渡された軸の指標を優先して集め、各項目へ `value`・`unit`・`source_url`・`grade`・`as_of` を書く。単位は原本の表と同じにする。推定値・概算値・他社の値からの補間を入れない。実測値は企業側の事実であり、利用者プロファイルには依存しない（profile を要しない。あなたは profile へ到達しない）。重点観点として渡された事柄についても判定はせず、確認できた事実と出典を claims へ書く。
+定量候補軸9個の軸キー・指標・単位・出所は、原本 `{SKILL_DIR}/references/company-score-rubric.md` に従う。**あなたは評価も格付けもしない。** 数値と出典だけを書き、確認できない項目は `value` を `null` にする。指示書で渡された軸の指標を優先して集め、各項目へ `value`・`unit`・`source_url`・`grade`・`as_of` を書く。単位は原本の表と同じにする。推定値・概算値・他社の値からの補間を入れない。実測値は企業側の事実であり、利用者プロファイルには依存しない（profile を要しない。あなたは profile へ到達しない）。重点観点として渡された事柄についても判定はせず、確認できた事実と出典を claims へ書く。
 
 ## 手順
 

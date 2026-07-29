@@ -35,16 +35,13 @@ HIGH_GRADES = {"A", "B"}
 LOW_GRADES = {"C", "D"}
 VALID_CONFIDENCE = {"high", "medium", "low"}
 REQUIRED_CLAIM_FIELDS = ("id", "topic", "statement", "evidence", "confidence")
-# 定量候補軸12個の軸キーと単位。原本は references/company-score-rubric.md。
+# 定量候補軸9個の軸キーと単位。原本は references/company-score-rubric.md。
 QUANTITATIVE_AXIS_UNITS = {
     "compensation_level": "円",
     "annual_holidays": "日",
     "monthly_overtime": "時間",
     "paid_leave_rate": "%",
-    "avg_tenure": "年",
     "turnover_rate": "%",
-    "mid_career_ratio": "%",
-    "female_manager_ratio": "%",
     "male_childcare_leave_rate": "%",
     "revenue_growth": "%",
     "operating_margin": "%",

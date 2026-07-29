@@ -29,7 +29,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 ## 入力（指示書から受領する）
 
 - company_research.json の絶対パス。
-- 企業研究担当へ実測値の収集を指示した軸の識別子の配列（例 `["compensation_level", "avg_tenure"]`）。
+- 企業研究担当へ実測値の収集を指示した軸の識別子の配列（例 `["compensation_level", "annual_holidays"]`）。
 - job-change-company-research スキルの絶対パス（`{SKILL_DIR}`）。scripts の所在。
 
 いずれかが欠けている場合は、推測で補わず `{"error": "欠けている項目"}` の JSON だけを返す。

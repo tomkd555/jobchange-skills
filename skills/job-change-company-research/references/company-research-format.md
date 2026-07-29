@@ -127,10 +127,7 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 | `annual_holidays` | 年間休日総数 | 日 |
 | `monthly_overtime` | 月平均残業時間 | 時間 |
 | `paid_leave_rate` | 年次有給休暇の取得率 | % |
-| `avg_tenure` | 平均勤続年数 | 年 |
 | `turnover_rate` | 離職率 | % |
-| `mid_career_ratio` | 中途採用比率 | % |
-| `female_manager_ratio` | 女性管理職比率 | % |
 | `male_childcare_leave_rate` | 男性の育児休業取得率 | % |
 | `revenue_growth` | 売上高の成長率（年率） | % |
 | `operating_margin` | 営業利益率 | % |
@@ -167,7 +164,7 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 - 必須7トピック（`philosophy`・`business`・`financials`・`compensation`・`benefits`・`workstyle`・`reputation`）のいずれかが1件も無い
 - グレードC・Dのみを根拠とする claim に `confidence=high`
 - `company_metrics` の欠落、または `company_metrics` が非オブジェクト
-- `company_metrics` のキーが定量候補軸12個の軸キーでも `avg_paid_leave_days_taken` でもない
+- `company_metrics` のキーが定量候補軸9個の軸キーでも `avg_paid_leave_days_taken` でもない
 - `company_metrics` の各項目が非オブジェクト
 - `value` が数値でも `null` でもない
 - `unit` が軸ごとに定めた単位と異なる
@@ -180,6 +177,6 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 - `selection_process` の claim が0件
 - `research_date` が未設定
 - `value` が非 null の項目に `as_of` が無い
-- 定量候補軸12個のうち、`value` が非 null の軸が1つも無い
+- 定量候補軸9個のうち、`value` が非 null の軸が1つも無い
 
 記入例は `assets/company_research_example.json`（架空企業）にある。

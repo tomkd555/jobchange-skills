@@ -83,16 +83,13 @@ def _null_metric(unit: str) -> dict:
 
 
 def _full_company_metrics() -> dict:
-    """定量候補軸12個と補助指標を値付きで持つ company_metrics を返す（WARN ゼロ）。"""
+    """定量候補軸9個と補助指標を値付きで持つ company_metrics を返す（WARN ゼロ）。"""
     return {
         "compensation_level": _metric(6120000, "円"),
         "annual_holidays": _metric(125, "日"),
         "monthly_overtime": _metric(14.2, "時間"),
         "paid_leave_rate": _metric(71.0, "%"),
-        "avg_tenure": _metric(5.8, "年"),
         "turnover_rate": _metric(8.4, "%"),
-        "mid_career_ratio": _metric(46.0, "%"),
-        "female_manager_ratio": _metric(18.4, "%"),
         "male_childcare_leave_rate": _metric(62.5, "%"),
         "revenue_growth": _metric(18.0, "%"),
         "operating_margin": _metric(12.5, "%"),
@@ -371,6 +368,18 @@ class CompanyMetricsTest(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("company_metrics.brand_power" in e for e in result.errors))
 
+    def test_non_axis_metric_keys_error(self):
+        # 定量候補軸でないキーは、指標として自然な名前でも ERROR にする。
+        for key in ("avg_tenure", "mid_career_ratio", "female_manager_ratio"):
+            with self.subTest(key=key):
+                r = _valid_research()
+                r["company_metrics"][key] = _metric(5.8, "年")
+                result = vcr.validate(r)
+                self.assertFalse(result.ok)
+                self.assertTrue(
+                    any(f"company_metrics.{key}" in e for e in result.errors)
+                )
+
     def test_auxiliary_key_passes(self):
         r = _valid_research()
         r["company_metrics"]["avg_paid_leave_days_taken"] = _metric(12.4, "日")
@@ -454,10 +463,12 @@ class CompanyMetricsTest(unittest.TestCase):
 
     def test_missing_as_of_warns(self):
         r = _valid_research()
-        del r["company_metrics"]["avg_tenure"]["as_of"]
+        del r["company_metrics"]["turnover_rate"]["as_of"]
         result = vcr.validate(r)
         self.assertTrue(result.ok)
-        self.assertTrue(any("company_metrics.avg_tenure.as_of" in w for w in result.warnings))
+        self.assertTrue(
+            any("company_metrics.turnover_rate.as_of" in w for w in result.warnings)
+        )
 
 
 class ResultShapeTest(unittest.TestCase):

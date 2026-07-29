@@ -54,10 +54,7 @@ _QUANTITATIVE_SCORE_AXES = (
     "annual_holidays",
     "monthly_overtime",
     "paid_leave_rate",
-    "avg_tenure",
     "turnover_rate",
-    "mid_career_ratio",
-    "female_manager_ratio",
     "male_childcare_leave_rate",
     "revenue_growth",
     "operating_margin",
@@ -643,7 +640,7 @@ def _validate_company_score_axes(profile: dict, result: ValidationResult) -> Non
         ):
             result.add_error(
                 f"{path}.axis",
-                "定量軸の axis は company-score-rubric.md の定量候補軸12個のいずれかである",
+                "定量軸の axis は company-score-rubric.md の定量候補軸9個のいずれかである",
             )
 
         weight = entry.get("weight")

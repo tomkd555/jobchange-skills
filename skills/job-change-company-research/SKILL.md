@@ -7,7 +7,7 @@ description: >-
   company_research.json を作る。理念・事業・財務・給与・福利厚生・働き方・評判・選考プロセスの8トピックを扱い、
   機械検証（validate_company_research.py）と独立監査を通してから、トピック別の企業研究レポートを納品する。
   求人情報URLを渡された場合は、求人票取込担当（job-change-posting-parser）でページを取得し job_posting.json を
-  作ってから調査へ入る。平均年間給与・年間休日・残業・有給取得率・平均勤続年数・離職率・女性管理職比率などの
+  作ってから調査へ入る。平均年間給与・年間休日・残業・有給取得率・離職率・男性の育児休業取得率などの
   定量指標は、実測値・単位・出典URL・証拠グレードを添えて company_metrics へ構造化して格納する。
   口コミ・伝聞だけでの事実断定を禁じ、企業自身の自己宣伝的主張には確度（confidence）を high としないという原則を保つ。
   指示された軸の指標について公表値を集めるところまでを担い、点数化・重み付け・格付けは行わない（profile 非依存）。
@@ -40,7 +40,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 5. **個人情報を外部へ送信しない。** `profile.json` に含まれる個人情報（現年収・在籍企業名・学歴等）を、検索クエリ・fetch・外部APIを含む一切の外部送信に用いない。企業研究の Web 調査を担う job-change-company-researcher は WebSearch・WebFetch を持つため、`profile.json` を渡さない。重点観点は利用者の指示から与える。
 
-6. **指示された軸の指標について実測値を出典付きで集める。評価も格付けもしない。** 企業研究は、指示書で渡された軸の識別子の配列（例 `["compensation_level", "avg_tenure"]`）に対応する定量指標の公表値を集め、`company_metrics` へ `value`・`unit`・`source_url`・`grade`・`as_of` を書く。軸の指定が無い場合は `compensation_level` を集める。実測値は企業側の事実であり、利用者プロファイル（希望年収・スキル・転職の軸）には依存しないため、profile.json を要しない。点数化・重み付け・総合点は、利用者がどの軸をどれだけ重んじるかに依存するため、適合性評価（job-change-fit-assessment）が算出する。定量候補軸12個の定義・単位・方向・出所と記入形式の原本は `references/company-score-rubric.md` にある。確認できなかった項目は `value` を `null` にし、推定値・概算値を入れない。
+6. **指示された軸の指標について実測値を出典付きで集める。評価も格付けもしない。** 企業研究は、指示書で渡された軸の識別子の配列（例 `["compensation_level", "annual_holidays"]`）に対応する定量指標の公表値を集め、`company_metrics` へ `value`・`unit`・`source_url`・`grade`・`as_of` を書く。軸の指定が無い場合は `compensation_level` を集める。実測値は企業側の事実であり、利用者プロファイル（希望年収・スキル・転職の軸）には依存しないため、profile.json を要しない。点数化・重み付け・総合点は、利用者がどの軸をどれだけ重んじるかに依存するため、適合性評価（job-change-fit-assessment）が算出する。定量候補軸9個の定義・単位・方向・出所と記入形式の原本は `references/company-score-rubric.md` にある。確認できなかった項目は `value` を `null` にし、推定値・概算値を入れない。
 
 ## 範囲外
 
@@ -143,12 +143,12 @@ topic は `philosophy`・`business`・`financials`・`compensation`・`benefits`
 企業研究担当エージェント（job-change-company-researcher）を Agent ツールで起動し、company_research.json を作らせる。指示書には次を渡す。
 
 - 企業名（正式名称）・重点観点（あれば）・出力先ディレクトリ・求人票の所在（あれば）。
-- 実測値を集める軸の識別子の配列（例 `["compensation_level", "avg_tenure"]`）。呼出元から軸の指定が無い場合は `["compensation_level"]` を渡す。利用者が定義した定性軸の記述は渡さない（本人の状況を映すため。判定は適合性評価が行う）。定性軸に関わる事柄を調べる必要がある場合、利用者が自分の言葉で重点観点として指示する。
+- 実測値を集める軸の識別子の配列（例 `["compensation_level", "annual_holidays"]`）。呼出元から軸の指定が無い場合は `["compensation_level"]` を渡す。利用者が定義した定性軸の記述は渡さない（本人の状況を映すため。判定は適合性評価が行う）。定性軸に関わる事柄を調べる必要がある場合、利用者が自分の言葉で重点観点として指示する。
 - 本スキルの絶対パス `{SKILL_DIR}`（references と scripts の所在）。
 
 重点観点は、8トピック（理念・事業・財務・給与・福利厚生・働き方・評判・選考）の強弱指定へ正規化して渡す。利用者の自由記述に含まれる個人情報（現年収・氏名・在籍企業名等）は指示書に含めず、該当トピックの強弱指定へ言い換える。
 
-**profile.json は渡さない**（原則5。researcher は WebSearch・WebFetch を持つため）。Step 0.5 で job_posting.json を作った場合は、その所在を指示書に渡し、選考プロセス・求める人物像の照合に使わせる。エージェントは `references/evidence-grading.md`・`references/company-research-format.md`・`references/source-catalog.md`・`references/philosophy-analysis.md`・`references/compensation-benefits.md`・`references/company-score-rubric.md` を原本とし、これらに従って、収集した主張を claims 配列へ集約する。平均年間給与・年間休日・月平均残業・有給取得率・平均勤続年数などの数値は、散文の claim に埋めるだけでなく `company_metrics` へ構造化して格納する（単位・出典URL・グレード併記。確認できなければ value を null）。
+**profile.json は渡さない**（原則5。researcher は WebSearch・WebFetch を持つため）。Step 0.5 で job_posting.json を作った場合は、その所在を指示書に渡し、選考プロセス・求める人物像の照合に使わせる。エージェントは `references/evidence-grading.md`・`references/company-research-format.md`・`references/source-catalog.md`・`references/philosophy-analysis.md`・`references/compensation-benefits.md`・`references/company-score-rubric.md` を原本とし、これらに従って、収集した主張を claims 配列へ集約する。平均年間給与・年間休日・月平均残業・有給取得率・離職率などの数値は、散文の claim に埋めるだけでなく `company_metrics` へ構造化して格納する（単位・出典URL・グレード併記。確認できなければ value を null）。
 
 指示書で渡された軸の指標を優先して集め、`company_metrics` の各項目へ実測値と出典を書く（原則6。profile を要しない、企業側の事実の収集）。点数も格付けも付けない。重点観点として渡された事柄は、確認できた事実と出典を claims へ書く。自分で `validate_company_research.py` を PASS させてから返す（`company_metrics` の欠落・構造不正は ERROR になる）。これが本エージェントの責務である。
 
@@ -295,5 +295,5 @@ cd {SKILL_DIR} && python -m unittest discover -s scripts/tests
 | `references/source-catalog.md` | 情報源カタログ（EDINET有報・IR開示・就職四季報・しょくばらぼ・認定制度・口コミサイト）と各源の記載内容・限界・出典URL | Step 1 の収集、Step 3 の監査 |
 | `references/philosophy-analysis.md` | 理念・社是・パーパス分析の収集源と分析手順（明文→行動指針→人事制度→開示との一貫性検証）、自己宣伝的主張の確度制限との関係 | topic=philosophy の収集・分析 |
 | `references/compensation-benefits.md` | 給与・福利厚生・働き方の調査観点と情報源カタログ（有報・しょくばらぼ・認定制度・就職四季報・OpenWork・公的統計）、company_metrics への格納ルール | topic=compensation/benefits/workstyle の収集 |
-| `references/company-score-rubric.md` | 定量候補軸12個（軸キー・指標・単位・方向・出所）の定義と `company_metrics` の記入形式、点数化・重み・総合点を適合性評価が担う分業 | Step 1 の実測値の収集、Step 3 の company_metrics 監査 |
+| `references/company-score-rubric.md` | 定量候補軸9個（軸キー・指標・単位・方向・出所）の定義と `company_metrics` の記入形式、点数化・重み・総合点を適合性評価が担う分業 | Step 1 の実測値の収集、Step 3 の company_metrics 監査 |
 | `references/job-posting-format.md` | job_posting.json のフィールド仕様・記入基準・機械検証規則（4通りの入口と `source_type` を含む） | Step 0.5 で求人票を取り込む/検証する段階 |

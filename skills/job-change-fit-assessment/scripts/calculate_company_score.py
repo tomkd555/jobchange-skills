@@ -40,12 +40,9 @@ from typing import Any
 # （high=度数分布から分位を補間、medium=階級分布の一部から読み取り、low=産業別の両端で代用）
 # を書く。
 #
-# 次の3軸は既定を持たない。処遇水準（compensation_level）は、企業単位の年収分布を持つ公的統計
-# が無く、個人単位の分布（パート・アルバイトを含む）を企業の平均年間給与へ当てると水準がずれる
-# ためである。この軸は利用者の現年収と希望年収を基準に聞く。女性管理職比率
-# （female_manager_ratio）は、産業別の両端が労働力構成による外れ値を含み、企業規模別は規模が
-# 大きいほど低いという逆方向の変動を示すため、どちらも分布の代用にならない。中途採用比率
-# （mid_career_ratio）は、法定の公表値について全国の分布を確認できていない。
+# 処遇水準（compensation_level）は既定を持たない。企業単位の年収分布を持つ公的統計が無く、
+# 個人単位の分布（パート・アルバイトを含む）を企業の平均年間給与へ当てると水準がずれるためで
+# ある。この軸は利用者の現年収と希望年収を基準に聞く。
 DEFAULT_THRESHOLDS: dict[str, dict[str, Any]] = {
     "annual_holidays": {
         "p0": 97,
@@ -141,18 +138,6 @@ DEFAULT_THRESHOLDS: dict[str, dict[str, Any]] = {
         "source_url": "https://www.mof.go.jp/pri/reference/ssc/japan/japan02_09.pdf",
         "coverage": "金融業・保険業を除く。同年度の全産業・全規模は42.0%（直近の四半期別調査では全産業44.5%）",
         "derivation": "業種と資本金階層のクロス表の最小（非製造業・資本金1,000万円未満）と最大（製造業・資本金10億円以上）で代用した",
-        "confidence": "low",
-    },
-    "avg_tenure": {
-        "p0": 9.3,
-        "p100": 17.6,
-        "unit": "年",
-        "direction": "higher_is_better",
-        "survey": "賃金構造基本統計調査",
-        "survey_year": "令和7年（2025年）",
-        "source_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/chingin/kouzou/z2025/dl/14.pdf",
-        "coverage": "常用労働者10人以上の民営事業所。一般労働者・男女計の平均は12.7年",
-        "derivation": "分位が非公表のため、産業別平均勤続年数の最低（サービス業〈他に分類されないもの〉）と最高（電気・ガス・熱供給・水道業）で代用した",
         "confidence": "low",
     },
 }

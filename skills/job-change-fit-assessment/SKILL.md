@@ -222,6 +222,6 @@ cd {SKILL_DIR} && python -m unittest discover -s scripts/tests
 | `references/fit-criteria.md` | 7次元の判定基準・score の目安・evidence の付け方・unknown 優先 | Step 3 の評価の起草 |
 | `references/fit-methods.md` | 7次元の判定が依拠する知見（上司との適合・現職との比較・通勤・転職後の満足の推移）と、その限界（出典付き） | Step 3 の評価の起草、Step 5 の報告で留保を添える段階 |
 | `references/time-analysis-format.md` | time_analysis.json の定義式・フォールバック定数・CLI・出力仕様 | Step 2 の拘束時間算定 |
-| `job-change-company-research/references/company-score-rubric.md` | 企業スコアの定量候補軸12個・点数への写し方・基準の決め方・重みの配分・総合点の規則 | Step 2 の企業スコアの算出、Step 5 の報告での併記 |
+| `job-change-company-research/references/company-score-rubric.md` | 企業スコアの定量候補軸9個・点数への写し方・基準の決め方・重みの配分・総合点の規則 | Step 2 の企業スコアの算出、Step 5 の報告での併記 |
 | `{HUB_SKILL_DIR}/references/screening-axes.md` | 8作業特性の定義と、求人票から判定できない3特性の扱い | Step 3 の work_character_fit の評価 |
 | `references/roles/fit-assessor.md` | 適合性評価担当の役割プロンプト | Step 2・3。サブエージェントを使えないハーネスでは本体が読む |

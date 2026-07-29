@@ -199,33 +199,12 @@
       "grade": "A",
       "as_of": "2026-03"
     },
-    "avg_tenure": {
-      "value": 5.8,
-      "unit": "年",
-      "source_url": "https://disclosure2.edinet-fsa.example.go.jp/documents/S9999XYZ/employee.htm",
-      "grade": "A",
-      "as_of": "2026-03"
-    },
     "turnover_rate": {
       "value": null,
       "unit": "%",
       "source_url": null,
       "grade": null,
       "as_of": null
-    },
-    "mid_career_ratio": {
-      "value": null,
-      "unit": "%",
-      "source_url": null,
-      "grade": null,
-      "as_of": null
-    },
-    "female_manager_ratio": {
-      "value": 18.4,
-      "unit": "%",
-      "source_url": "https://disclosure2.edinet-fsa.example.go.jp/documents/S9999XYZ/employee.htm",
-      "grade": "A",
-      "as_of": "2026-03"
     },
     "male_childcare_leave_rate": {
       "value": 62.5,
@@ -266,6 +245,6 @@
   "open_questions": [
     "有価証券報告書の平均年間給与は全従業員平均であり、応募職種の給与水準は判別できない。求人票の提示レンジと照合が必要である。",
     "口コミの総合評価は回答件数が87件で、選択バイアスの影響を排除できない。傾向の傍証にとどめる。",
-    "年間休日数・離職率・中途採用比率・平均有給取得日数と、売上高成長率・営業利益率・自己資本比率は今回の収集源では確認できず、company_metrics では null とした。"
+    "離職率・平均有給取得日数と、売上高成長率・営業利益率・自己資本比率は今回の収集源では確認できず、company_metrics では null とした。"
   ]
 }
