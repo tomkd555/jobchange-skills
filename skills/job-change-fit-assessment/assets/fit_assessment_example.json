@@ -1,0 +1,293 @@
+{
+  "schema_version": "2.0",
+  "slug": "kakuu-cloudworks",
+  "assessed_at": "2026-07-25",
+  "inputs": {
+    "job_posting": true,
+    "company_research": true,
+    "self_analysis": true,
+    "time_analysis": true,
+    "job_search_screening": true
+  },
+  "screening_source": {
+    "search_id": "20260725-remote-infra",
+    "result_index": 0,
+    "classification": "apply_candidate",
+    "screened_at": "2026-07-25"
+  },
+  "dimensions": [
+    {
+      "id": "experience_proximity",
+      "score": 4,
+      "verdict": "必須要件のうちバックエンド設計とチームリードは経験と一致する。歓迎要件の Kubernetes 運用は未経験である。",
+      "skill_gap": "complementable_within_3m",
+      "skill_gap_items": [
+        {
+          "requirement": "Kubernetes による本番運用経験",
+          "gap_level": "complementable_within_3m",
+          "basis": "Docker と ECS の運用経験があり、コンテナオーケストレーションの概念は共通する。学習対象は Kubernetes 固有の運用に限られる。",
+          "evidence": [
+            {
+              "source": "job_posting",
+              "ref": "requirements.want[1]",
+              "note": "歓迎: Kubernetes による本番運用経験"
+            },
+            {
+              "source": "profile",
+              "ref": "skills.technical",
+              "note": "Docker・AWS ECS の実務経験を保有する"
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "source": "job_posting",
+          "ref": "requirements.must[0]",
+          "note": "必須: バックエンドAPI設計の実務経験3年以上"
+        },
+        {
+          "source": "profile",
+          "ref": "career_history[0].role",
+          "note": "バックエンドエンジニアとしてAPI設計を6年担当"
+        }
+      ]
+    },
+    {
+      "id": "aspiration_alignment",
+      "score": 4,
+      "verdict": "求人の業務内容（設計・構築・自動化）は、本人が今後やりたいと述べた方向と重なる。経験の近さとは別に、志向の面でも一致する。",
+      "evidence": [
+        {
+          "source": "self_analysis",
+          "ref": "career_narrative.future_direction",
+          "note": "技術選定の裁量を持って基盤を作る方向を志向すると記録している"
+        },
+        {
+          "source": "self_analysis",
+          "ref": "interests.concrete_topics[0]",
+          "note": "関心事としてインフラ自動化を挙げている"
+        },
+        {
+          "source": "job_posting",
+          "ref": "responsibilities[2]",
+          "note": "IaC によるプロビジョニングの自動化が業務に含まれる"
+        }
+      ]
+    },
+    {
+      "id": "work_character_fit",
+      "score": 4,
+      "verdict": "求人票の業務内容は構築・運用・自動化が中心で、手を動かす比率が高い（0.8）。完了条件の明確さ・一人で完結しやすさ・結果を短期で確認できるかは、求人票と企業研究からは判定できない。面接での確認事項とする。",
+      "evidence": [
+        {
+          "source": "job_search_screening",
+          "ref": "results[0].axis_observations(hands_on_ratio)",
+          "note": "業務内容5件のうち4件が構築・運用・検証・自動化に分類される"
+        },
+        {
+          "source": "profile",
+          "ref": "job_change_axis.work_character_preferences[0]",
+          "note": "自分で手を動かせることを重視すると登録している"
+        },
+        {
+          "source": "company_research",
+          "ref": "C031",
+          "note": "開発チームが自ら設計から運用まで担う体制であると開示している"
+        }
+      ]
+    },
+    {
+      "id": "condition_fit",
+      "score": 4,
+      "verdict": "望ましい条件のうち年収レンジとキャリアパスは整合する。勤務地の制約は小さい。",
+      "evidence": [
+        {
+          "source": "job_posting",
+          "ref": "location.remote_policy",
+          "note": "フルリモート勤務制度あり"
+        },
+        {
+          "source": "profile",
+          "ref": "job_change_axis.conditions(cond-salary)",
+          "note": "望ましい条件として年収700万円以上を挙げている"
+        }
+      ]
+    },
+    {
+      "id": "culture_fit",
+      "score": 3,
+      "verdict": "自律的な開発文化を掲げる点は本人の行動証拠（自発的な改善提案）と接続するが、企業自身の自己宣伝的主張が多く断定は避ける。",
+      "evidence": [
+        {
+          "source": "company_research",
+          "ref": "C012",
+          "note": "エンジニア主導の技術選定を掲げる（採用サイト由来・確度は高くしない）"
+        },
+        {
+          "source": "self_analysis",
+          "ref": "strengths[0].evidence",
+          "note": "前職で監視基盤の改善を自発的に起案し導入した行動証拠"
+        }
+      ]
+    },
+    {
+      "id": "compensation_fit",
+      "score": 3,
+      "verdict": "提示レンジ下限は希望年収に届くが上限との差は小さい。業界平均年収と比べて突出はしない。",
+      "evidence": [
+        {
+          "source": "job_posting",
+          "ref": "salary.min",
+          "note": "提示レンジ 650万〜900万円"
+        },
+        {
+          "source": "profile",
+          "ref": "salary.desired",
+          "note": "希望年収 850万円"
+        },
+        {
+          "source": "company_research",
+          "ref": "C020",
+          "note": "有価証券報告書の平均年間給与 612万円（全従業員平均・職種別内訳なし）"
+        }
+      ]
+    },
+    {
+      "id": "time_fit",
+      "score": 4,
+      "verdict": "年間拘束時間・実質時給は現職より改善する見込み。残業実績は月8時間で必須条件の上限を下回る。",
+      "evidence": [
+        {
+          "source": "time_analysis",
+          "ref": "annual.binding_hours",
+          "note": "年間拘束時間 1980時間（フルリモート・残業月8時間で算定）"
+        },
+        {
+          "source": "time_analysis",
+          "ref": "effective_hourly_wage.binding_basis",
+          "note": "実質時給 3280円（拘束基準）"
+        },
+        {
+          "source": "job_posting",
+          "ref": "metrics.monthly_overtime_h.quote",
+          "note": "求人票記載: 月平均残業8時間"
+        }
+      ]
+    }
+  ],
+  "must_condition_results": [
+    {
+      "ref": "cond-modern-stack",
+      "condition": "モダンな技術スタックと CI/CD が整備されていること",
+      "met": "yes",
+      "evidence": [
+        {
+          "source": "company_research",
+          "ref": "C033",
+          "note": "技術ブログで CI/CD パイプラインの構成を公開している"
+        }
+      ]
+    },
+    {
+      "ref": "cond-remote",
+      "condition": "リモートワークが可能であること（週2日以上の在宅）",
+      "met": "yes",
+      "evidence": [
+        {
+          "source": "job_posting",
+          "ref": "location.remote_policy",
+          "note": "フルリモート勤務制度ありと明記"
+        }
+      ]
+    },
+    {
+      "ref": "cond-overtime",
+      "condition": "月平均残業が10時間以下であること",
+      "met": "yes",
+      "evidence": [
+        {
+          "source": "job_posting",
+          "ref": "metrics.monthly_overtime_h",
+          "note": "月平均残業8時間"
+        }
+      ]
+    }
+  ],
+  "company_score": {
+    "total": 44,
+    "coverage": 100,
+    "provisional": false,
+    "axes": [
+      {
+        "axis": "monthly_overtime",
+        "kind": "quantitative",
+        "weight": 30,
+        "value": 14.2,
+        "unit": "時間",
+        "score": 57,
+        "threshold_source": "statistic",
+        "thresholds": {
+          "zero": 24.1,
+          "full": 6.7
+        },
+        "grade": "A",
+        "source_url": "https://shokuba.mhlw.go.jp/company/9999"
+      },
+      {
+        "axis": "compensation_level",
+        "kind": "quantitative",
+        "weight": 30,
+        "value": 6120000,
+        "unit": "円",
+        "score": 0,
+        "threshold_source": "user",
+        "thresholds": {
+          "zero": 6800000,
+          "full": 9000000
+        },
+        "grade": "A",
+        "source_url": "https://disclosure2.edinet-fsa.example.go.jp/documents/S9999XYZ/employee.htm"
+      },
+      {
+        "axis": "annual_holidays",
+        "kind": "quantitative",
+        "weight": 15,
+        "value": 125,
+        "unit": "日",
+        "score": 93,
+        "threshold_source": "statistic",
+        "thresholds": {
+          "zero": 97,
+          "full": 127
+        },
+        "grade": "A",
+        "source_url": "https://shokuba.mhlw.go.jp/company/9999"
+      },
+      {
+        "axis": "tech_discretion",
+        "kind": "qualitative",
+        "weight": 25,
+        "value": null,
+        "unit": null,
+        "score": 50,
+        "threshold_source": null,
+        "thresholds": null,
+        "grade": null,
+        "source_url": null,
+        "evidence": "技術ブログに開発チームが技術選定を担う旨の記載があるが、決定の範囲は読み取れず面接も未実施のため、上位の条件は満たさない"
+      }
+    ],
+    "rationale": "総合点 44 点は、判定できた軸（monthly_overtime（重み30・57点）、compensation_level（重み30・0点）、annual_holidays（重み15・93点）、tech_discretion（重み25・50点））の加重平均である。判定できた軸の重みの合計は 100 である。"
+  },
+  "overall": {
+    "recommendation": "条件付き推奨",
+    "rationale": "必須条件は3件とも満たす。経験の近さと志向の一致がいずれも高く、作業特性も手を動かす比率が高い点で合う。ただし夜間・休日対応の有無が求人票・企業研究のいずれからも確認できず、作業特性の3項目（完了条件の明確さ・一人で完結しやすさ・結果を短期で確認できるか）は面接でしか判定できないため、条件付きとした。",
+    "open_questions": [
+      "夜間・休日対応の有無（求人票・企業研究のいずれにも記載が無い）",
+      "着任後3ヶ月で期待される成果は何か（完了条件の明確さの確認）",
+      "設計から運用までを個人で完結できる範囲はどこまでか",
+      "Kubernetes 運用の習熟をどの程度求められるか"
+    ]
+  }
+}

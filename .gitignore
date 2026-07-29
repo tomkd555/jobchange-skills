@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# 利用者データ（設定ファイルの data_root 配下へ置く。リポジトリには含めない）
+career-private/
+companies/
+job-search/
+.job-change/
+
+# ローカルのハーネス設定
+.claude/settings.local.json
+
+# 作業環境向けのプロジェクト指示（配布物には含めない）
+CLAUDE.md
+
+# graphify のナレッジグラフ（作業環境の絶対パスを含む。各自のローカルで生成する）
+graphify-out/
+
+# OS
+.DS_Store
+Thumbs.db

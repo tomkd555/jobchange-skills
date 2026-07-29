@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "companies": {
+    "acme-cloud": {
+      "name": "アクメクラウド株式会社",
+      "aliases": ["アクメクラウド", "Acme Cloud", "ACME Cloud, Inc."],
+      "created": "2026-07-12"
+    },
+    "beta-systems": {
+      "name": "ベータシステムズ株式会社",
+      "aliases": ["ベータシステムズ", "Beta Systems"],
+      "created": "2026-07-12"
+    },
+    "gamma-robotics": {
+      "name": "ガンマロボティクス株式会社",
+      "aliases": ["ガンマロボティクス"],
+      "created": "2026-07-13"
+    }
+  }
+}

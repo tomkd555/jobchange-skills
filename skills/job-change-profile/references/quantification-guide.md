@@ -1,0 +1,71 @@
+# 実績の定量化ガイド（型・代替表現・限界）
+
+<!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
+<!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
+
+job-change-profile スキルの Step 2 で実績（achievements）を聞き取り・起草・監査するときに参照する原本である。SKILL.md の原則3・question-bank.md の Step 2・エージェント2体がこのファイルを参照する。証拠グレードは A〜D の4段階で表記し、学術研究には DOI を記す。
+
+## 定量化を推奨しつつ、検証可能性を優先する
+
+実績の定量化は実務で強く推奨されるが、数値は量より質（検証可能性・要件との関連）が重要である。全実績への機械的な数値付与は逆効果になりうる（確度: 可能性が高い、65%以上80%未満）。
+
+- 人材紹介会社は、実績を定量的な数字で表し、前年度比などで示すことを推奨する[E25]。
+- 学術的には、応募書類に competency statements（能力・実績の記述）を加えると評価が上がり、書類選考を通過する確率が高まる。ただしこの効果は記述の場所に依存せず、「一般的な書き方でも」生じた[E34]。**すなわち定量化そのものを単離した効果ではなく、記述の存在自体の効果が大きい。**
+- 過剰な数値や事実と異なる数値は逆効果である。箇条書きの全項目への機械的な数値付与や、事実と異なる数値は採用担当の不信を招く。採用側視点の記事は、事実と異なる数値が1つあるだけで書類全体の信頼を毀損すると指摘する[E29]。
+
+運用: `metric` は「検証可能な数値」を優先する。後でエビデンス（人事評価資料・社内報告）で確認できない数値は書かない。数値が出ない実績を無理に数値化せず、`metric` を `null` にして工夫した点と評価された点を `description` で具体化する。
+
+## 定量化の型
+
+実績を数値で表すときの型を挙げる。聞き取りで、どの型に当てはまるかを利用者と一緒に確かめる。
+
+| 型 | 示し方 |
+|---|---|
+| 前年度比・増減率 | 売上・コスト・工数などの変化を割合で示す（例: 「前年度比で処理件数を1.4倍」）[E25]。 |
+| 件数・規模 | 対応した案件数・顧客数・データ量・システム規模などの絶対量を示す[E28]。 |
+| 頻度 | 定常業務の実施頻度・処理回数を示す[E28]。 |
+| 対応人数・範囲 | マネジメント・折衝の対象人数、担当した部門・地域の範囲を示す[E28]。 |
+| 工程削減率・効率化 | 運用保守・定型業務では、工程削減率・処理時間短縮・ミス削減で示す[E32][E26]。 |
+| 定性成果の接続 | 数値化しにくい成果は、後続の定量成果（受注・継続契約など）へ接続して示す[E32]。 |
+
+## 定量化困難な業務の代替表現
+
+間接部門・定型業務・運用保守など、直接の数値が出にくい業務では、次の代替表現を使う（確度: 可能性が高い、65%以上80%未満）。
+
+- 定型業務でも、工夫点・ミス削減・効率化で表現できる[E26]。数値化が難しくても、工夫や評価された点を具体的に書けばよい[E27]。
+- 運用保守は、工程削減率・システム規模・定性成果の受注接続で示せる[E32]。
+- 直接の数値が出にくい業務でも、頻度・範囲・対応人数・概算のレンジで定量化できる[E28]。
+
+運用: 代替表現を使う場合も、規模・範囲・主体を表す語（大規模・全社・主導など）は、聞き取りメモで裏付けられる範囲を超えて用いない。裏付けのない誇張語は監査（auditor）が指摘する。
+
+## 定量化の効果の限界（エビデンスギャップ）
+
+- 定量化そのものを単離して効果を測った査読済みのフィールド実験は、言語を問わず確認できていない（エビデンスギャップ）。効果量の主張の多くは人材サービス提供者の自己報告に依存する。記述の存在自体が評価を上げることは示されるが[E34]、「数値を足すほど評価が上がる」という単調な関係は実証されていない。
+- 数値・具体性の説得効果は文脈依存である。確率の言明では、数値と語のどちらが信頼を高めるかは文脈で変わる[E37]。過度な精度がかえって疑いを招く場合がある[E36]。
+
+## 職種依存
+
+実績数値の重みは職種に依存する（確度: 可能性が非常に高い、80%以上90%未満）。
+
+- IT 職では、応募書類で最重視される項目が実績数値ではなく「スキル・使用可能ツール」であった（採用担当150名調査で48.4%）[E2][E31]。**この数値は単一の調査に由来する。**
+
+運用: 職種によっては、実績の定量化よりスキルの明確な棚卸し（Step 3）が採否を左右する。定量化に固執せず、職種に応じて重点を移す。
+
+## 出典一覧
+
+<!-- textlint-disable -->
+<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる区画である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+
+- [E2] Geekly（ギークリー）. 【採用担当150名に聞いた】応募書類で重視するポイントとは？. 2021-12. グレードC（単一ソース・自己報告）. https://www.geekly.co.jp/column/cat-jobsearch/resume_point_byrecruiter/
+- [E25] JAC Recruitment. 職務経歴書「実績」の書き方とは？職種別の記入例も解説. 2022-11-25. グレードC. https://www.jac-recruitment.jp/market/knowhow/resume/achievements/
+- [E26] JAC Recruitment. 職務経歴書「実績」の書き方とは？職種別の記入例も解説. 2022-11-25. グレードC. https://www.jac-recruitment.jp/market/knowhow/resume/achievements/
+- [E27] エン・ジャパン（エン転職）. 転職Q&A「【職務経歴書】数字で示せる実績がない。何を書けば良い？」. 2023. グレードC. https://employment.en-japan.com/qa_1199_2040/
+- [E28] The Muse. How to Quantify Your Resume Bullets (When You Don't Work With Numbers). 2020-06-19. グレードC. https://www.themuse.com/advice/how-to-quantify-your-resume-bullets-when-you-dont-work-with-numbers
+- [E29] The Resume Writers (AU). The Metric Mirage: How Overusing Resume Numbers Is Undermining Their Impact. 2025-08-28. グレードC. https://theresumewriters.com.au/the-metric-mirage-how-overusing-resume-numbers-is-undermining-their-impact/
+- [E31] Geekly（ギークリー）. 【採用担当150名に聞いた】応募書類で重視するポイントとは？. 2021-12. グレードC（単一ソース・自己報告）. https://www.geekly.co.jp/column/cat-jobsearch/resume_point_byrecruiter/
+- [E32] type転職エージェント. インフラエンジニアの職務経歴書｜職務経歴書の書き方. 2023. グレードC. https://type.career-agent.jp/knowhow/documents/keirekisho/network.html
+- [E34] International Journal of Selection and Assessment. The Impact of Competency Statements on Resumes for Short-listing Decisions. 2000. グレードA. DOI:10.1111/1468-2389.00132. https://doi.org/10.1111/1468-2389.00132
+- [E36] Strategic Management Journal. Give it to us straight (most of the time). 2018. グレードA. DOI:10.1002/smj.2733. https://doi.org/10.1002/smj.2733
+- [E37] Judgment and Decision Making. Cultivating credibility with probability words and numbers. 2019. グレードA. DOI:10.1017/S1930297500005404. https://doi.org/10.1017/S1930297500005404
+
+<!-- textlint-enable -->

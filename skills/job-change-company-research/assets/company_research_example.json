@@ -1,0 +1,250 @@
+{
+  "company": {
+    "name": "架空クラウドワークス株式会社",
+    "securities_code": "9999",
+    "edinet_code": "E99999"
+  },
+  "research_date": "2026-07-12",
+  "claims": [
+    {
+      "id": "C001",
+      "topic": "philosophy",
+      "statement": "パーパスとして「働くをなめらかに」を掲げ、統合報告書で行動指針を4項目に整理して明文化している。",
+      "evidence": [
+        {
+          "source_url": "https://www.kakuu-cloudworks.example.co.jp/company/purpose/",
+          "source_name": "架空クラウドワークス 企業サイト 理念ページ",
+          "grade": "A",
+          "quote": "私たちのパーパスは「働くをなめらかに」です。行動指針として、誠実・挑戦・協働・学習の4つを定めています。",
+          "accessed": "2026-07-12"
+        }
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "C002",
+      "topic": "business",
+      "statement": "主力事業はクラウド勤怠管理SaaSで、直近通期の売上構成比の約7割を占める。",
+      "evidence": [
+        {
+          "source_url": "https://disclosure2.edinet-fsa.example.go.jp/documents/S9999XYZ/main.htm",
+          "source_name": "有価証券報告書 第10期 事業の内容",
+          "grade": "A",
+          "quote": "当社の報告セグメントはSaaS事業単一であり、うち勤怠管理サービスの売上高は連結売上高の68.4%を占めております。",
+          "accessed": "2026-07-12"
+        },
+        {
+          "source_url": "https://www.kakuu-cloudworks.example.co.jp/ir/library/kessan_10q4.pdf",
+          "source_name": "第10期 決算説明資料",
+          "grade": "A",
+          "quote": "勤怠管理SaaSの契約社数は前年比118%の12,400社となりました。",
+          "accessed": "2026-07-12"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "C003",
+      "topic": "financials",
+      "statement": "第10期の平均年間給与は6,120千円、平均勤続年数は5.8年である（提出会社・全従業員平均）。",
+      "evidence": [
+        {
+          "source_url": "https://disclosure2.edinet-fsa.example.go.jp/documents/S9999XYZ/employee.htm",
+          "source_name": "有価証券報告書 第10期 第1 企業の概況 5 従業員の状況",
+          "grade": "A",
+          "quote": "提出会社の従業員数は842名、平均年齢34.2歳、平均勤続年数5.8年、平均年間給与6,120千円であります。",
+          "accessed": "2026-07-12"
+        }
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "C004",
+      "topic": "compensation",
+      "statement": "等級ごとの給与レンジと賞与算定式を公開しており、賞与は年2回・業績連動である。",
+      "evidence": [
+        {
+          "source_url": "https://recruit.kakuu-cloudworks.example.co.jp/compensation/",
+          "source_name": "架空クラウドワークス 採用サイト 報酬制度ページ",
+          "grade": "A",
+          "quote": "報酬はグレード制で、賞与は年2回（6月・12月）、全社業績と個人評価に連動して算定します。",
+          "accessed": "2026-07-12"
+        },
+        {
+          "source_url": "https://openwork.example.com/kakuu-cloudworks/salary",
+          "source_name": "口コミ集計サイト 年収情報",
+          "grade": "C",
+          "quote": "回答者の平均年収は約620万円との集計。回答件数は58件。",
+          "accessed": "2026-07-12"
+        }
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "C005",
+      "topic": "benefits",
+      "statement": "健康経営優良法人2026（大規模法人部門）に認定されている。",
+      "evidence": [
+        {
+          "source_url": "https://www.meti.go.jp/policy/mono_info_service/healthcare/kenkoukeiei_yuryouhouzin.html",
+          "source_name": "経済産業省 健康経営優良法人認定制度",
+          "grade": "B",
+          "quote": "健康経営優良法人認定制度は、地域の健康課題に即した取組や日本健康会議が進める健康増進の取組をもとに、特に優良な健康経営を実践している大企業や中小企業等の法人を顕彰する制度です。",
+          "accessed": "2026-07-12"
+        }
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "C006",
+      "topic": "workstyle",
+      "statement": "しょくばらぼに、月平均所定外労働時間14.2時間、年次有給休暇取得率71.0%を自主開示している。",
+      "evidence": [
+        {
+          "source_url": "https://shokuba.mhlw.go.jp/company/9999",
+          "source_name": "厚生労働省 しょくばらぼ 企業情報",
+          "grade": "A",
+          "quote": "月平均所定外労働時間 14.2時間、年次有給休暇の平均取得率 71.0%（直近事業年度）。",
+          "accessed": "2026-07-12"
+        }
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "C007",
+      "topic": "reputation",
+      "statement": "就職四季報では3年後新卒定着率が88.0%と掲載されている。口コミサイトでは裁量の大きさを評価する声がある一方、評価制度の運用への不満も見られる。",
+      "evidence": [
+        {
+          "source_url": "https://str.toyokeizai.example.net/company/9999",
+          "source_name": "就職四季報 総合版 企業ページ",
+          "grade": "B",
+          "quote": "3年後新卒定着率 88.0%（対象入社者数 25名）。",
+          "accessed": "2026-07-12"
+        },
+        {
+          "source_url": "https://openwork.example.com/kakuu-cloudworks/reviews",
+          "source_name": "口コミ集計サイト 総合評価",
+          "grade": "C",
+          "quote": "総合評価 3.6（回答87件）。「裁量が大きい」との声がある一方、「評価基準が不透明」との指摘もある。",
+          "accessed": "2026-07-12"
+        }
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "C008",
+      "topic": "selection_process",
+      "statement": "中途採用の選考は書類選考→適性検査→一次面接→最終面接の4段階で、適性検査は一次面接前に実施されると複数の選考体験記が述べている。",
+      "evidence": [
+        {
+          "source_url": "https://recruit.kakuu-cloudworks.example.co.jp/mid-career/flow/",
+          "source_name": "架空クラウドワークス 採用サイト 選考フロー",
+          "grade": "A",
+          "quote": "中途採用の選考フローは、書類選考、適性検査、一次面接、最終面接の順で進みます。",
+          "accessed": "2026-07-12"
+        },
+        {
+          "source_url": "https://tenshoku-taiken.example.com/kakuu-cloudworks/2",
+          "source_name": "選考体験記 集計サイト",
+          "grade": "C",
+          "quote": "一次面接の前にWebの適性検査を受けた。所要は約35分だった（複数の投稿で同旨）。",
+          "accessed": "2026-07-12"
+        }
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "C009",
+      "topic": "workstyle",
+      "statement": "有価証券報告書の人的資本開示で、女性管理職比率18.4%、男性の育児休業取得率62.5%を開示している。",
+      "evidence": [
+        {
+          "source_url": "https://disclosure2.edinet-fsa.example.go.jp/documents/S9999XYZ/employee.htm",
+          "source_name": "有価証券報告書 第10期 第1 企業の概況 5 従業員の状況",
+          "grade": "A",
+          "quote": "提出会社の管理職に占める女性労働者の割合は18.4%、男性労働者の育児休業取得率は62.5%であります。",
+          "accessed": "2026-07-12"
+        }
+      ],
+      "confidence": "medium"
+    }
+  ],
+  "company_metrics": {
+    "compensation_level": {
+      "value": 6120000,
+      "unit": "円",
+      "source_url": "https://disclosure2.edinet-fsa.example.go.jp/documents/S9999XYZ/employee.htm",
+      "grade": "A",
+      "as_of": "2026-03"
+    },
+    "annual_holidays": {
+      "value": 125,
+      "unit": "日",
+      "source_url": "https://shokuba.mhlw.go.jp/company/9999",
+      "grade": "A",
+      "as_of": "2026-03"
+    },
+    "monthly_overtime": {
+      "value": 14.2,
+      "unit": "時間",
+      "source_url": "https://shokuba.mhlw.go.jp/company/9999",
+      "grade": "A",
+      "as_of": "2026-03"
+    },
+    "paid_leave_rate": {
+      "value": 71.0,
+      "unit": "%",
+      "source_url": "https://shokuba.mhlw.go.jp/company/9999",
+      "grade": "A",
+      "as_of": "2026-03"
+    },
+    "turnover_rate": {
+      "value": null,
+      "unit": "%",
+      "source_url": null,
+      "grade": null,
+      "as_of": null
+    },
+    "male_childcare_leave_rate": {
+      "value": 62.5,
+      "unit": "%",
+      "source_url": "https://disclosure2.edinet-fsa.example.go.jp/documents/S9999XYZ/employee.htm",
+      "grade": "A",
+      "as_of": "2026-03"
+    },
+    "revenue_growth": {
+      "value": null,
+      "unit": "%",
+      "source_url": null,
+      "grade": null,
+      "as_of": null
+    },
+    "operating_margin": {
+      "value": null,
+      "unit": "%",
+      "source_url": null,
+      "grade": null,
+      "as_of": null
+    },
+    "equity_ratio": {
+      "value": null,
+      "unit": "%",
+      "source_url": null,
+      "grade": null,
+      "as_of": null
+    },
+    "avg_paid_leave_days_taken": {
+      "value": null,
+      "unit": "日",
+      "source_url": null,
+      "grade": null,
+      "as_of": null
+    }
+  },
+  "open_questions": [
+    "有価証券報告書の平均年間給与は全従業員平均であり、応募職種の給与水準は判別できない。求人票の提示レンジと照合が必要である。",
+    "口コミの総合評価は回答件数が87件で、選択バイアスの影響を排除できない。傾向の傍証にとどめる。",
+    "離職率・平均有給取得日数と、売上高成長率・営業利益率・自己資本比率は今回の収集源では確認できず、company_metrics では null とした。"
+  ]
+}

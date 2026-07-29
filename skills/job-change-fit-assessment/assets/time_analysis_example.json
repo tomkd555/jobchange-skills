@@ -1,0 +1,110 @@
+{
+  "inputs": {
+    "scheduled_hours": {
+      "value": 7.5,
+      "source": "posting",
+      "source_url": "https://careers.kakuu-cloud.example/jobs/backend",
+      "grade": "A"
+    },
+    "break_minutes": {
+      "value": 60.0,
+      "source": "posting",
+      "source_url": "https://careers.kakuu-cloud.example/jobs/backend",
+      "grade": "A"
+    },
+    "monthly_overtime_h": {
+      "value": 15.0,
+      "source": "research",
+      "source_url": "https://www.kakuu-cloud.example/sustainability/report2025.pdf",
+      "grade": "B"
+    },
+    "annual_holidays": {
+      "value": 125.0,
+      "source": "posting",
+      "source_url": "https://careers.kakuu-cloud.example/jobs/backend",
+      "grade": "A"
+    },
+    "commute_oneway_min": {
+      "value": 40.0,
+      "source": "user",
+      "source_url": null,
+      "grade": null
+    },
+    "paid_leave_rate": {
+      "value": 0.669,
+      "source": "fallback",
+      "source_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/jikan/syurou/25/dl/gaikyou.pdf",
+      "grade": null
+    },
+    "paid_leave_granted": {
+      "value": 18.1,
+      "source": "fallback",
+      "source_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/jikan/syurou/25/dl/gaikyou.pdf",
+      "grade": null
+    },
+    "salary": {
+      "value": 6500000.0,
+      "source": "research",
+      "source_url": "https://www.kakuu-cloud.example/sustainability/report2025.pdf",
+      "grade": "B"
+    }
+  },
+  "daily": {
+    "scheduled_hours": 7.5,
+    "break_h": 1.0,
+    "daily_overtime_h": 0.8,
+    "commute_oneway_h": 0.7,
+    "binding_hours": 10.6
+  },
+  "annual": {
+    "working_days": 228,
+    "paid_leave_taken_days": 12,
+    "binding_hours": 2411.8,
+    "labor_hours": 1880.1
+  },
+  "effective_hourly_wage": {
+    "binding_basis": 2695,
+    "labor_basis": 3457
+  },
+  "sensitivity": {
+    "overtime_plus10h": 113.9,
+    "overtime_minus10h": -113.9,
+    "commute_plus15min": 113.9,
+    "commute_minus15min": -113.9
+  },
+  "comparison": {
+    "current": {
+      "annual_binding_hours": 2688.4,
+      "annual_labor_hours": 2010.6,
+      "hourly_wage_binding_basis": 2232,
+      "hourly_wage_labor_basis": 2984
+    },
+    "delta": {
+      "annual_binding_hours": -276.6,
+      "annual_labor_hours": -130.5,
+      "hourly_wage_binding_basis": 463,
+      "hourly_wage_labor_basis": 473
+    }
+  },
+  "assumptions": [
+    "paid_leave_rate は未指定のため統計フォールバックを適用した：0.669（就労条件総合調査 2025年・令和7年調査。年次有給休暇の取得率66.9%、https://www.mhlw.go.jp/toukei/itiran/roudou/jikan/syurou/25/dl/gaikyou.pdf）",
+    "paid_leave_granted は未指定のため統計フォールバックを適用した：18.1（就労条件総合調査 2025年・令和7年調査。労働者1人平均の年次有給休暇の付与日数、https://www.mhlw.go.jp/toukei/itiran/roudou/jikan/syurou/25/dl/gaikyou.pdf）",
+    "有給取得日数は付与日数×取得率で推計した（付与 18.1 日 × 取得率 0.669）。"
+  ],
+  "fallbacks_used": [
+    {
+      "field": "paid_leave_rate",
+      "value": 0.669,
+      "survey": "就労条件総合調査",
+      "survey_year": 2025,
+      "source_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/jikan/syurou/25/dl/gaikyou.pdf"
+    },
+    {
+      "field": "paid_leave_granted",
+      "value": 18.1,
+      "survey": "就労条件総合調査",
+      "survey_year": 2025,
+      "source_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/jikan/syurou/25/dl/gaikyou.pdf"
+    }
+  ]
+}
