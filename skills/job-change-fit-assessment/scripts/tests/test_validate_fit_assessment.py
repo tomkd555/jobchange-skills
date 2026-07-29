@@ -814,8 +814,7 @@ class ExampleAssetTest(unittest.TestCase):
         )
         result = vf.validate(document, profile=profile)
         self.assertEqual(result.errors, [])
-        # 記入例の企業スコアは判定できない軸を含むため、暫定であることの WARN だけが出る。
-        self.assertTrue(all("company_score.provisional" in w for w in result.warnings))
+        self.assertEqual(result.warnings, [])
 
 
 if __name__ == "__main__":

@@ -179,11 +179,11 @@
       "as_of": "2026-03"
     },
     "annual_holidays": {
-      "value": null,
+      "value": 125,
       "unit": "日",
-      "source_url": null,
-      "grade": null,
-      "as_of": null
+      "source_url": "https://shokuba.mhlw.go.jp/company/9999",
+      "grade": "A",
+      "as_of": "2026-03"
     },
     "monthly_overtime": {
       "value": 14.2,

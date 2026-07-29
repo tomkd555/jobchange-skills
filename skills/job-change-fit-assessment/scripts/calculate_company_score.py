@@ -35,7 +35,127 @@ from typing import Any
 # p0 は 0 点、p100 は 100 点に相当する水準であり、値が小さいほど良い軸では p0 > p100 になる。
 # 既定を持たない軸は、利用者が profile の thresholds を書くまで採点しない（推測した基準で
 # 点数を作らない）。
-DEFAULT_THRESHOLDS: dict[str, dict[str, Any]] = {}
+#
+# derivation には p0・p100 をどの公表値からどう決めたかを、confidence には基準の確からしさ
+# （high=度数分布から分位を補間、medium=階級分布の一部から読み取り、low=産業別の両端で代用）
+# を書く。
+#
+# 次の3軸は既定を持たない。処遇水準（compensation_level）は、企業単位の年収分布を持つ公的統計
+# が無く、個人単位の分布（パート・アルバイトを含む）を企業の平均年間給与へ当てると水準がずれる
+# ためである。この軸は利用者の現年収と希望年収を基準に聞く。女性管理職比率
+# （female_manager_ratio）は、産業別の両端が労働力構成による外れ値を含み、企業規模別は規模が
+# 大きいほど低いという逆方向の変動を示すため、どちらも分布の代用にならない。中途採用比率
+# （mid_career_ratio）は、法定の公表値について全国の分布を確認できていない。
+DEFAULT_THRESHOLDS: dict[str, dict[str, Any]] = {
+    "annual_holidays": {
+        "p0": 97,
+        "p100": 127,
+        "unit": "日",
+        "direction": "higher_is_better",
+        "survey": "就労条件総合調査",
+        "survey_year": "令和7年（2025年）",
+        "source_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/jikan/syurou/25/dl/gaikyou.pdf",
+        "coverage": "常用労働者30人以上の民営企業（16大産業）。1企業平均は112.4日",
+        "derivation": "年間休日総数階級別の企業割合を累積し、階級内を線形補間して下位10%点と上位10%点を算出した",
+        "confidence": "medium",
+    },
+    "paid_leave_rate": {
+        "p0": 50.7,
+        "p100": 75.2,
+        "unit": "%",
+        "direction": "higher_is_better",
+        "survey": "就労条件総合調査",
+        "survey_year": "令和7年（2025年）",
+        "source_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/jikan/syurou/25/dl/gaikyou.pdf",
+        "coverage": "常用労働者30人以上の民営企業。労働者1人平均の取得率は66.9%",
+        "derivation": "分位が非公表のため、産業別取得率の最低（宿泊業・飲食サービス業）と最高（電気・ガス・熱供給・水道業）で代用した",
+        "confidence": "low",
+    },
+    "turnover_rate": {
+        "p0": 19.0,
+        "p100": 7.0,
+        "unit": "%",
+        "direction": "lower_is_better",
+        "survey": "雇用動向調査",
+        "survey_year": "令和6年（2024年）",
+        "source_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/koyou/doukou/25-2/dl/kekka_gaiyo-02.pdf",
+        "coverage": "常用労働者5人以上の事業所。一般労働者の産業計は11.5%",
+        "derivation": "分位が非公表のため、産業別離職率の最高（サービス業〈他に分類されないもの〉）と最低（複合サービス事業）で代用した",
+        "confidence": "low",
+    },
+    "monthly_overtime": {
+        "p0": 24.1,
+        "p100": 6.7,
+        "unit": "時間",
+        "direction": "lower_is_better",
+        "survey": "毎月勤労統計調査（全国調査）",
+        "survey_year": "令和7年（2025年）分結果確報",
+        "source_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/monthly/r07/25cr/dl/pdf25cr.pdf",
+        "coverage": "事業所規模5人以上の事業所。一般労働者（パートタイム労働者を除く）の調査産業計は13.2時間",
+        "derivation": "分位が非公表のため、産業別の所定外労働時間の最大（運輸業・郵便業）と最小（医療・福祉）で代用した",
+        "confidence": "low",
+    },
+    "male_childcare_leave_rate": {
+        "p0": 0,
+        "p100": 85,
+        "unit": "%",
+        "direction": "higher_is_better",
+        "survey": "雇用均等基本調査（事業所調査）",
+        "survey_year": "令和6年度（2024年度）",
+        "source_url": "https://www.mhlw.go.jp/toukei/list/dl/71-r06/06.pdf",
+        "coverage": "常用労働者5人以上の民営事業所。全体の取得率は40.5%",
+        "derivation": "産業別の両端は小標本の影響が大きいため用いず、取得者なしを0点、同資料に併記された政府目標（令和12年85%）を100点とした",
+        "confidence": "low",
+    },
+    "revenue_growth": {
+        "p0": -7.1,
+        "p100": 12.2,
+        "unit": "%",
+        "direction": "higher_is_better",
+        "survey": "年次別法人企業統計調査",
+        "survey_year": "令和6年度（2024年度）",
+        "source_url": "https://www.mof.go.jp/pri/reference/ssc/results/r6.pdf",
+        "coverage": "金融業・保険業を除く全産業の営利法人等。全産業の対前年度増加率は3.6%",
+        "derivation": "分位が非公表のため、業種別の売上高増加率の最小（はん用機械）と最大（電気業）で代用した",
+        "confidence": "low",
+    },
+    "operating_margin": {
+        "p0": 0.6,
+        "p100": 12.2,
+        "unit": "%",
+        "direction": "higher_is_better",
+        "survey": "年次別法人企業統計調査",
+        "survey_year": "令和6年度（2024年度）",
+        "source_url": "https://www.mof.go.jp/pri/reference/ssc/results/r6.pdf",
+        "coverage": "金融業・保険業を除く全産業の営利法人等。全産業は6.8%",
+        "derivation": "分位が非公表のため、業種別の売上高営業利益率の最小（石油・石炭製品）と最大（不動産業）で代用した",
+        "confidence": "low",
+    },
+    "equity_ratio": {
+        "p0": 18.7,
+        "p100": 52.4,
+        "unit": "%",
+        "direction": "higher_is_better",
+        "survey": "法人企業統計調査（財務総合政策研究所による整理）",
+        "survey_year": "平成30年度（2018年度）",
+        "source_url": "https://www.mof.go.jp/pri/reference/ssc/japan/japan02_09.pdf",
+        "coverage": "金融業・保険業を除く。同年度の全産業・全規模は42.0%（直近の四半期別調査では全産業44.5%）",
+        "derivation": "業種と資本金階層のクロス表の最小（非製造業・資本金1,000万円未満）と最大（製造業・資本金10億円以上）で代用した",
+        "confidence": "low",
+    },
+    "avg_tenure": {
+        "p0": 9.3,
+        "p100": 17.6,
+        "unit": "年",
+        "direction": "higher_is_better",
+        "survey": "賃金構造基本統計調査",
+        "survey_year": "令和7年（2025年）",
+        "source_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/chingin/kouzou/z2025/dl/14.pdf",
+        "coverage": "常用労働者10人以上の民営事業所。一般労働者・男女計の平均は12.7年",
+        "derivation": "分位が非公表のため、産業別平均勤続年数の最低（サービス業〈他に分類されないもの〉）と最高（電気・ガス・熱供給・水道業）で代用した",
+        "confidence": "low",
+    },
+}
 
 # 判定できた軸の重みの合計がこの値を下回るとき、総合点を暫定（provisional）として扱う。
 COVERAGE_THRESHOLD = 70

@@ -176,7 +176,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 
 企業スコア（0〜100点）の採点に使う軸と重みの申告である。トップレベルの任意の配列であり、`schema_version` が `2.0` のときにだけ有効である。`1.0` / `1.1` にはこのフィールドが無く、書かれていても検査しない。
 
-定量候補軸12個・点数への写し方・重みの配分の規則の原本は `job-change-company-research/references/company-score-rubric.md` にある。企業研究へ渡すのは、`kind` が `quantitative` の軸の識別子の配列と、`kind` が `qualitative` の軸について利用者が定義した観測対象の記述だけである。`weight`・`thresholds`・`judgment` は渡さない。
+定量候補軸12個・点数への写し方・重みの配分の規則の原本は `job-change-company-research/references/company-score-rubric.md` にある。企業研究へ渡すのは、`kind` が `quantitative` の軸の識別子の配列だけである。`weight`・`thresholds` と、定性軸の `label`・`definition`・`judgment` は渡さない。定性軸の記述は利用者が自分の言葉で書いたものであり、Web ツールを持つエージェントへ渡さない。
 
 ```json
 "company_score_axes": [
@@ -213,7 +213,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `judgment` | array | 定性軸で必須 | 判定条件の配列。1件以上必要。後述 |
 | `note` | string | 任意 | その軸を選んだ理由を利用者の言葉で書く |
 
-`thresholds` を書かない定量軸には、統計に基づく既定値を使う。既定値の原本は `job-change-fit-assessment/scripts/calculate_company_score.py` の定数であり、本文書は数値を持たない。既定値を持たない軸は、`thresholds` を書くまで採点されない。
+`thresholds` を書かない定量軸には、統計に基づく既定値を使う。既定値の原本は `job-change-fit-assessment/scripts/calculate_company_score.py` の定数であり、本文書は数値を持たない。既定値を持たない軸は、`thresholds` を書くまで採点されない。処遇水準（`compensation_level`）は既定値を持たない。企業単位の年収分布を持つ公的統計が無いためであり、この軸の基準は利用者の現年収と希望年収から決める。
 
 ### judgment（定性軸）
 
