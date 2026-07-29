@@ -122,7 +122,7 @@ fit-assessor に、7次元の評価・必須条件の判定・総合判定を起
 
 - 7次元（experience_proximity・aspiration_alignment・work_character_fit・condition_fit・culture_fit・compensation_fit・time_fit）を過不足なく評価する。各次元は score（1〜5 または null）・verdict・evidence（1件以上）を持つ。
 - **経験の近さと志向の一致を別軸で評価する。** 経験があることを、その仕事を望んでいる根拠に使わない。志向の根拠は self_analysis の `career_narrative.future_direction`・`interests` に置く。
-- **不足する技術要件を3段階で示す。** `experience_proximity` の `skill_gap` を `complementable_within_3m`（3か月以内に補完できる）／`needs_6_12m_study`（6〜12か月の学習が要る）／`not_applicable_now`（現時点では応募が難しい）で表し、要件ごとの内訳を `skill_gap_items` へ書く。
+- **不足する要件を3段階で示す。** `experience_proximity` の `skill_gap` を `complementable_within_3m`（3か月以内に補完できる）／`needs_6_12m_study`（6〜12か月の学習が要る）／`not_applicable_now`（現時点では応募が難しい）で表し、要件ごとの内訳を `skill_gap_items` へ書く。
 - **`time_fit` と `compensation_fit` の verdict は現職との差分で書く。** time_analysis.json の `comparison.delta` を根拠に、年間拘束時間と実質時給が現職より増えるか減るかを書く。応募先の絶対値だけを示して良し悪しを断じない。差分が出せていない場合は、その旨と理由を verdict に書く。
 - **求人票から判定できない作業特性を推測で埋めない。** 完了条件の明確さ・一人で完結しやすさ・結果を短期で確認できるかどうかは、`work_character_fit` の verdict に判定できない旨を書き、`overall.open_questions` へ面接での確認事項として入れる。
 - must_condition_results は profile の必須条件（`conditions[level=must]` と `work_character_preferences[desire=must]`）と `ref` で1対1に対応させ、`yes`/`no`/`unknown` で判定する。

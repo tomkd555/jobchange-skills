@@ -36,7 +36,6 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 - **求人への応募実行・書類の外部送信。** 応募フォームからの送信、転職エージェントへの提出、スカウトへの返信など、利用者に代わって外部へ送信する操作は行わない。書類の作成までを支援し、送信は本人が行う。
 - **プロファイルの新規作成。** `profile.json` の作成・検証は hub（`job-change-support`）が担う。本スキルは既存の `profile.json` を入力として用いる。
 - **企業研究そのもの。** 企業の理念・事業・評判の調査は `job-change-company-research` が担う。本スキルはその成果物（`company_research.json`）を参照する。
-- **証明写真の撮影・作成、書類の印刷・製本などの物理的な作業。** これらは扱わない。
 
 ## パスの解決
 
