@@ -167,11 +167,37 @@
     ],
     "priority_note": "優先順位は「モダンな技術スタックと CI/CD」＞「リモートワーク可」。次回の再評価は2027-01を予定。"
   },
-  "company_quality_axes": [
-    {"axis": "work_style", "emphasis": "top", "note": "リモートと残業の少なさは他の条件と引き換えにしない"},
-    {"axis": "tech_advancement", "emphasis": "high", "note": "内製開発とクラウド活用の度合いを見たい"},
-    {"axis": "compensation_level", "emphasis": "high"},
-    {"axis": "growth", "emphasis": "reference", "note": "伸びていれば望ましいが、格付けまでは求めない"}
+  "company_score_axes": [
+    {
+      "axis": "monthly_overtime",
+      "kind": "quantitative",
+      "weight": 30,
+      "note": "残業の少なさは他の条件と引き換えにしない"
+    },
+    {
+      "axis": "compensation_level",
+      "kind": "quantitative",
+      "weight": 30,
+      "thresholds": {"zero": 6800000, "full": 9000000},
+      "note": "現年収を0点、希望年収より上を100点とする自分の基準を使う"
+    },
+    {
+      "axis": "annual_holidays",
+      "kind": "quantitative",
+      "weight": 15
+    },
+    {
+      "axis": "tech_discretion",
+      "kind": "qualitative",
+      "weight": 25,
+      "label": "技術選定の裁量",
+      "definition": "使う言語・フレームワーク・クラウド構成を開発チームが決められること",
+      "judgment": [
+        {"score": 100, "condition": "技術ブログか求人票に、開発チームが技術選定を担う旨の記載があり、面接でも確認できた"},
+        {"score": 50, "condition": "記載はあるが、決定の範囲が読み取れず未確認である"},
+        {"score": 0, "condition": "全社の標準スタックに従う旨が明記されている"}
+      ]
+    }
   ],
   "targets": {
     "industries": ["SaaS", "フィンテック"],

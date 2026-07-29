@@ -3,7 +3,7 @@ name: job-change-fit-assessment
 description: >-
   転職の応募先候補について、求人票・企業研究・自己分析・時間分析を突き合わせ、7次元（経験の近さ・志向の一致・作業特性の一致・
   条件の適合・文化の適合・報酬の適合・時間の適合）で適合性を評価するサブスキル。
-  求人票 metrics と企業研究の働き方指標から拘束時間・実質時給を算定し、profile の必須条件を
+  求人票 metrics と企業研究の指標から拘束時間・実質時給を算定し、profile の必須条件を
   1対1で判定し、推奨・条件付き推奨・非推奨・判断保留の総合判定を根拠つきで起草する。経験の近さと
   志向の一致を別軸で評価し、不足する技術要件を3段階（3か月以内に補完可能・6〜12か月の学習が必要・
   現時点では応募困難）で示す。すべての判定を evidence に対応づけ、証拠グレードC・D単独での断定を禁じ、材料が無い項目は創作せず unknown
@@ -98,22 +98,23 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 - `job-search/{検索ID}/job_search_results.json` があり、当該求人がその結果に含まれる場合は、`inputs.job_search_screening` を `true` にし、`screening_source`（`search_id`・`result_index`・`classification`・`screened_at`）を記録する。fit-assessor は Web ツールを持たないため、このファイルのパスを渡してよい。
 - `career-private/commute.json` に `routes.{企業スラッグ}` があるか確認する。無ければ AskUserQuestion で片道通勤分数を1回だけ確認し、commute.json の `routes.{企業スラッグ}` へ本スキルが転記する（住所ジオコーディング・Web 経路検索はしない）。それでも不明なら統計フォールバックで進める（time_analysis 側の `fallbacks_used` に記録される）。この単一ポリシーを守る。片道分数を確認する際、乗り換え回数（`transfers`）と混雑の程度（`crowding`。`low`／`medium`／`high`）も任意項目として同時に聞き、答えがあれば `routes.{企業スラッグ}` へ併せて転記する。通勤の負担を所要時間だけで表さないための項目であり、拘束時間の算定式には入らない（`time_fit` の verdict で所要時間と併せて扱う）。
 
-### Step 2 拘束時間と企業品質 Tier の算出
+### Step 2 拘束時間と企業スコアの算出
 
-fit-assessor を Agent ツールで起動し、拘束時間・実質時給と、企業品質 Tier の総合の格付けを算出させる。fit-assessor は次を行う。
+fit-assessor を Agent ツールで起動し、拘束時間・実質時給と、企業スコア（0〜100点）を算出させる。fit-assessor は次を行う。
 
-- 数値を、**求人票 metrics（job_posting.json の `metrics`）> 企業研究の働き方指標（company_research.json の `workstyle_metrics`。グレード順に選ぶ）> 統計フォールバック**の優先順で抽出する。各数値の出典（`posting`/`research`/`user`/`fallback`）・出典URL・グレードを、`--sources-json` に渡す出典メタ JSON へ記録する。
+- 数値を、**求人票 metrics（job_posting.json の `metrics`）> 企業研究の指標（company_research.json の `company_metrics`。グレード順に選ぶ）> 統計フォールバック**の優先順で抽出する。各数値の出典（`posting`/`research`/`user`/`fallback`）・出典URL・グレードを、`--sources-json` に渡す出典メタ JSON へ記録する。
 - `scripts/calculate_time_analysis.py` を Bash で実行し、`career-private/fit/{企業スラッグ}/time_analysis.json` を生成する。CLI は全入力を引数で受ける（`--scheduled-hours`・`--break-minutes`・`--overtime-h-month`・`--annual-holidays`・`--paid-leave-rate`・`--paid-leave-granted`・`--paid-leave-taken`・`--commute-oneway-min`・`--salary`・`--sources-json <出典メタJSON>`・`--out <出力パス>`・`--json`）。未指定の項目のみ統計フォールバック定数が適用され、`fallbacks_used` に記録される。
 - **現職についても同じ式で算定し、差分を出す。** `career-private/fit/current/time_analysis.json` が無ければ、現職の年収・所定労働時間・年間休日・月平均残業・片道通勤分数を AskUserQuestion で1回だけまとめて確認し、同じ CLI で生成する（年収は profile.json の現年収を使い、重ねて聞かない）。応募先の算定では `--baseline-json career-private/fit/current/time_analysis.json` を渡し、出力へ `comparison`（現職の値と「応募先 − 現職」の差分）を含める。現職の入力がそろわない場合は `--baseline-json` を渡さず、差分を出せない旨を `time_fit` の verdict に書く。
-- **企業品質 Tier の総合の格付けを算出する。** `scripts/calculate_company_tier.py` を Bash で実行し、`company_research.json` の軸ごとの評価（`tier.axes`）と profile の重視段階（`company_quality_axes`）から `level`（S/A/B/C または null）・`provisional`・`axes`・`rationale` を得る。結果は Step 3 で `fit_assessment.json` の `company_tier` へそのまま入れる。
+- **定性軸を判定する。** profile の `company_score_axes` のうち `kind` が `qualitative` の軸について、求人票と企業研究の事実を判定条件（`judgment`）へ当てはめ、合致した条件の `score` と根拠を定性軸判定 JSON（`{軸キー: {matched_score, evidence}}`）へ書く。どの条件にも合致しない軸は `matched_score` を `null` にし、推測で中間点を置かない。判定条件が求人票と企業研究から確かめられない事柄は、`overall.open_questions` へ面接での確認事項として回す。
+- **企業スコアを算出する。** `scripts/calculate_company_score.py` を Bash で実行し、`company_research.json` の実測値（`company_metrics`）と profile の採点軸（`company_score_axes`）、定性軸判定 JSON から `total`（0〜100 または null）・`coverage`・`provisional`・`axes`・`rationale` を得る。結果は Step 3 で `fit_assessment.json` の `company_score` へそのまま入れる。
 
   ```bash
-  python {SKILL_DIR}/scripts/calculate_company_tier.py --research {DATA_ROOT}/companies/{企業スラッグ}/company_research.json --profile {DATA_ROOT}/career-private/profile.json --json
+  python {SKILL_DIR}/scripts/calculate_company_score.py --research {DATA_ROOT}/companies/{企業スラッグ}/company_research.json --profile {DATA_ROOT}/career-private/profile.json --qualitative-json {定性軸判定.json} --json
   ```
 
-  重視軸の申告が無ければ `level` は `null` になる。この場合は格付けを提示せず、hub の `job-change-profile` で `company_quality_axes` を申告するよう促す。重みを仮定して格付けしない。
+  採点する軸の申告が無ければ `total` は `null` になる。この場合は点数を提示せず、hub の `job-change-profile` で `company_score_axes` を申告するよう促す。軸と重みを仮定して採点しない。
 
-calculate_time_analysis.py の定義式・フォールバック定数・出力仕様の原本は `references/time-analysis-format.md` にある。格付け規則の原本は job-change-company-research の `references/tier-rubric.md`、`company_tier` の形式の原本は `references/fit-format.md` にある。
+calculate_time_analysis.py の定義式・フォールバック定数・出力仕様の原本は `references/time-analysis-format.md` にある。採点規則の原本は job-change-company-research の `references/company-score-rubric.md`、`company_score` の形式の原本は `references/fit-format.md` にある。
 
 ### Step 3 適合性評価の起草（job-change-fit-assessor, opus）
 
@@ -125,7 +126,7 @@ fit-assessor に、7次元の評価・必須条件の判定・総合判定を起
 - **`time_fit` と `compensation_fit` の verdict は現職との差分で書く。** time_analysis.json の `comparison.delta` を根拠に、年間拘束時間と実質時給が現職より増えるか減るかを書く。応募先の絶対値だけを示して良し悪しを断じない。差分が出せていない場合は、その旨と理由を verdict に書く。
 - **求人票から判定できない作業特性を推測で埋めない。** 完了条件の明確さ・一人で完結しやすさ・結果を短期で確認できるかどうかは、`work_character_fit` の verdict に判定できない旨を書き、`overall.open_questions` へ面接での確認事項として入れる。
 - must_condition_results は profile の必須条件（`conditions[level=must]` と `work_character_preferences[desire=must]`）と `ref` で1対1に対応させ、`yes`/`no`/`unknown` で判定する。
-- Step 2 で算出した企業品質 Tier を `company_tier` へそのまま入れる。値を手で書き換えない。Tier は7次元の score や総合判定の根拠には持ち込まない。
+- Step 2 で算出した企業スコアを `company_score` へそのまま入れる。値を手で書き換えない。企業スコアは7次元の score や総合判定の根拠には持ち込まない。
 - overall で `推奨`/`条件付き推奨`/`非推奨`/`判断保留` を根拠付きで付す。満たさない必須条件があるのに `推奨` にしない。
 - 判断基準の原本は `references/fit-criteria.md`、データ形式の原本は `references/fit-format.md`、作業特性の語彙の原本は hub の `references/screening-axes.md`。
 
@@ -149,8 +150,8 @@ ERROR が1件でもあれば Step 3 へ差し戻す。PASS（ERROR 0件）にな
 - 経験の近さと志向の一致は別々に伝える。経験が近いことを推奨の理由にまとめない。
 - `skill_gap` が `none` 以外の場合は、不足する要件と補完に要する期間の段階を明示する。
 - 判定が現時点で得られている材料に基づくものであり、入社直後の満足の高さは持続を意味しないことを添える。未確認の論点として直属上司の関与のしかたを必ず挙げる（根拠は `references/fit-methods.md`）。
-- `fit_assessment.json` の `company_tier` を参考として併記する。`level`・`provisional` と、申告した軸ごとの `emphasis`・`rating`・格付けの根拠（`rationale`）を示す。この格付けは利用者が重んじる軸に基づくものであり、企業そのものの質の絶対評価ではない。7次元の score や総合判定の根拠へ持ち込まず、別の情報として示す。`provisional` が `true` の場合は、評価できていない軸があり証拠が集まり次第見直す前提であることを添える。`level` が `null` の場合は格付けを提示せず、その理由（重視する軸が未申告であるか、重視する軸をすべて評価できていないか）を `rationale` のとおりに伝える。未申告であれば hub の `job-change-profile` での申告を促し、評価できていないのであれば企業研究での追加調査を促す。
-- `company_tier.level` が `S`・`A`・`B`・`C` のいずれかの場合、その値を `career-private/company_index.json` の当該エントリーの `tier` へ本スキル本体が転記する（一覧・グルーピング用の写し。形式の原本は hub の `references/company-index-format.md`）。`level` が `null` の場合は転記せず、既存の値があればそのまま残す。企業スラッグ（ディレクトリ名）はリネームしない。
+- `fit_assessment.json` の `company_score` を参考として併記する。`total`・`coverage`・`provisional` と、軸ごとの内訳（実測値とその出典・単位、点数、重み、基準の出所）を示す。基準を利用者が上書きした軸（`threshold_source` が `user`）はその旨を伝える。判定できなかった軸は、実測値が無いのか基準が無いのか判定結果が無いのかを `reason` のとおりに伝え、企業研究での追加調査か基準の申告を促す。この点数は利用者が選んだ軸と重みに基づくものであり、企業そのものの質の絶対評価ではない。異なる利用者の点数とは比べられないことを添え、7次元の score や総合判定の根拠へ持ち込まず、別の情報として示す。`provisional` が `true` の場合は、判定できた軸の重みが足りず少数の軸に引きずられる点数であることを添える。`total` が `null` の場合は点数を提示せず、その理由を `rationale` のとおりに伝え、採点する軸が未申告であれば hub の `job-change-profile` での申告を促す。
+- `company_score.total` が数値の場合、その値を `career-private/company_index.json` の当該エントリーの `score` へ本スキル本体が転記する（一覧・グルーピング用の写し。形式の原本は hub の `references/company-index-format.md`）。`total` が `null` の場合は転記せず、既存の値があればそのまま残す。企業スラッグ（ディレクトリ名）はリネームしない。
 - `companies/{企業スラッグ}/_manifest.json` の `artifacts` に `fit_assessment` の所在と日付を記録する（`{updated_at: "YYYY-MM-DD"}`）。値そのもの（評価内容）は非個人情報側（`companies/` 等）に置かず、fit_assessment.json は career-private 配下に留める。manifest には所在と日付のみを書く。
 
 ## 合否ゲートと差し戻し
@@ -200,11 +201,11 @@ python {SKILL_DIR}/scripts/validate_fit_assessment.py {fit_assessment.json} --pr
 
 `--json` は結果を JSON 形式（`status`・`error_count`・`warning_count`・`errors`・`warnings`）で出力する。記入例は `assets/fit_assessment_example.json`、フィールド仕様と検証規則の原本は `references/fit-format.md` にある。
 
-企業品質 Tier の総合の格付けの算出（終了コードは 0 が正常、2 が入力の矛盾）。
+企業スコア（0〜100点）の算出（終了コードは 0 が正常、2 が入力の矛盾）。
 
 ```bash
-python {SKILL_DIR}/scripts/calculate_company_tier.py --research {company_research.json} --profile {profile.json} --json
-python {SKILL_DIR}/scripts/calculate_company_tier.py --research {company_research.json} --profile {profile.json} --out {company_tier.json}
+python {SKILL_DIR}/scripts/calculate_company_score.py --research {company_research.json} --profile {profile.json} --json
+python {SKILL_DIR}/scripts/calculate_company_score.py --research {company_research.json} --profile {profile.json} --qualitative-json {定性軸判定.json} --out {company_score.json}
 ```
 
 `--out` は指定パスへ書き出し、`--json` は標準出力へ出す。単体テストは次で実行する。
@@ -221,6 +222,6 @@ cd {SKILL_DIR} && python -m unittest discover -s scripts/tests
 | `references/fit-criteria.md` | 7次元の判定基準・score の目安・evidence の付け方・unknown 優先 | Step 3 の評価の起草 |
 | `references/fit-methods.md` | 7次元の判定が依拠する知見（上司との適合・現職との比較・通勤・転職後の満足の推移）と、その限界（出典付き） | Step 3 の評価の起草、Step 5 の報告で留保を添える段階 |
 | `references/time-analysis-format.md` | time_analysis.json の定義式・フォールバック定数・CLI・出力仕様 | Step 2 の拘束時間算定 |
-| `job-change-company-research/references/tier-rubric.md` | 企業品質 Tier の候補7軸・重視の3段階・総合の格付け規則・`provisional` の条件 | Step 2 の企業品質 Tier の算出、Step 5 の報告での併記 |
+| `job-change-company-research/references/company-score-rubric.md` | 企業スコアの定量候補軸12個・点数への写し方・基準の決め方・重みの配分・総合点の規則 | Step 2 の企業スコアの算出、Step 5 の報告での併記 |
 | `{HUB_SKILL_DIR}/references/screening-axes.md` | 8作業特性の定義と、求人票から判定できない3特性の扱い | Step 3 の work_character_fit の評価 |
 | `references/roles/fit-assessor.md` | 適合性評価担当の役割プロンプト | Step 2・3。サブエージェントを使えないハーネスでは本体が読む |

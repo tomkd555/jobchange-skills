@@ -26,7 +26,8 @@ SLUG_PATTERN = re.compile(
     r"[0-9A-Za-z぀-ヿ㐀-鿿＀-￯-]*$"
 )
 _VALID_STATUSES = ("active", "closed")
-_VALID_TIERS = ("S", "A", "B", "C")
+_SCORE_MIN = 0
+_SCORE_MAX = 100
 
 
 @dataclass
@@ -87,12 +88,12 @@ def _validate_entry(slug: str, entry: dict, result: ValidationResult) -> None:
                 f"status は {'/'.join(_VALID_STATUSES)} のいずれかでなければならない",
             )
 
-    if "tier" in entry:
-        tier = entry.get("tier")
-        if not isinstance(tier, str) or tier not in _VALID_TIERS:
+    if "score" in entry:
+        score = entry.get("score")
+        if isinstance(score, bool) or not isinstance(score, int) or not _SCORE_MIN <= score <= _SCORE_MAX:
             result.add_error(
-                f"{path}.tier",
-                f"tier は {'/'.join(_VALID_TIERS)} のいずれかでなければならない",
+                f"{path}.score",
+                f"score は{_SCORE_MIN}以上{_SCORE_MAX}以下の整数でなければならない",
             )
 
 

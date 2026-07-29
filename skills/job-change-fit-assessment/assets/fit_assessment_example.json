@@ -149,7 +149,7 @@
         {
           "source": "company_research",
           "ref": "C020",
-          "note": "有価証券報告書の平均年間給与 720万円（全従業員平均・職種別内訳なし）"
+          "note": "有価証券報告書の平均年間給与 612万円（全従業員平均・職種別内訳なし）"
         }
       ]
     },
@@ -214,34 +214,67 @@
       ]
     }
   ],
-  "company_tier": {
-    "level": "S",
-    "provisional": false,
-    "rubric_version": 2,
-    "assessed_date": "2026-07-20",
+  "company_score": {
+    "total": 23,
+    "coverage": 55,
+    "provisional": true,
     "axes": [
       {
-        "axis": "work_style",
-        "emphasis": "top",
-        "rating": "high"
-      },
-      {
-        "axis": "tech_advancement",
-        "emphasis": "high",
-        "rating": "medium"
+        "axis": "monthly_overtime",
+        "kind": "quantitative",
+        "weight": 30,
+        "value": 14.2,
+        "unit": "時間",
+        "score": null,
+        "threshold_source": null,
+        "thresholds": null,
+        "grade": "A",
+        "source_url": "https://shokuba.mhlw.go.jp/company/9999",
+        "reason": "点数の基準が利用者の申告にも統計の既定値にも無い"
       },
       {
         "axis": "compensation_level",
-        "emphasis": "high",
-        "rating": "medium"
+        "kind": "quantitative",
+        "weight": 30,
+        "value": 6120000,
+        "unit": "円",
+        "score": 0,
+        "threshold_source": "user",
+        "thresholds": {
+          "zero": 6800000,
+          "full": 9000000
+        },
+        "grade": "A",
+        "source_url": "https://disclosure2.edinet-fsa.example.go.jp/documents/S9999XYZ/employee.htm"
       },
       {
-        "axis": "growth",
-        "emphasis": "reference",
-        "rating": "unknown"
+        "axis": "annual_holidays",
+        "kind": "quantitative",
+        "weight": 15,
+        "value": null,
+        "unit": "日",
+        "score": null,
+        "threshold_source": null,
+        "thresholds": null,
+        "grade": null,
+        "source_url": null,
+        "reason": "実測値も点数の基準も無い"
+      },
+      {
+        "axis": "tech_discretion",
+        "kind": "qualitative",
+        "weight": 25,
+        "value": null,
+        "unit": null,
+        "score": 50,
+        "threshold_source": null,
+        "thresholds": null,
+        "grade": null,
+        "source_url": null,
+        "evidence": "技術ブログに開発チームが技術選定を担う旨の記載があるが、決定の範囲は読み取れず面接も未実施のため、上位の条件は満たさない"
       }
     ],
-    "rationale": "最重視の軸「働き方」が high であり、重視する軸に low が無いため S とする。参考として申告された「成長性」は格付けに反映していない。"
+    "rationale": "総合点 23 点は、判定できた軸（compensation_level（重み30・0点）、tech_discretion（重み25・50点））の加重平均である。判定できなかった軸は次のとおりである: monthly_overtime（重み30・点数の基準が利用者の申告にも統計の既定値にも無い）、annual_holidays（重み15・実測値も点数の基準も無い）。判定できた軸の重みの合計は 55 である。重みの合計が 70 を下回るため、暫定の点数として扱う。"
   },
   "overall": {
     "recommendation": "条件付き推奨",

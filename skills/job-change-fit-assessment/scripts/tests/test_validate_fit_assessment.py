@@ -633,97 +633,176 @@ class V2AspirationTest(unittest.TestCase):
         self.assertEqual(result.errors, [])
 
 
-def _company_tier(**overrides) -> dict:
-    tier = {
-        "level": "A",
+def _company_score(**overrides) -> dict:
+    score = {
+        "total": 72,
+        "coverage": 85,
         "provisional": False,
-        "rubric_version": 2,
-        "assessed_date": "2026-07-29",
         "axes": [
-            {"axis": "compensation_level", "emphasis": "top", "rating": "high"},
-            {"axis": "retention", "emphasis": "high", "rating": "high"},
-            {"axis": "growth", "emphasis": "reference", "rating": "unknown"},
+            {
+                "axis": "compensation_level",
+                "kind": "quantitative",
+                "weight": 50,
+                "value": 6480000,
+                "unit": "円",
+                "score": 65,
+                "threshold_source": "user",
+                "thresholds": {"zero": 4500000, "full": 7000000},
+                "grade": "A",
+                "source_url": "https://example.go.jp/ir",
+            },
+            {
+                "axis": "tech_discretion",
+                "kind": "qualitative",
+                "weight": 35,
+                "value": None,
+                "unit": None,
+                "score": 82,
+                "threshold_source": None,
+                "thresholds": None,
+                "grade": None,
+                "source_url": None,
+                "evidence": "求人票の記載に合致した",
+            },
+            {
+                "axis": "annual_holidays",
+                "kind": "quantitative",
+                "weight": 15,
+                "value": None,
+                "unit": "日",
+                "score": None,
+                "threshold_source": None,
+                "thresholds": None,
+                "grade": None,
+                "source_url": None,
+                "reason": "企業研究に実測値が無い",
+            },
         ],
-        "rationale": "重視する軸の high が2軸あり low が無いため A とする。",
+        "rationale": "総合点 72 点は、判定できた2軸の加重平均である。",
     }
-    tier.update(overrides)
-    return tier
+    score.update(overrides)
+    return score
 
 
-class CompanyTierTest(unittest.TestCase):
-    """任意フィールド company_tier（総合の格付け）の検査。"""
+class CompanyScoreTest(unittest.TestCase):
+    """任意フィールド company_score（企業スコアの総合点と内訳）の検査。"""
 
-    def test_absent_company_tier_passes(self):
+    def test_absent_company_score_passes(self):
         result = vf.validate(_valid_v2_fit(), profile=_v2_profile())
         self.assertEqual(result.errors, [])
         self.assertEqual(result.warnings, [])
 
-    def test_valid_company_tier_passes(self):
-        document = _valid_v2_fit(company_tier=_company_tier())
+    def test_valid_company_score_passes(self):
+        document = _valid_v2_fit(company_score=_company_score())
         result = vf.validate(document, profile=_v2_profile())
         self.assertEqual(result.errors, [])
         self.assertEqual(result.warnings, [])
 
-    def test_non_object_company_tier_is_an_error(self):
-        document = _valid_v2_fit(company_tier="A")
+    def test_non_object_company_score_is_an_error(self):
+        document = _valid_v2_fit(company_score=72)
         result = vf.validate(document, profile=_v2_profile())
         self.assertFalse(result.ok)
-        self.assertTrue(any("company_tier" in e for e in result.errors))
+        self.assertTrue(any("company_score" in e for e in result.errors))
 
-    def test_unknown_level_is_an_error(self):
-        document = _valid_v2_fit(company_tier=_company_tier(level="AA"))
+    def test_total_out_of_range_is_an_error(self):
+        document = _valid_v2_fit(company_score=_company_score(total=120))
         result = vf.validate(document, profile=_v2_profile())
         self.assertFalse(result.ok)
-        self.assertTrue(any("company_tier.level" in e for e in result.errors))
+        self.assertTrue(any("company_score.total" in e for e in result.errors))
 
-    def test_null_level_warns_but_passes(self):
+    def test_non_integer_total_is_an_error(self):
+        document = _valid_v2_fit(company_score=_company_score(total=72.4))
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertFalse(result.ok)
+        self.assertTrue(any("company_score.total" in e for e in result.errors))
+
+    def test_null_total_warns_but_passes(self):
         document = _valid_v2_fit(
-            company_tier=_company_tier(level=None, axes=[], rationale="重視する軸の申告が無い。")
+            company_score=_company_score(
+                total=None, coverage=0, provisional=True, axes=[],
+                rationale="判定できた軸が1つも無いため、総合点は算出しない。",
+            )
         )
         result = vf.validate(document, profile=_v2_profile())
         self.assertTrue(result.ok)
-        self.assertTrue(any("company_tier.level" in w for w in result.warnings))
+        self.assertTrue(any("company_score.total" in w for w in result.warnings))
 
-    def test_axes_not_list_is_an_error(self):
-        document = _valid_v2_fit(company_tier=_company_tier(axes={}))
+    def test_coverage_out_of_range_is_an_error(self):
+        document = _valid_v2_fit(company_score=_company_score(coverage=150))
         result = vf.validate(document, profile=_v2_profile())
         self.assertFalse(result.ok)
-        self.assertTrue(any("company_tier.axes" in e for e in result.errors))
+        self.assertTrue(any("company_score.coverage" in e for e in result.errors))
 
-    def test_unknown_axis_is_an_error(self):
-        tier = _company_tier()
-        tier["axes"][0]["axis"] = "salary_level"
-        document = _valid_v2_fit(company_tier=tier)
+    def test_null_coverage_is_an_error(self):
+        document = _valid_v2_fit(company_score=_company_score(coverage=None))
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertFalse(result.ok)
+        self.assertTrue(any("company_score.coverage" in e for e in result.errors))
+
+    def test_non_boolean_provisional_is_an_error(self):
+        document = _valid_v2_fit(company_score=_company_score(provisional="false"))
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertFalse(result.ok)
+        self.assertTrue(any("company_score.provisional" in e for e in result.errors))
+
+    def test_provisional_warns_but_passes(self):
+        document = _valid_v2_fit(company_score=_company_score(provisional=True, coverage=50))
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertTrue(result.ok)
+        self.assertTrue(any("company_score.provisional" in w for w in result.warnings))
+
+    def test_axes_not_list_is_an_error(self):
+        document = _valid_v2_fit(company_score=_company_score(axes={}))
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertFalse(result.ok)
+        self.assertTrue(any("company_score.axes" in e for e in result.errors))
+
+    def test_empty_axis_key_is_an_error(self):
+        score = _company_score()
+        score["axes"][0]["axis"] = ""
+        document = _valid_v2_fit(company_score=score)
         result = vf.validate(document, profile=_v2_profile())
         self.assertFalse(result.ok)
         self.assertTrue(any("axes[0].axis" in e for e in result.errors))
 
-    def test_unknown_emphasis_is_an_error(self):
-        tier = _company_tier()
-        tier["axes"][1]["emphasis"] = "highest"
-        document = _valid_v2_fit(company_tier=tier)
+    def test_unknown_kind_is_an_error(self):
+        score = _company_score()
+        score["axes"][1]["kind"] = "numeric"
+        document = _valid_v2_fit(company_score=score)
         result = vf.validate(document, profile=_v2_profile())
         self.assertFalse(result.ok)
-        self.assertTrue(any("axes[1].emphasis" in e for e in result.errors))
+        self.assertTrue(any("axes[1].kind" in e for e in result.errors))
 
-    def test_unknown_rating_is_an_error(self):
-        tier = _company_tier()
-        tier["axes"][2]["rating"] = "none"
-        document = _valid_v2_fit(company_tier=tier)
+    def test_weight_out_of_range_is_an_error(self):
+        score = _company_score()
+        score["axes"][2]["weight"] = 0
+        document = _valid_v2_fit(company_score=score)
         result = vf.validate(document, profile=_v2_profile())
         self.assertFalse(result.ok)
-        self.assertTrue(any("axes[2].rating" in e for e in result.errors))
+        self.assertTrue(any("axes[2].weight" in e for e in result.errors))
+
+    def test_axis_score_out_of_range_is_an_error(self):
+        score = _company_score()
+        score["axes"][0]["score"] = 101
+        document = _valid_v2_fit(company_score=score)
+        result = vf.validate(document, profile=_v2_profile())
+        self.assertFalse(result.ok)
+        self.assertTrue(any("axes[0].score" in e for e in result.errors))
+
+    def test_null_axis_score_passes(self):
+        result = vf.validate(_valid_v2_fit(company_score=_company_score()), profile=_v2_profile())
+        self.assertEqual(result.errors, [])
 
     def test_axis_entry_not_object_is_an_error(self):
-        document = _valid_v2_fit(company_tier=_company_tier(axes=["compensation_level"]))
+        document = _valid_v2_fit(company_score=_company_score(axes=["compensation_level"]))
         result = vf.validate(document, profile=_v2_profile())
         self.assertFalse(result.ok)
 
     def test_empty_rationale_is_an_error(self):
-        document = _valid_v2_fit(company_tier=_company_tier(rationale=""))
+        document = _valid_v2_fit(company_score=_company_score(rationale=""))
         result = vf.validate(document, profile=_v2_profile())
         self.assertFalse(result.ok)
-        self.assertTrue(any("company_tier.rationale" in e for e in result.errors))
+        self.assertTrue(any("company_score.rationale" in e for e in result.errors))
 
 
 class ExampleAssetTest(unittest.TestCase):
@@ -735,7 +814,8 @@ class ExampleAssetTest(unittest.TestCase):
         )
         result = vf.validate(document, profile=profile)
         self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
+        # 記入例の企業スコアは判定できない軸を含むため、暫定であることの WARN だけが出る。
+        self.assertTrue(all("company_score.provisional" in w for w in result.warnings))
 
 
 if __name__ == "__main__":

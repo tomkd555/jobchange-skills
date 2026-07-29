@@ -55,7 +55,7 @@
 | 優先度 | 出所 | 内容 |
 |---|---|---|
 | 1 | 求人票（`posting`） | `job_posting.json` の `working_hours`・`metrics` に引用付きで載る値。最優先とする。 |
-| 2 | 企業研究の働き方指標（`research`） | `company_research.json` の `workstyle_metrics`。同一項目に複数の候補があるときは証拠グレード（A → B → C → D）が最も高いものを採る。証拠グレードの定義の原本は `job-change-company-research` の `references/evidence-grading.md` にある。C・D 単独での断定は避け、値を採るときも確度を下げて扱う。 |
+| 2 | 企業研究の指標（`research`） | `company_research.json` の `company_metrics`（月平均残業は `monthly_overtime`、年間休日は `annual_holidays`、有給取得率は `paid_leave_rate`、有給取得日数は `avg_paid_leave_days_taken`）。同一項目に複数の候補があるときは証拠グレード（A → B → C → D）が最も高いものを採る。証拠グレードの定義の原本は `job-change-company-research` の `references/evidence-grading.md` にある。C・D 単独での断定は避け、値を採るときも確度を下げて扱う。 |
 | 3 | 利用者入力（`user`） | 通勤時間など、利用者本人が申告する値。 |
 | 4 | 統計フォールバック（`fallback`） | 上位のいずれでも埋まらない項目に、官公庁の一次統計に基づく既定値を適用する。 |
 

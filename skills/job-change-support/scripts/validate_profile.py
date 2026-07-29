@@ -48,24 +48,30 @@ _WORK_CHARACTER_TRAITS = (
     "solo_completable",
     "short_feedback",
 )
-# 語彙の原本は job-change-company-research/references/tier-rubric.md にある。
-_COMPANY_QUALITY_AXES = (
+# 語彙の原本は job-change-company-research/references/company-score-rubric.md にある。
+_QUANTITATIVE_SCORE_AXES = (
     "compensation_level",
-    "financial_soundness",
-    "retention",
-    "work_style",
-    "employment_stability",
-    "growth",
-    "tech_advancement",
+    "annual_holidays",
+    "monthly_overtime",
+    "paid_leave_rate",
+    "avg_tenure",
+    "turnover_rate",
+    "mid_career_ratio",
+    "female_manager_ratio",
+    "male_childcare_leave_rate",
+    "revenue_growth",
+    "operating_margin",
+    "equity_ratio",
 )
-_QUALITY_EMPHASIS_LEVELS = ("top", "high", "reference")
+_SCORE_AXIS_KINDS = ("quantitative", "qualitative")
+_SCORE_WEIGHT_TOTAL = 100
+_DEFAULT_SELECTED_AXIS = "compensation_level"
 _CONDITION_LEVELS = ("must", "want")
 _CONDITION_OPERATORS = (">=", "<=", "==", "in", "qualitative")
 _CONDITION_VERIFICATIONS = ("posting", "research", "interview", "unverifiable")
 _DESIRE_LEVELS = ("must", "important", "neutral", "not_required")
 _CONDITION_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 _MUST_CONDITION_SOFT_LIMIT = 4
-_TOP_EMPHASIS_SOFT_LIMIT = 4
 
 
 @dataclass
@@ -95,6 +101,14 @@ class ValidationResult:
 
 def _is_nonempty_str(value: Any) -> bool:
     return isinstance(value, str) and value.strip() != ""
+
+
+def _is_int(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _is_number(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
 def _parse_period(value: Any) -> tuple[int, int] | None:
@@ -524,59 +538,137 @@ def _validate_v2_axis(profile: dict, result: ValidationResult) -> None:
             )
 
 
-def _validate_company_quality_axes(profile: dict, result: ValidationResult) -> None:
-    """v2: トップレベルの company_quality_axes[] を検査する。
-
-    任意フィールドであり、欠落は検査しない（重視軸の申告が無い状態を許す）。
-    """
-    if schema_version_of(profile) != _V2_SCHEMA_VERSION or "company_quality_axes" not in profile:
+def _validate_score_thresholds(path: str, entry: dict, kind: Any, result: ValidationResult) -> None:
+    """v2: company_score_axes[].thresholds（基準の上書き）を検査する。"""
+    if kind == "qualitative":
+        result.add_error(
+            f"{path}.thresholds",
+            "thresholds を持てるのは定量軸（kind=quantitative）だけである",
+        )
         return
 
-    axes = profile.get("company_quality_axes")
+    thresholds = entry.get("thresholds")
+    if not isinstance(thresholds, dict):
+        result.add_error(f"{path}.thresholds", "thresholds は zero と full を持つオブジェクトである")
+        return
+
+    zero = thresholds.get("zero")
+    full = thresholds.get("full")
+    if not _is_number(zero) or not _is_number(full):
+        result.add_error(f"{path}.thresholds", "zero と full はいずれも数値である")
+        return
+    if zero == full:
+        result.add_error(
+            f"{path}.thresholds",
+            "zero と full は異なる値である（同値では実測値を点数へ写せない）",
+        )
+
+
+def _validate_qualitative_axis(path: str, entry: dict, result: ValidationResult) -> None:
+    """v2: 定性軸の label・definition・judgment を検査する。"""
+    for key in ("label", "definition"):
+        if not _is_nonempty_str(entry.get(key)):
+            result.add_error(f"{path}.{key}", f"定性軸には {key} が必須（非空）である")
+
+    judgment = entry.get("judgment")
+    if not isinstance(judgment, list) or not judgment:
+        result.add_error(f"{path}.judgment", "定性軸には judgment（判定条件）が1件以上必要である")
+        return
+
+    scores: list[int] = []
+    for j, rule in enumerate(judgment):
+        rule_path = f"{path}.judgment[{j}]"
+        if not isinstance(rule, dict):
+            result.add_error(rule_path, "judgment の各要素はオブジェクトでなければならない")
+            continue
+
+        score = rule.get("score")
+        if not _is_int(score) or not 0 <= score <= 100:
+            result.add_error(f"{rule_path}.score", "score は0以上100以下の整数である")
+        else:
+            scores.append(score)
+
+        if not _is_nonempty_str(rule.get("condition")):
+            result.add_error(f"{rule_path}.condition", "condition は必須（非空）である")
+
+    if len(scores) == len(judgment) and scores != sorted(scores, reverse=True):
+        result.add_warning(
+            f"{path}.judgment",
+            "judgment が score の降順に並んでいない。上から順に条件を当てはめるため、高い点数から並べる",
+        )
+
+
+def _validate_company_score_axes(profile: dict, result: ValidationResult) -> None:
+    """v2: トップレベルの company_score_axes[] を検査する。
+
+    任意フィールドであり、欠落は検査しない（採点する軸の申告が無い状態を許す）。
+    """
+    if schema_version_of(profile) != _V2_SCHEMA_VERSION or "company_score_axes" not in profile:
+        return
+
+    axes = profile.get("company_score_axes")
     if not isinstance(axes, list):
-        result.add_error("company_quality_axes", "company_quality_axes は配列でなければならない")
+        result.add_error("company_score_axes", "company_score_axes は配列でなければならない")
         return
     if not axes:
         result.add_warning(
-            "company_quality_axes",
-            "重視軸を1つも選んでいない。企業品質 Tier の総合の格付けが算出されない",
+            "company_score_axes",
+            "採点する軸を1つも選んでいない。企業スコアが算出されない",
         )
         return
 
     seen: set[str] = set()
-    top_count = 0
+    weights: list[int] = []
     for i, entry in enumerate(axes):
-        path = f"company_quality_axes[{i}]"
+        path = f"company_score_axes[{i}]"
         if not isinstance(entry, dict):
             result.add_error(path, "各要素はオブジェクトでなければならない")
             continue
 
         axis_key = entry.get("axis")
-        if axis_key not in _COMPANY_QUALITY_AXES:
-            result.add_error(f"{path}.axis", "axis は tier-rubric.md の候補軸7つのいずれかである")
+        if not _is_nonempty_str(axis_key):
+            result.add_error(f"{path}.axis", "axis は必須（非空の文字列）である")
         elif axis_key in seen:
             result.add_error(f"{path}.axis", f"axis が重複している: {axis_key}")
         else:
             seen.add(axis_key)
 
-        emphasis = entry.get("emphasis")
-        if emphasis not in _QUALITY_EMPHASIS_LEVELS:
+        kind = entry.get("kind")
+        if kind not in _SCORE_AXIS_KINDS:
+            result.add_error(f"{path}.kind", f"kind は {'/'.join(_SCORE_AXIS_KINDS)} のいずれかである")
+        elif (
+            kind == "quantitative"
+            and _is_nonempty_str(axis_key)
+            and axis_key not in _QUANTITATIVE_SCORE_AXES
+        ):
             result.add_error(
-                f"{path}.emphasis",
-                f"emphasis は {'/'.join(_QUALITY_EMPHASIS_LEVELS)} のいずれかである",
+                f"{path}.axis",
+                "定量軸の axis は company-score-rubric.md の定量候補軸12個のいずれかである",
             )
-        elif emphasis == "top":
-            top_count += 1
 
-    if top_count == 0:
-        result.add_warning(
-            "company_quality_axes",
-            "emphasis=top の軸が1件も無い。最重視する軸を1つは選ぶことを推奨する",
+        weight = entry.get("weight")
+        if not _is_int(weight) or not 1 <= weight <= 100:
+            result.add_error(f"{path}.weight", "weight は1以上100以下の整数である")
+        else:
+            weights.append(weight)
+
+        if "thresholds" in entry:
+            _validate_score_thresholds(path, entry, kind, result)
+
+        if kind == "qualitative":
+            _validate_qualitative_axis(path, entry, result)
+
+    total = sum(weights)
+    if len(weights) == len(axes) and total != _SCORE_WEIGHT_TOTAL:
+        result.add_error(
+            "company_score_axes",
+            f"weight の合計は{_SCORE_WEIGHT_TOTAL}でなければならない（合計{total}）",
         )
-    elif top_count >= _TOP_EMPHASIS_SOFT_LIMIT:
+
+    if _DEFAULT_SELECTED_AXIS not in seen:
         result.add_warning(
-            "company_quality_axes",
-            f"emphasis=top の軸が{top_count}件ある。最重視の意味が薄れるため絞ることを推奨する",
+            "company_score_axes",
+            f"{_DEFAULT_SELECTED_AXIS}（処遇水準）が軸に無い。既定で選択済みの軸である",
         )
 
 
@@ -663,7 +755,7 @@ def validate(document: Any) -> ValidationResult:
     _validate_career_history(document, result)
     _validate_job_change_axis(document, result)
     _validate_v2_axis(document, result)
-    _validate_company_quality_axes(document, result)
+    _validate_company_score_axes(document, result)
 
     _warn_achievements(document, result)
     _warn_skills(document, result)

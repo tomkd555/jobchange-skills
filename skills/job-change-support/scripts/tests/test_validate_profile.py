@@ -733,115 +733,210 @@ class V2MustCountTest(unittest.TestCase):
         self.assertTrue(result.ok)
 
 
-def _company_quality_axes() -> list[dict]:
-    """ERROR 0件・WARN 0件になる company_quality_axes を返す。"""
+def _company_score_axes() -> list[dict]:
+    """ERROR 0件・WARN 0件になる company_score_axes を返す。"""
     return [
-        {"axis": "compensation_level", "emphasis": "top", "note": "上げ幅を最優先にしたい"},
-        {"axis": "retention", "emphasis": "high"},
-        {"axis": "growth", "emphasis": "reference"},
+        {
+            "axis": "compensation_level",
+            "kind": "quantitative",
+            "weight": 40,
+            "thresholds": {"zero": 4500000, "full": 7000000},
+        },
+        {"axis": "annual_holidays", "kind": "quantitative", "weight": 25},
+        {
+            "axis": "discretion",
+            "kind": "qualitative",
+            "weight": 35,
+            "label": "裁量の大きさ",
+            "definition": "設計方針を自分で決められること",
+            "judgment": [
+                {"score": 100, "condition": "求人票に設計裁量の記載があり、面接でも確認できた"},
+                {"score": 50, "condition": "求人票に記載があるが未確認"},
+                {"score": 0, "condition": "上位者の承認が必要と明記されている"},
+            ],
+        },
     ]
 
 
-class V2CompanyQualityAxesTest(unittest.TestCase):
+class V2CompanyScoreAxesTest(unittest.TestCase):
     def _validate(self, axes) -> vp.ValidationResult:
         p = _valid_v2_profile()
-        p["company_quality_axes"] = axes
+        p["company_score_axes"] = axes
         return vp.validate(p)
 
     def test_absent_field_passes_without_warnings(self):
         result = vp.validate(_valid_v2_profile())
         self.assertTrue(result.ok)
-        self.assertFalse(any("company_quality_axes" in w for w in result.warnings))
+        self.assertFalse(any("company_score_axes" in w for w in result.warnings))
 
     def test_valid_axes_pass_without_warnings(self):
-        result = self._validate(_company_quality_axes())
+        result = self._validate(_company_score_axes())
         self.assertTrue(result.ok)
         self.assertEqual(result.warnings, [])
 
     def test_non_list_is_an_error(self):
-        result = self._validate({"axis": "retention"})
+        result = self._validate({"axis": "compensation_level"})
         self.assertFalse(result.ok)
-        self.assertTrue(any("company_quality_axes" in e for e in result.errors))
+        self.assertTrue(any("company_score_axes" in e for e in result.errors))
 
     def test_non_object_element_is_an_error(self):
-        result = self._validate(["retention"])
+        result = self._validate(["compensation_level"])
         self.assertFalse(result.ok)
-        self.assertTrue(any("company_quality_axes[0]" in e for e in result.errors))
-
-    def test_unknown_axis_is_an_error(self):
-        axes = _company_quality_axes()
-        axes[1]["axis"] = "vibes"
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("axis" in e for e in result.errors))
+        self.assertTrue(any("company_score_axes[0]" in e for e in result.errors))
 
     def test_missing_axis_is_an_error(self):
-        axes = _company_quality_axes()
+        axes = _company_score_axes()
         del axes[1]["axis"]
         result = self._validate(axes)
         self.assertFalse(result.ok)
         self.assertTrue(any("axis" in e for e in result.errors))
 
     def test_duplicate_axis_is_an_error(self):
-        axes = _company_quality_axes()
+        axes = _company_score_axes()
         axes[1]["axis"] = axes[0]["axis"]
         result = self._validate(axes)
         self.assertFalse(result.ok)
         self.assertTrue(any("重複" in e for e in result.errors))
 
-    def test_unknown_emphasis_is_an_error(self):
-        axes = _company_quality_axes()
-        axes[0]["emphasis"] = "very_top"
+    def test_unknown_kind_is_an_error(self):
+        axes = _company_score_axes()
+        axes[0]["kind"] = "mixed"
         result = self._validate(axes)
         self.assertFalse(result.ok)
-        self.assertTrue(any("emphasis" in e for e in result.errors))
+        self.assertTrue(any("kind" in e for e in result.errors))
 
-    def test_missing_emphasis_is_an_error(self):
-        axes = _company_quality_axes()
-        del axes[0]["emphasis"]
+    def test_missing_kind_is_an_error(self):
+        axes = _company_score_axes()
+        del axes[1]["kind"]
         result = self._validate(axes)
         self.assertFalse(result.ok)
-        self.assertTrue(any("emphasis" in e for e in result.errors))
+        self.assertTrue(any("kind" in e for e in result.errors))
 
-    def test_empty_list_warns(self):
-        result = self._validate([])
-        self.assertTrue(result.ok)
-        self.assertTrue(any("company_quality_axes" in w for w in result.warnings))
-
-    def test_no_top_emphasis_warns(self):
-        axes = _company_quality_axes()
-        axes[0]["emphasis"] = "high"
+    def test_quantitative_axis_outside_the_candidates_is_an_error(self):
+        axes = _company_score_axes()
+        axes[1]["axis"] = "vibes"
         result = self._validate(axes)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("top" in w for w in result.warnings))
+        self.assertFalse(result.ok)
+        self.assertTrue(any("定量候補軸" in e for e in result.errors))
 
-    def test_four_top_emphasis_warns(self):
-        axes = [
-            {"axis": "compensation_level", "emphasis": "top"},
-            {"axis": "retention", "emphasis": "top"},
-            {"axis": "work_style", "emphasis": "top"},
-            {"axis": "growth", "emphasis": "top"},
-        ]
-        result = self._validate(axes)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("4件" in w for w in result.warnings))
-
-    def test_three_top_emphasis_does_not_warn(self):
-        axes = [
-            {"axis": "compensation_level", "emphasis": "top"},
-            {"axis": "retention", "emphasis": "top"},
-            {"axis": "work_style", "emphasis": "top"},
-        ]
+    def test_qualitative_axis_key_is_free(self):
+        axes = _company_score_axes()
+        axes[2]["axis"] = "onboarding_support"
         result = self._validate(axes)
         self.assertTrue(result.ok)
         self.assertEqual(result.warnings, [])
 
+    def test_non_integer_weight_is_an_error(self):
+        axes = _company_score_axes()
+        axes[0]["weight"] = 40.5
+        result = self._validate(axes)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("weight" in e for e in result.errors))
+
+    def test_zero_weight_is_an_error(self):
+        axes = _company_score_axes()
+        axes[0]["weight"] = 0
+        result = self._validate(axes)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("weight" in e for e in result.errors))
+
+    def test_weight_sum_other_than_100_is_an_error(self):
+        axes = _company_score_axes()
+        axes[1]["weight"] = 20
+        result = self._validate(axes)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("合計" in e for e in result.errors))
+
+    def test_thresholds_on_a_qualitative_axis_is_an_error(self):
+        axes = _company_score_axes()
+        axes[2]["thresholds"] = {"zero": 0, "full": 100}
+        result = self._validate(axes)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("thresholds" in e for e in result.errors))
+
+    def test_non_numeric_thresholds_is_an_error(self):
+        axes = _company_score_axes()
+        axes[0]["thresholds"] = {"zero": "450万円", "full": 7000000}
+        result = self._validate(axes)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("thresholds" in e for e in result.errors))
+
+    def test_missing_threshold_key_is_an_error(self):
+        axes = _company_score_axes()
+        del axes[0]["thresholds"]["full"]
+        result = self._validate(axes)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("thresholds" in e for e in result.errors))
+
+    def test_equal_thresholds_is_an_error(self):
+        axes = _company_score_axes()
+        axes[0]["thresholds"] = {"zero": 6000000, "full": 6000000}
+        result = self._validate(axes)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("thresholds" in e for e in result.errors))
+
+    def test_qualitative_axis_without_label_is_an_error(self):
+        axes = _company_score_axes()
+        del axes[2]["label"]
+        result = self._validate(axes)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("label" in e for e in result.errors))
+
+    def test_qualitative_axis_without_definition_is_an_error(self):
+        axes = _company_score_axes()
+        axes[2]["definition"] = "  "
+        result = self._validate(axes)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("definition" in e for e in result.errors))
+
+    def test_empty_judgment_is_an_error(self):
+        axes = _company_score_axes()
+        axes[2]["judgment"] = []
+        result = self._validate(axes)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("judgment" in e for e in result.errors))
+
+    def test_judgment_score_out_of_range_is_an_error(self):
+        axes = _company_score_axes()
+        axes[2]["judgment"][0]["score"] = 120
+        result = self._validate(axes)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("score" in e for e in result.errors))
+
+    def test_judgment_without_condition_is_an_error(self):
+        axes = _company_score_axes()
+        del axes[2]["judgment"][1]["condition"]
+        result = self._validate(axes)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("condition" in e for e in result.errors))
+
+    def test_judgment_not_in_descending_order_warns(self):
+        axes = _company_score_axes()
+        axes[2]["judgment"].reverse()
+        result = self._validate(axes)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("降順" in w for w in result.warnings))
+
+    def test_empty_list_warns(self):
+        result = self._validate([])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("company_score_axes" in w for w in result.warnings))
+
+    def test_missing_compensation_level_warns(self):
+        axes = [
+            {"axis": "annual_holidays", "kind": "quantitative", "weight": 60},
+            {"axis": "monthly_overtime", "kind": "quantitative", "weight": 40},
+        ]
+        result = self._validate(axes)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("compensation_level" in w for w in result.warnings))
+
     def test_v1_profile_is_not_checked_against_the_axes_rules(self):
         p = _valid_profile()
-        p["company_quality_axes"] = "これは v1 なので検査されない"
+        p["company_score_axes"] = "これは v1 なので検査されない"
         result = vp.validate(p)
         self.assertTrue(result.ok)
-        self.assertFalse(any("company_quality_axes" in w for w in result.warnings))
+        self.assertFalse(any("company_score_axes" in w for w in result.warnings))
 
 
 class ExampleAssetTest(unittest.TestCase):

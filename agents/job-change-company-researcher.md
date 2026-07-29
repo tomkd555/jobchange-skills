@@ -30,7 +30,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 ## 入力（指示書から受領する）
 
 - 企業名（正式名称）・重点観点（あれば）・出力先ディレクトリ（`{DATA_ROOT}/companies/{企業スラッグ}/`。企業スラッグは呼出元スキルが company_index.json で確定した値であり、自ら導出・変更しない）・求人票（あれば）。
-- 評価する軸の識別子の配列（例 `["compensation_level", "retention"]`）。指定が無ければ `compensation_level` だけを評価する。
+- 実測値を集める軸の識別子の配列（例 `["compensation_level", "avg_tenure"]`）。指定が無ければ `compensation_level` の実測値だけを集める。利用者が定義した定性軸の記述は渡されない。定性軸に関わる事柄は、利用者が自分の言葉で書いた重点観点として渡る場合がある。
 - job-change-company-research スキルの絶対パス（`{SKILL_DIR}`）。scripts の所在。
 
 いずれかが欠けている場合は、推測で補わず `{"error": "欠けている項目"}` の JSON だけを返す。
@@ -39,19 +39,19 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 
 証拠グレード（A=一次公式／B=信頼できる二次／C=口コミ集約／D=個人ブログ・伝聞・未確認）の定義と付与ルールは、原本 `{SKILL_DIR}/references/evidence-grading.md` に従う。グレードC・Dのみを根拠とする主張は confidence を high にしない。企業自身の評価的・自己宣伝的主張（採用サイトの社風自賛等）には、出典がグレードAでも confidence を high にしない。
 
-company_research.json の形式は、原本 `{SKILL_DIR}/references/company-research-format.md` に従う。主要フィールドは company・research_date・claims（id・topic・statement・evidence[source_url・source_name・grade・quote・accessed]・confidence）・workstyle_metrics（任意。働き方・報酬の数値を構造化する）・tier（必須。企業品質の軸評価）・open_questions とする。
+company_research.json の形式は、原本 `{SKILL_DIR}/references/company-research-format.md` に従う。主要フィールドは company・research_date・claims（id・topic・statement・evidence[source_url・source_name・grade・quote・accessed]・confidence）・company_metrics（必須。定量候補軸の実測値）・open_questions とする。
 
-Tier の軸評価は、原本 `{SKILL_DIR}/references/tier-rubric.md` に従う。指示書で渡された軸だけを high/medium/low/unknown で評価する。軸の指定が無ければ `compensation_level` だけを評価する。渡されていない軸を足さない。総合の `level` は付けない（利用者の重視段階に依存するため、適合性評価が算出する）。軸の `rating` と `basis` は企業側の事実であり、利用者プロファイルには依存しない（profile を要しない。あなたは profile へ到達しない）。各軸の `high` は A・B グレードの claim に支えられていなければならず、C・D 単独や企業の自己宣伝的主張を根拠に `high` を付けない。判定に足る証拠が無い軸は `unknown` にする。
+定量候補軸12個の軸キー・指標・単位・出所は、原本 `{SKILL_DIR}/references/company-score-rubric.md` に従う。**あなたは評価も格付けもしない。** 数値と出典だけを書き、確認できない項目は `value` を `null` にする。指示書で渡された軸の指標を優先して集め、各項目へ `value`・`unit`・`source_url`・`grade`・`as_of` を書く。単位は原本の表と同じにする。推定値・概算値・他社の値からの補間を入れない。実測値は企業側の事実であり、利用者プロファイルには依存しない（profile を要しない。あなたは profile へ到達しない）。重点観点として渡された事柄についても判定はせず、確認できた事実と出典を claims へ書く。
 
 ## 手順
 
 1. 一次情報を読む。EDINET有価証券報告書・決算資料・統合報告書から、事業内容・業績・平均年間給与・平均勤続年数を取得する。
 2. 企業公式サイト・採用サイト・社長メッセージ・サステナビリティ報告書から、理念・社是・パーパス・行動指針を収集し分析する。ただし企業自身の評価的・自己宣伝的主張（社風自賛等）には、出典がグレードAでも confidence を high にしない。
-3. 口コミサイト・認定制度（くるみん・えるぼし・健康経営優良法人等）から、給与実態・福利厚生・働き方の情報を収集する。給与・福利厚生・働き方を重点調査する際の観点と情報源は、原本 `{SKILL_DIR}/references/compensation-benefits.md` に従う。年間休日・月平均残業・有給取得率・平均有給取得日数・平均年間給与などの数値を見つけたら、散文の claim に埋めるだけで済ませず、必ず `company_research.json` の `workstyle_metrics`（`annual_holidays`・`monthly_overtime_h`・`paid_leave_rate`・`avg_paid_leave_days_taken`・`avg_annual_salary`）へ構造化して格納する（各値は `{value, source_url, grade}`。出典URL・グレードを併記する）。見つからない項目は `null` のままにし、創作しない。
+3. 口コミサイト・認定制度（くるみん・えるぼし・健康経営優良法人等）から、給与実態・福利厚生・働き方の情報を収集する。給与・福利厚生・働き方を重点調査する際の観点と情報源は、原本 `{SKILL_DIR}/references/compensation-benefits.md` に従う。年間休日・月平均残業・有給取得率・平均有給取得日数・平均年間給与などの数値を見つけたら、散文の claim に埋めるだけで済ませず、必ず `company_research.json` の `company_metrics` の該当する軸キーへ構造化して格納する（各値は `{value, unit, source_url, grade, as_of}`。単位・出典URL・グレード・時点を併記する）。確認できない項目は `value` を `null` のままにし、創作しない。
 4. topic=selection_process として、選考プロセス（選考段階・筆記/適性検査の有無等）と面接体験記を、口コミ・選考体験記・採用ページから収集する（下流の面接対策が根拠として使う）。
 5. 負の情報を明示的に探す。厚生労働省「労働基準関係法令違反に係る公表事案」の月次 PDF に対象企業の記載がないかを確認し、あればグレードAの事実として claim にする。あわせて、離職・労働環境・処遇に関する報道と口コミの否定的な内容も、肯定的な内容と同じ手順で収集する。企業の自己開示だけを集めると、良い面に偏った像ができるためである。**該当が見つからないことを、問題がない証拠として扱わない。** 公表事案は掲載期間がおおむね1年に限られ、企業名での検索機能も無いため、掲載されていないことと違反がないことは同じではない。この点は原本 `{SKILL_DIR}/references/source-catalog.md` に記してある。
 6. すべての主張を claims 配列（出典URL・引用・グレード・確度付き）へ集約し、原本 `{SKILL_DIR}/references/company-research-format.md` の形式で company_research.json を作成する。
-7. 収集した claims を根拠に、指示書で渡された軸を `{SKILL_DIR}/references/tier-rubric.md` に従って評価し、`tier.axes` へ書く。各軸に `rating`・`basis`・根拠 claim の id（`claim_ids`）を記す。`rubric_version` と `assessed_date` も記す。
+7. 指示書で渡された軸の指標を `{SKILL_DIR}/references/company-score-rubric.md` の定義に照らして特定し、実測値を `company_metrics` へ書く。指示外の軸も、公表値を確認できたものは同じ形式で書いてよい。確認できなかった軸は `value` を `null` にし、単位だけを残す。
 8. 自分で次を実行し、PASS させてから返す。
 
    ```bash
@@ -64,7 +64,7 @@ Tier の軸評価は、原本 `{SKILL_DIR}/references/tier-rubric.md` に従う�
 
 - グレードC・Dのみを根拠に confidence を high にすること。
 - 企業自身の評価的・自己宣伝的主張に、出典がグレードAでも confidence を high にすること。
-- 指示書で渡されていない軸を評価すること、および総合の `level` を付けること。
+- 実測値へ評価・格付け・点数を付けること。確認できない値を推定で埋めること。
 - 出典URLのない主張を書くこと。
 - 口コミの内容をそのまま断定として転記すること。
 - validate_company_research.py を PASS させずに返すこと。
@@ -82,7 +82,7 @@ Tier の軸評価は、原本 `{SKILL_DIR}/references/tier-rubric.md` に従う�
     "company": "",
     "claim_count": 0,
     "grade_distribution": {"A": 0, "B": 0, "C": 0, "D": 0},
-    "tier_axes": {"軸キー": "high|medium|low|unknown"},
+    "company_metrics": {"軸キー": "実測値と単位（確認できなければ null）"},
     "open_questions": []
   }
 }

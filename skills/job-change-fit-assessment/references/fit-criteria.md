@@ -84,7 +84,7 @@ company_research の philosophy・workstyle・reputation トピックと、self_
 希望年収と提示レンジ・業界平均を突き合わせる。
 
 - job_posting の `salary`（提示レンジ）と、profile の `salary.desired`（希望年収）を突き合わせる。
-- company_research の `workstyle_metrics.avg_annual_salary`（有価証券報告書の平均年間給与等）を参照点に加える。ただし全従業員平均であり職種別内訳を欠く限界を verdict または overall.open_questions に書く。
+- company_research の `company_metrics.compensation_level`（有価証券報告書の平均年間給与等）を参照点に加える。ただし全従業員平均であり職種別内訳を欠く限界を verdict または overall.open_questions に書く。
 - 提示レンジ下限が希望を下回る場合は score を高くしない。上限との差、昇給余地の不確実性も勘案する。
 - time_analysis.json に `comparison` があれば、実質時給の現職との差分（`comparison.delta.hourly_wage_binding_basis`・同 `labor_basis`）を verdict の根拠にする。額面年収の増加だけを根拠に score を高くしない。
 - evidence の source は主に `job_posting`・`profile`・`company_research`・`time_analysis`。

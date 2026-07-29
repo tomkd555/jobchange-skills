@@ -27,13 +27,9 @@
       "confidence": "medium"
     }
   ],
-  "tier": {
-    "rubric_version": 2,
-    "assessed_date": "YYYY-MM-DD",
-    "axes": {
-      "compensation_level": { "rating": "high",   "basis": "…", "claim_ids": ["C020"] },
-      "retention":          { "rating": "medium", "basis": "…", "claim_ids": ["C011"] }
-    }
+  "company_metrics": {
+    "compensation_level": { "value": 6120000, "unit": "円", "source_url": "https://...", "grade": "A", "as_of": "2026-03" },
+    "annual_holidays":    { "value": null,    "unit": "日", "source_url": null,          "grade": null, "as_of": null }
   },
   "open_questions": [ "" ]
 }
@@ -117,51 +113,40 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 
 裏取りできなかった論点、出所間の食い違い、一次情報の代表性の限界などを記す。例:「有報の平均年間給与は全従業員平均であり、応募職種の給与水準は判別できない。」
 
-### workstyle_metrics（オブジェクト・任意）
+### company_metrics（オブジェクト・必須）
 
-働き方・報酬の主要数値を、機械可読な集約値として構造化するトップレベルの任意フィールドである。散文の `claims` とは独立に、追加のフィールドとして持つ。後続の処理（実質時給の試算など）が数値をそのまま使えるようにするための転記であり、根拠は対応する `claims` の evidence にある。
+定量候補軸の実測値を、機械可読な数値として構造化するトップレベルの必須フィールドである。散文の `claims` とは独立に持ち、後続の処理（企業スコアの算出・実質時給の試算）が数値をそのまま使う。軸の定義・単位・方向の原本は `references/company-score-rubric.md` にある。
 
-5つのキーを持つ。各値は `{value, source_url, grade}` のオブジェクト、または `null`（見つからなければ null のままにする。創作しない）。
+企業研究は実測値を集めるだけであり、点数化も格付けもしない。指示された軸に対応する指標を優先して集め、確認できなかった項目は `value` を `null` にする。推定値を入れない。
 
-| キー | 内容 | 単位の目安 |
+キーは定量候補軸の軸キーと同じにする。軸キー以外で置いてよいのは、拘束時間の算定に使う補助指標 `avg_paid_leave_days_taken`（平均有給取得日数・単位は日）だけである。
+
+| 軸キー | 指標 | 単位 |
 |---|---|---|
-| `annual_holidays` | 年間休日数 | 日 |
-| `monthly_overtime_h` | 月平均残業時間 | 時間 |
-| `paid_leave_rate` | 有給取得率 | %（またはIR表記に合わせた率） |
-| `avg_paid_leave_days_taken` | 平均有給取得日数（実績） | 日 |
-| `avg_annual_salary` | 平均年間給与（想定年収の対照に使う） | 円 |
+| `compensation_level` | 平均年間給与 | 円 |
+| `annual_holidays` | 年間休日総数 | 日 |
+| `monthly_overtime` | 月平均残業時間 | 時間 |
+| `paid_leave_rate` | 年次有給休暇の取得率 | % |
+| `avg_tenure` | 平均勤続年数 | 年 |
+| `turnover_rate` | 離職率 | % |
+| `mid_career_ratio` | 中途採用比率 | % |
+| `female_manager_ratio` | 女性管理職比率 | % |
+| `male_childcare_leave_rate` | 男性の育児休業取得率 | % |
+| `revenue_growth` | 売上高の成長率（年率） | % |
+| `operating_margin` | 営業利益率 | % |
+| `equity_ratio` | 自己資本比率 | % |
 
-各メトリックのフィールド:
+各項目のフィールド:
 
 | フィールド | 必須 | 記入基準 |
 |---|---|---|
-| `value` | 必須 | 数値。文字列や真偽値は不可 |
-| `source_url` | 必須 | 出典の URL。`http` で始まる文字列 |
-| `grade` | 必須 | `A`〜`D`。定義は `references/evidence-grading.md` |
+| `value` | 必須 | 数値、または確認できなかったことを表す `null`。文字列や真偽値は不可 |
+| `unit` | 必須 | 上表の単位と同じ文字列 |
+| `source_url` | `value` が非 null なら必須 | 出典の URL。`http` で始まる文字列 |
+| `grade` | `value` が非 null なら必須 | `A`〜`D`。定義は `references/evidence-grading.md` |
+| `as_of` | 推奨 | その値が指す時点（`YYYY-MM` または `YYYY`）。欠落は WARN |
 
-**ルール**: 年間休日・残業・有給取得率・平均年間給与などの数値を収集した場合は、散文の claim に埋めるだけでなく、必ずこの workstyle_metrics へ構造化して格納する（出典URL・グレード併記）。見つからなければ `null` のままにする。
-
-### tier（オブジェクト・必須）
-
-企業研究の結論として付す、**企業そのものの質**の軸評価である。トップレベルの必須フィールドで、欠落は機械検証で ERROR となる。利用者プロファイル（希望年収・スキル・転職の軸）には依存せず、`claims` と `workstyle_metrics` だけから評価する。候補軸の定義・評価ルール・記入形式の原本は `references/tier-rubric.md` にある。
-
-指示書で渡された軸だけを `high`/`medium`/`low`/`unknown` で評価する。軸のキーは候補7軸（`compensation_level`・`financial_soundness`・`retention`・`work_style`・`employment_stability`・`growth`・`tech_advancement`）のいずれかでなければならない。総合の格付け（`level`）は利用者の重視段階に依存するため、企業研究では算出せず、適合性評価（job-change-fit-assessment）が `fit_assessment.json` の `company_tier` へ書く。
-
-| フィールド | 必須 | 記入基準 |
-|---|---|---|
-| `rubric_version` | 推奨 | ルーブリックのバージョン（現行 `2`）。欠落は WARN |
-| `assessed_date` | 推奨 | 軸を評価した日付（`YYYY-MM-DD`）。欠落は WARN |
-| `axes` | 必須 | 評価した軸のオブジェクト。1軸以上。各軸は `{rating, basis, claim_ids}` |
-
-各軸（`axes.<軸>`）のフィールド:
-
-| フィールド | 必須 | 記入基準 |
-|---|---|---|
-| `rating` | 必須 | `high`/`medium`/`low`/`unknown` のいずれか |
-| `basis` | 必須 | 評価の根拠を書く（非空） |
-| `claim_ids` | 必須 | 根拠 claim の id の配列。`claims` に実在する id でなければならない。`unknown` のときは空配列でよい |
-
-**ルール**: `high` は A・B グレードの claim に支えられていなければならず、C・D 単独や企業の自己宣伝的主張を根拠に `high` を付けない（機械検証では判定できず、監査エージェントの領分）。判定に足る証拠が無い軸は `unknown` にし、推測で埋めない。
+**ルール**: 年間休日・残業・有給取得率・平均年間給与などの数値を収集した場合は、散文の claim に埋めるだけでなく、必ずこの company_metrics へ構造化して格納する（単位・出典URL・グレード併記）。確認できなければ `value` を `null` のままにする。
 
 ## 機械検証規則（validate_company_research.py）
 
@@ -181,22 +166,20 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 - `quote` が空
 - 必須7トピック（`philosophy`・`business`・`financials`・`compensation`・`benefits`・`workstyle`・`reputation`）のいずれかが1件も無い
 - グレードC・Dのみを根拠とする claim に `confidence=high`
-- `workstyle_metrics` が存在し、オブジェクトでない
-- `workstyle_metrics` の各メトリックが存在し（非 null）、`value` が非数値・`source_url` が `http` 始まりでない・`grade` が A〜D 以外のいずれか
-- `tier` の欠落、または `tier` が非オブジェクト
-- `tier.axes` が非オブジェクト、または軸が1つも無い
-- `tier.axes` のキーが候補7軸（`compensation_level`・`financial_soundness`・`retention`・`work_style`・`employment_stability`・`growth`・`tech_advancement`）以外
-- いずれかの軸の `rating` が `high`/`medium`/`low`/`unknown` 以外、`basis` が空、`claim_ids` が非配列、または `claim_ids` が `claims` に存在しない id を参照
+- `company_metrics` の欠落、または `company_metrics` が非オブジェクト
+- `company_metrics` のキーが定量候補軸12個の軸キーでも `avg_paid_leave_days_taken` でもない
+- `company_metrics` の各項目が非オブジェクト
+- `value` が数値でも `null` でもない
+- `unit` が軸ごとに定めた単位と異なる
+- `value` が非 null の項目で、`source_url` が `http` 始まりの文字列でない
+- `value` が非 null の項目で、`grade` が A〜D 以外
 
 **WARN（成立するが根拠が弱い）**
 
 - あるトピックの claim がすべてグレードC・Dのみの根拠である
 - `selection_process` の claim が0件
 - `research_date` が未設定
-- `workstyle_metrics` 全体が欠落している
-- `workstyle_metrics` の個別メトリックが欠落または `null` である
-- `tier.rubric_version` または `tier.assessed_date` が未設定
-- `tier.level` が存在する（総合の格付けは適合性評価が算出するため、企業研究の `level` は使わない）
-- `rating` が `high`/`medium`/`low` の軸に根拠 `claim_ids` が無い
+- `value` が非 null の項目に `as_of` が無い
+- 定量候補軸12個のうち、`value` が非 null の軸が1つも無い
 
 記入例は `assets/company_research_example.json`（架空企業）にある。

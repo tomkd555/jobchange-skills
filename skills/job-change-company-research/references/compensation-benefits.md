@@ -2,7 +2,7 @@
 
 給与（topic=compensation）・福利厚生（topic=benefits）・働き方（topic=workstyle）を調査するときの観点と情報源カタログを定める原本である。証拠グレード（A〜D）の定義・判定基準・運用ルールは `references/evidence-grading.md` に従い、本ファイルでは重複定義しない。各情報源には、そのグレードの目安を付す。
 
-収集した数値（年間休日・月平均残業・有給取得率・平均有給取得日数・平均年間給与）は、散文の claim に埋めるだけでなく、必ず `company_research.json` の `workstyle_metrics` へ構造化して格納する（形式は `references/company-research-format.md`。出典URL・グレード併記。見つからなければ null）。
+収集した数値（年間休日・月平均残業・有給取得率・平均有給取得日数・平均年間給与）は、散文の claim に埋めるだけでなく、必ず `company_research.json` の `company_metrics` へ構造化して格納する（形式は `references/company-research-format.md`。単位・出典URL・グレード併記。確認できなければ value を null）。
 
 ## 調査観点
 
@@ -75,8 +75,8 @@
 
 比較の限界: 有報の平均年間給与は全従業員平均で職種別内訳を欠くため、公的統計の職種別・年齢別水準との比較は厳密な同一条件の対照ではない。比較はあくまで水準の把握にとどめ、単純な優劣の断定はしない。この限界を open_questions に残す。
 
-## claim・workstyle_metrics への反映
+## claim・company_metrics への反映
 
-- 数値（年間休日・残業・有給取得率・平均有給取得日数・平均年間給与）を収集したら、対応する claim を作り、加えて `workstyle_metrics` へ構造化して格納する（value・source_url・grade）。
+- 数値（年間休日・残業・有給取得率・平均有給取得日数・平均年間給与）を収集したら、対応する claim を作り、加えて `company_metrics` へ構造化して格納する（value・unit・source_url・grade・as_of）。
 - 制度の「有無」は事実の claim にする（例:「健康経営優良法人2026に認定されている」grade=B）。制度の「良し悪し」は評価であり、断定しない。
 - 求人票レンジと有報平均・公的統計の食い違いは open_questions に残す。
