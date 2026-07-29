@@ -218,7 +218,7 @@ similar_better では各求人の `better_points`（基準求人より改善し�
 |---|---|---|
 | `job-change-job-searcher` | sonnet | 匿名化条件からの公開Web検索 → job_search_results.json ＋ 引用・出典URL付与 |
 
-求人検索は定型的なWeb抽出（掲載ページからの項目転記と引用）であり、選考試験調査（job-change-exam-scout）と同種のため sonnet とする。この方針はエージェントの frontmatter に固定済みであり、起動時に model を上書きしない。
+model はエージェントの frontmatter に固定済みであり、起動時に上書きしない。
 
 ## スクリプトのCLI使用例
 

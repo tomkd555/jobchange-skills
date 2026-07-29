@@ -95,7 +95,7 @@ profile.json のゲートは必須である。
 
 - `profile.json` は `validate_profile.py`（hub の scripts）が PASS（ERROR 0件）であることを前提とする。hub 経由で入る場合は、hub がルーティング前に確認済みである。本スキルが単独で起動された場合は、自分で `validate_profile.py` を実行して PASS を確かめる。
 - `profile.json` が未作成の場合は先へ進まない。hub（`job-change-support`）のプロファイル整備へ戻し、作成してから再開する（プロファイルの作成は hub と `job-change-profile` の責務である）。
-- 検証が FAIL（ERROR 1件以上）の場合は、ERROR の内容を利用者へ示し、`job-change-profile` での整備を勧める。ただし、利用者が欠落を承知のうえで着手を希望する場合は、欠けた項目に依存する記述を作らないという条件で進めてよい。その場合は、どの項目が欠けたままかを納品時に明記する。
+- 検証が FAIL（ERROR 1件以上）の場合は、ERROR の内容を利用者へ示し、`job-change-profile` での整備を勧める。ただし、利用者が欠落を承知のうえで着手を希望する場合は、欠けた項目の値を直接引用または前提とする記述を作らないという条件で進めてよい。その場合は、どの項目が欠けたままかを納品時に明記する。
 
 company_research.json の確認は任意であり、無い場合は縮退を明示する。
 
@@ -189,7 +189,7 @@ fit_assessment.json の確認は任意である。
 | `job-change-document-writer` | opus | アピールマッピング・形式選定・起草（Step 1）と監査指摘の反映（Step 3） |
 | `job-change-document-auditor` | sonnet | 独立コンテキストでの書類監査（Step 2）。和文の文法・表記も自身で検査する |
 
-起草は求人要件と実績を対応づけて表現を組み立てる判断を要するため opus、監査は定められた基準への照合が中心であるため sonnet とする。model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
+model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
 
 ## スクリプトのCLI使用例
 

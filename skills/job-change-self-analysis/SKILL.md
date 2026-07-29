@@ -20,11 +20,11 @@ allowed-tools: Read, Write, Glob, Grep, Bash, AskUserQuestion, Agent, Skill
 
 転職の自己分析に取り組むとき、このスキル1つで棚卸しから成果物の納品までの手順がそろう。profile.json を土台に、行動エピソード（STAR素材）と他者フィードバックを内省と対等に集め、興味・価値観・career adaptability の4次元・過去の行動の4軸で構造化し、根拠づけた強み、キャリア・ナラティブ、退職理由の建設的な言い換えの3点を持つ self_analysis.json を作る。成果物は面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が入力として読む。
 
-自己分析は、内省だけでは系統的にゆがむ。他者評価は自己評価より予測妥当性が高く、過度な内省（反すう）は有害である（根拠は `references/self-analysis-methods.md`）。本スキルは、行動証拠と他者視点を内省と併用する設計でこの限界を緩和する。起草と独立監査はそれぞれ専用エージェント（`job-change-self-analysis-writer`・`job-change-self-analysis-auditor`）が担い、本スキルはその起動・差し戻し・納品を統括する。
+本スキルは、行動証拠と他者視点を内省と併用する（根拠は `references/self-analysis-methods.md`）。起草と独立監査はそれぞれ専用エージェント（`job-change-self-analysis-writer`・`job-change-self-analysis-auditor`）が担い、本スキルはその起動・差し戻し・納品を統括する。
 
 ## 目的と原則
 
-1. **他者視点と行動証拠を内省と併用する。** 内省は無意識過程への直接経路を持たず、他者評価のほうが自己評価より予測妥当性が高い。強み（strengths）は、行動エピソード（behavioral_episodes）または他者証言（others_feedback）への対応づけを必須とし、内省単独の強みは認めない（検証器が ERROR とする）。他者フィードバックの受け取りは課題志向で行い、人格評価としてではなく行動と結果への対応づけとして記録する。
+1. **他者視点と行動証拠を内省と併用する。** 強み（strengths）は、行動エピソード（behavioral_episodes）または他者証言（others_feedback）への対応づけを必須とし、内省単独の強みは認めない（検証器が ERROR とする）。他者フィードバックの受け取りは課題志向で行い、人格評価としてではなく行動と結果への対応づけとして記録する。
 
 2. **有限の構造化された問いに限る（反すう防止）。** 質問は `references/question-bank.md` の有限の問いに限定し、無制限の「なぜ」の反復を促さない。深掘りは感情の反すうへ落とさず、必ず行動・事実（エピソード）へ対応づける。感情の将来予測（「転職すれば幸せになれる」）を確信・断定の根拠にしない。
 
@@ -116,7 +116,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 | ゲート | 通過条件と差し戻し先 |
 |---|---|
-| Step 0 のプロファイルゲート | `profile.json` が `validate_profile.py` で PASS していなければ着手しない。未作成・FAIL は hub（`job-change-support`）経由で `job-change-profile` サブスキルへ戻す。ただし FAIL の場合は、ERROR の内容を示し、利用者が欠落を承知で着手を希望するなら、欠けた項目に依存する記述を作らないという条件で進めてよい。どの項目が欠けたままかを成果物に明記する。 |
+| Step 0 のプロファイルゲート | `profile.json` が `validate_profile.py` で PASS していなければ着手しない。未作成・FAIL は hub（`job-change-support`）経由で `job-change-profile` サブスキルへ戻す。ただし FAIL の場合は、ERROR の内容を示し、利用者が欠落を承知で着手を希望するなら、欠けた項目の値を直接引用または前提とする記述を作らないという条件で進めてよい。どの項目が欠けたままかを成果物に明記する。 |
 | Step 5 の検証・監査ゲート | `validate_self_analysis.py` が FAIL（ERROR 1件以上）の場合、または `job-change-self-analysis-auditor` の `verdict` が BLOCK の場合、または `severity` = must_fix の finding がある場合は、Step 4 で起草担当へ差し戻す。差し戻しは同一成果物につき最大2回まで行う。 |
 
 差し戻し時は、監査の findings（target・evidence・fix）をそのまま起草担当へ渡し、反映後に Step 5 から再度通す。2回の差し戻しで解消しない指摘は、未決事項として利用者へ判断を委ねてから納品する（例: profile.json の実績だけでは強みの裏付けが足りない、という指摘は、他者フィードバックの追加収集か訴求の見直しが要るため利用者の判断事項とする）。
@@ -148,7 +148,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | `job-change-self-analysis-writer` | opus | strengths の根拠づけ・career_narrative の起草・reason_for_change の建設的言い換え（Step 4）と監査指摘の反映 |
 | `job-change-self-analysis-auditor` | opus | 独立コンテキストでの誇張・一貫性・内省単独の重み・反すう/感情予測型記述の監査、検証器の再実行（Step 5） |
 
-統合起草とナラティブ構築、および誇張・一貫性の質的監査は、いずれも判断負荷が高い。そのため起草担当と監査担当の双方を opus とする。機械的検査は `validate_self_analysis.py` が担う。model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
+機械的検査は `validate_self_analysis.py` が担う。model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
 
 ## スクリプトのCLI使用例
 

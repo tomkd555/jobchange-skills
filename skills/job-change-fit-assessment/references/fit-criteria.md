@@ -47,7 +47,7 @@ job_posting の `requirements.must[]`・`requirements.want[]` と、profile の 
 
 - self_analysis の `career_narrative.future_direction` を一次資料とし、`interests.domains`（RIASEC の領域名）・`interests.concrete_topics` と求人の技術領域・製品領域の重なりを見る。
 - profile の `job_change_axis.reasons`（転職で次に実現したいこと）を補助資料とする。
-- **経験の近さを志向の根拠に流用しない。** 「経験があるから志向にも合う」という推論を明示的に禁じる。この推論を許すと、現職と同じ消耗を繰り返す求人が上位に来る。
+- **経験の近さを志向の根拠に流用しない。** 「経験があるから志向にも合う」という推論を明示的に禁じる。
 - self_analysis が無い場合（`inputs.self_analysis=false`）は score を高くしない。4以上を付けることは認めない。
 - evidence には `self_analysis` または `profile` を必ず含める。求人票だけで志向を断定しない。
 - evidence の `ref` は `interests.domains[0]`・`career_narrative.future_direction` のようなフィールドパスで書く。

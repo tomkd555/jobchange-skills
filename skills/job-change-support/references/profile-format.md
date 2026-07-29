@@ -77,7 +77,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `description` | string | 任意 | 実績の説明 |
 | `metric` | string または null | 任意 | 定量値。「応答時間を40%短縮」「売上を年3000万円増」のように、数値・割合・金額で示す。定量化できない実績は `null` にする |
 
-`metric` は可能な限り定量値で埋める。応募書類・面接では、定量化された実績が採否を分ける。全職歴を通して定量的な `metric` が1件もない場合、`validate_profile.py` は WARN を出す。`metric` には検証可能な数値を優先する。裏付けのない数値の創作や過大な誇張は、書類・面接全体の信頼を毀損する。
+`metric` は可能な限り定量値で埋める。全職歴を通して定量的な `metric` が1件もない場合、`validate_profile.py` は WARN を出す。`metric` には検証可能な数値を優先する。
 
 ## career_gaps
 
@@ -115,8 +115,6 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `must_conditions` | array | 1.x のみ | 譲れない条件の自由文の配列。2.0 では `conditions` へ移す。2.0 で非空なら WARN |
 | `want_conditions` | array | 1.x のみ | 望ましい条件の自由文の配列。2.0 では `conditions` へ移す。2.0 で非空なら WARN |
 | `priority_note` | string | 任意 | 必須条件の優先順位と、次に軸を再評価する時期のメモ |
-
-選好は時間とともに変化するため、軸は固定せず定期的に再評価する前提を `priority_note` に残す。
 
 ### conditions（2.0）
 
@@ -166,7 +164,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 
 ### 必須条件の件数
 
-「必須条件は3件程度まで」のルールは、`conditions[level=must]` と `work_character_preferences[desire=must]` の**合計**で数える。合計が4件以上なら WARN とする。必須条件が多いほど母集団が小さくなり、求人検索が「応募推奨なし」を返しやすくなる。
+「必須条件は3件程度まで」のルールは、`conditions[level=must]` と `work_character_preferences[desire=must]` の**合計**で数える。合計が4件以上なら WARN とする。
 
 ### 年収の扱い
 
@@ -213,7 +211,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `judgment` | array | 定性軸で必須 | 判定条件の配列。1件以上必要。後述 |
 | `note` | string | 任意 | その軸を選んだ理由を利用者の言葉で書く |
 
-`thresholds` を書かない定量軸には、統計に基づく既定値を使う。既定値の原本は `job-change-fit-assessment/scripts/calculate_company_score.py` の定数であり、本文書は数値を持たない。既定値を持たない軸は、`thresholds` を書くまで採点されない。処遇水準（`compensation_level`）は既定値を持たない。企業単位の年収分布を持つ公的統計が無いためであり、この軸の基準は利用者の現年収と希望年収から決める。
+`thresholds` を書かない定量軸には、統計に基づく既定値を使う。既定値の原本は `job-change-fit-assessment/scripts/calculate_company_score.py` の定数であり、本文書は数値を持たない。既定値を持たない軸は、`thresholds` を書くまで採点されない。処遇水準（`compensation_level`）は既定値を持たない。この軸の基準は利用者の現年収と希望年収から決める。
 
 ### judgment（定性軸）
 

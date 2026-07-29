@@ -267,7 +267,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 | `job-change-research-auditor` | opus | 独立コンテキストでの出典実在・引用一致・グレード妥当性・トピック網羅の監査 |
 | `job-change-posting-parser` | sonnet | 求人URLの取得 → job_posting.json の仕様に沿ったオブジェクトの組み立て（ファイルは書かない） |
 
-収集はグレード付与の判断を要し、監査は裏取りと過剰断定の検出という判断を要するため、いずれも opus とする。求人票取込は定型のページ読み取りが中心のため sonnet とする。この方針は各エージェントの frontmatter に固定済みであり、起動時に model を上書きしない。
+この方針は各エージェントの frontmatter に固定済みであり、起動時に model を上書きしない。
 
 ## スクリプトのCLI使用例
 

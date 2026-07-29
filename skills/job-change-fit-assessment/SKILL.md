@@ -186,7 +186,7 @@ ERROR が1件でもあれば Step 3 へ差し戻す。PASS（ERROR 0件）にな
 |---|---|---|
 | `job-change-fit-assessor` | opus | 数値抽出 → 拘束時間算定の起動 → 7次元評価・必須条件の判定・総合判定の起草 → validate_fit_assessment.py を PASS |
 
-グレードに応じた数値の取捨・evidence への対応づけ・過剰断定の抑制という判断を要するため opus とする。この方針はエージェントの frontmatter に固定済みであり、起動時に model を上書きしない。
+model はエージェントの frontmatter に固定済みであり、起動時に上書きしない。
 
 ## スクリプトのCLI使用例
 

@@ -93,7 +93,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 ### Step 1 職歴の骨格（時系列）
 
-古い順または新しい順に、企業×在籍期間×役割の一覧をまず確定する。転職・異動・昇進などの転機を時系列の手がかりにする。カレンダー型（時系列×テーマ横断）の想起手がかりは自伝的記憶の構造に沿い、回顧の完全性・一貫性を高める（`references/elicitation-guide.md`）。骨格を確定したら、隣接する職歴間の空白期間（6か月以上）を機械的に検出し、その場で説明と期間中の活動を聞き、`career_gaps` に記録する。在籍中の職は period を `〜現在` と書く。
+古い順または新しい順に、企業×在籍期間×役割の一覧をまず確定する。転職・異動・昇進などの転機を時系列の手がかりにする。根拠は `references/elicitation-guide.md` にある。骨格を確定したら、隣接する職歴間の空白期間（6か月以上）を機械的に検出し、その場で説明と期間中の活動を聞き、`career_gaps` に記録する。在籍中の職は period を `〜現在` と書く。
 
 ### Step 2 職務ごとの深掘り（プロジェクト単位）
 
@@ -109,7 +109,7 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 
 #### 条件の構造化
 
-条件は自由文ではなく、軸・演算子・しきい値の形で構造化して `job_change_axis.conditions[]` へ入れる。フィールド仕様は hub の `references/profile-format.md`、軸の語彙は hub の `references/screening-axes.md` を読む。この構造化により、求人検索が求人票の記載と条件を機械的に突き合わせられるようになる。
+条件は自由文ではなく、軸・演算子・しきい値の形で構造化して `job_change_axis.conditions[]` へ入れる。フィールド仕様は hub の `references/profile-format.md`、軸の語彙は hub の `references/screening-axes.md` を読む。
 
 条件1件ごとに、次を AskUserQuestion で確定する（1回の質問で複数の条件をまとめて扱ってよい）。
 
@@ -124,13 +124,13 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 
 8つの作業特性それぞれについて、希望度（`must` / `important` / `neutral` / `not_required`）を確認する。特性の定義は hub の `references/screening-axes.md` にある。2回の AskUserQuestion（4特性ずつ）で埋まる。
 
-「どちらでもよい」「不要である」も明示的に選ばせる。未記入のまま置くと、下流が推測で補う余地が生じるためである。`desire=must` を選んだ特性には、本人の言葉での条件文（`statement`）を1文で聞く。
+「どちらでもよい」「不要である」も明示的に選ばせる。`desire=must` を選んだ特性には、本人の言葉での条件文（`statement`）を1文で聞く。
 
 `clear_completion`・`solo_completable`・`short_feedback` の3特性は求人票からは判定できない。これらに `must` や `important` を選んだ場合は、面接での確認事項になる旨をその場で伝える。
 
 #### 必須条件の件数
 
-`conditions[level=must]` と `work_character_preferences[desire=must]` の合計が4件以上になったら、優先順位を付けて絞る対話を挟む。必須条件が多いほど、求人検索が「応募推奨なし」を返しやすくなる。順位と再評価時期を `job_change_axis.priority_note` へ残す。
+`conditions[level=must]` と `work_character_preferences[desire=must]` の合計が4件以上になったら、優先順位を付けて絞る対話を挟む。順位と再評価時期を `job_change_axis.priority_note` へ残す。
 
 #### 企業スコアの採点軸
 
@@ -203,7 +203,7 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 | `job-change-profile-writer` | opus | 聞き取りメモから profile.json を起草・更新（Step 5）と監査指摘の反映。メモに無い事実を創作しない |
 | `job-change-profile-auditor` | opus | 独立コンテキストでの創作・誇張・時系列整合・metric 検証可能性・軸の件数の監査、検証器の再実行（Step 5） |
 
-起草はメモの事実への忠実さと粒度の判断を、監査は創作・誇張の検出と時系列整合の裁定を要し、いずれも判断負荷が高いため両者を opus とする。機械的検査は hub の `validate_profile.py` が担う。model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
+機械的検査は hub の `validate_profile.py` が担う。model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
 
 ## スクリプトのCLI使用例
 

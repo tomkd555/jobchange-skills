@@ -25,7 +25,7 @@ allowed-tools: Read, Write, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
 
 1. **検査種別を先に特定する。** 対策は検査種別に依存するため、種別が定まらないまま学習項目を決めない。受検案内 URL があれば `references/domain-detection.md` のドメイン判別で系統を即時に絞り、`job-change-exam-scout` の調査で種別を確定・補強する。確定情報（採用ページ等での明記）と推定（選考体験記からの類推）を区別し、推定を確定であるかのように書かない。
 
-2. **対策は検査種別ごとに分ける。** 能力検査（SPI3・玉手箱・TG-WEB・GAB・CAB 等）は反復練習で得点が上がる。認知能力検査の再受検・コーチングによる得点上昇はメタ分析で d≈0.26 と報告される（単一メタ分析由来。`references/prep-methods.md` に出典と DOI）。一方、性格検査・TAL・内田クレペリンは対策可能性が限定的であり、このうち性格検査では一貫した正直な回答が推奨される。回答のゆがみ（faking）が妥当性へ与える影響は学術的に未決着であり、両論は `references/prep-methods.md` に併記する。この対策差の原本は `references/prep-methods.md` である。
+2. **対策は検査種別ごとに分ける。** 能力検査（SPI3・玉手箱・TG-WEB・GAB・CAB 等）は反復練習で得点が上がる。一方、性格検査・TAL・内田クレペリンは対策可能性が限定的であり、このうち性格検査では一貫した正直な回答が推奨される。回答のゆがみ（faking）が妥当性へ与える影響は学術的に未決着であり、両論は `references/prep-methods.md` に併記する。この対策差の原本は `references/prep-methods.md` である。
 
 3. **実在の検査問題を複製しない。** 演習は `references/assessment-catalog.md` の出題形式知識に基づき、形式を模した自作問題で行う。実在の検査問題・著作物の複製、受検代行、替え玉受検は行わない。
 
@@ -174,7 +174,7 @@ Step 0 から Step 3 を順に進める。
 |---|---|---|
 | `job-change-exam-scout` | sonnet | 対象企業の検査種別の調査（種別・実施段階・根拠 URL・確度・出題形式・推奨対策） |
 
-検査種別の調査は Web 上の選考体験記・採用ページの収集と整理が中心で、判断難度が中程度であるため sonnet とする。model はエージェント定義の frontmatter に固定済みであり、起動時に上書きしない。
+model はエージェント定義の frontmatter に固定済みであり、起動時に上書きしない。
 
 ## references 一覧
 

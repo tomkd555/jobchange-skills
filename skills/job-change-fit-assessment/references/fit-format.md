@@ -87,7 +87,7 @@ evidence の各要素:
 
 ### skill_gap（技術要件の不足の3段階）
 
-`experience_proximity` に属する。独立した次元にすると評価が分散するため、経験の近さの内訳として持つ。
+`experience_proximity`（経験の近さ）の内訳として持つ。
 
 | 値 | 意味 |
 |---|---|
@@ -132,7 +132,7 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 
 ## company_score
 
-応募先企業を 0〜100 点で採点した結果である。軸ごとの実測値は企業側の事実であり企業研究が `company_research.json` の `company_metrics` へ書くが、どの軸をどの重みで採点するかは利用者の判断であるため、`profile.json` を読める適合性評価がこのフィールドへ書く。
+応募先企業を 0〜100 点で採点した結果である。軸ごとの実測値は企業研究が `company_research.json` の `company_metrics` へ書き、利用者が `profile.json` の `company_score_axes` で申告した軸と重みに基づく採点は、`profile.json` を読める適合性評価が `company_score` へ書く。
 
 算出は `scripts/calculate_company_score.py` が決定的に行う。定量候補軸9個・点数への写し方・基準の決め方・重みの配分・総合点の規則の原本は、job-change-company-research の `references/company-score-rubric.md` にある。統計由来の既定基準の原本は `scripts/calculate_company_score.py` の定数 `DEFAULT_THRESHOLDS` である。
 

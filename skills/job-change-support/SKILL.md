@@ -42,7 +42,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, Skill
 
 3. **エージェントの model は固定である。** 転職支援スキル群の各サブスキルが用いる専用エージェントの model は、各エージェントの frontmatter に固定済み（opus または sonnet）である。起動時に model を上書きしない。
 
-   サブエージェントを起動できないハーネス（Codex ほか）では、各サブスキルの本体が `references/roles/` の役割プロンプトを読み、その役割として自分で実行する。読み替えの手順は各サブスキルの「役割の実行（ハーネス別）」にある。この場合、起草と監査が同一の文脈になるため独立監査の効果が下がる。監査の段では起草時の判断理由を参照せず、成果物と仕様だけを見て判定する。
+   サブエージェントを起動できないハーネス（Codex ほか）では、各サブスキルの本体が `references/roles/` の役割プロンプトを読み、その役割として自分で実行する。読み替えの手順は各サブスキルの「役割の実行（ハーネス別）」にある。監査の段では起草時の判断理由を参照せず、成果物と仕様だけを見て判定する。
 
 4. **個人情報を外部へ送信しない。** `profile.json` に含まれる個人情報（現年収・希望年収・居住地・学歴・在籍企業名・実績など）は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。`profile.json` を渡してよいのは、Web 送信手段（WebSearch・WebFetch など）を持たないエージェントに限る。Web 送信を伴う作業（企業研究の Web 調査・求人検索の Web 調査など）には、`profile.json` の内容を渡さない。非公開ディレクトリ `career-private/` 配下のパス・内容（`profile.json`・`company_index.json`・`self_analysis.json`・`commute.json`・`fit/{企業スラッグ}/` 配下の `fit_assessment.json`・`time_analysis.json`）は、Web 送信手段を持つエージェントへ一切渡さない。`fit_assessment.json`・`time_analysis.json` は profile・自己分析・通勤時間から導いた個人情報であり、`commute.json` は利用者の居住地を示唆する。いずれも Web ツール保持エージェント（`job-change-company-researcher`・`job-change-posting-parser`・`job-change-job-searcher`）へ渡さない。
 
