@@ -34,7 +34,7 @@ profile.json の中核は、職務経歴・実績・スキルの内容と、そ�
 
 6. **事実を創作・補完しない。** profile.json に載せる経歴・実績・数値は、聞き取りメモに記録のある範囲に限る。実績値・期間・役職を推測で補完しない。経歴の詐称は懲戒・内定取消につながり、社会保険等の突合で高い確率で発覚する（`references/profile-methods.md`）。
 
-7. **個人情報を外部へ送信しない。** profile.json に含まれる個人情報（現年収・希望年収・居住地・学歴・在籍企業名・実績など）は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。非公開ディレクトリ `career-private/` 配下のパス（`profile.json`・`profile_interview_notes.md`）は、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ一切渡さない。本スキルの writer・auditor は Web 送信手段を持たないため、これらのパスを渡してよい。
+7. **個人情報を外部へ送信しない。** profile.json に含まれる個人情報（氏名・現年収・希望年収・居住地・学歴・在籍企業名・実績など）は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。非公開ディレクトリ `career-private/` 配下のパス（`profile.json`・`profile_interview_notes.md`）は、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ一切渡さない。本スキルの writer・auditor は Web 送信手段を持たないため、これらのパスを渡してよい。
 
 ## 範囲外
 
@@ -93,7 +93,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 ### Step 1 職歴の骨格（時系列）
 
-古い順または新しい順に、企業×在籍期間×役割の一覧をまず確定する。転職・異動・昇進などの転機を時系列の手がかりにする。カレンダー型（時系列×テーマ横断）の想起手がかりは自伝的記憶の構造に沿い、回顧の完全性・一貫性を高める（`references/elicitation-guide.md`）。骨格を確定したら、隣接する職歴間の空白期間（6か月以上）を機械的に検出し、その場で説明と期間中の活動を聞き、`career_gaps` に記録する。在籍中の職は period を `〜現在` と書く。
+古い順または新しい順に、企業×在籍期間×役割の一覧をまず確定する。転職・異動・昇進などの転機を時系列の手がかりにする。根拠は `references/elicitation-guide.md` にある。骨格を確定したら、隣接する職歴間の空白期間（6か月以上）を機械的に検出し、その場で説明と期間中の活動を聞き、`career_gaps` に記録する。在籍中の職は period を `〜現在` と書く。
 
 ### Step 2 職務ごとの深掘り（プロジェクト単位）
 
@@ -105,11 +105,11 @@ technical / business / languages / certifications を、Step 2 の発話から�
 
 ### Step 4 転職の軸・志望対象・年収
 
-reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希望（`work_character_preferences`）→ targets → salary の順で聞く。軸の建設的言い換え・根拠づけは `job-change-self-analysis` へ誘導する。根拠は `references/profile-methods.md` の must/want の節による。
+reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希望（`work_character_preferences`）→ 企業スコアの採点軸（`company_score_axes`）→ targets → salary の順で聞く。軸の建設的言い換え・根拠づけは `job-change-self-analysis` へ誘導する。根拠は `references/profile-methods.md` の must/want の節による。
 
 #### 条件の構造化
 
-条件は自由文ではなく、軸・演算子・しきい値の形で構造化して `job_change_axis.conditions[]` へ入れる。フィールド仕様は hub の `references/profile-format.md`、軸の語彙は hub の `references/screening-axes.md` を読む。この構造化により、求人検索が求人票の記載と条件を機械的に突き合わせられるようになる。
+条件は自由文ではなく、軸・演算子・しきい値の形で構造化して `job_change_axis.conditions[]` へ入れる。フィールド仕様は hub の `references/profile-format.md`、軸の語彙は hub の `references/screening-axes.md` を読む。
 
 条件1件ごとに、次を AskUserQuestion で確定する（1回の質問で複数の条件をまとめて扱ってよい）。
 
@@ -124,19 +124,37 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 
 8つの作業特性それぞれについて、希望度（`must` / `important` / `neutral` / `not_required`）を確認する。特性の定義は hub の `references/screening-axes.md` にある。2回の AskUserQuestion（4特性ずつ）で埋まる。
 
-「どちらでもよい」「不要である」も明示的に選ばせる。未記入のまま置くと、下流が推測で補う余地が生じるためである。`desire=must` を選んだ特性には、本人の言葉での条件文（`statement`）を1文で聞く。
+「どちらでもよい」「不要である」も明示的に選ばせる。`desire=must` を選んだ特性には、本人の言葉での条件文（`statement`）を1文で聞く。
 
 `clear_completion`・`solo_completable`・`short_feedback` の3特性は求人票からは判定できない。これらに `must` や `important` を選んだ場合は、面接での確認事項になる旨をその場で伝える。
 
 #### 必須条件の件数
 
-`conditions[level=must]` と `work_character_preferences[desire=must]` の合計が4件以上になったら、優先順位を付けて絞る対話を挟む。必須条件が多いほど、求人検索が「応募推奨なし」を返しやすくなる。順位と再評価時期を `job_change_axis.priority_note` へ残す。
+`conditions[level=must]` と `work_character_preferences[desire=must]` の合計が4件以上になったら、優先順位を付けて絞る対話を挟む。順位と再評価時期を `job_change_axis.priority_note` へ残す。
+
+#### 企業スコアの採点軸
+
+企業を0〜100点で採点する軸と重みを決め、`company_score_axes[]` へ入れる。定量候補軸9個・点数への写し方・重みの配分の規則は `job-change-company-research` の `references/company-score-rubric.md`、フィールド仕様は hub の `references/profile-format.md` にある。次の順で決める。
+
+1. 定量候補軸9個（処遇水準・年間休日総数・月平均残業時間・有給休暇の取得率・離職率・男性の育児休業取得率・売上高の成長率・営業利益率・自己資本比率）を提示し、重視するものを選ばせる（3回の AskUserQuestion で3軸ずつ）。処遇水準（`compensation_level`）は既定で選択済みとし、外すかどうかだけ確認する。
+2. 数値にならない事柄で重視したいものがあれば、定性軸として作る。ラベル（呼び名）・定義（何をもってそう言うか）・判定条件（何が確認できたら何点か。3段階程度）を利用者と決める。判定条件まで決められない事柄は採点に入れず、面接での確認事項へ回す旨をその場で伝える。
+3. 選んだ軸へ、合計が100になるよう重みを配分させる。重みが0になる軸は置かず、採点に入れない軸は外す。
+4. 定量軸ごとに、統計に基づく既定の基準をそのまま使うか、自分の基準を使うかを聞く。自分の基準を使う軸だけ、100点となる水準（`full`）と0点となる水準（`zero`）を聞き、`thresholds` へ入れる。処遇水準（`compensation_level`）は既定の基準を持たないため、必ず聞く。現年収を `zero`、希望年収（またはそれを上回る水準）を `full` に置く聞き方を既定とし、本人が別の置き方を望めばそれに従う。
+5. 配分した重みで架空2社を採点し、点数の高い側と「実際にどちらを選ぶか」への答えが一致するかを検算する。軸名どうしの抽象的な比較ではなく、企業像の比較で聞く（例: 「A社は年収が現職より120万円高いが残業が月30時間、B社は年収が現職と同水準で残業が月5時間。どちらを選ぶか」）。
+
+検算が食い違った場合は、配分を見直すか、配分と実際の選択の両方を記録して利用者へ提示する。どちらが本当の判断かをスキルの側で決めない。軸を1つも選ばない場合は、企業スコアが出ない旨をその場で伝える。
+
+#### 採点軸と必須条件の食い違い
+
+選んだ採点軸と重みが、`conditions[level=must]` や `work_character_preferences` の希望度と食い違うことがある（例: 残業の上限を必須条件にしているのに `monthly_overtime` を軸に選んでいない、`compensation_level` に最大の重みを置いたのに年収の条件が `want` のままである）。
+
+どちらが本当かをスキルの側で決めない。食い違う組み合わせをそのまま利用者へ提示し、どう扱うか（軸や重みを見直す・必須条件を見直す・両方このままにする）を本人に選ばせる。聞き取りメモには、提示した食い違いと、利用者が選んだ扱いの両方を残す。
 
 #### 1.x からの移行
 
 既存の `profile.json` が `schema_version` `1.0` または `1.1` の場合、`must_conditions` / `want_conditions` の自由文が残っている。**機械的に軸へ割り付けない。** 自由文からしきい値を推測することは事実の創作に当たる。
 
-移行モードでは、既存の自由文を1件ずつ提示し、上記「条件の構造化」の4項目を対話で確定する。全件を移し終えたら `must_conditions` / `want_conditions` を空配列にし、続けて作業特性8件を確認する。最後に `schema_version` を `2.0` へ、`updated_at` を当日へ書き換える。
+移行モードでは、既存の自由文を1件ずつ提示し、上記「条件の構造化」の4項目を対話で確定する。全件を移し終えたら `must_conditions` / `want_conditions` を空配列にし、続けて作業特性8件と企業スコアの採点軸を確認する。最後に `schema_version` を `2.0` へ、`updated_at` を当日へ書き換える。
 
 利用者が移行を望まない場合は 1.x のまま残す。その場合、求人検索の8軸判定と適合性評価の作業特性の次元が働かない旨を1回だけ伝える。
 
@@ -185,7 +203,7 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 | `job-change-profile-writer` | opus | 聞き取りメモから profile.json を起草・更新（Step 5）と監査指摘の反映。メモに無い事実を創作しない |
 | `job-change-profile-auditor` | opus | 独立コンテキストでの創作・誇張・時系列整合・metric 検証可能性・軸の件数の監査、検証器の再実行（Step 5） |
 
-起草はメモの事実への忠実さと粒度の判断を、監査は創作・誇張の検出と時系列整合の裁定を要し、いずれも判断負荷が高いため両者を opus とする。機械的検査は hub の `validate_profile.py` が担う。model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
+機械的検査は hub の `validate_profile.py` が担う。model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
 
 ## スクリプトのCLI使用例
 

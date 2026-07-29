@@ -10,7 +10,7 @@ description: >-
   selection) — generating expected questions, running a mock interview, getting answer feedback, or
   practicing behavioral / case interviews.
   trigger words: 面接対策, 想定問答, 想定質問, 逆質問, 行動面接, ビヘイビアラル面接, ケース面接, 模擬面接。
-allowed-tools: Read, Write, Glob, Grep, Agent, AskUserQuestion
+allowed-tools: Read, Write, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
 ---
 
 # job-change-interview-prep
@@ -21,7 +21,7 @@ allowed-tools: Read, Write, Glob, Grep, Agent, AskUserQuestion
 
 ## 目的と原則
 
-1. **企業固有の質問は company_research.json の claim を根拠とする。** 企業固有の想定質問は、対象企業の企業研究結果（company_research.json）の claims、特に topic=selection_process（選考プロセス・面接体験記）と topic=philosophy（理念）を根拠とする。company_research.json が無い場合は企業固有の質問を生成せず、企業非依存の一般対策へ縮退する（縮退モード）。`career-private/self_analysis.json` がある場合は、想定質問の生成と回答評価の入力に加える。`career-private/fit/{企業スラッグ}/fit_assessment.json` がある場合は、想定質問の生成の入力に加え、`condition_fit` の `met: "unknown"` の項目と `overall.open_questions` を、逆質問・確認事項の質問素材として用いる。
+1. **企業固有の質問は company_research.json の claim を根拠とする。** 企業固有の想定質問は、対象企業の企業研究結果（company_research.json）の claims、特に topic=selection_process（選考プロセス・面接体験記）と topic=philosophy（理念）を根拠とする。company_research.json が無い場合は企業固有の質問を生成せず、企業非依存の一般対策へ縮退する（縮退モード）。company_research.json があっても topic=selection_process の claims が0件の場合は、選考プロセスを前提とする質問（面接の回数・形式・各段階の評価観点を既知として扱う質問）を生成しない。この場合は topic=philosophy の claims だけを根拠に企業固有の質問を作り、選考プロセスの claims が0件である旨を利用者へ伝える（部分縮退）。claims が0件であることを、選考が単純であることの根拠にしない。`career-private/self_analysis.json` がある場合は、想定質問の生成と回答評価の入力に加える。`career-private/fit/{企業スラッグ}/fit_assessment.json` がある場合は、想定質問の生成の入力に加え、`condition_fit` の `met: "unknown"` の項目と `overall.open_questions` を、逆質問・確認事項の質問素材として用いる。`companies/{企業スラッグ}/exam_assessment.json` がある場合は、特定された検査種別と選考の段取りを読み、面接が選考のどの段階にあたるかを判断する前提として用いる（任意入力。無くても進める）。
 
 2. **回答評価はアンカーで固定する。** 回答評価は STAR・具体性・一貫性・企業理解の4観点で行い、各観点を3段階（充足・一部・不足）で判定する。判定基準（アンカー）の原本は `references/evaluation-rubric.md` にあり、job-change-interview-coach の判定定義と一致させる。評価は原本のアンカーに従い、甘くも辛くもしない。一貫性観点の根拠参照先には、profile.json の `job_change_axis` に加え、self_analysis.json がある場合はその `career_narrative`（一貫する動機）と `reason_for_change`（建設的な言い換えと `job_change_axis.reasons` との整合の説明）を含める。
 
@@ -47,7 +47,7 @@ hub（job-change-support）から振り分けられた場合は、hub が解決�
 2. カレントディレクトリから上位へたどった最初の `.job-change/config.json`
 3. `~/.job-change/config.json`
 
-いずれの場所にも設定ファイルが無ければ未設定である。その場合は作業へ進まず、hub（job-change-support）へ戻して設定の作成を先行させる。
+いずれの場所にも設定ファイルが無ければ未設定である。その場合は作業へ進まず、Skill ツールで `job-change-support` を起動して設定を作らせ、`{DATA_ROOT}` を解決してから戻る。
 
 `{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。設定ファイルの仕様は `docs/configuration.md` にある。
 
@@ -71,7 +71,7 @@ Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-chan
 ### Step 0 読込とゲート
 
 1. `{DATA_ROOT}/career-private/profile.json` の所在を Read / Glob で確認する。無ければ hub（job-change-support）へ戻し、プロファイルの初回作成を先行させる。
-2. プロファイルゲート（必須）を通す。profile.json は `validate_profile.py`（job-change-support の scripts）が PASS（ERROR 0件）であることを前提とする。hub 経由で本スキルへ入る場合、hub がルーティング前に PASS を確認済みである。本スキルは Bash を持たないため検証を自ら実行しない。検証状態が未確認または FAIL の場合は、hub へ戻して整備と PASS 確認を先行させ、PASS を確認できない限り Step 1 へ進まない。
+2. プロファイルゲート（必須）を通す。profile.json は `validate_profile.py`（job-change-support の scripts）が PASS（ERROR 0件）であることを前提とする。hub 経由で本スキルへ入る場合、hub がルーティング前に PASS を確認済みである。単独で起動された場合は、本スキルが自分で `validate_profile.py` を実行して PASS を確かめる。FAIL の場合は ERROR の内容を利用者へ示し、`job-change-profile` での整備を勧める。ただし、利用者が欠落を承知のうえで着手を希望する場合は、欠けた項目の値を直接引用または前提とする質問を作らず、その項目を根拠とする評価も行わないという条件で進めてよい。その場合は、どの項目が欠けたままかを報告に明記する。
 3. 対象企業の企業スラッグを `career-private/company_index.json` で解決したうえで（詳細は job-change-support の `references/company-index-format.md`）、company_research.json（`companies/{企業スラッグ}/company_research.json`）の有無を確認する。同フォルダーに `interview_answers.json` が存在する場合は、残りの質問からの再開を利用者へ提案する。company_research.json が無い場合は、AskUserQuestion で次を利用者へ明示して選ばせる。
    - (A) 企業研究を先に実施する。hub へ戻して `job-change-company-research` を起動し、company_research.json を得てから本スキルへ戻る。
    - (B) 縮退モードを選ぶ。企業非依存の一般対策として進め、以降は企業固有の想定質問を生成せず、企業理解観点の評価も対象外とする。
@@ -83,8 +83,8 @@ Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-chan
 
 1. job-change-interview-coach（opus）を Agent ツールで起動し、Step 1 を指示する。指示書に次を渡す。
    - 実行するステップ = 1。
-   - profile.json の絶対パス。company_research.json（あれば）・self_analysis.json（あれば）・fit_assessment.json（あれば）・求人票（あれば）の絶対パス。
-2. コーチは質問類型ごとに想定質問を生成し、各質問に interviewer_intent（面接官の評価観点）と basis（company_research の claim id または profile の該当箇所）を付して返す。縮退モードでは degraded: true とし、企業固有の claim を根拠に用いる質問は生成しない。`fit_assessment.json` がある場合、`condition_fit` の `met: "unknown"` の項目と `overall.open_questions` を、逆質問・確認事項の質問素材として加える。無い場合は company_research.json・profile.json のみを素材とする。
+   - profile.json の絶対パス。company_research.json（あれば）・self_analysis.json（あれば）・fit_assessment.json（あれば）・exam_assessment.json（あれば）・求人票（あれば）の絶対パス。
+2. コーチは質問類型ごとに想定質問を生成し、各質問に interviewer_intent（面接官の評価観点）と basis（company_research の claim id または profile の該当箇所）を付して返す。縮退モードでは degraded: true とし、企業固有の claim を根拠に用いる質問は生成しない。company_research.json はあるが topic=selection_process の claims が0件の場合は、その旨を指示書に明記し、選考プロセスを前提とする質問を生成させない（部分縮退）。`fit_assessment.json` がある場合、`condition_fit` の `met: "unknown"` の項目と `overall.open_questions` を、逆質問・確認事項の質問素材として加える。無い場合は company_research.json・profile.json のみを素材とする。
 3. コーチが返した `questions` 配列を `interview_questions.json` として保存する（company モード時）。質問類型・評価観点・外資系の質問形式の原本は、それぞれ `references/question-bank.md`・`references/evaluation-rubric.md`・`references/foreign-interviews.md` にある。
 
 ### Step 2 模擬面接
@@ -112,11 +112,11 @@ Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-chan
 
 パイプラインには2つのゲートがある。
 
-- Step 0 のプロファイルゲート（必須）では、`validate_profile.py` が PASS でなければ Step 1 へ進まない。profile.json が未作成、または FAIL（ERROR 1件以上）の場合は、hub（job-change-support）でのプロファイル整備を先行させ、PASS を確認してから戻る。
+- Step 0 のプロファイルゲート（必須）では、`validate_profile.py` が PASS でなければ Step 1 へ進まない。profile.json が未作成、または FAIL（ERROR 1件以上）の場合は、hub（job-change-support）でのプロファイル整備を先行させ、PASS を確認してから戻る。ただし FAIL の場合は、ERROR の内容を示し、利用者が欠落を承知で着手を希望するなら、欠けた項目の値を直接引用または前提とする質問を作らず、その項目を根拠とする評価も行わないという条件で進めてよい。どの項目が欠けたままかを報告に明記する。
 - コーチ出力ゲート（Step 1・Step 3）では、job-change-interview-coach の返す JSON が次を満たすことを確認する。満たさない場合は、不足内容を指示書へ添えてコーチを再起動する。
   - `{"error": ...}` でない（入力の欠落による返答でない）。
   - スキーマに適合する（Step 1 は `questions`、Step 3 は `evaluations`）。
-  - `degraded` と `degraded_reason` が company_research.json の有無と整合する（company_research.json が無い場合は degraded: true）。
+  - `degraded` と `degraded_reason` が company_research.json の有無と整合する（company_research.json が無い場合は degraded: true）。company_research.json があり topic=selection_process の claims が0件の場合も degraded: true とし、`degraded_reason` に選考プロセスの claims が0件である旨を書く。
   - Step 3 の `scores` の各値が「充足」「一部」「不足」のいずれかである。
   - Step 3 の `feedback` と `improvement` に根拠参照（profile の該当箇所、self_analysis.json の narrative・reason_for_change、または claim id）を含む。
 
@@ -145,7 +145,7 @@ Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-chan
 |---|---|---|
 | `job-change-interview-coach` | opus | Step 1: 質問類型ごとの想定質問生成 ／ Step 3: 回答の4観点評価とフィードバック |
 
-想定質問の生成と回答評価はいずれも一貫性・再現性・企業理解の裁定という判断を要するため opus とする。model はエージェントの frontmatter に固定済みであり、起動時に上書きしない。
+model はエージェントの frontmatter に固定済みであり、起動時に上書きしない。
 
 ## スクリプトのCLI使用例
 

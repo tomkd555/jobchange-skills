@@ -108,6 +108,52 @@ class SensitivityTest(unittest.TestCase):
         self.assertAlmostEqual(s1["commute_plus15min"], s2["commute_plus15min"])
 
 
+class ComparisonTest(unittest.TestCase):
+    """現職（baseline）との突き合わせ。応募先の適合を単体で測らず、現職との差分を出す。"""
+
+    def _baseline(self) -> dict:
+        return {
+            "annual": {"binding_hours": 2645.0, "labor_hours": 2070.0},
+            "effective_hourly_wage": {"binding_basis": 2000, "labor_basis": 2500},
+        }
+
+    def _offer(self) -> dict:
+        return {
+            "annual": {"binding_hours": 2400.0, "labor_hours": 1900.0},
+            "effective_hourly_wage": {"binding_basis": 2500, "labor_basis": 3000},
+        }
+
+    def test_delta_is_offer_minus_baseline(self):
+        c = ct.build_comparison(self._offer(), self._baseline())
+        self.assertAlmostEqual(c["delta"]["annual_binding_hours"], -245.0)
+        self.assertAlmostEqual(c["delta"]["annual_labor_hours"], -170.0)
+        self.assertEqual(c["delta"]["hourly_wage_binding_basis"], 500)
+        self.assertEqual(c["delta"]["hourly_wage_labor_basis"], 500)
+
+    def test_current_holds_baseline_values(self):
+        c = ct.build_comparison(self._offer(), self._baseline())
+        self.assertAlmostEqual(c["current"]["annual_binding_hours"], 2645.0)
+        self.assertEqual(c["current"]["hourly_wage_binding_basis"], 2000)
+
+    def test_missing_value_yields_null_delta(self):
+        baseline = self._baseline()
+        baseline["effective_hourly_wage"] = {"binding_basis": None, "labor_basis": None}
+        c = ct.build_comparison(self._offer(), baseline)
+        self.assertIsNone(c["delta"]["hourly_wage_binding_basis"])
+        self.assertIsNone(c["current"]["hourly_wage_binding_basis"])
+        # 時間の差分は算出できるため、実質時給の欠落に巻き込まれない。
+        self.assertAlmostEqual(c["delta"]["annual_binding_hours"], -245.0)
+
+    def test_absent_key_treated_as_missing(self):
+        c = ct.build_comparison(self._offer(), {})
+        self.assertIsNone(c["delta"]["annual_binding_hours"])
+        self.assertIsNone(c["current"]["annual_binding_hours"])
+
+    def test_comparison_absent_without_baseline(self):
+        analysis = ct.build_time_analysis({"salary": 6000000}, {})
+        self.assertNotIn("comparison", analysis)
+
+
 class FallbackTest(unittest.TestCase):
     """フォールバック適用と fallbacks_used 記録。"""
 

@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: 単体テスト
+        run: |
+          for d in skills/*/; do
+            if [ -d "$d/scripts/tests" ]; then
+              (cd "$d" && python -m unittest discover -s scripts/tests -q)
+            fi
+          done

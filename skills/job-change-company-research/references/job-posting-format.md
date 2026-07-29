@@ -1,14 +1,28 @@
 # job_posting.json の原本仕様（job-posting-format）
 
-求人URLから取り込んだ求人情報の構造化データ `job_posting.json` のフィールド仕様・記入基準・機械検証規則を定める原本である。求人票取込担当エージェント（job-change-posting-parser）がこの仕様に適合するオブジェクトを組み立て、`scripts/validate_job_posting.py` がこの仕様に照らして機械検査する。
+取り込んだ求人情報の構造化データ `job_posting.json` のフィールド仕様・記入基準・機械検証規則を定める原本である。求人票取込担当エージェント（job-change-posting-parser）がこの仕様に適合するオブジェクトを組み立て、`scripts/validate_job_posting.py` がこの仕様に照らして機械検査する。
 
 出力先は `{DATA_ROOT}/companies/{企業スラッグ}/job_posting.json` である。ファイルを書くのは呼出元スキル（job-change-company-research 本体）であり、スラッグ解決後にのみ書く。posting-parser エージェントはファイルを書かず、`{company_name, aliases, job_posting}` を最終メッセージの JSON で返す。
+
+## 取込の入口
+
+求人票は、企業ごとの工程の1段目で必ず作る。入口は4通りあり、`source_type` で区別する。
+
+| `source_type` | 入口 | 取込のしかた | `source_url` |
+|---|---|---|---|
+| `url` | 求人ページの URL | ページを取得して構造化する | URL（必須） |
+| `text` | 求人票の本文 | 貼り付けられた本文を構造化する | null または省略 |
+| `file` | 求人票の PDF・画像 | 利用者が示したファイルを読み取って構造化する | null または省略 |
+| `dialogue` | 企業名のみ | 対話で必須項目を聞き取って構造化する | null または省略 |
+
+`url` 以外の入口でも、参考として URL を持つこと自体は妨げない。`source_url` を検査するのは `source_type` が `url` のときだけである。
 
 ## 全体構造
 
 ```json
 {
   "schema_version": "1.0",
+  "source_type": "url",
   "source_url": "https://recruit.example.co.jp/jobs/1234",
   "fetched_at": "2026-07-17",
   "company_name": "架空クラウドワークス株式会社",
@@ -37,12 +51,14 @@
 | フィールド | 型 | 記入基準 |
 |---|---|---|
 | `schema_version` | 文字列 | 現行は `"1.0"`。既知バージョン以外は WARN |
-| `source_url` | 文字列 | 取り込んだ求人ページの URL。`http` で始まる |
-| `fetched_at` | 文字列 | 取得日（`YYYY-MM-DD` の実在日付） |
+| `source_type` | 文字列 | 取込の入口。`url` / `text` / `file` / `dialogue` のいずれか |
+| `fetched_at` | 文字列 | 取得日（`YYYY-MM-DD` の実在日付）。対話で埋めた場合は聞き取った日 |
 | `company_name` | 文字列 | 求人票に記載された企業名 |
 | `title` | 文字列 | 求人の職種・ポジション名 |
 
-いずれかの欠落・空は ERROR となる。`source_url` が `http` で始まらない、`fetched_at` が `YYYY-MM-DD` 形式の実在日付でない場合も ERROR となる。
+`source_url` は、`source_type` が `url` のときに限り必須であり、`http` で始まる文字列でなければならない。それ以外の入口では null または省略してよい。
+
+上表のフィールドのいずれかが欠落または空の場合は ERROR となる。加えて、`source_type` が4つの値のいずれでもないとき、`source_type` が `url` でありながら `source_url` が `http` で始まらないとき、`fetched_at` が `YYYY-MM-DD` 形式の実在日付でないときも ERROR となる。
 
 ### 任意フィールド
 
@@ -84,6 +100,8 @@
 
 ログイン必須・動的描画・掲載終了などで取得できない場合は、取得できた範囲だけを埋める。欠損した項目は、該当フィールドを `null`（メトリック）にするか省略とし、`open_questions` に何が取得できなかったかを記録する。求人票にない数値を推定で埋めない。
 
+この扱いは入口によらない。`source_type` が `dialogue` の場合に利用者が答えられなかった項目も、同じ扱いとする。推定で補わず、`open_questions` に書く。
+
 ## 機械検証規則（validate_job_posting.py）
 
 `scripts/validate_job_posting.py` が決定的に検査する。ERROR が1件でもあれば FAIL（終了コード1）、ERROR 0件なら PASS（終了コード0。WARN があっても PASS）。
@@ -92,8 +110,9 @@
 
 - JSON として読み込めない
 - ルートがオブジェクトでない
-- `schema_version`・`source_url`・`fetched_at`・`company_name`・`title` のいずれかが欠落または空
-- `source_url` が `http` で始まらない
+- `schema_version`・`source_type`・`fetched_at`・`company_name`・`title` のいずれかが欠落または空
+- `source_type` が `url` / `text` / `file` / `dialogue` のいずれでもない
+- `source_type` が `url` でありながら `source_url` が `http` で始まらない
 - `fetched_at` が `YYYY-MM-DD` 形式の実在日付でない
 - `metrics` が存在しオブジェクトでない
 - `metrics` の各メトリックが存在し（非 null）、`{value, quote}` のオブジェクトでない・`value` が非数値・`quote` が空のいずれか

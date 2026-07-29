@@ -61,66 +61,46 @@ def _valid_research() -> dict:
             _claim("C007", "reputation", "B"),
             _claim("C008", "selection_process", "B"),
         ],
-        "workstyle_metrics": _full_workstyle_metrics(),
-        "tier": _valid_tier(),
+        "company_metrics": _full_company_metrics(),
         "open_questions": ["職種別の給与内訳は有報からは判別できない。"],
     }
 
 
-def _valid_tier() -> dict:
-    """ERROR 0件・WARN 0件になる完全な tier オブジェクトを返す。
-
-    claim_ids は _valid_research() の claims（C001〜C008）に実在する id を指す。
-    """
-    return {
-        "level": "A",
-        "provisional": False,
-        "rubric_version": 1,
-        "assessed_date": "2026-07-12",
-        "axes": {
-            "financial_soundness": {
-                "rating": "high",
-                "basis": "増収増益で利益率も高水準。",
-                "claim_ids": ["C003"],
-            },
-            "growth": {
-                "rating": "high",
-                "basis": "中期計画を上回る成長トレンド。",
-                "claim_ids": ["C002", "C003"],
-            },
-            "tech_advancement": {
-                "rating": "medium",
-                "basis": "AWSパートナーだが受託依存で自由度は中位。",
-                "claim_ids": ["C002"],
-            },
-            "compensation_level": {
-                "rating": "high",
-                "basis": "平均年間給与が業界上位。",
-                "claim_ids": ["C004"],
-            },
-        },
-        "rationale": "財務・成長・処遇が高く技術先進性が中位のため A。",
-    }
-
-
-def _metric(value: float, grade: str = "A") -> dict:
-    """workstyle_metrics の1メトリック（{value, source_url, grade}）を返す。"""
+def _metric(value: float, unit: str, grade: str = "A") -> dict:
+    """company_metrics の1項目（{value, unit, source_url, grade, as_of}）を返す。"""
     return {
         "value": value,
+        "unit": unit,
         "source_url": "https://disclosure2.edinet-fsa.example.go.jp/S9999",
         "grade": grade,
+        "as_of": "2026-03",
     }
 
 
-def _full_workstyle_metrics() -> dict:
-    """5メトリックすべてを値付きで持つ workstyle_metrics を返す（WARN ゼロ）。"""
+def _null_metric(unit: str) -> dict:
+    """実測値を確認できなかった項目（value が null）を返す。"""
+    return {"value": None, "unit": unit, "source_url": None, "grade": None, "as_of": None}
+
+
+def _full_company_metrics() -> dict:
+    """定量候補軸9個と補助指標を値付きで持つ company_metrics を返す（WARN ゼロ）。"""
     return {
-        "annual_holidays": _metric(125),
-        "monthly_overtime_h": _metric(14.2),
-        "paid_leave_rate": _metric(71.0),
-        "avg_paid_leave_days_taken": _metric(12.5),
-        "avg_annual_salary": _metric(6120000),
+        "compensation_level": _metric(6120000, "円"),
+        "annual_holidays": _metric(125, "日"),
+        "monthly_overtime": _metric(14.2, "時間"),
+        "paid_leave_rate": _metric(71.0, "%"),
+        "turnover_rate": _metric(8.4, "%"),
+        "male_childcare_leave_rate": _metric(62.5, "%"),
+        "revenue_growth": _metric(18.0, "%"),
+        "operating_margin": _metric(12.5, "%"),
+        "equity_ratio": _metric(64.0, "%"),
+        "avg_paid_leave_days_taken": _metric(12.5, "日"),
     }
+
+
+def _all_null_company_metrics() -> dict:
+    """全項目の value が null の company_metrics を返す。"""
+    return {key: _null_metric(entry["unit"]) for key, entry in _full_company_metrics().items()}
 
 
 class ValidatePassTest(unittest.TestCase):
@@ -351,193 +331,144 @@ class CliTest(unittest.TestCase):
         self.assertEqual(vcr.main([path]), 0)
 
 
-class WorkstyleMetricsTest(unittest.TestCase):
+class CompanyMetricsTest(unittest.TestCase):
     def test_full_metrics_no_warning(self):
         result = vcr.validate(_valid_research())
         self.assertTrue(result.ok)
-        self.assertFalse(any("workstyle_metrics" in w for w in result.warnings))
+        self.assertFalse(any("company_metrics" in w for w in result.warnings))
 
-    def test_absent_metrics_warns_but_passes(self):
+    def test_partial_metrics_passes(self):
         r = _valid_research()
-        del r["workstyle_metrics"]
-        result = vcr.validate(r)
-        self.assertTrue(result.ok)  # 後方互換。欠落は WARN で PASS を維持する
-        self.assertTrue(any("workstyle_metrics" in w for w in result.warnings))
-
-    def test_individual_null_warns_but_passes(self):
-        r = _valid_research()
-        r["workstyle_metrics"]["avg_annual_salary"] = None
+        m = _full_company_metrics()
+        m["annual_holidays"] = _null_metric("日")
+        m["turnover_rate"] = _null_metric("%")
+        r["company_metrics"] = m
         result = vcr.validate(r)
         self.assertTrue(result.ok)
-        self.assertTrue(any("avg_annual_salary" in w for w in result.warnings))
+        self.assertEqual(result.warnings, [])
+
+    def test_metrics_missing_errors(self):
+        r = _valid_research()
+        del r["company_metrics"]
+        result = vcr.validate(r)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("company_metrics" in e for e in result.errors))
 
     def test_metrics_not_object_errors(self):
         r = _valid_research()
-        r["workstyle_metrics"] = "年間休日125日"
+        r["company_metrics"] = "年間休日125日"
         result = vcr.validate(r)
         self.assertFalse(result.ok)
-        self.assertTrue(any("workstyle_metrics" in e for e in result.errors))
+        self.assertTrue(any("company_metrics" in e for e in result.errors))
 
-    def test_metric_value_not_number_errors(self):
+    def test_unknown_key_errors(self):
         r = _valid_research()
-        r["workstyle_metrics"]["annual_holidays"]["value"] = "125"
+        r["company_metrics"]["brand_power"] = _metric(80, "%")
         result = vcr.validate(r)
         self.assertFalse(result.ok)
-        self.assertTrue(
-            any("workstyle_metrics.annual_holidays.value" in e for e in result.errors)
-        )
+        self.assertTrue(any("company_metrics.brand_power" in e for e in result.errors))
 
-    def test_metric_value_bool_errors(self):
+    def test_non_axis_metric_keys_error(self):
+        # 定量候補軸でないキーは、指標として自然な名前でも ERROR にする。
+        for key in ("avg_tenure", "mid_career_ratio", "female_manager_ratio"):
+            with self.subTest(key=key):
+                r = _valid_research()
+                r["company_metrics"][key] = _metric(5.8, "年")
+                result = vcr.validate(r)
+                self.assertFalse(result.ok)
+                self.assertTrue(
+                    any(f"company_metrics.{key}" in e for e in result.errors)
+                )
+
+    def test_auxiliary_key_passes(self):
         r = _valid_research()
-        r["workstyle_metrics"]["monthly_overtime_h"]["value"] = True
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("workstyle_metrics.monthly_overtime_h.value" in e for e in result.errors)
-        )
-
-    def test_metric_source_url_not_http_errors(self):
-        r = _valid_research()
-        r["workstyle_metrics"]["paid_leave_rate"]["source_url"] = "edinet.example"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("workstyle_metrics.paid_leave_rate.source_url" in e for e in result.errors)
-        )
-
-    def test_metric_invalid_grade_errors(self):
-        r = _valid_research()
-        r["workstyle_metrics"]["annual_holidays"]["grade"] = "E"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("workstyle_metrics.annual_holidays.grade" in e for e in result.errors)
-        )
-
-    def test_metric_scalar_instead_of_object_errors(self):
-        r = _valid_research()
-        r["workstyle_metrics"]["annual_holidays"] = 125
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("workstyle_metrics.annual_holidays" in e for e in result.errors)
-        )
-
-
-class TierTest(unittest.TestCase):
-    def test_full_tier_no_warning(self):
-        result = vcr.validate(_valid_research())
-        self.assertTrue(result.ok)
-        self.assertFalse(any("tier" in w for w in result.warnings))
-
-    def test_tier_missing_errors(self):
-        r = _valid_research()
-        del r["tier"]
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier" in e for e in result.errors))
-
-    def test_tier_not_object_errors(self):
-        r = _valid_research()
-        r["tier"] = "A"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier" in e for e in result.errors))
-
-    def test_level_invalid_errors(self):
-        r = _valid_research()
-        r["tier"]["level"] = "AA"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier.level" in e for e in result.errors))
-
-    def test_level_missing_errors(self):
-        r = _valid_research()
-        del r["tier"]["level"]
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier.level" in e for e in result.errors))
-
-    def test_provisional_not_bool_errors(self):
-        r = _valid_research()
-        r["tier"]["provisional"] = "false"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier.provisional" in e for e in result.errors))
-
-    def test_rationale_empty_errors(self):
-        r = _valid_research()
-        r["tier"]["rationale"] = "  "
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier.rationale" in e for e in result.errors))
-
-    def test_axes_missing_errors(self):
-        r = _valid_research()
-        del r["tier"]["axes"]
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier.axes" in e for e in result.errors))
-
-    def test_missing_one_axis_errors(self):
-        r = _valid_research()
-        del r["tier"]["axes"]["growth"]
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier.axes.growth" in e for e in result.errors))
-
-    def test_axis_rating_invalid_errors(self):
-        r = _valid_research()
-        r["tier"]["axes"]["tech_advancement"]["rating"] = "強い"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier.axes.tech_advancement.rating" in e for e in result.errors))
-
-    def test_axis_basis_empty_errors(self):
-        r = _valid_research()
-        r["tier"]["axes"]["financial_soundness"]["basis"] = ""
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier.axes.financial_soundness.basis" in e for e in result.errors))
-
-    def test_claim_ids_not_list_errors(self):
-        r = _valid_research()
-        r["tier"]["axes"]["growth"]["claim_ids"] = "C002"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier.axes.growth.claim_ids" in e for e in result.errors))
-
-    def test_claim_ids_dangling_reference_errors(self):
-        r = _valid_research()
-        r["tier"]["axes"]["growth"]["claim_ids"] = ["C999"]
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier.axes.growth.claim_ids" in e for e in result.errors))
-
-    def test_unknown_axis_with_empty_claim_ids_passes(self):
-        r = _valid_research()
-        r["tier"]["axes"]["tech_advancement"] = {
-            "rating": "unknown",
-            "basis": "技術先進性を判定できる一次・二次情報が得られなかった。",
-            "claim_ids": [],
-        }
+        r["company_metrics"]["avg_paid_leave_days_taken"] = _metric(12.4, "日")
         result = vcr.validate(r)
         self.assertTrue(result.ok)
-        self.assertFalse(any("tech_advancement.claim_ids" in w for w in result.warnings))
 
-    def test_rated_axis_with_empty_claim_ids_warns(self):
+    def test_entry_not_object_errors(self):
         r = _valid_research()
-        r["tier"]["axes"]["growth"]["claim_ids"] = []
+        r["company_metrics"]["annual_holidays"] = 125
+        result = vcr.validate(r)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("company_metrics.annual_holidays" in e for e in result.errors))
+
+    def test_value_not_number_errors(self):
+        r = _valid_research()
+        r["company_metrics"]["annual_holidays"]["value"] = "125"
+        result = vcr.validate(r)
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any("company_metrics.annual_holidays.value" in e for e in result.errors)
+        )
+
+    def test_value_bool_errors(self):
+        r = _valid_research()
+        r["company_metrics"]["monthly_overtime"]["value"] = True
+        result = vcr.validate(r)
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any("company_metrics.monthly_overtime.value" in e for e in result.errors)
+        )
+
+    def test_unit_mismatch_errors(self):
+        r = _valid_research()
+        r["company_metrics"]["compensation_level"]["unit"] = "万円"
+        result = vcr.validate(r)
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any("company_metrics.compensation_level.unit" in e for e in result.errors)
+        )
+
+    def test_source_url_missing_errors(self):
+        r = _valid_research()
+        del r["company_metrics"]["paid_leave_rate"]["source_url"]
+        result = vcr.validate(r)
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any("company_metrics.paid_leave_rate.source_url" in e for e in result.errors)
+        )
+
+    def test_source_url_not_http_errors(self):
+        r = _valid_research()
+        r["company_metrics"]["paid_leave_rate"]["source_url"] = "edinet.example"
+        result = vcr.validate(r)
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any("company_metrics.paid_leave_rate.source_url" in e for e in result.errors)
+        )
+
+    def test_invalid_grade_errors(self):
+        r = _valid_research()
+        r["company_metrics"]["annual_holidays"]["grade"] = "E"
+        result = vcr.validate(r)
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any("company_metrics.annual_holidays.grade" in e for e in result.errors)
+        )
+
+    def test_all_null_passes_with_warning(self):
+        r = _valid_research()
+        r["company_metrics"] = _all_null_company_metrics()
         result = vcr.validate(r)
         self.assertTrue(result.ok)
-        self.assertTrue(any("tier.axes.growth.claim_ids" in w for w in result.warnings))
+        self.assertTrue(any("company_metrics" in w for w in result.warnings))
 
-    def test_rubric_version_missing_warns(self):
+    def test_null_value_without_source_url_passes(self):
         r = _valid_research()
-        del r["tier"]["rubric_version"]
+        r["company_metrics"]["equity_ratio"] = _null_metric("%")
         result = vcr.validate(r)
         self.assertTrue(result.ok)
-        self.assertTrue(any("tier.rubric_version" in w for w in result.warnings))
+        self.assertEqual(result.warnings, [])
+
+    def test_missing_as_of_warns(self):
+        r = _valid_research()
+        del r["company_metrics"]["turnover_rate"]["as_of"]
+        result = vcr.validate(r)
+        self.assertTrue(result.ok)
+        self.assertTrue(
+            any("company_metrics.turnover_rate.as_of" in w for w in result.warnings)
+        )
 
 
 class ResultShapeTest(unittest.TestCase):

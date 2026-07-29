@@ -29,6 +29,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 ## 入力（指示書から受領する）
 
 - company_research.json の絶対パス。
+- 企業研究担当へ実測値の収集を指示した軸の識別子の配列（例 `["compensation_level", "annual_holidays"]`）。
 - job-change-company-research スキルの絶対パス（`{SKILL_DIR}`）。scripts の所在。
 
 いずれかが欠けている場合は、推測で補わず `{"error": "欠けている項目"}` の JSON だけを返す。
@@ -37,7 +38,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 
 証拠グレード（A=一次公式／B=信頼できる二次／C=口コミ集約／D=個人ブログ・伝聞・未確認）の定義と付与ルールは、原本 `{SKILL_DIR}/references/evidence-grading.md` に従って検査する。グレードC・Dのみを根拠とする claim の confidence が high であれば指摘する。企業自身の評価的・自己宣伝的主張に confidence high が付いていないかを検査する。必須トピックは philosophy・business・financials・compensation・benefits・workstyle・reputation の7種であり、claims 全体でその網羅状況を検査する。selection_process は充足が望ましいが、欠落は WARN 相当とし、重大（severity=重大）として扱わない。
 
-Tier（`tier`）の妥当性は、原本 `{SKILL_DIR}/references/tier-rubric.md` に従って検査する。各軸の `rating` が根拠 claim（`claim_ids`）の証拠グレードに照らして妥当か（C・D単独や企業の自己宣伝的主張を根拠に `high` にしていないか）、`level` が4軸の rating から格付け基準どおりに導かれているか、`unknown` 軸が2以上のとき `provisional` が true になっているかを検査する。Tier は企業そのものの質の格付けである。利用者への個人適合を混入させていないかも検査する。
+実測値（`company_metrics`）の妥当性は、原本 `{SKILL_DIR}/references/company-score-rubric.md` に従って検査する。各項目の `value` が `source_url` の出典の記載と一致するか、単位が軸の定義と合うか、`grade` の付与が妥当か、指示された軸の指標を過不足なく集めているかを検査する。実測値は企業側の事実であり、評価・格付け・点数を含まない。評価的な語や推定値が混入していないか、利用者への個人適合を混ぜていないかも検査する。
 
 ## 手順
 
@@ -48,8 +49,8 @@ Tier（`tier`）の妥当性は、原本 `{SKILL_DIR}/references/tier-rubric.md`
 5. EDINET有価証券報告書を出典とする claim は、書類管理番号・提出日で書類を特定して内容を照合する（出典URLが取得不能でもこの代替手順で確認する）。
 6. グレード付与の妥当性を検査する（口コミ・伝聞をA・Bへ格上げしていないか、一次情報をCへ格下げしていないか等）。グレードC・D単独を根拠とした断定表現の有無、および企業自身の評価的・自己宣伝的主張への confidence high 付与の有無を検査する。
 7. 必須トピック7種の網羅状況を検査する。selection_process の欠落は WARN 相当とし、重大（severity=重大）として扱わない。
-8. `workstyle_metrics` が存在する場合は、各メトリック（`annual_holidays`・`monthly_overtime_h`・`paid_leave_rate`・`avg_paid_leave_days_taken`・`avg_annual_salary`）の `value` が、併記された `source_url` の出典・対応する claim の evidence と一致するかを裏取りする。あわせて `grade` の付与が妥当か（口コミ集計値をA・Bへ格上げしていないか、有報等の一次値をCへ格下げしていないか）を検査する。値と出典が食い違うものと、グレードが過大なものは finding 化する。
-9. `tier` を `{SKILL_DIR}/references/tier-rubric.md` に照らして検査する。各軸の `rating` が根拠 `claim_ids` の証拠グレードで支持されるか（C・D単独や自己宣伝を根拠に `high` にしていないか）、`level` が4軸の rating から格付け基準どおりか、`provisional` の要否が正しいかを確認する。根拠に足りない `high`、基準と食い違う `level`、要否の誤った `provisional` は finding 化する。
+8. `company_metrics` のうち `value` が非 null の項目について、その値が併記された `source_url` の出典・対応する claim の evidence と一致するかを WebFetch で裏取りする。あわせて単位が軸の定義と合うか、`grade` の付与が妥当か（口コミ集計値をA・Bへ格上げしていないか、有報等の一次値をCへ格下げしていないか）、`as_of` が出典の対象期間と合うかを検査する。値と出典が食い違うもの、単位が違うもの、グレードが過大なものは finding 化する。
+9. 指示された軸の指標を過不足なく集めているかを `{SKILL_DIR}/references/company-score-rubric.md` に照らして確認する。公表されているのに `value` が `null` のままの軸、出典から読み取れない値が入っている軸、推定値・概算値が入っている軸は finding 化する。
 
 ## 禁止事項
 

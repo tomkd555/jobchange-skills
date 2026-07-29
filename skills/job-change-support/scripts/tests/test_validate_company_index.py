@@ -50,7 +50,7 @@ class ValidatePassTest(unittest.TestCase):
         self.assertTrue(result.ok)
         self.assertEqual(result.errors, [])
 
-    def test_tier_prefixed_slug_passes(self):
+    def test_prefixed_slug_passes(self):
         idx = {
             "schema_version": 1,
             "companies": {
@@ -244,41 +244,43 @@ class StatusFieldTest(unittest.TestCase):
         self.assertTrue(any("status" in e for e in result.errors))
 
 
-class TierFieldTest(unittest.TestCase):
-    def test_tier_value_passes_without_warnings(self):
+class ScoreFieldTest(unittest.TestCase):
+    def test_score_value_passes_without_warnings(self):
         idx = _valid_index()
-        idx["companies"]["acme-cloud"]["tier"] = "A"
+        idx["companies"]["acme-cloud"]["score"] = 72
         result = vci.validate(idx)
         self.assertTrue(result.ok)
-        self.assertFalse(any("tier" in w for w in result.warnings))
+        self.assertFalse(any("score" in w for w in result.warnings))
 
-    def test_all_valid_tiers_pass(self):
-        for level in ("S", "A", "B", "C"):
+    def test_boundary_scores_pass(self):
+        for value in (0, 100):
             idx = _valid_index()
-            idx["companies"]["acme-cloud"]["tier"] = level
+            idx["companies"]["acme-cloud"]["score"] = value
             result = vci.validate(idx)
-            self.assertTrue(result.ok, f"tier={level} should pass")
+            self.assertTrue(result.ok, f"score={value} should pass")
 
-    def test_tier_missing_is_not_checked(self):
+    def test_score_missing_is_not_checked(self):
         idx = _valid_index()
         result = vci.validate(idx)
         self.assertTrue(result.ok)
-        self.assertFalse(any("tier" in e for e in result.errors))
-        self.assertFalse(any("tier" in w for w in result.warnings))
+        self.assertFalse(any("score" in e for e in result.errors))
+        self.assertFalse(any("score" in w for w in result.warnings))
 
-    def test_tier_invalid_value_errors(self):
-        idx = _valid_index()
-        idx["companies"]["acme-cloud"]["tier"] = "D"
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier" in e for e in result.errors))
+    def test_score_out_of_range_errors(self):
+        for value in (-1, 101):
+            idx = _valid_index()
+            idx["companies"]["acme-cloud"]["score"] = value
+            result = vci.validate(idx)
+            self.assertFalse(result.ok, f"score={value} should fail")
+            self.assertTrue(any("score" in e for e in result.errors))
 
-    def test_tier_wrong_type_errors(self):
-        idx = _valid_index()
-        idx["companies"]["acme-cloud"]["tier"] = 1
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("tier" in e for e in result.errors))
+    def test_score_wrong_type_errors(self):
+        for value in ("A", 72.5, True, None):
+            idx = _valid_index()
+            idx["companies"]["acme-cloud"]["score"] = value
+            result = vci.validate(idx)
+            self.assertFalse(result.ok, f"score={value!r} should fail")
+            self.assertTrue(any("score" in e for e in result.errors))
 
 
 class WarnCaseTest(unittest.TestCase):

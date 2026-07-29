@@ -4,7 +4,7 @@
 
 ## 配置と扱い
 
-生成物は `career-private/fit/{企業スラッグ}/time_analysis.json` に置く。拘束時間・実質時給は年収・通勤時間などの個人情報から導く派生値であるため、`career-private/` 配下に隔離し、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ渡さない。
+生成物は `career-private/fit/{企業スラッグ}/time_analysis.json` に置く。比較の基準となる現職の算定結果は、応募先の企業に対応しないため `career-private/fit/current/time_analysis.json` に置き、全企業で使い回す。拘束時間・実質時給は年収・通勤時間などの個人情報から導く派生値であるため、`career-private/` 配下に隔離し、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ渡さない。
 
 ## 定義式
 
@@ -33,6 +33,21 @@
 
 年間実出勤日数は残業・通勤に依存しないため、増減値はプラス側とマイナス側で符号が反転した対称値になり、基準の水準には依存しない。
 
+## 現職との比較
+
+応募先の拘束時間・実質時給は、単体の絶対値では良し悪しを判断できない。現職についても同じ式で算定し、その差分を time_fit と compensation_fit の判断材料にする。
+
+現職の算定結果を `--baseline-json` へ渡すと、出力へ `comparison` が加わる。渡さなければ `comparison` は出力しない。
+
+| キー | 内容 |
+|---|---|
+| `current` | 現職の値。`annual_binding_hours`・`annual_labor_hours`・`hourly_wage_binding_basis`・`hourly_wage_labor_basis` の4項目を持つ。 |
+| `delta` | 「応募先 − 現職」の差分。項目は `current` と同じ。 |
+
+どちらか一方でも数値として取れない項目は、`current`・`delta` ともに `null` にする。時間は小数第1位、円は整数へ丸める。
+
+現職の算定に使う年収・労働時間・通勤時間は利用者入力（`user`）で取り、通勤時間は下記「通勤時間が未入力のときの扱い」と同じ系統を使う。
+
 ## 入力の優先度
 
 各入力の値は、次の優先順で決める。上位で確定した値を使い、下位へ下がるほど確度は落ちる。決定した出所は各入力の `source`（`posting` / `research` / `user` / `fallback`）に記録する。
@@ -40,7 +55,7 @@
 | 優先度 | 出所 | 内容 |
 |---|---|---|
 | 1 | 求人票（`posting`） | `job_posting.json` の `working_hours`・`metrics` に引用付きで載る値。最優先とする。 |
-| 2 | 企業研究の働き方指標（`research`） | `company_research.json` の `workstyle_metrics`。同一項目に複数の候補があるときは証拠グレード（A → B → C → D）が最も高いものを採る。証拠グレードの定義の原本は `job-change-company-research` の `references/evidence-grading.md` にある。C・D 単独での断定は避け、値を採るときも確度を下げて扱う。 |
+| 2 | 企業研究の指標（`research`） | `company_research.json` の `company_metrics`（月平均残業は `monthly_overtime`、年間休日は `annual_holidays`、有給取得率は `paid_leave_rate`、有給取得日数は `avg_paid_leave_days_taken`）。同一項目に複数の候補があるときは証拠グレード（A → B → C → D）が最も高いものを採る。証拠グレードの定義の原本は `job-change-company-research` の `references/evidence-grading.md` にある。C・D 単独での断定は避け、値を採るときも確度を下げて扱う。 |
 | 3 | 利用者入力（`user`） | 通勤時間など、利用者本人が申告する値。 |
 | 4 | 統計フォールバック（`fallback`） | 上位のいずれでも埋まらない項目に、官公庁の一次統計に基づく既定値を適用する。 |
 
@@ -71,6 +86,7 @@
   "annual": {"working_days", "paid_leave_taken_days", "binding_hours", "labor_hours"},
   "effective_hourly_wage": {"binding_basis", "labor_basis"} | null,
   "sensitivity": {"overtime_plus10h", "overtime_minus10h", "commute_plus15min", "commute_minus15min"},
+  "comparison": {"current": {...}, "delta": {...}},
   "assumptions": [ ... ],
   "fallbacks_used": [ {"field", "value", ...}, ... ]
 }
@@ -87,7 +103,7 @@ python scripts/calculate_time_analysis.py \
     [--scheduled-hours H] [--break-minutes M] [--overtime-h-month H] \
     [--annual-holidays D] [--paid-leave-rate R] [--paid-leave-granted D] \
     [--paid-leave-taken D] [--commute-oneway-min M] [--salary YEN] \
-    [--sources-json PATH] [--out PATH] [--json]
+    [--sources-json PATH] [--baseline-json PATH] [--out PATH] [--json]
 ```
 
-指定しなかった項目にはフォールバックを適用する。`--out` は指定パスへ書き出し（親ディレクトリが無ければ作成する）、`--json` は結果を標準出力へ書き出す。年間休日が 365 以上、有給取得率が範囲外など、入力に矛盾があるときは終了コード 2 で明確なメッセージを返す。
+`--baseline-json` には現職の `time_analysis.json` のパスを渡す。指定しなかった項目にはフォールバックを適用する。`--out` は指定パスへ書き出し（親ディレクトリが無ければ作成する）、`--json` は結果を標準出力へ書き出す。年間休日が 365 以上、有給取得率が範囲外など、入力に矛盾があるときは終了コード 2 で明確なメッセージを返す。

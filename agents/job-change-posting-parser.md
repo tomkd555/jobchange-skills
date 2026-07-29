@@ -30,13 +30,13 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 ## 入力（指示書から受領する）
 
 - 求人情報URL（1件）。
-- job-change-company-research スキルの絶対パス（`{SKILL_DIR}`）。仕様の原本 `references/job-posting-format.md` の所在。
+- job-change-company-research スキルの絶対パス（`{SKILL_DIR}`）。仕様の原本 `references/job-posting-format.md` の所在であり、呼出元と参照先をそろえるために受け取る。あなたは Read を持たないため、このファイル自体は開かない。
 
 URLが指定されていない場合のみ、推測で補わず `{"error": "求人URLが指定されていない"}` の JSON だけを返す。
 
 ## 判断の原本
 
-`job_posting.json` の形式は、原本 `{SKILL_DIR}/references/job-posting-format.md` に従う。必須フィールドは `schema_version`（"1.0"）・`source_url`・`fetched_at`（取得日 YYYY-MM-DD）・`company_name`・`title`。任意フィールドは `employment_type`・`location`・`salary`・`working_hours`・`metrics`・`requirements`・`benefits`・`selection_process`・`open_questions` とする。
+`job_posting.json` の形式は、原本 `{SKILL_DIR}/references/job-posting-format.md` が定める。あなたはファイルを読めないため、以下に転記した内容を根拠として用いる。必須フィールドは `schema_version`（"1.0"）・`source_type`・`fetched_at`（取得日 YYYY-MM-DD）・`company_name`・`title`。`source_type` はあなたが担う入口を表し、常に `"url"` である。URL 以外の入口（本文の貼り付け・ファイル・対話）は呼出元スキルが担うため、あなたが他の値を入れることはない。`source_url` は `source_type` が `url` のときに必須であり、取得したページの URL を入れる。任意フィールドは `employment_type`・`location`・`salary`・`working_hours`・`metrics`・`requirements`・`benefits`・`selection_process`・`open_questions` とする。
 
 `metrics`（`annual_holidays`・`monthly_overtime_h`・`paid_leave_rate`・`paid_leave_days_granted`）は、求人票に明記がある場合のみ `value` と引用 `quote` を入れ、無ければ `null` にする。数値の引用は求人ページの記載をそのまま写す。
 
@@ -66,6 +66,7 @@ URLが指定されていない場合のみ、推測で補わず `{"error": "求�
   "aliases": [],
   "job_posting": {
     "schema_version": "1.0",
+    "source_type": "url",
     "source_url": "",
     "fetched_at": "YYYY-MM-DD",
     "company_name": "",

@@ -22,6 +22,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
   "skills": { },
   "strengths": [ ],
   "job_change_axis": { },
+  "company_score_axes": [ ],
   "targets": { },
   "salary": { },
   "notes": ""
@@ -39,6 +40,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `skills` | object | 任意 | 保有スキル。全カテゴリが空だと WARN。後述 |
 | `strengths` | array | 任意 | 強みの短文の列挙。応募書類・面接の自己 PR の素材にする。行動証拠・他者フィードバックに基づく根拠付きの深化は `job-change-self-analysis` で行える（原本は同スキルの `self_analysis.json`。ここへは短文のみを反映する） |
 | `job_change_axis` | object | 必須 | 転職の軸。後述 |
+| `company_score_axes` | array | 2.0 のみ任意 | 企業スコアの採点に使う軸と重みの申告。`schema_version` が `2.0` のときにだけ有効。後述 |
 | `targets` | object | 任意 | 志望対象。全カテゴリが空だと WARN。後述 |
 | `salary` | object | 任意 | 年収。後述 |
 | `notes` | string | 任意 | 補足メモ。選考上の留意点など |
@@ -75,7 +77,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `description` | string | 任意 | 実績の説明 |
 | `metric` | string または null | 任意 | 定量値。「応答時間を40%短縮」「売上を年3000万円増」のように、数値・割合・金額で示す。定量化できない実績は `null` にする |
 
-`metric` は可能な限り定量値で埋める。応募書類・面接では、定量化された実績が採否を分ける。全職歴を通して定量的な `metric` が1件もない場合、`validate_profile.py` は WARN を出す。`metric` には検証可能な数値を優先する。裏付けのない数値の創作や過大な誇張は、書類・面接全体の信頼を毀損する。
+`metric` は可能な限り定量値で埋める。全職歴を通して定量的な `metric` が1件もない場合、`validate_profile.py` は WARN を出す。`metric` には検証可能な数値を優先する。
 
 ## career_gaps
 
@@ -113,8 +115,6 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `must_conditions` | array | 1.x のみ | 譲れない条件の自由文の配列。2.0 では `conditions` へ移す。2.0 で非空なら WARN |
 | `want_conditions` | array | 1.x のみ | 望ましい条件の自由文の配列。2.0 では `conditions` へ移す。2.0 で非空なら WARN |
 | `priority_note` | string | 任意 | 必須条件の優先順位と、次に軸を再評価する時期のメモ |
-
-選好は時間とともに変化するため、軸は固定せず定期的に再評価する前提を `priority_note` に残す。
 
 ### conditions（2.0）
 
@@ -164,11 +164,73 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 
 ### 必須条件の件数
 
-「必須条件は3件程度まで」のルールは、`conditions[level=must]` と `work_character_preferences[desire=must]` の**合計**で数える。合計が4件以上なら WARN とする。必須条件が多いほど母集団が小さくなり、求人検索が「応募推奨なし」を返しやすくなる。
+「必須条件は3件程度まで」のルールは、`conditions[level=must]` と `work_character_preferences[desire=must]` の**合計**で数える。合計が4件以上なら WARN とする。
 
 ### 年収の扱い
 
 譲れない年収下限は `conditions`（`axis=salary_condition`）に、希望額は `salary.desired` に置く。前者は求人検索のしきい値として使い、後者は適合性評価の報酬次元が使う。下限が希望額を上回る場合は WARN とする。
+
+## company_score_axes（2.0）
+
+企業スコア（0〜100点）の採点に使う軸と重みの申告である。トップレベルの任意の配列であり、`schema_version` が `2.0` のときにだけ有効である。`1.0` / `1.1` にはこのフィールドが無く、書かれていても検査しない。
+
+定量候補軸9個・点数への写し方・重みの配分の規則の原本は `job-change-company-research/references/company-score-rubric.md` にある。企業研究へ渡すのは、`kind` が `quantitative` の軸の識別子の配列だけである。`weight`・`thresholds` と、定性軸の `label`・`definition`・`judgment` は渡さない。定性軸の記述は利用者が自分の言葉で書いたものであり、Web ツールを持つエージェントへ渡さない。
+
+```json
+"company_score_axes": [
+  {
+    "axis": "compensation_level",
+    "kind": "quantitative",
+    "weight": 40,
+    "thresholds": {"zero": 4500000, "full": 7000000}
+  },
+  {"axis": "annual_holidays", "kind": "quantitative", "weight": 25},
+  {
+    "axis": "discretion",
+    "kind": "qualitative",
+    "weight": 35,
+    "label": "裁量の大きさ",
+    "definition": "設計方針を自分で決められること",
+    "judgment": [
+      {"score": 100, "condition": "求人票に設計裁量の記載があり、面接でも確認できた"},
+      {"score": 50, "condition": "求人票に記載があるが未確認"},
+      {"score": 0, "condition": "上位者の承認が必要と明記されている"}
+    ]
+  }
+]
+```
+
+| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+|---|---|---|---|
+| `axis` | string | 必須 | 軸の識別子。空は ERROR。同じ軸が2回以上現れるのも ERROR。定量軸では company-score-rubric.md の定量候補軸9個のキーのいずれかであり、他の値は ERROR。定性軸では利用者が付ける識別子（半角英小文字・数字・下線） |
+| `kind` | string | 必須 | `quantitative`（公表された数値を線形式で点数へ写す軸）／`qualitative`（利用者が判定条件を決める軸）。他の値は ERROR |
+| `weight` | integer | 必須 | 重み。1以上100以下の整数。他の値は ERROR。全軸の合計が 100 でなければ ERROR |
+| `thresholds` | object | 定量軸のみ任意 | 点数の基準の上書き。`zero`（0点に相当する水準）と `full`（100点に相当する水準）をいずれも数値で持つ。定性軸に付けると ERROR。`zero` と `full` が数値でない場合、および両者が等しい場合は ERROR |
+| `label` | string | 定性軸で必須 | 利用者の言葉での呼び名。空は ERROR |
+| `definition` | string | 定性軸で必須 | 何をもってそう言うかの定義。判断できる粒度まで具体化する。空は ERROR |
+| `judgment` | array | 定性軸で必須 | 判定条件の配列。1件以上必要。後述 |
+| `note` | string | 任意 | その軸を選んだ理由を利用者の言葉で書く |
+
+`thresholds` を書かない定量軸には、統計に基づく既定値を使う。既定値の原本は `job-change-fit-assessment/scripts/calculate_company_score.py` の定数であり、本文書は数値を持たない。既定値を持たない軸は、`thresholds` を書くまで採点されない。処遇水準（`compensation_level`）は既定値を持たない。この軸の基準は利用者の現年収と希望年収から決める。
+
+### judgment（定性軸）
+
+各要素は判定条件1件を表す。
+
+| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+|---|---|---|---|
+| `score` | integer | 必須 | その条件に合致したときの点数。0以上100以下の整数。他の値は ERROR |
+| `condition` | string | 必須 | 何が確認できたらその点数かを書く。空は ERROR |
+
+`score` の降順に並べ、上から順に条件を当てはめて最初に合致したものを採る。降順に並んでいなければ WARN とする。どの条件にも当てはまらない場合の点数は `null`（判定できない）とし、中間の点数を推測で置かない。
+
+定性軸は、`label`・`definition`・`judgment` のすべてがそろって初めて採点に入る。判定条件を書けない事柄は採点に入れず、面接での確認事項へ回す。
+
+重みを配分したあとは、架空2社の比較で検算する。配分した重みで2社を採点し、「実際にどちらを選ぶか」という問いへの答えと点数の高い側が一致するかを確かめる（手順は company-score-rubric.md にある）。
+
+申告した軸が、`job_change_axis` の必須条件（`conditions[level=must]`）・作業特性の希望度（`work_character_preferences`）と食い違う場合は、どちらが本当かをこの文書の側で決めない。両方を利用者へ提示し、本人に選ばせる。
+
+配列が無い場合は、採点する軸の申告が無いものとして扱う。企業スコアは算出せず、軸と重みを仮定して採点しない。
 
 ## targets
 
@@ -209,6 +271,11 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 - `work_character_preferences` が配列でない、または欠落している
 - `work_character_preferences` が8特性を過不足なく持たない（欠落・重複・未知の `trait`）
 - `desire` の値域外、または `desire=must` なのに `statement` が空
+- `company_score_axes` があるのに配列でない、またはその要素がオブジェクトでない
+- `company_score_axes[].axis` の空・重複、`kind` の値域外、`kind` が `quantitative` の軸の `axis` が定量候補軸9個にない
+- `weight` が1以上100以下の整数でない、または `weight` の合計が 100 でない
+- `thresholds` を `kind` が `qualitative` の軸が持つ、`zero`・`full` が数値でない、または `zero` と `full` が等しい
+- `kind` が `qualitative` の軸で、`label`・`definition` が空、`judgment` が1件以上の配列でない、`judgment[].score` の値域外、`judgment[].condition` が空
 
 ### WARN（成立するが情報不足で成果物の質を下げる）
 
@@ -233,12 +300,15 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 - `level=must` の条件に `priority` がない、または `priority` が重複している
 - `must_conditions` / `want_conditions` が空でないまま残っている（移行漏れ）
 - 必須の年収下限が `salary.desired` を上回っている
+- `company_score_axes` が空配列である（採点する軸を1つも選んでいない）
+- `company_score_axes` に `compensation_level` がない（既定で選択済みの軸である）
+- `judgment` が `score` の降順に並んでいない
 
 ## バージョンと移行
 
 | `schema_version` | 扱い |
 |---|---|
-| `1.0` / `1.1` | 従来の検査規則だけを適用する。`conditions` / `work_character_preferences` の欠落を検査しない。移行を促す WARN を1件出す |
+| `1.0` / `1.1` | 従来の検査規則だけを適用する。`conditions` / `work_character_preferences` の欠落を検査せず、`company_score_axes` も検査しない。移行を促す WARN を1件出す |
 | `2.0` | 従来の規則に加え、上記の 2.0 規則を適用する |
 
 **1.x のプロファイルは、そのままでも検証を PASS する。** 門番は壊れない。ただし 1.x のままでは下流が縮退動作になる。
@@ -246,6 +316,6 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | スキル | 1.x のときの動き |
 |---|---|
 | `job-change-job-search` | 求人の観測は通常どおり行うが、8軸の判定ができないため全件を「追加調査候補」とし、総合判定を「判定不能」にする |
-| `job-change-fit-assessment` | 作業特性の一致と志向の一致の score を `null`（判断保留）にし、理由を verdict に書く |
+| `job-change-fit-assessment` | 作業特性の一致と志向の一致の score を `null`（判断保留）にし、理由を verdict に書く。採点する軸の申告が無いため、企業スコアも算出しない |
 
 **自動移行は行わない。** 自由文の条件（例「モダンな技術スタックが整備されていること」）を軸・演算子・しきい値へ機械的に割り付けることは推測であり、「事実を創作しない」原則に反する。移行は `job-change-profile` の対話（条件の構造化）で行う。

@@ -153,59 +153,98 @@
         }
       ],
       "confidence": "medium"
+    },
+    {
+      "id": "C009",
+      "topic": "workstyle",
+      "statement": "有価証券報告書の人的資本開示で、女性管理職比率18.4%、男性の育児休業取得率62.5%を開示している。",
+      "evidence": [
+        {
+          "source_url": "https://disclosure2.edinet-fsa.example.go.jp/documents/S9999XYZ/employee.htm",
+          "source_name": "有価証券報告書 第10期 第1 企業の概況 5 従業員の状況",
+          "grade": "A",
+          "quote": "提出会社の管理職に占める女性労働者の割合は18.4%、男性労働者の育児休業取得率は62.5%であります。",
+          "accessed": "2026-07-12"
+        }
+      ],
+      "confidence": "medium"
     }
   ],
-  "workstyle_metrics": {
-    "annual_holidays": null,
-    "monthly_overtime_h": {
-      "value": 14.2,
+  "company_metrics": {
+    "compensation_level": {
+      "value": 6120000,
+      "unit": "円",
+      "source_url": "https://disclosure2.edinet-fsa.example.go.jp/documents/S9999XYZ/employee.htm",
+      "grade": "A",
+      "as_of": "2026-03"
+    },
+    "annual_holidays": {
+      "value": 125,
+      "unit": "日",
       "source_url": "https://shokuba.mhlw.go.jp/company/9999",
-      "grade": "A"
+      "grade": "A",
+      "as_of": "2026-03"
+    },
+    "monthly_overtime": {
+      "value": 14.2,
+      "unit": "時間",
+      "source_url": "https://shokuba.mhlw.go.jp/company/9999",
+      "grade": "A",
+      "as_of": "2026-03"
     },
     "paid_leave_rate": {
       "value": 71.0,
+      "unit": "%",
       "source_url": "https://shokuba.mhlw.go.jp/company/9999",
-      "grade": "A"
+      "grade": "A",
+      "as_of": "2026-03"
     },
-    "avg_paid_leave_days_taken": null,
-    "avg_annual_salary": {
-      "value": 6120000,
+    "turnover_rate": {
+      "value": null,
+      "unit": "%",
+      "source_url": null,
+      "grade": null,
+      "as_of": null
+    },
+    "male_childcare_leave_rate": {
+      "value": 62.5,
+      "unit": "%",
       "source_url": "https://disclosure2.edinet-fsa.example.go.jp/documents/S9999XYZ/employee.htm",
-      "grade": "A"
-    }
-  },
-  "tier": {
-    "level": "B",
-    "provisional": false,
-    "rubric_version": 1,
-    "assessed_date": "2026-07-12",
-    "axes": {
-      "financial_soundness": {
-        "rating": "medium",
-        "basis": "勤怠管理SaaS単一セグメントで従業員842名と規模は中位。黒字だが事業集中リスクがある。",
-        "claim_ids": ["C002", "C003"]
-      },
-      "growth": {
-        "rating": "high",
-        "basis": "勤怠管理SaaSの契約社数が前年比118%（12,400社）と拡大している。",
-        "claim_ids": ["C002"]
-      },
-      "tech_advancement": {
-        "rating": "unknown",
-        "basis": "クラウド/AIの内製度・パートナー等級・技術発信を示す一次・二次情報が本収集では得られなかった。",
-        "claim_ids": []
-      },
-      "compensation_level": {
-        "rating": "medium",
-        "basis": "等級制・業績連動賞与（年2回）を整備し平均年収は約620万円だが、突出はしない。",
-        "claim_ids": ["C004", "C003"]
-      }
+      "grade": "A",
+      "as_of": "2026-03"
     },
-    "rationale": "成長性は高い一方、規模・処遇は中位で技術先進性は証拠不足。財務に懸念はなく際立った強みも限定的なため B とした。技術先進性が unknown だが1軸のみのため provisional にはしない。"
+    "revenue_growth": {
+      "value": null,
+      "unit": "%",
+      "source_url": null,
+      "grade": null,
+      "as_of": null
+    },
+    "operating_margin": {
+      "value": null,
+      "unit": "%",
+      "source_url": null,
+      "grade": null,
+      "as_of": null
+    },
+    "equity_ratio": {
+      "value": null,
+      "unit": "%",
+      "source_url": null,
+      "grade": null,
+      "as_of": null
+    },
+    "avg_paid_leave_days_taken": {
+      "value": null,
+      "unit": "日",
+      "source_url": null,
+      "grade": null,
+      "as_of": null
+    }
   },
   "open_questions": [
     "有価証券報告書の平均年間給与は全従業員平均であり、応募職種の給与水準は判別できない。求人票の提示レンジと照合が必要である。",
     "口コミの総合評価は回答件数が87件で、選択バイアスの影響を排除できない。傾向の傍証にとどめる。",
-    "年間休日数と平均有給取得日数は今回の収集源では確認できず、workstyle_metrics では null とした。"
+    "離職率・平均有給取得日数と、売上高成長率・営業利益率・自己資本比率は今回の収集源では確認できず、company_metrics では null とした。"
   ]
 }

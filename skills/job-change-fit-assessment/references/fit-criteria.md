@@ -47,7 +47,7 @@ job_posting の `requirements.must[]`・`requirements.want[]` と、profile の 
 
 - self_analysis の `career_narrative.future_direction` を一次資料とし、`interests.domains`（RIASEC の領域名）・`interests.concrete_topics` と求人の技術領域・製品領域の重なりを見る。
 - profile の `job_change_axis.reasons`（転職で次に実現したいこと）を補助資料とする。
-- **経験の近さを志向の根拠に流用しない。** 「経験があるから志向にも合う」という推論を明示的に禁じる。この推論を許すと、現職と同じ消耗を繰り返す求人が上位に来る。
+- **経験の近さを志向の根拠に流用しない。** 「経験があるから志向にも合う」という推論を明示的に禁じる。
 - self_analysis が無い場合（`inputs.self_analysis=false`）は score を高くしない。4以上を付けることは認めない。
 - evidence には `self_analysis` または `profile` を必ず含める。求人票だけで志向を断定しない。
 - evidence の `ref` は `interests.domains[0]`・`career_narrative.future_direction` のようなフィールドパスで書く。
@@ -84,9 +84,10 @@ company_research の philosophy・workstyle・reputation トピックと、self_
 希望年収と提示レンジ・業界平均を突き合わせる。
 
 - job_posting の `salary`（提示レンジ）と、profile の `salary.desired`（希望年収）を突き合わせる。
-- company_research の `workstyle_metrics.avg_annual_salary`（有価証券報告書の平均年間給与等）を参照点に加える。ただし全従業員平均であり職種別内訳を欠く限界を verdict または overall.open_questions に書く。
+- company_research の `company_metrics.compensation_level`（有価証券報告書の平均年間給与等）を参照点に加える。ただし全従業員平均であり職種別内訳を欠く限界を verdict または overall.open_questions に書く。
 - 提示レンジ下限が希望を下回る場合は score を高くしない。上限との差、昇給余地の不確実性も勘案する。
-- evidence の source は主に `job_posting`・`profile`・`company_research`。
+- time_analysis.json に `comparison` があれば、実質時給の現職との差分（`comparison.delta.hourly_wage_binding_basis`・同 `labor_basis`）を verdict の根拠にする。額面年収の増加だけを根拠に score を高くしない。
+- evidence の source は主に `job_posting`・`profile`・`company_research`・`time_analysis`。
 
 ### time_fit（時間適合）
 
@@ -96,6 +97,8 @@ time_analysis.json の年間拘束時間・実質時給と、must/want 条件（
 - 実質時給は、想定年収にグレード付きの根拠がある場合にのみ算出される（無ければ time_analysis 側で null）。null の場合は金額比較を断定に使わない。
 - time_analysis の入力に統計フォールバックが使われた項目（`fallbacks_used`）は、実測でない旨を verdict に反映し、確度を上げすぎない。
 - 残業・通勤・労働時間に関する must/want 条件との整合を見る。
+- time_analysis.json に `comparison` があれば、年間拘束時間の現職との差分（`comparison.delta.annual_binding_hours`）を verdict の根拠にする。`comparison` が無い場合は、現職と比較できていない旨を verdict に書く。
+- 通勤の負担を所要時間だけで表さない。commute.json の `transfers`（乗り換え回数）・`crowding`（混雑の程度）があれば verdict で触れる。長時間通勤は睡眠と運動を削るため、年収差で相殺できるとは限らない旨を、通勤片道が長い場合の verdict に書く（根拠は `references/fit-methods.md`）。
 - evidence の source は主に `time_analysis`・`job_posting`。
 
 ## must_condition_results の判定
@@ -121,3 +124,5 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 - **経験が近いことだけを理由に推奨しない。** `experience_proximity` が高くても、`aspiration_alignment` または `work_character_fit` が低い場合は、その旨を rationale に明示し、`experience_proximity` の score の高さで打ち消さない。調整・管理・顧客折衝が中心の求人は、経験に近くても本人の希望と逆であることがある。
 - `skill_gap` が `not_applicable_now` の場合は `推奨`・`条件付き推奨` にしない。
 - rationale には、判定を分けた決め手と、条件付きの場合は解消すべき条件を書く。未確認の論点は `open_questions` に列挙する。求人票から判定できない作業特性（完了条件の明確さ・一人で完結しやすさ・結果を短期で確認できる度合い）は、必ず `open_questions` へ面接での確認事項として入れる。
+- **直属上司の関与のしかたを必ず `open_questions` へ入れる。** 日本の従業員標本では上司との適合が定着と満足を左右するが、求人票と企業研究からは判定できない。8番目の次元を作らず、`culture_fit` の score にも織り込まず、面接での確認事項として立てる（根拠は `references/fit-methods.md`）。
+- **判定の時点性を rationale に明記する。** 判定は現時点で得られている材料に基づくものであり、入社直後の満足の高さがそのまま持続するとは限らない。この注記を rationale の末尾へ置く（根拠は `references/fit-methods.md`）。

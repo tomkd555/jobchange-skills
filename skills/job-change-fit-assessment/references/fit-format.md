@@ -22,6 +22,7 @@
   "inputs": { "job_posting": true, "company_research": true, "self_analysis": true, "time_analysis": true, "job_search_screening": true },
   "dimensions": [ /* 7次元。後述 */ ],
   "must_condition_results": [ /* profile の必須条件と ref で1対1。後述 */ ],
+  "company_score": { /* 企業スコア（0〜100点）。任意。後述 */ },
   "overall": { "recommendation": "条件付き推奨", "rationale": "…", "open_questions": ["…"] }
 }
 ```
@@ -35,6 +36,7 @@
 | `screening_source` | object | 任意 | 求人検索のスクリーニング結果への参照。`{search_id, result_index, classification, screened_at}` |
 | `dimensions` | array | 必須 | 次元の評価。2.0 では過不足なく7件 |
 | `must_condition_results` | array | 必須 | 必須条件の判定。profile の必須条件と1対1 |
+| `company_score` | object | 任意 | 企業スコア（0〜100点）。`{total, coverage, provisional, axes, rationale}` |
 | `overall` | object | 必須 | 総合判定 |
 
 ## dimensions（7次元）
@@ -85,7 +87,7 @@ evidence の各要素:
 
 ### skill_gap（技術要件の不足の3段階）
 
-`experience_proximity` に属する。独立した次元にすると評価が分散するため、経験の近さの内訳として持つ。
+`experience_proximity`（経験の近さ）の内訳として持つ。
 
 | 値 | 意味 |
 |---|---|
@@ -128,6 +130,74 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 | `negotiable` | boolean | 任意。`met=no` の条件が交渉・制度運用で解消しうるか。既定は `false`。`true` にするには evidence が1件以上要る |
 | `evidence` | array | 根拠。`met` が `yes`・`no` のときは1件以上必須。`unknown` のときは空でよい |
 
+## company_score
+
+応募先企業を 0〜100 点で採点した結果である。軸ごとの実測値は企業研究が `company_research.json` の `company_metrics` へ書き、利用者が `profile.json` の `company_score_axes` で申告した軸と重みに基づく採点は、`profile.json` を読める適合性評価が `company_score` へ書く。
+
+算出は `scripts/calculate_company_score.py` が決定的に行う。定量候補軸9個・点数への写し方・基準の決め方・重みの配分・総合点の規則の原本は、job-change-company-research の `references/company-score-rubric.md` にある。統計由来の既定基準の原本は `scripts/calculate_company_score.py` の定数 `DEFAULT_THRESHOLDS` である。
+
+総合点は、利用者が選んだ軸と配分した重みに基づく数値であり、企業そのものの質の絶対評価ではない。異なる利用者の点数どうしを比べない。比べてよいのは、同じ利用者が同じ軸と重みで採点した企業どうしだけである。
+
+```json
+"company_score": {
+  "total": 72,
+  "coverage": 85,
+  "provisional": false,
+  "axes": [
+    {
+      "axis": "compensation_level", "kind": "quantitative", "weight": 40,
+      "value": 6480000, "unit": "円", "score": 65,
+      "threshold_source": "user", "thresholds": { "zero": 4500000, "full": 7000000 },
+      "grade": "A", "source_url": "https://..."
+    },
+    {
+      "axis": "tech_discretion", "kind": "qualitative", "weight": 35,
+      "value": null, "unit": null, "score": 50,
+      "threshold_source": null, "thresholds": null,
+      "grade": null, "source_url": null,
+      "evidence": "求人票の『設計から関与』の記載に合致した"
+    },
+    {
+      "axis": "annual_holidays", "kind": "quantitative", "weight": 25,
+      "value": null, "unit": "日", "score": null,
+      "threshold_source": null, "thresholds": null,
+      "grade": null, "source_url": null,
+      "reason": "企業研究に実測値が無い"
+    }
+  ],
+  "rationale": "点数に効いた軸と、判定できなかった軸を書く"
+}
+```
+
+| フィールド | 型 | 内容 |
+|---|---|---|
+| `total` | integer \| null | 総合点。判定できた軸だけの加重平均を四捨五入した 0〜100 の整数。判定できた軸が1つも無い場合は `null` とし、軸も重みも仮定して採点しない |
+| `coverage` | integer | 判定できた軸の `weight` の合計（0〜100）。重みの合計が 100 のため、そのまま総合点の裏付けの割合になる |
+| `provisional` | boolean | 暫定の点数であること。`coverage` が `calculate_company_score.py` の定数 `COVERAGE_THRESHOLD` を下回るとき、および `total` が `null` のとき `true` |
+| `axes` | array | 利用者が申告した軸を申告順に並べる。判定できなかった軸も `score` を `null` にして並べる |
+| `rationale` | string | 点数に効いた軸と、判定できなかった軸をその理由とともに書く（非空）。スクリプトが決定的に組み立てる |
+
+`axes` の各要素:
+
+| フィールド | 型 | 内容 |
+|---|---|---|
+| `axis` | string | 軸の識別子（非空）。profile の `company_score_axes[].axis` をそのまま写す |
+| `kind` | string | `quantitative`（公表された数値を線形式で点数へ写す軸）・`qualitative`（利用者が判定条件を決める軸）のいずれか |
+| `weight` | integer | 重み。1〜100 の整数。profile の申告をそのまま写す |
+| `value` | number \| null | 定量軸の実測値。`company_metrics` の当該軸の `value`。定性軸と、実測値が無い軸は `null` |
+| `unit` | string \| null | 実測値の単位。定性軸は `null` |
+| `score` | integer \| null | その軸の点数（0〜100 の整数）。実測値か基準を欠く定量軸、判定結果を得られない定性軸は `null` |
+| `threshold_source` | string \| null | 点数の基準の出所。`user`（profile の `thresholds`）・`statistic`（`DEFAULT_THRESHOLDS`）のいずれか。基準が無い軸と定性軸は `null` |
+| `thresholds` | object \| null | 適用した基準。`{zero, full}`。基準が無い軸と定性軸は `null` |
+| `grade` | string \| null | 実測値の証拠グレード（A〜D）。`company_metrics` の当該軸の `grade` を写す。定性軸は `null` |
+| `source_url` | string \| null | 実測値の出典 URL。`company_metrics` の当該軸の `source_url` を写す。定性軸は `null` |
+| `evidence` | string \| null | 定性軸のみ。判定条件のどれに合致したかの説明。fit-assessor の判定結果をそのまま写す |
+| `reason` | string | 判定できなかった軸のみ。実測値が無い・基準が無い・判定結果が無いのいずれであるかを書く |
+
+定量軸の基準は、profile の `thresholds`（`threshold_source` は `user`）を統計由来の既定（同 `statistic`）より優先する。どちらも無い軸は `score` を `null` にし、推測した基準で点数を作らない。実測値が無い軸も 0 点にせず `null` にする。0 点は「低い水準であることを確認した」という意味であり、材料が無いことと区別する。
+
+定性軸の点数は、fit-assessor が求人票と企業研究の事実を判定条件（profile の `judgment`）へ当てはめた結果である。どの条件にも合致しない軸は `score` を `null` にし、中間の点数を推測で置かない。
+
 ## overall
 
 ```json
@@ -158,6 +228,7 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 - 次元の `evidence` が空、または `source` が既定値以外（1.0 は5値、2.0 は6値）。
 - `must_condition_results` が配列でない。`condition` の欠落または空。`met` が `yes`・`no`・`unknown` 以外。`met` が `yes`・`no` なのに `evidence` が空。
 - `overall.recommendation` が既定の4値以外。`overall.rationale` の欠落または空。`overall.open_questions` が配列でない。
+- `company_score` があってオブジェクトでない。`total` が 0〜100 の整数でも `null` でもない。`coverage` が 0〜100 の整数でない。`provisional` が真偽値でない。`axes` が配列でない。`axes[]` の `axis` が空、`kind` が `quantitative`・`qualitative` 以外、`weight` が 1〜100 の整数でない、`score` が 0〜100 の整数でも `null` でもない。`rationale` の欠落または空。
 
 `schema_version` が `2.0` のときは、次も ERROR とする。
 
@@ -186,6 +257,8 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 - `--profile` が指定されていない（必須条件との1対1が未検証である）。
 - `inputs` の3つ以上が `false` なのに `recommendation` が `推奨`。
 - `inputs.self_analysis` が `false`（志向の根拠が弱い）。
+- `company_score.total` が `null`（判定できた軸が無く、総合点を算出できていない）。
+- `company_score.provisional` が `true`（判定できた軸の重みの合計が足りず、少数の軸に引きずられる点数である）。
 - `--screening` 指定時: 求人検索で必須条件を満たすと判定した求人が、求人票の取込後に `met=no` になっている。
 
 ## バージョンと移行

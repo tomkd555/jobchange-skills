@@ -149,7 +149,7 @@
         {
           "source": "company_research",
           "ref": "C020",
-          "note": "有価証券報告書の平均年間給与 720万円（全従業員平均・職種別内訳なし）"
+          "note": "有価証券報告書の平均年間給与 612万円（全従業員平均・職種別内訳なし）"
         }
       ]
     },
@@ -214,6 +214,72 @@
       ]
     }
   ],
+  "company_score": {
+    "total": 44,
+    "coverage": 100,
+    "provisional": false,
+    "axes": [
+      {
+        "axis": "monthly_overtime",
+        "kind": "quantitative",
+        "weight": 30,
+        "value": 14.2,
+        "unit": "時間",
+        "score": 57,
+        "threshold_source": "statistic",
+        "thresholds": {
+          "zero": 24.1,
+          "full": 6.7
+        },
+        "grade": "A",
+        "source_url": "https://shokuba.mhlw.go.jp/company/9999"
+      },
+      {
+        "axis": "compensation_level",
+        "kind": "quantitative",
+        "weight": 30,
+        "value": 6120000,
+        "unit": "円",
+        "score": 0,
+        "threshold_source": "user",
+        "thresholds": {
+          "zero": 6800000,
+          "full": 9000000
+        },
+        "grade": "A",
+        "source_url": "https://disclosure2.edinet-fsa.example.go.jp/documents/S9999XYZ/employee.htm"
+      },
+      {
+        "axis": "annual_holidays",
+        "kind": "quantitative",
+        "weight": 15,
+        "value": 125,
+        "unit": "日",
+        "score": 93,
+        "threshold_source": "statistic",
+        "thresholds": {
+          "zero": 97,
+          "full": 127
+        },
+        "grade": "A",
+        "source_url": "https://shokuba.mhlw.go.jp/company/9999"
+      },
+      {
+        "axis": "tech_discretion",
+        "kind": "qualitative",
+        "weight": 25,
+        "value": null,
+        "unit": null,
+        "score": 50,
+        "threshold_source": null,
+        "thresholds": null,
+        "grade": null,
+        "source_url": null,
+        "evidence": "技術ブログに開発チームが技術選定を担う旨の記載があるが、決定の範囲は読み取れず面接も未実施のため、上位の条件は満たさない"
+      }
+    ],
+    "rationale": "総合点 44 点は、判定できた軸（monthly_overtime（重み30・57点）、compensation_level（重み30・0点）、annual_holidays（重み15・93点）、tech_discretion（重み25・50点））の加重平均である。判定できた軸の重みの合計は 100 である。"
+  },
   "overall": {
     "recommendation": "条件付き推奨",
     "rationale": "必須条件は3件とも満たす。経験の近さと志向の一致がいずれも高く、作業特性も手を動かす比率が高い点で合う。ただし夜間・休日対応の有無が求人票・企業研究のいずれからも確認できず、作業特性の3項目（完了条件の明確さ・一人で完結しやすさ・結果を短期で確認できるか）は面接でしか判定できないため、条件付きとした。",

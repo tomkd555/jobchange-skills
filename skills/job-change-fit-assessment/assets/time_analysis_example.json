@@ -72,6 +72,20 @@
     "commute_plus15min": 113.9,
     "commute_minus15min": -113.9
   },
+  "comparison": {
+    "current": {
+      "annual_binding_hours": 2688.4,
+      "annual_labor_hours": 2010.6,
+      "hourly_wage_binding_basis": 2232,
+      "hourly_wage_labor_basis": 2984
+    },
+    "delta": {
+      "annual_binding_hours": -276.6,
+      "annual_labor_hours": -130.5,
+      "hourly_wage_binding_basis": 463,
+      "hourly_wage_labor_basis": 473
+    }
+  },
   "assumptions": [
     "paid_leave_rate は未指定のため統計フォールバックを適用した：0.669（就労条件総合調査 2025年・令和7年調査。年次有給休暇の取得率66.9%、https://www.mhlw.go.jp/toukei/itiran/roudou/jikan/syurou/25/dl/gaikyou.pdf）",
     "paid_leave_granted は未指定のため統計フォールバックを適用した：18.1（就労条件総合調査 2025年・令和7年調査。労働者1人平均の年次有給休暇の付与日数、https://www.mhlw.go.jp/toukei/itiran/roudou/jikan/syurou/25/dl/gaikyou.pdf）",

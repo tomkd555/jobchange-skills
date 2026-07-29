@@ -2,10 +2,11 @@
 
 標準ライブラリのみで、企業研究の中間成果物である company_research.json を機械検査する。
 すべての主張（claim）が出典・証拠グレード・確度を伴い、必須トピックを網羅し、低グレード
-（C・D）のみの根拠で断定（confidence=high）していないかを、ERROR（成果物として成立しない
-欠落・ルール違反）と WARN（成立するが根拠が弱い点）に分けて報告する。仕様の原本は
-references/company-research-format.md、証拠グレードの原本は references/evidence-grading.md
-である。
+（C・D）のみの根拠で断定（confidence=high）していないか、および定量候補軸の実測値
+（company_metrics）が単位と出典を伴うかを、ERROR（成果物として成立しない欠落・ルール違反）と
+WARN（成立するが根拠が弱い点）に分けて報告する。仕様の原本は
+references/company-research-format.md、証拠グレードの原本は references/evidence-grading.md、
+定量候補軸の原本は references/company-score-rubric.md である。
 
 CLI:
     python validate_company_research.py <company_research.json> [--json]
@@ -34,19 +35,21 @@ HIGH_GRADES = {"A", "B"}
 LOW_GRADES = {"C", "D"}
 VALID_CONFIDENCE = {"high", "medium", "low"}
 REQUIRED_CLAIM_FIELDS = ("id", "topic", "statement", "evidence", "confidence")
-# workstyle_metrics の5キー。各値は {value(number), source_url(str), grade(A〜D)} または null。
-WORKSTYLE_METRIC_KEYS = (
-    "annual_holidays",
-    "monthly_overtime_h",
-    "paid_leave_rate",
-    "avg_paid_leave_days_taken",
-    "avg_annual_salary",
-)
-# tier（企業品質の格付け）。仕様の原本は references/tier-rubric.md。
-TIER_AXES = ("financial_soundness", "growth", "tech_advancement", "compensation_level")
-VALID_TIER_LEVELS = {"S", "A", "B", "C"}
-VALID_AXIS_RATINGS = {"high", "medium", "low", "unknown"}
-RATED_AXIS_RATINGS = {"high", "medium", "low"}
+# 定量候補軸9個の軸キーと単位。原本は references/company-score-rubric.md。
+QUANTITATIVE_AXIS_UNITS = {
+    "compensation_level": "円",
+    "annual_holidays": "日",
+    "monthly_overtime": "時間",
+    "paid_leave_rate": "%",
+    "turnover_rate": "%",
+    "male_childcare_leave_rate": "%",
+    "revenue_growth": "%",
+    "operating_margin": "%",
+    "equity_ratio": "%",
+}
+# 採点には使わないが拘束時間の算定に要る補助指標。軸キー以外で許すキーはこれだけである。
+AUXILIARY_METRIC_UNITS = {"avg_paid_leave_days_taken": "日"}
+COMPANY_METRIC_UNITS = {**QUANTITATIVE_AXIS_UNITS, **AUXILIARY_METRIC_UNITS}
 
 
 @dataclass
@@ -82,43 +85,58 @@ def _is_number(value: Any) -> bool:
     return not isinstance(value, bool) and isinstance(value, (int, float))
 
 
-def _validate_workstyle_metrics(document: dict, result: ValidationResult) -> None:
-    """任意フィールド workstyle_metrics を検査する（加算的・後方互換）。
+def _validate_company_metrics(document: dict, result: ValidationResult) -> None:
+    """必須フィールド company_metrics（定量候補軸の実測値）の構造・単位・出典を検査する。
 
-    - workstyle_metrics 全体の欠落は WARN（後方互換。既存スキーマは必須にしない）。
-    - workstyle_metrics が存在してオブジェクトでない場合は ERROR。
-    - 各メトリックは {value(number), source_url(str), grade(A〜D)} または null。
-      欠落・null は WARN。存在時の型・グレード不正は ERROR。
+    実測値が出典の記載と一致するかは機械検査せず、独立監査（job-change-research-auditor）の
+    領分とする。仕様の原本は references/company-score-rubric.md。
     """
-    if "workstyle_metrics" not in document:
-        result.add_warning(
-            "workstyle_metrics",
-            "働き方数値の構造化（workstyle_metrics）が無い。可能な範囲で構造化することを推奨する",
+    if "company_metrics" not in document:
+        result.add_error(
+            "company_metrics",
+            "company_metrics（定量候補軸の実測値）は必須である。"
+            "確認できなかった軸は value を null にして枠を残す",
         )
         return
-    metrics = document.get("workstyle_metrics")
+    metrics = document.get("company_metrics")
     if not isinstance(metrics, dict):
-        result.add_error("workstyle_metrics", "workstyle_metrics はオブジェクトでなければならない")
+        result.add_error("company_metrics", "company_metrics はオブジェクトでなければならない")
         return
-    for key in WORKSTYLE_METRIC_KEYS:
-        path = f"workstyle_metrics.{key}"
-        if key not in metrics or metrics[key] is None:
-            result.add_warning(path, f"{key} が未設定（null）である")
+
+    for key, entry in metrics.items():
+        path = f"company_metrics.{key}"
+        unit = COMPANY_METRIC_UNITS.get(key)
+        if unit is None:
+            result.add_error(
+                path,
+                f"キーは定量候補軸 {sorted(QUANTITATIVE_AXIS_UNITS)} "
+                f"または {sorted(AUXILIARY_METRIC_UNITS)} でなければならない（実値: {key!r}）",
+            )
             continue
-        entry = metrics[key]
         if not isinstance(entry, dict):
             result.add_error(
                 path,
-                "{value, source_url, grade} のオブジェクトまたは null でなければならない",
+                "各項目は {value, unit, source_url, grade, as_of} のオブジェクトでなければならない",
             )
             continue
-        if not _is_number(entry.get("value")):
-            result.add_error(f"{path}.value", "value は数値でなければならない")
+
+        value = entry.get("value")
+        if value is not None and not _is_number(value):
+            result.add_error(f"{path}.value", "value は数値または null でなければならない")
+        if entry.get("unit") != unit:
+            result.add_error(
+                f"{path}.unit",
+                f"unit は {unit!r} でなければならない（実値: {entry.get('unit')!r}）",
+            )
+        if value is None:
+            continue
+
         url = entry.get("source_url")
         if not isinstance(url, str) or not url.startswith("http"):
             result.add_error(
                 f"{path}.source_url",
-                f"source_url は http で始まる文字列でなければならない（実値: {url!r}）",
+                "value が非 null の項目は source_url が必須である"
+                f"（http で始まる文字列。実値: {url!r}）",
             )
         grade = entry.get("grade")
         if grade not in VALID_GRADES:
@@ -126,90 +144,18 @@ def _validate_workstyle_metrics(document: dict, result: ValidationResult) -> Non
                 f"{path}.grade",
                 f"grade は A・B・C・D のいずれかでなければならない（実値: {grade!r}）",
             )
+        if not _is_nonempty_str(entry.get("as_of")):
+            result.add_warning(f"{path}.as_of", "その値が指す時点（as_of）が未設定である")
 
-
-def _validate_tier(
-    document: dict, result: ValidationResult, claim_ids_present: set[str]
-) -> None:
-    """必須フィールド tier（企業品質の格付け）の構造・列挙・参照を検査する。
-
-    格付けそのものの妥当性（rating が証拠グレードに照らして妥当か、level が4軸から
-    基準どおり導かれているか）は機械検査せず、独立監査（job-change-research-auditor）の
-    領分とする。仕様の原本は references/tier-rubric.md。
-    """
-    if "tier" not in document:
-        result.add_error(
-            "tier",
-            "tier（企業品質の格付け）は必須である。references/tier-rubric.md に従って付す",
+    has_axis_value = any(
+        isinstance(metrics.get(axis), dict) and metrics[axis].get("value") is not None
+        for axis in QUANTITATIVE_AXIS_UNITS
+    )
+    if not has_axis_value:
+        result.add_warning(
+            "company_metrics",
+            "定量候補軸の実測値が1件も無い。指示された軸の指標を収集することを推奨する",
         )
-        return
-    tier = document.get("tier")
-    if not isinstance(tier, dict):
-        result.add_error("tier", "tier はオブジェクトでなければならない")
-        return
-
-    level = tier.get("level")
-    if level not in VALID_TIER_LEVELS:
-        result.add_error(
-            "tier.level",
-            f"level は S・A・B・C のいずれかでなければならない（実値: {level!r}）",
-        )
-
-    if not isinstance(tier.get("provisional"), bool):
-        result.add_error(
-            "tier.provisional",
-            f"provisional は真偽値でなければならない（実値: {tier.get('provisional')!r}）",
-        )
-
-    if not _is_nonempty_str(tier.get("rationale")):
-        result.add_error("tier.rationale", "rationale は必須（非空）である")
-
-    if "rubric_version" not in tier:
-        result.add_warning("tier.rubric_version", "rubric_version が未設定である")
-    if not _is_nonempty_str(tier.get("assessed_date")):
-        result.add_warning("tier.assessed_date", "assessed_date が未設定である")
-
-    axes = tier.get("axes")
-    if not isinstance(axes, dict):
-        result.add_error("tier.axes", "axes はオブジェクトが必須である（4軸すべてを持つ）")
-        return
-
-    for axis in TIER_AXES:
-        apath = f"tier.axes.{axis}"
-        if axis not in axes:
-            result.add_error(apath, f"軸 {axis} が無い（4軸すべてが必須である）")
-            continue
-        entry = axes[axis]
-        if not isinstance(entry, dict):
-            result.add_error(
-                apath, "各軸は {rating, basis, claim_ids} のオブジェクトでなければならない"
-            )
-            continue
-
-        rating = entry.get("rating")
-        if rating not in VALID_AXIS_RATINGS:
-            result.add_error(
-                f"{apath}.rating",
-                f"rating は high・medium・low・unknown のいずれかでなければならない（実値: {rating!r}）",
-            )
-        if not _is_nonempty_str(entry.get("basis")):
-            result.add_error(f"{apath}.basis", "basis は必須（非空）である")
-
-        claim_ids = entry.get("claim_ids")
-        if not isinstance(claim_ids, list):
-            result.add_error(f"{apath}.claim_ids", "claim_ids は配列でなければならない")
-        else:
-            for cid in claim_ids:
-                if cid not in claim_ids_present:
-                    result.add_error(
-                        f"{apath}.claim_ids",
-                        f"claims に存在しない claim id を参照している（{cid!r}）",
-                    )
-            if rating in RATED_AXIS_RATINGS and not claim_ids:
-                result.add_warning(
-                    f"{apath}.claim_ids",
-                    f"rating={rating} の軸に根拠 claim_ids が無い。根拠 claim の id を1件以上示すことを推奨する",
-                )
 
 
 def _validate_company(document: dict, result: ValidationResult) -> None:
@@ -324,11 +270,9 @@ def validate(document: Any) -> ValidationResult:
     if not _is_nonempty_str(document.get("research_date")):
         result.add_warning("research_date", "research_date が未設定である")
 
-    _validate_workstyle_metrics(document, result)
+    _validate_company_metrics(document, result)
 
     claims = document.get("claims")
-    # tier の claim_ids 参照検査に使う、実在する claim id の集合。
-    claim_ids_present: set[str] = set()
     if not isinstance(claims, list) or not claims:
         result.add_error("claims", "claims は1件以上必要である")
     else:
@@ -336,8 +280,6 @@ def validate(document: Any) -> ValidationResult:
         topic_low_only: dict[str, list[bool]] = {}
         for i, claim in enumerate(claims):
             info = _validate_claim(claim, i, result)
-            if isinstance(claim, dict) and _is_nonempty_str(claim.get("id")):
-                claim_ids_present.add(claim["id"])
             if info is None or info["topic"] is None:
                 continue
             topic_low_only.setdefault(info["topic"], []).append(info["low_only"])
@@ -368,8 +310,6 @@ def validate(document: Any) -> ValidationResult:
                 "selection_process の claim が0件である。"
                 "選考プロセス・面接体験記の収集を推奨する（面接対策の根拠になる）",
             )
-
-    _validate_tier(document, result, claim_ids_present)
 
     return result
 

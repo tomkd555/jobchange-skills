@@ -27,7 +27,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 ## 入力（指示書から受領する）
 
 - 実行するステップ（1 または 3）。
-- profile.json の絶対パス。company_research.json（あれば）・self_analysis.json（あれば）・求人票（あれば）の絶対パス。
+- profile.json の絶対パス。company_research.json（あれば）・self_analysis.json（あれば）・fit_assessment.json（あれば）・exam_assessment.json（あれば）・求人票（あれば）の絶対パス。
 - Step 3 では、加えて評価対象の質問一覧と利用者の回答。
 
 実行するステップまたは profile.json が欠けている場合（Step 3 では加えて質問一覧・回答が欠けている場合）は、推測で補わず `{"error": "欠けている項目"}` の JSON だけを返す。company_research.json が無い場合はエラーとせず、後述の縮退動作とする。
@@ -54,6 +54,8 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 2. profile.json の職歴・実績と、求人票の要件を突き合わせる。
 3. 質問類型ごとに、抽出した企業固有の要素と profile.json の内容を組み合わせた想定質問を生成する。各質問に、面接官がその質問で確認しようとする評価観点（interviewer_intent）と、根拠（company_research の claim id または profile の該当箇所）を付す。
 4. company_research.json が無い場合は、企業非依存の一般質問類型で縮退し、出力 JSON に degraded: true とその理由を付す。企業固有の claim を根拠に用いる質問は生成しない。
+5. fit_assessment.json がある場合は、`condition_fit` の `met: "unknown"` の項目と `overall.open_questions` を、逆質問・確認事項の質問素材に加える。exam_assessment.json がある場合は、特定された検査種別と選考の段取りを、面接が選考のどの段階にあたるかを判断する前提として用いる。いずれも任意入力であり、無い場合は company_research.json と profile.json だけを素材とする。
+6. company_research.json はあるが topic=selection_process の claims が0件の場合は、選考プロセスを前提とする質問（面接の回数・形式・各段階の評価観点を既知として扱う質問）を生成しない。topic=philosophy などの claims だけを根拠に企業固有の質問を作り、degraded: true とし、degraded_reason に選考プロセスの claims が0件である旨を書く。claims が0件であることを、選考が単純であることの根拠にしない。
 
 ## 手順（Step 3: 回答の評価とフィードバック）
 

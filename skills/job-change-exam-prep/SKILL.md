@@ -12,7 +12,7 @@ description: >-
   study plan, and practicing question formats.
   trigger words: 適性検査, 適性検査対策, 筆記試験, SPI, SPI3, 玉手箱, GAB, CAB, TG-WEB, TAL,
   内田クレペリン, WEBテスト, テストセンター, ケース面接, フェルミ推定。
-allowed-tools: Read, Write, Glob, Grep, Agent, AskUserQuestion
+allowed-tools: Read, Write, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
 ---
 
 # job-change-exam-prep
@@ -25,11 +25,11 @@ allowed-tools: Read, Write, Glob, Grep, Agent, AskUserQuestion
 
 1. **検査種別を先に特定する。** 対策は検査種別に依存するため、種別が定まらないまま学習項目を決めない。受検案内 URL があれば `references/domain-detection.md` のドメイン判別で系統を即時に絞り、`job-change-exam-scout` の調査で種別を確定・補強する。確定情報（採用ページ等での明記）と推定（選考体験記からの類推）を区別し、推定を確定であるかのように書かない。
 
-2. **対策は検査種別ごとに分ける。** 能力検査（SPI3・玉手箱・TG-WEB・GAB・CAB 等）は反復練習で得点が上がる。認知能力検査の再受検・コーチングによる得点上昇はメタ分析で d≈0.26 と報告される（単一メタ分析由来。`references/prep-methods.md` に出典と DOI）。一方、性格検査・TAL・内田クレペリンは対策可能性が限定的であり、このうち性格検査では一貫した正直な回答が推奨される。回答のゆがみ（faking）が妥当性へ与える影響は学術的に未決着であり、両論は `references/prep-methods.md` に併記する。この対策差の原本は `references/prep-methods.md` である。
+2. **対策は検査種別ごとに分ける。** 能力検査（SPI3・玉手箱・TG-WEB・GAB・CAB 等）は反復練習で得点が上がる。一方、性格検査・TAL・内田クレペリンは対策可能性が限定的であり、このうち性格検査では一貫した正直な回答が推奨される。回答のゆがみ（faking）が妥当性へ与える影響は学術的に未決着であり、両論は `references/prep-methods.md` に併記する。この対策差の原本は `references/prep-methods.md` である。
 
 3. **実在の検査問題を複製しない。** 演習は `references/assessment-catalog.md` の出題形式知識に基づき、形式を模した自作問題で行う。実在の検査問題・著作物の複製、受検代行、替え玉受検は行わない。
 
-4. **個人情報を外部へ送信しない。** `job-change-exam-scout` は WebSearch・WebFetch を持つため、`profile.json` の内容（現年収・居住地・学歴・在籍企業名・実績等）をこのエージェントへ渡さない。Step 1 の指示書には企業名・応募職種・求人票のみを渡す。本スキルは `profile.json` を必須の前提とせず、職種などを背景として参照する場合も、その内容を Web 送信手段を持つ手順へ回さない。
+4. **個人情報を外部へ送信しない。** `job-change-exam-scout` は WebSearch・WebFetch を持つため、`profile.json` に含まれる個人情報（氏名・現年収・希望年収・居住地・学歴・在籍企業名・実績など）をこのエージェントへ渡さない。Step 1 の指示書には企業名・応募職種・求人票のみを渡す。本スキルは `profile.json` を必須の前提とせず、職種などを背景として参照する場合も、その内容を Web 送信手段を持つ手順へ回さない。
 
 5. **ベンダー公表値は自己報告として扱う。** 検査提供元や対策媒体が公表する完了率・データ件数などの数値は、独立検証を経ていない自己報告値として扱い、断定の根拠にしない。
 
@@ -52,7 +52,7 @@ hub（job-change-support）から振り分けられた場合は、hub が解決�
 2. カレントディレクトリから上位へたどった最初の `.job-change/config.json`
 3. `~/.job-change/config.json`
 
-いずれの場所にも設定ファイルが無ければ未設定である。その場合は作業へ進まず、hub（job-change-support）へ戻して設定の作成を先行させる。
+いずれの場所にも設定ファイルが無ければ未設定である。その場合は作業へ進まず、Skill ツールで `job-change-support` を起動して設定を作らせ、`{DATA_ROOT}` を解決してから戻る。
 
 `{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。設定ファイルの仕様は `docs/configuration.md` にある。
 
@@ -89,7 +89,8 @@ Step 0 から Step 3 を順に進める。
 
 `job-change-exam-scout` エージェント（model: sonnet）を Agent ツールで起動し、対象企業の中途採用で使われる検査種別を調査させる。
 
-- 指示書に渡すもの: 企業名（正式名称）・応募職種（あれば）・求人票（あれば）。`profile.json` は渡さない（原則 4）。
+- 指示書に渡すもの: 企業名（正式名称）・応募職種（あれば）・求人票（あれば）。`companies/{企業スラッグ}/company_research.json` があれば、topic=selection_process の claims の要約（主張・出典URL・証拠グレード）も渡す。既に集めた証拠を捨てて調査をやり直させないためである。この要約は企業についての公開情報であり個人情報を含まないため、Web ツールを持つ調査担当へ渡してよい。`profile.json` は渡さない（原則 4）。
+- 調査結果が、渡した claims と食い違う場合は、証拠グレードの高いほうを採る。同じグレードなら調査日の新しいほうを採り、`exam_assessment.json` の備考に双方の主張と採否の理由を残す。
 - 出力先: エージェントは `{DATA_ROOT}/companies/{企業スラッグ}/exam_assessment.json` へ結果を書き出し、同一の JSON を返す。
 - 出力 JSON の骨格（原本はエージェント定義）:
 
@@ -173,7 +174,7 @@ Step 0 から Step 3 を順に進める。
 |---|---|---|
 | `job-change-exam-scout` | sonnet | 対象企業の検査種別の調査（種別・実施段階・根拠 URL・確度・出題形式・推奨対策） |
 
-検査種別の調査は Web 上の選考体験記・採用ページの収集と整理が中心で、判断難度が中程度であるため sonnet とする。model はエージェント定義の frontmatter に固定済みであり、起動時に上書きしない。
+model はエージェント定義の frontmatter に固定済みであり、起動時に上書きしない。
 
 ## references 一覧
 
