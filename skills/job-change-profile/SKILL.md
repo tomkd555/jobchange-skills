@@ -34,7 +34,7 @@ profile.json の中核は、職務経歴・実績・スキルの内容と、そ�
 
 6. **事実を創作・補完しない。** profile.json に載せる経歴・実績・数値は、聞き取りメモに記録のある範囲に限る。実績値・期間・役職を推測で補完しない。経歴の詐称は懲戒・内定取消につながり、社会保険等の突合で高い確率で発覚する（`references/profile-methods.md`）。
 
-7. **個人情報を外部へ送信しない。** profile.json に含まれる個人情報（現年収・希望年収・居住地・学歴・在籍企業名・実績など）は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。非公開ディレクトリ `career-private/` 配下のパス（`profile.json`・`profile_interview_notes.md`）は、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ一切渡さない。本スキルの writer・auditor は Web 送信手段を持たないため、これらのパスを渡してよい。
+7. **個人情報を外部へ送信しない。** profile.json に含まれる個人情報（氏名・現年収・希望年収・居住地・学歴・在籍企業名・実績など）は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。非公開ディレクトリ `career-private/` 配下のパス（`profile.json`・`profile_interview_notes.md`）は、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ一切渡さない。本スキルの writer・auditor は Web 送信手段を持たないため、これらのパスを渡してよい。
 
 ## 範囲外
 

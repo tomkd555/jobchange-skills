@@ -32,7 +32,7 @@ allowed-tools: Read, Write, Glob, Grep, Bash, AskUserQuestion, Agent, Skill
 
 4. **事実を創作・誇張しない。** 成果物に載せる経歴・実績・数値は profile.json に記載のある範囲に限る。behavioral_episodes の `metric`（定量値）は profile.json の実績と厳密一致させ、丸め・上振れをしない。規模・範囲・主体を表す語（大規模・全社・主導など）は、profile.json の記述で裏付けられる範囲を超えて用いない。
 
-5. **個人情報を外部へ送信しない。** `profile.json`・`self_analysis.json` に含まれる個人情報（現年収・希望年収・居住地・学歴・在籍企業名・実績など）は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。非公開ディレクトリ `career-private/` 配下のパス（`profile.json`・`self_analysis.json`）は、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ一切渡さない。本スキルの writer・auditor は Web 送信手段を持たないため、これらのパスを渡してよい。
+5. **個人情報を外部へ送信しない。** `profile.json`・`self_analysis.json` に含まれる個人情報（氏名・現年収・希望年収・居住地・学歴・在籍企業名・実績など）は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。非公開ディレクトリ `career-private/` 配下のパス（`profile.json`・`self_analysis.json`）は、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ一切渡さない。本スキルの writer・auditor は Web 送信手段を持たないため、これらのパスを渡してよい。
 
 ## 範囲外
 

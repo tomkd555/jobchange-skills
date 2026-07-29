@@ -112,7 +112,7 @@ Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-chan
 
 パイプラインには2つのゲートがある。
 
-- Step 0 のプロファイルゲート（必須）では、`validate_profile.py` が PASS でなければ Step 1 へ進まない。profile.json が未作成、または FAIL（ERROR 1件以上）の場合は、hub（job-change-support）でのプロファイル整備を先行させ、PASS を確認してから戻る。
+- Step 0 のプロファイルゲート（必須）では、`validate_profile.py` が PASS でなければ Step 1 へ進まない。profile.json が未作成、または FAIL（ERROR 1件以上）の場合は、hub（job-change-support）でのプロファイル整備を先行させ、PASS を確認してから戻る。ただし FAIL の場合は、ERROR の内容を示し、利用者が欠落を承知で着手を希望するなら、欠けた項目の値を直接引用または前提とする質問を作らず、その項目を根拠とする評価も行わないという条件で進めてよい。どの項目が欠けたままかを報告に明記する。
 - コーチ出力ゲート（Step 1・Step 3）では、job-change-interview-coach の返す JSON が次を満たすことを確認する。満たさない場合は、不足内容を指示書へ添えてコーチを再起動する。
   - `{"error": ...}` でない（入力の欠落による返答でない）。
   - スキーマに適合する（Step 1 は `questions`、Step 3 は `evaluations`）。
