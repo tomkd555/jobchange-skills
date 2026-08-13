@@ -42,7 +42,7 @@
 ## 出典
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる区画である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
 
 - [E42] Management Consulted. BCG Case Interview | Land A BCG Career. 2026. グレードC. https://managementconsulted.com/bcg-case-interview/
 - [E43] ワンキャリア. フェルミ推定・ケース面接を対策！ポイントは「論理性・コミュ力・楽しむ姿勢」. 2026. グレードC. https://www.onecareer.jp/articles/298

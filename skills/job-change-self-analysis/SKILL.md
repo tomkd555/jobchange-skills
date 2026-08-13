@@ -28,9 +28,9 @@ allowed-tools: Read, Write, Glob, Grep, Bash, AskUserQuestion, Agent, Skill
 
 2. **有限の構造化された問いに限る（反すう防止）。** 質問は `references/question-bank.md` の有限の問いに限定し、無制限の「なぜ」の反復を促さない。深掘りは感情の反すうへ落とさず、必ず行動・事実（エピソード）へ対応づける。感情の将来予測（「転職すれば幸せになれる」）を確信・断定の根拠にしない。
 
-3. **診断結果を確定ラベルとして扱わない。** 妥当性の弱い枠組み（Schein のキャリア・アンカー、商用の strengths ツール、RIASEC 自己診断ツール）は、内省を促す呼び水として限定的に使い、結果を「確定した自分」として扱わない。実務手法（Will-Can-Must・モチベーショングラフ・他己分析・ジョハリの窓）は進行の足場として使い、その出力は内省・行動・他者証言で裏付けてから成果物へ採り入れる。
+3. **診断結果を確定ラベルとして扱わない。** 妥当性の弱い枠組み（Schein のキャリア・アンカー、商用の strengths ツール、RIASEC 自己診断ツール）は、内省を促す呼び水として限定的に使い、結果を「確定した自分」として扱わない。実務手法（Will-Can-Must・モチベーショングラフ・他己分析・ジョハリの窓）は進行の足場として使い、その出力は内省・行動・他者証言で裏付けてから成果物へ取り入れる。
 
-4. **事実を創作・誇張しない。** 成果物に載せる経歴・実績・数値は profile.json に記載のある範囲に限る。behavioral_episodes の `metric`（定量値）は profile.json の実績と厳密一致させ、丸め・上振れをしない。規模・範囲・主体を表す語（大規模・全社・主導など）は、profile.json の記述で裏付けられる範囲を超えて用いない。
+4. **事実を創作・誇張しない。** 成果物に載せる経歴・実績・数値は profile.json に記載のある範囲に限る。behavioral_episodes の `metric`（定量値）は profile.json の実績と厳密一致させ、丸め・上振れをしない。規模・範囲・主体を表す言葉（大規模・全社・主導など）は、profile.json の記述で裏付けられる範囲を超えて用いない。
 
 5. **個人情報を外部へ送信しない。** `profile.json`・`self_analysis.json` に含まれる個人情報（氏名・現年収・希望年収・居住地・学歴・在籍企業名・実績など）は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。非公開ディレクトリ `career-private/` 配下のパス（`profile.json`・`self_analysis.json`）は、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ一切渡さない。本スキルの writer・auditor は Web 送信手段を持たないため、これらのパスを渡してよい。
 
@@ -108,7 +108,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 ### Step 6 反映と接続案内
 
-`profile.json` へ、`strengths`（self_analysis の strengths.statement の短文）と `job_change_axis.reasons`（constructive_version 基調）を値のみ反映する。profile.json のスキーマは変更しない。反映後に hub の `validate_profile.py` を再実行して PASS を確認し、profile.json の `updated_at` を当日の日付へ書き換える。最後に、`self_analysis.json` を入力に使える下流の作業（`job-change-documents` の志望動機の深化、`job-change-interview-prep` の一貫性ある回答）を案内する。
+`profile.json` へ、`strengths`（self_analysis の strengths.statement の短文）と `job_change_axis.reasons`（constructive_version に基づく文言）を値のみ反映する。profile.json のスキーマは変更しない。反映後に hub の `validate_profile.py` を再実行して PASS を確認し、profile.json の `updated_at` を当日の日付へ書き換える。最後に、`self_analysis.json` を入力に使える下流の作業（`job-change-documents` の志望動機の深化、`job-change-interview-prep` の一貫性ある回答）を案内する。
 
 ## 合否ゲートと差し戻し
 
@@ -130,7 +130,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | `job-change-self-analysis-writer` | `{SKILL_DIR}/references/roles/self-analysis-writer.md` |
 | `job-change-self-analysis-auditor` | `{SKILL_DIR}/references/roles/self-analysis-auditor.md` |
 
-**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` から同期生成されている。
+**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` の写しである。
 
 **サブエージェントを起動できないハーネス（Codex ほか）。** 各 Step の「エージェントを起動する」を「役割プロンプトを読み、その役割として自分で実行する」と読み替える。手順は次のとおり。
 

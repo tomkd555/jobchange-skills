@@ -174,7 +174,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 
 企業スコア（0〜100点）の採点に使う軸と重みの申告である。トップレベルの任意の配列であり、`schema_version` が `2.0` のときにだけ有効である。`1.0` / `1.1` にはこのフィールドが無く、書かれていても検査しない。
 
-定量候補軸9個・点数への写し方・重みの配分の規則の原本は `job-change-company-research/references/company-score-rubric.md` にある。企業研究へ渡すのは、`kind` が `quantitative` の軸の識別子の配列だけである。`weight`・`thresholds` と、定性軸の `label`・`definition`・`judgment` は渡さない。定性軸の記述は利用者が自分の言葉で書いたものであり、Web ツールを持つエージェントへ渡さない。
+定量候補軸9個・点数への換算・重みの配分の規則の原本は `job-change-company-research/references/company-score-rubric.md` にある。企業研究へ渡すのは、`kind` が `quantitative` の軸の識別子の配列だけである。`weight`・`thresholds` と、定性軸の `label`・`definition`・`judgment` は渡さない。定性軸の記述は利用者が自分の言葉で書いたものであり、Web ツールを持つエージェントへ渡さない。
 
 ```json
 "company_score_axes": [
@@ -222,7 +222,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `score` | integer | 必須 | その条件に合致したときの点数。0以上100以下の整数。他の値は ERROR |
 | `condition` | string | 必須 | 何が確認できたらその点数かを書く。空は ERROR |
 
-`score` の降順に並べ、上から順に条件を当てはめて最初に合致したものを採る。降順に並んでいなければ WARN とする。どの条件にも当てはまらない場合の点数は `null`（判定できない）とし、中間の点数を推測で置かない。
+`score` の降順に並べ、上から順に条件を当てはめて最初に合致したものを採用する。降順に並んでいなければ WARN とする。どの条件にも当てはまらない場合の点数は `null`（判定できない）とし、中間の点数を推測で置かない。
 
 定性軸は、`label`・`definition`・`judgment` のすべてがそろって初めて採点に入る。判定条件を書けない事柄は採点に入れず、面接での確認事項へ回す。
 
@@ -296,7 +296,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 `schema_version` が `2.0` のときは、次も WARN とする。
 
 - `conditions` に `level=must` が1件もない（必須条件がないと求人検索の選別が働かない）
-- 同じ `axis` に `level=must` の条件が複数ある（判定では最も厳しいしきい値を採る）
+- 同じ `axis` に `level=must` の条件が複数ある（判定では最も厳しいしきい値を採用する）
 - `level=must` の条件に `priority` がない、または `priority` が重複している
 - `must_conditions` / `want_conditions` が空でないまま残っている（移行漏れ）
 - 必須の年収下限が `salary.desired` を上回っている
@@ -311,7 +311,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `1.0` / `1.1` | 従来の検査規則だけを適用する。`conditions` / `work_character_preferences` の欠落を検査せず、`company_score_axes` も検査しない。移行を促す WARN を1件出す |
 | `2.0` | 従来の規則に加え、上記の 2.0 規則を適用する |
 
-**1.x のプロファイルは、そのままでも検証を PASS する。** 門番は壊れない。ただし 1.x のままでは下流が縮退動作になる。
+**1.x のプロファイルは、そのままでも検証を PASS する。** ゲートは壊れない。ただし 1.x のままでは下流が縮退動作になる。
 
 | スキル | 1.x のときの動き |
 |---|---|

@@ -59,14 +59,14 @@ reason_for_change は、不満の列挙（raw_reasons）を、発揮したい価
 
 接続の運用:
 
-1. STAR素材（behavioral_episodes）は、metric（定量値）と reproducibility（再現性）を備えると、企業の「能力の客観評価基準の欠如」[E25]という課題への接点になる。
+1. STAR素材（behavioral_episodes）は、metric（定量値）と reproducibility（再現性）を備えると、企業の「能力を客観的に評価する基準の欠如」[E25]という課題への接点になる。
 2. career_narrative と reason_for_change.constructive_version は、面接の「一貫性」の観点（interview-prep が評価する）と、志望動機（documents が書く）の根拠として渡す。
 3. 志望動機を最上位の決め手として扱わない。企業により重みが変わるため、人柄・相性・実績の裏付け（エピソード・他者証言）を併せて用意する。
 
 ## 出典一覧
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる区画である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
 
 - [E24] 厚生労働省. 令和2年転職者実態調査の概況（採用時の問題 84.1%）. 2021-12. グレードA. https://www.mhlw.go.jp/toukei/list/dl/6-18c-r02-gaikyo.pdf
 - [E25] 厚生労働省. 令和2年転職者実態調査の概況（問題の内訳）. 2021-12. グレードA. https://www.mhlw.go.jp/toukei/list/6-18c-r02.html

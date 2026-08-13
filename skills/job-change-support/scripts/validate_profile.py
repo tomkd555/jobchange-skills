@@ -449,7 +449,7 @@ def _validate_conditions(axis: dict, result: ValidationResult) -> None:
         if count > 1:
             result.add_warning(
                 "job_change_axis.conditions",
-                f"同じ軸に必須条件が{count}件ある（axis={axis_id}）。判定では最も厳しいしきい値を採る",
+                f"同じ軸に必須条件が{count}件ある（axis={axis_id}）。判定では最も厳しいしきい値を採用する",
             )
 
     must_list = _must_conditions(axis)

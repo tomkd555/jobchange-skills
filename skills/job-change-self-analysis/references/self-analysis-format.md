@@ -2,7 +2,7 @@
 
 job-change-self-analysis スキルにおける、自己分析成果物 self_analysis.json の原本である。`scripts/validate_self_analysis.py` の実装は、この仕様に厳密に従う。
 
-self_analysis.json は、profile.json（利用者データの原本。hub が管理）を土台に、強み・キャリアの軸を行動証拠と他者視点で根拠づけて深化させた成果物である。面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が入力として読む。profile.json のスキーマは変更しない。その結果は profile.json の `strengths`（短文）と `job_change_axis.reasons`（constructive_version に基づく文言）へ値のみ反映する。
+self_analysis.json は、profile.json（利用者データの原本。hub が管理）を土台に、強み・キャリアの軸を行動証拠と他者視点で根拠づけて深化させた成果物である。面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が入力として読む。profile.json のスキーマは変更しない。自己分析の結果は profile.json の `strengths`（短文）と `job_change_axis.reasons`（constructive_version に基づく文言）へ値のみ反映する。
 
 ## 配置
 

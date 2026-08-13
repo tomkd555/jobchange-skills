@@ -21,7 +21,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 ## 目的と原則
 
-1. **実績は profile.json の範囲内でのみ書く。** 書類に載せる経歴・実績・数値は、すべて `profile.json` に記載のある範囲に限る。記載のない実績・経歴を創作しない（虚偽記載の禁止）。定量値は `profile.json` の `achievements[].metric` と厳密一致させ、丸め・上振れをしない。規模・範囲・主体を表す語（大規模・全社・主導など）は、`profile.json` の記述で裏付けられる範囲を超えて用いない。
+1. **実績は profile.json の範囲内でのみ書く。** 書類に載せる経歴・実績・数値は、すべて `profile.json` に記載のある範囲に限る。記載のない実績・経歴を創作しない（虚偽記載の禁止）。定量値は `profile.json` の `achievements[].metric` と厳密一致させ、丸め・上振れをしない。規模・範囲・主体を表す言葉（大規模・全社・主導など）は、`profile.json` の記述で裏付けられる範囲を超えて用いない。
 
 2. **求人要件と実績を対応づけてから書く。** 起草の前に、求人要件と `profile.json` の実績を突き合わせたアピールマッピング（要件・対応する実績・裏付け）を作る。訴求点は必ず求人要件に対応づける。要件に対応する実績が profile.json に無い項目は、該当なしとして扱い、創作で埋めない。
 
@@ -106,7 +106,7 @@ self_analysis.json の確認は任意である。
 
 fit_assessment.json の確認は任意である。
 
-- `career-private/fit/{企業スラッグ}/fit_assessment.json` の有無を確認する。あればアピールマッピングの訴求点選定に、`dimensions` の `evidence` と `must_condition_results` を参照材料として加える。無くても進行できる（求人要件と `profile.json` の実績の突き合わせのみで進める）。fit_assessment.json は career-private 配下の成果物であり、Web ツール保持エージェントへは渡さない。
+- `career-private/fit/{企業スラッグ}/fit_assessment.json` の有無を確認する。あればアピールマッピングの訴求点選定に、`dimensions` の `evidence` と `must_condition_results` を参照材料として加える。無くても進行できる（求人要件と `profile.json` の実績の突き合わせのみで進める）。fit_assessment.json は career-private 配下の成果物であり、Web ツールを持つエージェントへは渡さない。
 
 ### Step 1 起草
 
@@ -116,7 +116,7 @@ fit_assessment.json の確認は任意である。
 
 起草担当には次を行う責務がある。求人要件と（あれば）企業研究の理念・求める人物像を抽出し、`profile.json` の実績と突き合わせてアピールマッピングを作り、書類種別ごとの標準形式を理由とともに選定して起草する。書類は `{OUT_DIR}` の下に書き出す。`company_research.json` が無い場合は企業固有の調整をせず、その旨を成果物と出力 JSON（`company_research_used: false`・`degraded_reason`）に明記する。`fit_assessment.json` がある場合、アピールマッピングの訴求点選定に `dimensions` の `evidence` と `must_condition_results` を参照材料として加える。無い場合は求人要件と `profile.json` の実績の突き合わせのみで進める。
 
-志望動機書・自己PRでは、`self_analysis.json` がある場合、`career_narrative`（ライフテーマ・一貫する動機）と根拠付きの `strengths`（episode_id・feedback_id に対応づけられた強み）、`reason_for_change.constructive_version`（発揮したい価値を軸にした転職理由の言い換え）を、profile.json の実績と併せて素材に用いる。`self_analysis.json` が無い場合は profile.json の `strengths`・`job_change_axis.reasons` のみを素材とし、この場合は、企業固有の調整のときとは異なり、縮退した旨を明示する必要はない。
+志望動機書・自己PRでは、`self_analysis.json` がある場合、`career_narrative`（ライフテーマ・一貫する動機）と根拠付きの `strengths`（episode_id・feedback_id に対応づけられた強み）、`reason_for_change.constructive_version`（発揮したい価値を軸にした転職理由の言い換え）を、profile.json の実績と併せて素材に用いる。`self_analysis.json` が無い場合は profile.json の `strengths`・`job_change_axis.reasons` のみを素材とする。この場合は、企業固有の調整のときとは異なり、縮退した旨を明示する必要はない。
 
 ### Step 2 独立監査
 
@@ -125,7 +125,7 @@ fit_assessment.json の確認は任意である。
 監査担当が検査するのは次の4点である。
 
 - **和文の文法と表記。** 職務経歴書・履歴書・志望動機書を対象に、役割プロンプトの「判断の原本」に挙げた観点（助詞・主述の対応・係り受け・並列・冗長表現・表記揺れ・誤字脱字）で見る。
-- **誇張・創作。** `profile.json` と突き合わせ、記載のない実績・数値、metric との不一致、裏付けを超えた規模・範囲・主体の語を検出する。
+- **誇張・創作。** `profile.json` と突き合わせ、記載のない実績・数値、metric との不一致、裏付けを超えた規模・範囲・主体の言葉を検出する。
 - **求人要件との対応・定量性・分量。**
 - **英文レジュメ。** 英語の文法・時制、アクション動詞（action verb）の適否（動詞始まり・主語省略）、定量性、ATS適合（表・画像・グラフィックの回避、求人票キーワードとの文脈整合）、分量（1〜2枚）を見る。和文の文法・表記の検査は対象外とする。
 
@@ -170,7 +170,7 @@ fit_assessment.json の確認は任意である。
 | `job-change-document-writer` | `{SKILL_DIR}/references/roles/document-writer.md` |
 | `job-change-document-auditor` | `{SKILL_DIR}/references/roles/document-auditor.md` |
 
-**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` から同期生成されている。
+**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` の写しである。
 
 **サブエージェントを起動できないハーネス（Codex ほか）。** 各 Step の「エージェントを起動する」を「役割プロンプトを読み、その役割として自分で実行する」と読み替える。手順は次のとおり。
 
@@ -179,7 +179,7 @@ fit_assessment.json の確認は任意である。
 3. 役割プロンプトの「扱ってよい入力」のルールを守る。Web 送信手段を持たない役割として書かれている場合、その作業中は Web 検索・fetch を使わない。
 4. 成果物の形式・検証・合否ゲートは、ハーネスによらず同一である。
 
-本スキルは起草と監査を別の役割へ分け、監査者に起草者の判断理由を渡さないことで独立性を保つ。サブエージェントを使えないハーネスでは、同一の文脈で両方を担うためこの独立性が下がる。その場合、監査の段では起草時の判断理由・迷った箇所・書き換えの経緯を一切参照せず、成果物と原本（`references/` の仕様）だけを見て判定する。判定を終えるまで、起草側の意図を補って読まない。
+本スキルは起草と監査を別の役割へ分け、監査者に起草者の判断理由を渡さないことで独立性を保つ。サブエージェントを使えないハーネスでは、同一の文脈で両方を担うためこの独立性が下がる。その場合、監査の段階では起草時の判断理由・迷った箇所・書き換えの経緯を一切参照せず、成果物と原本（`references/` の仕様）だけを見て判定する。判定を終えるまで、起草側の意図を補って読まない。
 
 ## エージェントのモデル方針
 

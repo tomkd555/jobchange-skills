@@ -108,7 +108,7 @@ topic は `philosophy`・`business`・`financials`・`compensation`・`benefits`
 
 ### Step 0.5 求人票の取込（必須）
 
-企業ごとの工程の1段目である。ここで作る `job_posting.json` は、この後の企業研究と適合性評価が入力として読む。取込を飛ばして先へ進まない。
+企業ごとの工程の最初である。ここで作る `job_posting.json` は、この後の企業研究と適合性評価が入力として読む。取込を飛ばして先へ進まない。
 
 入口は4通りある。利用者が用意できる材料に応じて選び、いずれの場合も同じ `job_posting.json` を作る。仕様は `references/job-posting-format.md` にある。
 
@@ -148,7 +148,7 @@ topic は `philosophy`・`business`・`financials`・`compensation`・`benefits`
 
 重点観点は、8トピック（理念・事業・財務・給与・福利厚生・働き方・評判・選考）の強弱指定へ正規化して渡す。利用者の自由記述に含まれる個人情報（原則5の列挙）は指示書に含めず、該当トピックの強弱指定へ言い換える。
 
-**profile.json は渡さない**（原則5。researcher は WebSearch・WebFetch を持つため）。Step 0.5 で job_posting.json を作った場合は、その所在を指示書に渡し、選考プロセス・求める人物像の照合に使わせる。エージェントは `references/evidence-grading.md`・`references/company-research-format.md`・`references/source-catalog.md`・`references/philosophy-analysis.md`・`references/compensation-benefits.md`・`references/company-score-rubric.md` を原本とし、これらに従って、収集した主張を claims 配列へ集約する。平均年間給与・年間休日・月平均残業・有給取得率・離職率などの数値は、散文の claim に埋めるだけでなく `company_metrics` へ構造化して格納する（単位・出典URL・グレード併記。確認できなければ value を null）。
+**profile.json は渡さない**（原則5。researcher は WebSearch・WebFetch を持つため）。Step 0.5 で job_posting.json を作った場合は、その所在を指示書に渡し、選考プロセス・求める人物像の照合に使わせる。エージェントは `references/evidence-grading.md`・`references/company-research-format.md`・`references/source-catalog.md`・`references/philosophy-analysis.md`・`references/compensation-benefits.md`・`references/company-score-rubric.md` を原本とする。これらに従い、収集した主張を claims 配列へ集約する。平均年間給与・年間休日・月平均残業・有給取得率・離職率などの数値は、散文の claim に埋めるだけでなく `company_metrics` へ構造化して格納する（単位・出典URL・グレード併記。確認できなければ value を null）。
 
 指示書で渡された軸の指標を優先して集め、`company_metrics` の各項目へ実測値と出典を書く（原則6。profile を要しない、企業側の事実の収集）。点数も格付けも付けない。重点観点として渡された事柄は、確認できた事実と出典を claims へ書く。自分で `validate_company_research.py` を PASS させてから返す（`company_metrics` の欠落・構造不正は ERROR になる）。これが本エージェントの責務である。
 
@@ -194,7 +194,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 
 ## _manifest.json の更新
 
-`companies/{企業スラッグ}/_manifest.json` は、企業別成果物の最終更新日と、company_research のトピック別の最終調査日を記録する台帳である。本スキルはこの台帳の書き手であり、鮮度の判定そのものは hub の責務である（本スキルは判定しない）。
+`companies/{企業スラッグ}/_manifest.json` は、企業別成果物の最終更新日と、company_research のトピック別の最終調査日を持つ記録である。本スキルはこの記録の書き手であり、鮮度の判定そのものは hub の責務である（本スキルは判定しない）。
 
 構造は次のとおり。トピック名は company_research の既存トピック名（`philosophy`・`business`・`financials`・`compensation`・`benefits`・`workstyle`・`reputation`・`selection_process`）を使う。
 
@@ -225,7 +225,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 4. Step 2 の機械検証を再度通す（PASS を確認する）。
 5. `_manifest.json` の `artifacts.company_research.topics.<指定トピック>.last_researched` のみを更新する（他トピックの `last_researched` は変えない）。`updated_at` は今回の調査日にする。
 
-鮮度が切れたトピックの判定・再調査の指示は hub が行い、本スキルは指定されたトピックの再調査と台帳の更新を担う。
+鮮度が切れたトピックの判定・再調査の指示は hub が行い、本スキルは指定されたトピックの再調査と記録の更新を担う。
 
 ## 合否ゲートと差し戻し
 
@@ -248,7 +248,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 | `job-change-research-auditor` | `{SKILL_DIR}/references/roles/research-auditor.md` |
 | `job-change-posting-parser` | `{SKILL_DIR}/references/roles/posting-parser.md` |
 
-**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` から同期生成されている。
+**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` の写しである。
 
 **サブエージェントを起動できないハーネス（Codex ほか）。** 各 Step の「エージェントを起動する」を「役割プロンプトを読み、その役割として自分で実行する」と読み替える。手順は次のとおり。
 
@@ -257,7 +257,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 3. 役割プロンプトの「扱ってよい入力」のルールを守る。Web 送信手段を持たない役割として書かれている場合、その作業中は Web 検索・fetch を使わない。
 4. 成果物の形式・検証・合否ゲートは、ハーネスによらず同一である。
 
-本スキルは起草と監査を別の役割へ分け、監査者に起草者の判断理由を渡さないことで独立性を保つ。サブエージェントを使えないハーネスでは、同一の文脈で両方を担うためこの独立性が下がる。その場合、監査の段では起草時の判断理由・迷った箇所・書き換えの経緯を一切参照せず、成果物と原本（`references/` の仕様）だけを見て判定する。判定を終えるまで、起草側の意図を補って読まない。
+本スキルは起草と監査を別の役割へ分け、監査者に起草者の判断理由を渡さないことで独立性を保つ。サブエージェントを使えないハーネスでは、同一の文脈で両方を担うためこの独立性が下がる。その場合、監査の段階では起草時の判断理由・迷った箇所・書き換えの経緯を一切参照せず、成果物と原本（`references/` の仕様）だけを見て判定する。判定を終えるまで、起草側の意図を補って読まない。
 
 ## エージェントのモデル方針
 

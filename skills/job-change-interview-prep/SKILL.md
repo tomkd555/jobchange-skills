@@ -53,7 +53,7 @@ hub（job-change-support）から振り分けられた場合は、hub が解決�
 
 ## 中間成果物
 
-パイプラインの各段で次を生成する。企業を特定して進める場合（company モード）は `{DATA_ROOT}/companies/{企業スラッグ}/` 配下へ保存する。企業非依存の縮退モードでは企業スラッグが無いため、成果物は会話上で提示し、利用者が保存先を指定した場合のみ書き出す。
+パイプラインの各段階で次を生成する。企業を特定して進める場合（company モード）は `{DATA_ROOT}/companies/{企業スラッグ}/` 配下へ保存する。企業非依存の縮退モードでは企業スラッグが無いため、成果物は会話上で提示し、利用者が保存先を指定した場合のみ書き出す。
 
 | ファイル | 内容 | 生成する Step |
 |---|---|---|
@@ -76,7 +76,7 @@ Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-chan
    - (A) 企業研究を先に実施する。hub へ戻して `job-change-company-research` を起動し、company_research.json を得てから本スキルへ戻る。
    - (B) 縮退モードを選ぶ。企業非依存の一般対策として進め、以降は企業固有の想定質問を生成せず、企業理解観点の評価も対象外とする。
 4. `career-private/self_analysis.json` の有無を確認する。あれば Step 1・Step 3 の入力に加える。無くても進行できるが、自己分析（`job-change-self-analysis`）を先に実行すればキャリア・ナラティブと転職理由の建設的な言語化を一貫性観点の根拠に使えることを、利用者へ明示する。
-5. `career-private/fit/{企業スラッグ}/fit_assessment.json` の有無を確認する。あれば Step 1 の入力に加える。想定質問の生成時に、`condition_fit` の `met: "unknown"` の項目と `overall.open_questions` を、逆質問・確認事項の質問素材として用いる。無くても進行できる。fit_assessment.json は career-private 配下の成果物であり、Web ツール保持エージェントへは渡さない。
+5. `career-private/fit/{企業スラッグ}/fit_assessment.json` の有無を確認する。あれば Step 1 の入力に加える。想定質問の生成時に、`condition_fit` の `met: "unknown"` の項目と `overall.open_questions` を、逆質問・確認事項の質問素材として用いる。無くても進行できる。fit_assessment.json は career-private 配下の成果物であり、Web ツールを持つエージェントへは渡さない。
 6. 個人情報の取り扱いルールを確認する。profile.json の内容を外部送信に用いない。本スキルと job-change-interview-coach はいずれも Web 送信手段を持たないため、profile.json（あれば self_analysis.json・fit_assessment.json も）をそのまま渡してよい。
 
 ### Step 1 想定質問の生成
@@ -91,7 +91,7 @@ Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-chan
 
 1. 本スキル（オーケストレーター）が、生成した想定質問を1問ずつ提示する。利用者の回答をテキストで収集し、回答ごとに次の質問へ進む。
 2. 全問を課す必要はない。利用者が指定した範囲（質問類型・問数）で実施してよい。回答を受け取るごとに、提示した質問と利用者の回答の対を `companies/{企業スラッグ}/interview_answers.json` へ追記保存する（縮退モードでは企業スラッグが無いため会話上に保持する）。
-3. この段では評価・添削・言い換えをしない（評価は Step 3）。回答を誘導しない。
+3. この段階では評価・添削・言い換えをしない（評価は Step 3）。回答を誘導しない。
 
 ### Step 3 回答の評価とフィードバック
 
@@ -130,7 +130,7 @@ Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-chan
 |---|---|
 | `job-change-interview-coach` | `{SKILL_DIR}/references/roles/interview-coach.md` |
 
-**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` から同期生成されている。
+**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` の写しである。
 
 **サブエージェントを起動できないハーネス（Codex ほか）。** 各 Step の「エージェントを起動する」を「役割プロンプトを読み、その役割として自分で実行する」と読み替える。手順は次のとおり。
 
@@ -149,7 +149,7 @@ model はエージェントの frontmatter に固定済みであり、起動時�
 
 ## スクリプトのCLI使用例
 
-本スキルは検証スクリプトを持たない。Step 0 のプロファイルゲートは、hub（job-change-support）の `validate_profile.py` の PASS を前提とする。次のコマンドはhub がルーティング前に実行するものであり、本スキルは Bash を持たないため自ら実行しない（掲載は前提確認のため）。`{HUB_SKILL_DIR}` は hub スキルの絶対パスに読み替える。
+本スキルは検証スクリプトを持たない。Step 0 のプロファイルゲートは、hub（job-change-support）の `validate_profile.py` の PASS を前提とする。次のコマンドは hub がルーティング前に実行するものであり、本スキルは Bash を持たないため自ら実行しない（掲載は前提確認のため）。`{HUB_SKILL_DIR}` は hub スキルの絶対パスに読み替える。
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/profile.json --json

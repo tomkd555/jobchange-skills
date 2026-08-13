@@ -43,8 +43,8 @@
 
 | 指針 | 内容 |
 |---|---|
-| 求人票との文脈整合 | 求人票（job description）で使われている語を、経験の文脈に合う形で反映する。求人票のキーワードを、実際の職務・成果を記述する中で自然に用いる。 |
-| キーワードの詰め込み（keyword stuffing）を避ける | 現代の NLP 型 ATS は、単純なキーワードの計数ではなく文脈・関連性を評価する。同じ語を不自然に反復すると低品質と判定されてスコアが下がり、人間の審査者にも不自然に映る。有効なのは、求人票からの正確な抽出と定量的な裏付けを伴う場合に限られる。要点は、求人票との文脈整合である。 |
+| 求人票との文脈整合 | 求人票（job description）で使われている言葉を、経験の文脈に合う形で反映する。求人票のキーワードを、実際の職務・成果を記述する中で自然に用いる。 |
+| キーワードの詰め込み（keyword stuffing）を避ける | 現代の NLP 型 ATS は、単純なキーワードの計数ではなく文脈・関連性を評価する。同じ言葉を不自然に反復すると低品質と判定されてスコアが下がり、人間の審査者にも不自然に映る。有効なのは、求人票からの正確な抽出と定量的な裏付けを伴う場合に限られる。要点は、求人票との文脈整合である。 |
 | 表・画像・グラフィックを避ける | 表・画像・グラフィック（グラフ・チャートを含む）は ATS が正しくパースできないことがある。単純なテキスト書式で作る。 |
 
 ### ATS が有能な候補を取りこぼす問題
@@ -69,9 +69,9 @@ ATS は候補を誤りなく選別する仕組みではない。ATS対応は「�
 | Workday | 米系多国籍企業 NCR が、日本向けの外部採用サイトを Workday 上で運用している（URL が `ncr.wd1.myworkdayjobs.com/ext_jp`。日本語ロケール `ja-JP` の求人を含む。`subdomain.wdN.myworkdayjobs.com` は Workday Recruiting の確定的な URL 構造。出典: NCR 採用ページ URL、グレードB）。 |
 | Greenhouse | 外資系テック企業（Anthropic・Databricks 等）が、日本拠点のポジションを Greenhouse の求人ボード（`job-boards.greenhouse.io`）上で公開・応募受付している（Anthropic の日本勤務職、Databricks の東京勤務職を確認。`job-boards.greenhouse.io` は Greenhouse の確定的な URL 構造。出典: 各社の Greenhouse 求人ボード URL、グレードB）。 |
 
-Greenhouse は、日本語を含む言語でレジュメの「完全なパース機能（full parsing capabilities）」を公式サポート文書に明記している（出典: Greenhouse Support「Resume parsing with non-English languages」 https://support.greenhouse.io/hc/en-us/articles/205019689-Resume-parsing-with-non-English-languages グレードA）。ただしこれはベンダー自身の自称であり第三者検証ではない。対応言語リストに日本語は含まれるが、これは仕様上パースの対象であることを示すのみで、日本語（CJK・分かち書きなし・全角）の実際の抽出精度を示す数値は同文書にない。
+Greenhouse は、日本語を含む言語でレジュメの「完全なパース機能（full parsing capabilities）」を公式サポート文書に明記している（出典: Greenhouse Support「Resume parsing with non-English languages」 https://support.greenhouse.io/hc/en-us/articles/205019689-Resume-parsing-with-non-English-languages グレードA）。ただしこれはベンダー自身の自称であり第三者検証ではない。対応言語リストに日本語は含まれるが、それは仕様上パースの対象だというだけで、日本語（CJK・分かち書きなし・全角）の実際の抽出精度を示す数値は同文書にない。
 
-日本国内の人材紹介会社も、外資系向けに ATS対応の助言を実務で提示している。Morgan McKinley（外資系に強い人材紹介会社）は、企業側が ATS で応募情報を管理しているとしたうえで、求人票の適切なキーワードを含める形でレジュメを編集すれば ATS のスクリーニングを通過できる可能性が高まると助言している。あわせて、ファイル形式は PDF が望ましく、複雑な書式は ATS が処理しきれないことがあるとしている（出典: Morgan McKinley「英文レジュメの書き方：DX対応編」2023-10-05 https://www.morganmckinley.com/jp-ja/article/%E8%8B%B1%E6%96%87%E3%83%AC%E3%82%B8%E3%83%A5%E3%83%A1%E3%81%AE%E6%9B%B8%E3%81%8D%E6%96%B9%EF%BC%9ADX%E5%AF%BE%E5%BF%9C%E7%B7%A8 グレードB）。ただし発信者はレジュメ添削・紹介サービスを持つ人材紹介会社であり、ATS 対応の重要性を強調する利害を持つ（単一ソース）。
+日本国内の人材紹介会社も、外資系向けに ATS対応の助言を実務で提示している。Morgan McKinley（外資系に強い人材紹介会社）は、企業側が ATS で応募情報を管理しているとする。そのうえで、求人票の適切なキーワードを含める形でレジュメを編集すれば、ATS のスクリーニングを通過できる可能性が高まると助言している。あわせて、ファイル形式は PDF が望ましく、複雑な書式は ATS が処理しきれないことがあるとしている（出典: Morgan McKinley「英文レジュメの書き方：DX対応編」2023-10-05 https://www.morganmckinley.com/jp-ja/article/%E8%8B%B1%E6%96%87%E3%83%AC%E3%82%B8%E3%83%A5%E3%83%A1%E3%81%AE%E6%9B%B8%E3%81%8D%E6%96%B9%EF%BC%9ADX%E5%AF%BE%E5%BF%9C%E7%B7%A8 グレードB）。ただし発信者はレジュメ添削・紹介サービスを持つ人材紹介会社であり、ATS 対応の重要性を強調する利害を持つ（単一ソース）。
 
 ## この基準の適用範囲と限界
 

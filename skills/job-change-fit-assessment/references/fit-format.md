@@ -132,9 +132,9 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 
 ## company_score
 
-応募先企業を 0〜100 点で採点した結果である。軸ごとの実測値は企業研究が `company_research.json` の `company_metrics` へ書き、利用者が `profile.json` の `company_score_axes` で申告した軸と重みに基づく採点は、`profile.json` を読める適合性評価が `company_score` へ書く。
+応募先企業を 0〜100 点で採点した結果である。軸ごとの実測値は、企業研究が `company_research.json` の `company_metrics` へ書く。その実測値を、利用者が `profile.json` の `company_score_axes` で申告した軸と重みで採点した結果は、`profile.json` を読める適合性評価が `company_score` へ書く。
 
-算出は `scripts/calculate_company_score.py` が決定的に行う。定量候補軸9個・点数への写し方・基準の決め方・重みの配分・総合点の規則の原本は、job-change-company-research の `references/company-score-rubric.md` にある。統計由来の既定基準の原本は `scripts/calculate_company_score.py` の定数 `DEFAULT_THRESHOLDS` である。
+算出は `scripts/calculate_company_score.py` が決定的に行う。定量候補軸9個・点数への換算・基準の決め方・重みの配分・総合点の規則の原本は、job-change-company-research の `references/company-score-rubric.md` にある。統計由来の既定基準の原本は `scripts/calculate_company_score.py` の定数 `DEFAULT_THRESHOLDS` である。
 
 総合点は、利用者が選んだ軸と配分した重みに基づく数値であり、企業そのものの質の絶対評価ではない。異なる利用者の点数どうしを比べない。比べてよいのは、同じ利用者が同じ軸と重みで採点した企業どうしだけである。
 

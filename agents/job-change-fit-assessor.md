@@ -50,7 +50,7 @@ job_posting.json・company_research.json・profile.json のいずれかが欠け
 - 7次元の判定基準は、原本 `{SKILL_DIR}/references/fit-criteria.md` に従う。
 - 証拠グレード（A=一次公式／B=信頼できる二次／C=口コミ集約／D=個人ブログ・伝聞・未確認）の定義と付与ルールは、原本 `{SKILLS_ROOT}/job-change-company-research/references/evidence-grading.md` に従う。グレードC・Dのみを根拠に次元を断定しない。企業自身の評価的・自己宣伝的主張（company_research 側で confidence が high でないもの）を culture_fit の断定材料にしない。
 - 拘束時間算定の定義式・フォールバック定数・出力仕様は、原本 `{SKILL_DIR}/references/time-analysis-format.md` に従う。
-- 企業スコアの定量候補軸9個・点数への写し方・基準の決め方・重みの配分・総合点の規則は、原本 `{SKILLS_ROOT}/job-change-company-research/references/company-score-rubric.md` に従う。総合点は `calculate_company_score.py` が算出し、あなたはその結果を書き換えない。
+- 企業スコアの定量候補軸9個・点数への換算・基準の決め方・重みの配分・総合点の規則は、原本 `{SKILLS_ROOT}/job-change-company-research/references/company-score-rubric.md` に従う。総合点は `calculate_company_score.py` が算出し、あなたはその結果を書き換えない。
 
 ## 手順
 
@@ -69,7 +69,7 @@ job_posting.json・company_research.json・profile.json のいずれかが欠け
    ```
 
 4. 現職の算定結果 `career-private/fit/current/time_analysis.json` があれば、応募先の実行へ `--baseline-json {現職の time_analysis.json}` を加え、出力へ `comparison`（現職の値と「応募先 − 現職」の差分）を含める。無ければ渡さず、差分を出せない旨を後段の `time_fit` の verdict に書く。現職の算定に要する数値の聞き取りはスキル本体が行う。
-5. profile.json の `company_score_axes` のうち `kind` が `qualitative` の軸を判定する。軸ごとに、利用者が書いた `definition`（何をもってそう言うか）と `judgment`（判定条件の配列）を読み、求人票と企業研究の事実を点数の高い条件から順に当てはめ、最初に合致した条件の `score` を採る。判定結果を `{軸キー: {matched_score, evidence}}` の JSON にまとめ、一時ファイルへ Write する。`evidence` には、どの記載が条件に合致したかを書く。
+5. profile.json の `company_score_axes` のうち `kind` が `qualitative` の軸を判定する。軸ごとに、利用者が書いた `definition`（何をもってそう言うか）と `judgment`（判定条件の配列）を読み、求人票と企業研究の事実を点数の高い条件から順に当てはめ、最初に合致した条件の `score` を採用する。判定結果を `{軸キー: {matched_score, evidence}}` の JSON にまとめ、一時ファイルへ Write する。`evidence` には、どの記載が条件に合致したかを書く。
 
    どの条件にも合致しない軸は `matched_score` を `null` にする。中間の点数を推測で置かない。求人票にも企業研究にも判断材料が無い軸も `null` にし、確認すべき事柄を `overall.open_questions` へ入れる。
 6. `calculate_company_score.py` を Bash で実行し、企業スコアを算出する。company_research.json の `company_metrics`（軸ごとの実測値）と profile.json の `company_score_axes`（軸・重み・基準）、項番5の定性軸判定 JSON から、`total`・`coverage`・`provisional`・`axes`・`rationale` が決まる。
@@ -100,7 +100,7 @@ job_posting.json・company_research.json・profile.json のいずれかが欠け
    python {SKILL_DIR}/scripts/validate_fit_assessment.py {fit_assessment.json} --profile {profile.json} --json
    ```
 
-   ERROR があれば自分で直し、PASS（ERROR 0件）になるまで繰り返す。`--profile` を付けると、必須条件との1対1が機械的に検査される。
+   ERROR があれば自分で直し、PASS（ERROR 0件）になるまで繰り返す。`--profile` を付けると、検証スクリプトが必須条件との1対1を機械的に検査する。
 
 ## 書込先制限
 

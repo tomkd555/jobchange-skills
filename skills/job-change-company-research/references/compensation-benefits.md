@@ -20,7 +20,7 @@
 | 観点 | 内容 |
 |---|---|
 | 制度の有無（事実） | 社会保険・退職金・住宅補助・育児/介護支援・カフェテリアプラン等。採用サイト・福利厚生ページが一次情報（グレードA）。 |
-| 認定の有無（事実） | くるみん・えるぼし・健康経営優良法人・ユースエール等の認定は、根拠法と所管が明確な一次情報（グレードA）。ただし認定は最低基準の充足を示すもので、総合的な働きやすさを保証しない。認定を根拠に「働きやすい」と断定しない。 |
+| 認定の有無（事実） | くるみん・えるぼし・健康経営優良法人・ユースエール等の認定は、根拠法と所管が明確な一次情報（グレードA）。ただし認定は最低基準の充足を示すもので、働きやすさ全体を保証しない。認定を根拠に「働きやすい」と断定しない。 |
 | 制度と運用の区別 | 制度が「ある」ことと「使われている」ことは別である。育休取得率・有給取得率などの運用実績（workstyle）と突き合わせる。 |
 
 ### 働き方（workstyle）
@@ -40,13 +40,13 @@
 |---|---|---|---|
 | EDINET 有価証券報告書「従業員の状況」 | 平均年間給与・平均勤続年数・平均年齢・従業員数 | compensation/financials/workstyle | 閲覧サイト https://disclosure2.edinet-fsa.go.jp/WEEK0010.aspx （EDINETについて https://www.fsa.go.jp/search/20130917.html ） |
 | 厚生労働省「しょくばらぼ」 | 中途採用比率・定着率・月平均所定外労働時間・有給取得率（企業の自主開示） | workstyle/benefits | https://shokuba.mhlw.go.jp/ |
-| 採用サイト 報酬制度・福利厚生ページ | 等級・給与レンジ・賞与算定式・手当・福利厚生制度 | compensation/benefits | 各企業ドメイン（company 所有ページ。評価的表現は confidence を high にしない） |
+| 採用サイト 報酬制度・福利厚生ページ | 等級・給与レンジ・賞与算定式・手当・福利厚生制度 | compensation/benefits | 各企業ドメイン（当該企業が所有するページ。評価的表現は confidence を high にしない） |
 | くるみん／プラチナくるみん／トライくるみん | 次世代育成支援（子育て支援）の認定 | benefits | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kodomo/shokuba_kosodate/kurumin/index.html |
 | えるぼし／プラチナえるぼし | 女性活躍推進（5基準）の認定 | benefits/workstyle | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000091025_00002.html |
 | 健康経営優良法人（ホワイト500） | 健康経営の顕彰 | benefits | https://www.meti.go.jp/policy/mono_info_service/healthcare/kenkoukeiei_yuryouhouzin.html |
 | ユースエール | 若者の採用・育成に積極的な中小企業の認定 | benefits/workstyle | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000100266.html |
 
-認定の有無は事実（グレードA）だが、認定は最低基準の充足を示すものであり、企業の総合的な働きやすさを保証しない。
+認定の有無は事実（グレードA）だが、認定は最低基準の充足を示すものであり、企業の働きやすさ全体を保証しない。
 
 ### 信頼できる二次（グレードB）
 

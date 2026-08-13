@@ -8,7 +8,7 @@ description: >-
   改善を狙うかを確認してから検索する。検索の実行は求人検索担当エージェント（job-change-job-searcher）が担い、
   スキル本体は条件の組み立て・匿名化・現勤務先求人の除外・機械検証（validate_job_search_results.py の PII リント）を担う。
   匿名化ルールとして、エージェントへ渡す条件に現勤務先名・氏名・現年収を含めない（希望年収を下限として条件に含めることは可）。profile.json の
-  パス・内容は Web ツール保持エージェントへ渡さない。利用者が結果から企業を選んだら、hub の Step 0 手順で company_index.json
+  パス・内容は Web ツールを持つエージェントへ渡さない。利用者が結果から企業を選んだら、hub の Step 0 手順で company_index.json
   へスラッグ登録し、企業研究の求人票取込へ接続する。job-change-support（hub）から振り分けられて動く。
   Use when the user wants to search for job openings for a job change in Japan using only free public web search —
   either from a vague wish list (fuzzy mode) or by finding roles that beat a baseline posting (similar_better mode) —
@@ -31,11 +31,11 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 2. **掲載ページの引用と出典URLを付す。** 各求人には、掲載ページからの引用（`quote`）と出典URL（`url`）・掲載サイト名（`source_site`）を必ず付す。取得できない求人を創作しない。給与が「応相談」等で数値が読めない場合は `salary_range` を `null` にする。
 
-3. **匿名化を徹底する。** 検索担当エージェントへ渡す条件には、現勤務先名・氏名・現年収を含めない。希望年収の下限を条件に含めることは可とする。`profile.json` のパス・内容を Web ツール保持エージェントへ渡さない。条件はスキル本体が組み立て、匿名化した文字列としてのみ渡す。
+3. **匿名化を徹底する。** 検索担当エージェントへ渡す条件には、現勤務先名・氏名・現年収を含めない。希望年収の下限を条件に含めることは可とする。`profile.json` のパス・内容を Web ツールを持つエージェントへ渡さない。条件はスキル本体が組み立て、匿名化した文字列としてのみ渡す。
 
 4. **現勤務先の求人を除外する。** 検索結果に現勤務先の求人が含まれうる。除外はスキル本体がローカルで行う（`profile.json` を Web ツールへ渡さないため、除外判定はエージェントの外で行う）。
 
-5. **個人情報を外部へ送信しない。** `profile.json` に含まれる個人情報（氏名・現年収・希望年収・居住地・学歴・在籍企業名・実績など）を、検索クエリ・fetch・外部APIを含む一切の外部送信に用いない。非公開ディレクトリ `career-private/` 配下のパスを Web ツール保持エージェントへ渡さない。
+5. **個人情報を外部へ送信しない。** `profile.json` に含まれる個人情報（氏名・現年収・希望年収・居住地・学歴・在籍企業名・実績など）を、検索クエリ・fetch・外部APIを含む一切の外部送信に用いない。非公開ディレクトリ `career-private/` 配下のパスを Web ツールを持つエージェントへ渡さない。
 
 ## 範囲外
 
@@ -85,7 +85,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | 判定層 | `results[]` の `axis_judgements`・`classification`・`classification_reasons`・`classification_override`・`slug` | スキル本体（ローカル。profile を読む） |
 | 総括 | `screening`（分類ごとの件数・総合判定・軸ごとの未充足件数・現勤務先除外の実施記録） | スキル本体 |
 
-この分離により、個人情報を Web ツール保持エージェントへ渡さずに条件判定が成立する。完全な仕様・記入基準・検証規則は `references/job-search-format.md` を原本とする。
+この分離により、個人情報を Web ツールを持つエージェントへ渡さずに条件判定が成立する。完全な仕様・記入基準・検証規則は `references/job-search-format.md` を原本とする。
 
 ## モード
 
@@ -141,10 +141,10 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 ### Step 3.5 8軸判定と3分類（スキル本体）
 
-検索担当エージェントが書くのは観測層（求人票から読めた事実）までである。本人の条件との突き合わせは、`profile.json` を読めるスキル本体がローカルで行う。この分担により、個人情報を Web ツール保持エージェントへ渡さずに条件判定が成立する。
+検索担当エージェントが書くのは観測層（求人票から読めた事実）までである。本人の条件との突き合わせは、`profile.json` を読めるスキル本体がローカルで行う。この分担により、個人情報を Web ツールを持つエージェントへ渡さずに条件判定が成立する。
 
 1. `{DATA_ROOT}/career-private/profile.json` を Read で読み、`schema_version` を確認する。
-2. `job_change_axis.conditions[]` と `work_character_preferences[]` から、8軸ごとの必須度（`must` / `want` / `none`）としきい値を読み取る。同じ軸に必須条件が複数ある場合は、最も厳しいしきい値を採る。
+2. `job_change_axis.conditions[]` と `work_character_preferences[]` から、8軸ごとの必須度（`must` / `want` / `none`）としきい値を読み取る。同じ軸に必須条件が複数ある場合は、最も厳しいしきい値を採用する。
 3. 各 result の `axis_observations` としきい値を突き合わせ、`axis_judgements` を書く。観測が `stated=false`、または `value` が `null` の軸は `unknown` にする。**記載が無いことを、条件を満たす証拠にも満たさない証拠にも使わない。**
 4. `references/job-search-format.md` の決定表から `classification` を導き、`classification_reasons` を書く。導出結果を手で変える場合は、厳格化する方向にのみ `classification_override` を付ける。
 5. `screening` を導出値として書く。`counts`・`unmet_axis_summary` は実集計と一致させる。`current_employer_exclusion` には Step 3 の実施結果を記録する（未実施なら `performed: false`・`excluded_count: null`）。
@@ -203,7 +203,7 @@ similar_better では各求人の `better_points`（基準求人より改善し�
 |---|---|
 | `job-change-job-searcher` | `{SKILL_DIR}/references/roles/job-searcher.md` |
 
-**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` から同期生成されている。
+**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` の写しである。
 
 **サブエージェントを起動できないハーネス（Codex ほか）。** 各 Step の「エージェントを起動する」を「役割プロンプトを読み、その役割として自分で実行する」と読み替える。手順は次のとおり。
 

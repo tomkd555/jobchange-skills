@@ -88,7 +88,7 @@ job-change-interview-coach が想定質問に付す `category` は、次の対�
 ## 出典
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる区画である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
 
 - [E38] マイナビ転職. 転職の適性検査とは？新卒と中途の違いや目的、種類、対策法. 2026. グレードC. https://tenshoku.mynavi.jp/knowhow/caripedia/167/
 - [E62] マイナビ（HUMAN CAPITAL サポネット）. 中途採用面接で聞くべき厳選質問集［50選］｜面接官の心得. 2022-11-09. グレードB. https://saponet.mynavi.jp/column/detail/ty_saiyo_t03_50-interview-questions_210611.html

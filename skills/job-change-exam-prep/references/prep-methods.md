@@ -31,7 +31,7 @@ SPI3・玉手箱・TG-WEB・GAB・CAB などの能力検査は、出題形式が
 | 実害は限定的とする説（多数説） | 社会的望ましさは性格検査の妥当性を実質的には損なわないとする。出典: Ones, D. S., Viswesvaran, C., & Reiss, A. D. (1996). The role of social desirability in personality testing for personnel selection: The red herring. Journal of Applied Psychology, 81(6), 660–679. DOI: 10.1037/0021-9010.81.6.660 （グレード A） |
 | 妥当性が低く再考を求める説（批判的少数説） | 回答のゆがみは避けがたく、性格検査の予測的妥当性は低いとして選考での使用の再考を求める。出典: Morgeson, F. P., et al. (2007). Reconsidering the use of personality tests in personnel selection contexts. Personnel Psychology, 60(3), 683–729. DOI: 10.1111/j.1744-6570.2007.00089.x （グレード A） |
 
-未決着の論点であるため、いずれか一方を確定として助言しない。実務上の推奨（一貫した正直な回答）は、作り込みが矛盾検出で不利になりうること、および正直に回答すれば自己と企業の適合を正しく測れることに基づく。
+未決着の論点であるため、いずれか一方を確定として助言しない。実務上の推奨（一貫した正直な回答）は、作り込みが矛盾として現れて不利になりうること、および正直に回答すれば自己と企業の適合を正しく測れることに基づく。
 
 ## 検査種別ごとの対策方針
 

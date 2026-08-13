@@ -302,7 +302,7 @@ def _judgment_scores(entry: dict, axis: str) -> list[int]:
 
 
 def _qualitative_axis(entry: dict, axis: str, judged: Any) -> dict[str, Any]:
-    """定性軸1件の内訳を組み立てる。点数は fit-assessor の判定結果をそのまま採る。"""
+    """定性軸1件の内訳を組み立てる。点数は fit-assessor の判定結果をそのまま使う。"""
     allowed = _judgment_scores(entry, axis)
 
     matched: Any = None
