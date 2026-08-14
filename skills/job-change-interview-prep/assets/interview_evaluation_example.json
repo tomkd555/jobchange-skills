@@ -1,0 +1,39 @@
+{
+  "degraded": false,
+  "degraded_reason": null,
+  "evaluations": [
+    {
+      "question_id": "Q001",
+      "scores": {
+        "star": "一部",
+        "specificity": "一部",
+        "consistency": "充足",
+        "company_fit": "不足"
+      },
+      "feedback": "profile.job_change_axis.reasons[0]（設計から運用まで一貫して担いたい）と矛盾なく述べている。一方で、運用に割いている時間の割合が数値で示されていない。",
+      "improvement": "運用に割いている時間の割合を profile.career_history[0] の記述から1つ添える。claim C001 のパーパスと結び付けて、転職先で何をしたいかまで続ける。"
+    },
+    {
+      "question_id": "Q002",
+      "scores": {
+        "star": "一部",
+        "specificity": "充足",
+        "consistency": "充足",
+        "company_fit": "一部"
+      },
+      "feedback": "申請フローの自動化という固有の経験で裏付けており、profile.job_change_axis.reasons[0] とも整合する。claim C001 のパーパスには触れているが、行動指針の4項目までは結び付いていない。",
+      "improvement": "claim C001 の行動指針のうち、自動化の提案で発揮した項目を1つ挙げて結び付ける。自動化の前後の作業時間を数値で添え、STAR の結果（Result）を明示する。"
+    },
+    {
+      "question_id": "Q003",
+      "scores": {
+        "star": "充足",
+        "specificity": "充足",
+        "consistency": "充足",
+        "company_fit": "一部"
+      },
+      "feedback": "状況・課題・行動・結果の4要素がそろい、profile.career_history[0].achievements[0] の数値と一致している。claim C002（主力事業は勤怠管理SaaS）への結び付きは述べていない。",
+      "improvement": "claim C002 の事業構成に触れ、同種の負荷が想定される領域へこの手順をどう当てるかを1文足す。"
+    }
+  ]
+}

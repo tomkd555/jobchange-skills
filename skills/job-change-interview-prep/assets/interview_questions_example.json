@@ -1,0 +1,34 @@
+{
+  "degraded": false,
+  "degraded_reason": null,
+  "questions": [
+    {
+      "id": "Q001",
+      "category": "転職理由",
+      "question": "現職を離れようと考えた理由を聞かせてください。",
+      "interviewer_intent": "定着性と、転職で解こうとしている課題の一貫性を確認する。",
+      "basis": "profile.job_change_axis.reasons[0]"
+    },
+    {
+      "id": "Q002",
+      "category": "志望動機",
+      "question": "架空クラウドワークスの「働くをなめらかに」というパーパスのどこに共感しましたか。",
+      "interviewer_intent": "理念への共感が具体的な経験に裏付けられているかを確認する。",
+      "basis": "company_research claim C001"
+    },
+    {
+      "id": "Q003",
+      "category": "実績深掘り",
+      "question": "勤怠管理サービスの基盤刷新に近い経験として、直近で担った改善を1つ挙げ、状況から結果まで説明してください。",
+      "interviewer_intent": "本人が担った役割と判断を、組織の成果と区別して語れるかを確認する。",
+      "basis": "profile.career_history[0].achievements[0]"
+    },
+    {
+      "id": "Q004",
+      "category": "逆質問",
+      "question": "リモート勤務の運用が今後どう変わりうるかを、面接の場でどう確かめますか。",
+      "interviewer_intent": "確認事項を自分の言葉で組み立てられるかを確認する。",
+      "basis": "fit_assessment.condition_fit の met: unknown 項目（リモート勤務の可否）"
+    }
+  ]
+}

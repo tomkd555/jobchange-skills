@@ -1,0 +1,54 @@
+{
+  "company": "架空クラウドワークス株式会社",
+  "assessments": [
+    {
+      "type": "SPI3",
+      "stage": "書類選考通過後・一次面接前",
+      "evidence": [
+        {
+          "source_url": "https://example.com/kakuu-cloudworks/careers/process",
+          "grade": "A",
+          "quote": "書類選考の通過者には、一次面接の前に適性検査（SPI3・テストセンター方式）の受検をご案内します。"
+        },
+        {
+          "source_url": "https://example.com/senko-taikenki/kakuu-cloudworks/1024",
+          "grade": "C",
+          "quote": "書類が通ってすぐにテストセンターの予約案内が届いた。言語と非言語、そのあとに性格検査だった。"
+        }
+      ],
+      "confidence": "確定",
+      "format_notes": "テストセンター方式。言語・非言語の能力検査と性格検査で構成される。実施方式により制限時間の運用が異なる。",
+      "prep_recommendations": [
+        "非言語（推論・確率・損益算）を反復練習し、1問あたりの所要時間を測る",
+        "テストセンターの操作（1問ごとの確定・戻れない進行）に事前に慣れておく",
+        "性格検査は望ましく見せる回答をせず、一貫した正直な回答で通す"
+      ]
+    },
+    {
+      "type": "TAL",
+      "stage": "一次面接通過後・二次面接前（推定）",
+      "evidence": [
+        {
+          "source_url": "https://example.com/senko-taikenki/kakuu-cloudworks/2087",
+          "grade": "C",
+          "quote": "一次面接のあとに、文章の選択問題と図形を配置する問題を受けた。時間はそれほど長くない。"
+        },
+        {
+          "source_url": "https://example.net/blog/kakuu-cloudworks-senko",
+          "grade": "D",
+          "quote": "二次面接の案内と一緒に、図形を置くタイプの検査のリンクが送られてきました。"
+        }
+      ],
+      "confidence": "推定",
+      "format_notes": "文章問題と図形配置問題の組み合わせという記述から TAL と推定する。採用ページに記載はなく、検査名そのものは確認できていない。",
+      "prep_recommendations": [
+        "対策教材がほとんど無い検査であるため、学習時間を投入しない",
+        "図形配置は奇抜さを狙わず、指示に沿って素直に配置する方針だけ決めておく"
+      ]
+    }
+  ],
+  "open_questions": [
+    "TAL と推定した検査の名称は、採用ページ・案内メールのいずれでも確認できていない。受検案内が届いた時点で確定させる。",
+    "中途採用と新卒採用で実施する検査が同じかどうかは、出典からは判別できない。"
+  ]
+}
