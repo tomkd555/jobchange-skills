@@ -1,6 +1,6 @@
-"""job-change-company-research: company_research.json の決定的（非LLM）検証ツール。
+"""job-change-company-research: company_research.json の機械的な（非LLM）検証ツール。
 
-標準ライブラリのみで、企業研究の中間成果物である company_research.json を機械検査する。
+標準ライブラリのみで、企業研究の中間成果物である company_research.json を機械的に検査する。
 すべての主張（claim）が出典・エビデンスレベル・確度を伴い、必須トピックを網羅し、レベルの低い
 （C・D）根拠だけで断定（confidence=high）していないか、および定量候補軸の実測値
 （company_metrics）が単位と出典を伴うかを、ERROR（成果物として成立しない欠落・ルール違反）と
@@ -88,7 +88,7 @@ def _is_number(value: Any) -> bool:
 def _validate_company_metrics(document: dict, result: ValidationResult) -> None:
     """必須フィールド company_metrics（定量候補軸の実測値）の構造・単位・出典を検査する。
 
-    実測値が出典の記載と一致するかは機械検査せず、独立監査（job-change-research-auditor）の
+    実測値が出典の記載と一致するかは機械的に検査せず、独立監査（job-change-research-auditor）の
     領分とする。仕様の原本は references/company-score-rubric.md。
     """
     if "company_metrics" not in document:

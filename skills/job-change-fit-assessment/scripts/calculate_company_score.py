@@ -1,8 +1,8 @@
-"""job-change-fit-assessment: 企業スコア（0〜100点）の決定的（非LLM）算出ツール。
+"""job-change-fit-assessment: 企業スコア（0〜100点）の機械的な（非LLM）算出ツール。
 
 標準ライブラリのみで、企業研究（company_research.json）の実測値（company_metrics）と、
 利用者プロファイル（profile.json）の採点軸・重み・基準（company_score_axes）から、軸ごとの
-点数・総合点・判定できた軸の重みの合計（coverage）・暫定フラグ（provisional）を決定的に
+点数・総合点・判定できた軸の重みの合計（coverage）・暫定フラグ（provisional）を機械的に
 算出し、fit_assessment.json の company_score オブジェクトを組み立てる。定性軸の判定は
 求人票と企業研究の事実を読んで決まるため機械では決められず、fit-assessor が判定した結果を
 --qualitative-json で受け取る。採点規則の原本は job-change-company-research の
@@ -202,7 +202,7 @@ def declared_axes(profile: Any) -> list[dict[str, Any]]:
 
 
 def score_from_value(value: float, zero: float, full: float) -> int:
-    """実測値を 0〜100 点へ線形に写す。
+    """実測値を 0〜100 点へ線形に換算する。
 
     score = 100 × (value − zero) ÷ (full − zero) を 0〜100 でクリップし、四捨五入する。
     値が小さいほど良い軸（zero > full）でも同じ式のまま成り立つ。

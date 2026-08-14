@@ -1,6 +1,6 @@
-"""job-change-self-analysis: 自己分析成果物（self_analysis.json）の決定的（非LLM）検証ツール。
+"""job-change-self-analysis: 自己分析成果物（self_analysis.json）の機械的な（非LLM）検証ツール。
 
-標準ライブラリのみで、自己分析の原本である self_analysis.json を機械検査する。
+標準ライブラリのみで、自己分析の原本である self_analysis.json を機械的に検査する。
 面接対策・志望動機の深化（job-change-interview-prep / job-change-documents）が
 読める成果物として成立しているかを、ERROR（成果物として成立しない欠落・矛盾）と
 WARN（成立するが情報が不足し成果物の質を下げる点）に分けて報告する。仕様の原本は

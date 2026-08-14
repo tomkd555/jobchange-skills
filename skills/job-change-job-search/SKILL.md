@@ -4,7 +4,7 @@ description: >-
   転職の求人検索を担うサブスキル。無償の公開Web検索だけで求人を探し、掲載ページの引用と出典URLを付した
   job_search_results.json を作る。2モードを持つ。fuzzy（曖昧条件検索）は利用者の曖昧な希望（例「リモート多め・
   年収600万以上・SaaS系」）を構造化条件シートへ変換し、AskUserQuestion で確認してから検索する。similar_better
-  （類似高待遇検索）は基準求人（job_posting.json または URL）から条件を抽出し、どの軸（年収・休日・リモート・残業）の
+  （基準求人を上回る検索）は基準求人（job_posting.json または URL）から条件を抽出し、どの軸（年収・休日・リモート・残業）の
   改善を狙うかを確認してから検索する。検索へ渡す条件は匿名化し、現勤務先名・氏名・現年収を含めない
   （希望年収を下限として含めることは可）。利用者が結果から企業を選んだら、企業研究の求人票取込へ接続する。
   job-change-support（hub）から振り分けられて動く。
@@ -96,7 +96,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 2. 構造化した条件シートを AskUserQuestion で確認する。選択式を中心に、最大4問・各4択までとする。曖昧な軸（リモートの頻度・年収の下限・職種の範囲など）を優先して確認する。
 3. 確認済みの条件を匿名化した文字列として、求人検索担当エージェント（job-change-job-searcher）へ渡し、`mode=fuzzy` で検索させる。
 
-### mode=similar_better（類似高待遇検索）
+### mode=similar_better（基準求人を上回る検索）
 
 基準求人から条件を抽出し、どの軸の改善を狙うかを確認してから検索する。
 
@@ -150,7 +150,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 判定に使う語彙（8軸・8作業特性・業務分類）の原本は、hub（`job-change-support`）の `references/screening-axes.md` にある。
 
-### Step 4 機械検証と PII リント（スキル本体）
+### Step 4 機械的な検証と PII リント（スキル本体）
 
 除外後の job_search_results.json を、`--profile` 付きで検証する。
 
@@ -190,13 +190,13 @@ similar_better では各求人の `better_points`（基準求人より改善し�
 | 軸ごとの未充足・判定不能の件数 | `screening.unmet_axis_summary` |
 | 現勤務先求人の除外件数 | `screening.current_employer_exclusion.excluded_count`（`performed` が `true` のときのみ） |
 
-`current_employer_exclusion.performed` が `false` の項目は「未検証」と書く。「0件」と書かない。機械検証の PASS は「形式が整い、PII が混入しておらず、分類と総合判定が軸判定と整合している」ことを示すのであって、求人が本人に合っていることを示すのではない。この区別を報告に反映する。
+`current_employer_exclusion.performed` が `false` の項目は「未検証」と書く。「0件」と書かない。機械的な検証の PASS は「形式が整い、PII が混入しておらず、分類と総合判定が軸判定と整合している」ことを示すのであって、求人が本人に合っていることを示すのではない。この区別を報告に反映する。
 
 ## 合否ゲート
 
 | ゲート | 通過条件と差し戻し先 |
 |---|---|
-| Step 4 の機械検証・PII リント | `validate_job_search_results.py --profile` が PASS（ERROR 0件）でなければ納品しない。PII 混入の ERROR は匿名化の漏れであり、成果物から除去してから再検証する。 |
+| Step 4 の機械的な検証・PII リント | `validate_job_search_results.py --profile` が PASS（ERROR 0件）でなければ納品しない。PII 混入の ERROR は匿名化の漏れであり、成果物から除去してから再検証する。 |
 | 応募推奨 | `screening.recommendation` が `応募推奨なし` の場合、既定では企業研究・適合性評価へ接続しない。必須条件の見直し（`job-change-profile` の条件更新）、または検索条件・検索経路の見直しへ戻す。応募候補が0件のときに、除外候補や追加調査候補から最有力候補を仕立てない。**例外**: 満たさない必須条件を求人ごとにすべて列挙したうえで、利用者が特定の求人について先へ進むことを明示的に希望した場合は、その求人を企業研究へ接続してよい。この判定の材料は求人票の記載だけであり、判定そのものが企業研究や面接で覆りうるためである。接続する場合は、どの必須条件が未充足のままかを引き継ぎに明記する。利用者が希望していないのに、本スキルから接続を提案しない。 |
 | フォールバックの明示 | `screening.recommendation` が `判定不能`（profile が 1.x）の場合、判定できていない旨を明示する。分類結果を「応募候補」として提示せず、`job-change-profile` での条件の構造化を案内する。 |
 
@@ -238,7 +238,7 @@ cd {SKILL_DIR} && python -m unittest discover -s scripts/tests
 
 | ファイル | 何を | いつ読むか |
 |---|---|---|
-| `references/job-search-format.md` | job_search_results.json のフィールド仕様・記入基準・機械検証規則・PII リント | 成果物を作る/読む/検証する全段階 |
+| `references/job-search-format.md` | job_search_results.json のフィールド仕様・記入基準・機械的な検証の規則・PII リント | 成果物を作る/読む/検証する全段階 |
 | `references/query-catalog.md` | 無償の公開Web検索で求人を探す方法（サイト別のログイン要否・URL構造・取得項目・制約・フォールバック方法） | Step 2 の検索、検索担当エージェントへの指示 |
 | `references/search-methods.md` | 探索の量と就業の質の関係、満足化の運用、観測と判定を分ける理由の根拠（出典付き） | 報告のしかたを決める段階、応募推奨なしのときの提案を組み立てる段階 |
 | `{HUB_SKILL_DIR}/references/screening-axes.md` | 8スクリーニング軸・8作業特性・業務分類の語彙と境界例 | Step 2 の観測、Step 3.5 の判定 |

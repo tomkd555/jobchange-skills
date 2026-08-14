@@ -1,6 +1,6 @@
-"""job-change-support: 利用者プロファイル（profile.json）の決定的（非LLM）検証ツール。
+"""job-change-support: 利用者プロファイル（profile.json）の機械的な（非LLM）検証ツール。
 
-標準ライブラリのみで、転職支援スキル群の原本である profile.json を機械検査する。
+標準ライブラリのみで、転職支援スキル群の原本である profile.json を機械的に検査する。
 プロファイルが後続のサブスキル（企業研究・応募書類・面接対策・試験対策）の前提を
 満たすかを、ERROR（プロファイルとして成立しない欠落）と WARN（成立するが情報が
 不足し成果物の質を下げる点）に分けて報告する。仕様の原本は
@@ -567,7 +567,7 @@ def _validate_score_thresholds(path: str, entry: dict, kind: Any, result: Valida
     if zero == full:
         result.add_error(
             f"{path}.thresholds",
-            "zero と full は異なる値である（同値では実測値を点数へ写せない）",
+            "zero と full は異なる値である（同値では実測値を点数へ換算できない）",
         )
 
 

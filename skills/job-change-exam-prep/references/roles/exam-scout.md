@@ -35,7 +35,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 
 ## 判断の原本
 
-成果物の形式（フィールド仕様・記入基準・機械検証規則）は、原本 `{SKILL_DIR}/references/exam-assessment-format.md` に従う。記入例は `{SKILL_DIR}/assets/exam_assessment_example.json`（架空データ）にある。
+成果物の形式（フィールド仕様・記入基準・機械的な検証の規則）は、原本 `{SKILL_DIR}/references/exam-assessment-format.md` に従う。記入例は `{SKILL_DIR}/assets/exam_assessment_example.json`（架空データ）にある。
 
 エビデンスレベル（A=一次公式／B=信頼できる二次／C=口コミ集約／D=個人ブログ・伝聞・未確認）の定義と付与ルールは、原本 `{SKILLS_ROOT}/job-change-company-research/references/evidence-grading.md` に従う。選考試験の文脈では、採用ページ・企業公式の選考案内をレベルA、選考体験記の集計サイトをレベルC、個人ブログの単発体験記をレベルDとして扱う。
 

@@ -172,7 +172,7 @@ ERROR が1件でもあれば Step 3 へ差し戻す。PASS（ERROR 0件）にな
 | ゲート | 通過条件と差し戻し先 |
 |---|---|
 | Step 1 の入力ゲート | job_posting.json・company_research.json が無ければ企業研究へ差し戻す。 |
-| Step 4 の機械検証ゲート | `validate_fit_assessment.py` が PASS（ERROR 0件）でなければ Step 3 へ差し戻す。 |
+| Step 4 の機械的な検証ゲート | `validate_fit_assessment.py` が PASS（ERROR 0件）でなければ Step 3 へ差し戻す。 |
 
 差し戻しは同一企業の評価につき最大2回まで行う。2回で解消しない指摘は、報告の未決事項へ記録し、利用者の判断を仰ぐ。
 

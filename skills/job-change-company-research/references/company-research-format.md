@@ -1,6 +1,6 @@
 # company_research.json の原本仕様（company-research-format）
 
-企業研究の構造化データ `company_research.json` のフィールド仕様・記入基準・機械検証規則を定める原本である。企業研究担当エージェント（job-change-company-researcher）がこの仕様で成果物を作り、`scripts/validate_company_research.py` がこの仕様に照らして機械検査する。
+企業研究の構造化データ `company_research.json` のフィールド仕様・記入基準・機械的な検証の規則を定める原本である。企業研究担当エージェント（job-change-company-researcher）がこの仕様で成果物を作り、`scripts/validate_company_research.py` がこの仕様に照らして機械的に検査する。
 
 出力先は `{DATA_ROOT}/companies/{企業スラッグ}/company_research.json` である。
 
@@ -45,11 +45,11 @@
 | `securities_code` | 任意 | 上場企業の証券コード（4桁）。非上場・海外企業は省略してよい |
 | `edinet_code` | 任意 | EDINET コード（E + 5桁）。有報を出典に用いた場合は記す。無ければ省略してよい |
 
-`name` が空の場合は機械検証で ERROR となる。`securities_code`・`edinet_code` は無くても ERROR にはならない。
+`name` が空の場合は機械的な検証で ERROR となる。`securities_code`・`edinet_code` は無くても ERROR にはならない。
 
 ### research_date（文字列・推奨）
 
-調査を実施した日付（`YYYY-MM-DD`）。未設定の場合は機械検証で WARN となる。情報の鮮度を後で判断するために記す。
+調査を実施した日付（`YYYY-MM-DD`）。未設定の場合は機械的な検証で WARN となる。情報の鮮度を後で判断するために記す。
 
 ### claims（配列・必須、1件以上）
 
@@ -57,7 +57,7 @@
 
 | フィールド | 必須 | 記入基準 |
 |---|---|---|
-| `id` | 必須 | claim の識別子。`C001` から連番を推奨する（機械検証は連番までは要求しない） |
+| `id` | 必須 | claim の識別子。`C001` から連番を推奨する（機械的な検証は連番までは要求しない） |
 | `topic` | 必須 | 後述の8種のいずれか |
 | `statement` | 必須 | 反証可能な命題を1文で書く（後述） |
 | `evidence` | 必須 | 出典の配列。1件以上が必須 |
@@ -107,7 +107,7 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 | `medium` | A・B の裏付けはあるが単一出所、または一部に限定が残る |
 | `low` | C・D 中心で、傾向の傍証にとどまる |
 
-**ルール**: レベルC・Dのみを根拠とする claim に `high` を与えてはならない（ERROR）。企業自身の評価的・自己宣伝的主張は、出典がレベルAでも `high` にしない（B 相当扱い。機械検証では判定できず監査エージェントの領分）。
+**ルール**: レベルC・Dのみを根拠とする claim に `high` を与えてはならない（ERROR）。企業自身の評価的・自己宣伝的主張は、出典がレベルAでも `high` にしない（B 相当扱い。機械的な検証では判定できず監査エージェントの領分）。
 
 ### open_questions（配列・推奨）
 
@@ -145,9 +145,9 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 
 **ルール**: 年間休日・残業・有給取得率・平均年間給与などの数値を収集した場合は、文章の claim に埋めるだけでなく、必ずこの company_metrics へ構造化して格納する（単位・出典URL・レベル併記）。確認できなければ `value` を `null` のままにする。
 
-## 機械検証規則（validate_company_research.py）
+## 機械的な検証の規則（validate_company_research.py）
 
-`scripts/validate_company_research.py` が決定的に検査する。ERROR が1件でもあれば FAIL（終了コード1）、ERROR 0件なら PASS（終了コード0。WARN があっても PASS）。
+`scripts/validate_company_research.py` が機械的に検査する。ERROR が1件でもあれば FAIL（終了コード1）、ERROR 0件なら PASS（終了コード0。WARN があっても PASS）。
 
 **ERROR（成果物として成立しない・ルール違反）**
 

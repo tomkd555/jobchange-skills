@@ -1,6 +1,6 @@
 # 企業スコアの原本仕様（company-score-rubric）
 
-応募先企業を 0〜100 点で採点する仕組みの原本である。点数化に使う軸の定義・点数への換算・重みの与え方・総合点の算出規則を定める。軸ごとの実測値は企業研究担当エージェント（job-change-company-researcher）が `company_research.json` の `company_metrics` へ出典付きで書き、総合点は適合性評価スキル（job-change-fit-assessment）が `scripts/calculate_company_score.py` で決定的に算出する。
+応募先企業を 0〜100 点で採点する仕組みの原本である。点数化に使う軸の定義・点数への換算・重みの与え方・総合点の算出規則を定める。軸ごとの実測値は企業研究担当エージェント（job-change-company-researcher）が `company_research.json` の `company_metrics` へ出典付きで書き、総合点は適合性評価スキル（job-change-fit-assessment）が `scripts/calculate_company_score.py` で機械的に算出する。
 
 ## 採点を利用者ごとに組み立てる理由
 
@@ -89,7 +89,7 @@ score = 100 × (実測値 − p0) ÷ (p100 − p0)
 
 利用者は、選んだ軸へ合計 100 になるよう重みを配分する。重みは整数とし、0 の軸は置かない（採点に入れないなら軸ごと外す）。
 
-配分の後、架空2社の比較で検算する。配分した重みで2社を採点し、「実際にどちらを選ぶか」という問いへの答えと点数の高い側が一致するかを確かめる。食い違った場合は、配分を見直すか、配分と実際の選択の両方を記録して利用者へ提示する。どちらが本当の判断かをこちらで決めない。自己申告した重みが実際の選択から推定した重みとずれることは実証で繰り返し確かめられているため、この検算を省かない。
+配分の後、架空2社の比較で検算する。配分した重みで2社を採点し、「実際にどちらを選ぶか」という問いへの答えと点数の高い側が一致するかを確かめる。食い違った場合は、配分を見直すか、配分と実際の選択の両方を記録して利用者へ提示する。どちらが本当の判断かをスキルの側で決めない。自己申告した重みが実際の選択から推定した重みとずれることは実証で繰り返し確かめられているため、この検算を省かない。
 
 ## 総合点の算出
 
@@ -141,12 +141,12 @@ coverage = Σ(judged な軸の weight)          （申告した重みの合計�
 
 総合点・軸ごとの内訳・`coverage`・`provisional`・根拠を持つ。形式の原本は `job-change-fit-assessment/references/fit-format.md` にある。
 
-## 機械検証と監査の分業
+## 機械的な検証と監査の分業
 
 | 担い手 | 検査する範囲 |
 |---|---|
-| 機械検証（validate_company_research.py） | `company_metrics` の構造・単位・`value` が数値または `null` であること・`value` が非 null のときの `source_url` と `grade` の有無を検査する。値そのものの正しさは判定しない。 |
+| 機械的な検証（validate_company_research.py） | `company_metrics` の構造・単位・`value` が数値または `null` であること・`value` が非 null のときの `source_url` と `grade` の有無を検査する。値そのものの正しさは判定しない。 |
 | 独立監査（job-change-research-auditor） | 実測値が出典の記載と一致するか、エビデンスレベルの付与が妥当か、指示された軸の指標を過不足なく集めているかを検査する。 |
-| 機械算出（calculate_company_score.py） | 点数化・加重平均・`coverage`・`provisional` を、本文書の規則どおりに決定的に算出する。 |
+| 機械的な算出（calculate_company_score.py） | 点数化・加重平均・`coverage`・`provisional` を、本文書の規則どおりに機械的に算出する。 |
 
 規則を変えるときは、本文書・`calculate_company_score.py`・単体テスト・記入例をそろえて変える。

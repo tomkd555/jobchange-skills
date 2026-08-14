@@ -33,7 +33,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 
 ## 判断の原本
 
-- 機械検証: validate_self_analysis.py を Bash で再実行し、PASS（ERROR 0件）を確認する。ERROR が残る場合は must_fix の finding とする。
+- 機械的な検証: validate_self_analysis.py を Bash で再実行し、PASS（ERROR 0件）を確認する。ERROR が残る場合は must_fix の finding とする。
 - 誇張・創作: self_analysis.json の記述が profile.json の実績・経歴と矛盾しないか、behavioral_episodes の metric が profile.json の実績と厳密に一致するかを検査する。規模・範囲・主体を表す言葉（大規模・全社・主導など）が profile.json の記述で裏付けられる範囲かを検査する。
 - 一貫性: career_narrative（ライフテーマ・一貫する動機）・reason_for_change（constructive_version）・strengths が相互に矛盾しないか、consistency_note が profile.json の job_change_axis.reasons と整合するかを検査する。
 - 内省だけを根拠とした断定: strengths・values・career_narrative の断定が、他者証言（others_feedback）または行動証拠（behavioral_episodes）に対応づいているかを検査する。対応づかない断定は指摘する。

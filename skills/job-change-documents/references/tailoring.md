@@ -25,14 +25,14 @@
 
 - その企業だからこそ実現できることを書く。志望動機が競合他社にも通じる内容であれば、採用担当者に「自社でなくてもよいのでは」と判断されうる。対象企業の理念・事業に固有の要素に結び付ける（同 リクルートエージェント）。
 - 企業研究の結果と実績を結び付ける。`company_research.json` の理念（`claims` の `topic=philosophy`）・事業・求める人物像と、`profile.json` の実績を対応づける。志望動機で参照した企業側の要素は、`company_research.json` の claim を根拠とする。伝聞や推測で企業像を作らない。
-- `company_research.json` が無い場合、企業固有の志望動機は書けない。汎用の骨子（自身の転職の軸・強みの整理）に留め、企業固有化は企業研究の後に行う旨を利用者へ明示する。
+- `company_research.json` が無い場合、企業固有の志望動機は書けない。汎用の骨子（自身の転職の軸・強みの整理）に留め、企業固有の調整は企業研究の後に行う旨を利用者へ明示する。
 - `career-private/self_analysis.json`（`job-change-self-analysis` の成果物）がある場合、志望動機書・自己PRの「背景」の段落には `career_narrative`（ライフテーマ・転機・一貫する動機）を、「結論」「入社後の貢献」の裏付けには根拠付きの `strengths`（episode_id・feedback_id に対応づけられた強み）を用いる。転職理由に触れる箇所は `reason_for_change.constructive_version`（発揮したい価値を軸にした言い換え）を基調とし、profile.json の `job_change_axis.reasons` と矛盾しないことを確認する。self_analysis.json が無い場合は profile.json の `strengths`・`job_change_axis` のみを素材とする。
 
 ## 誇張禁止の基準
 
 企業別に表現を調整する過程で、記述が `profile.json` の裏付けを超えないよう、次を厳守する。監査担当はこの基準で誇張・創作を検出する。
 
-- 書類中の数値・割合・金額は、`profile.json` の `achievements[].metric` と厳密に一致させる。丸め（「38%」→「約40%」）・上振れ（「40%」→「50%近く」）をしない。metric に無い数値を新たに作らない。`metric` が `null` の実績には定量値を付けない。
+- 書類中の数値・割合・金額は、`profile.json` の `achievements[].metric` と厳密に一致させる。丸め（「38%」→「約40%」）・水増し（「40%」→「50%近く」）をしない。metric に無い数値を新たに作らない。`metric` が `null` の実績には定量値を付けない。
 - 規模・範囲・主体を表す言葉は裏付けの範囲に限る。「大規模」「全社」「主導」「立ち上げ」「責任者」などの言葉は、`profile.json` の記述で裏付けられる範囲を超えて用いない。
   - 規模の言葉（大規模・多数など）は、profile.json に規模を示す記述がある場合に限る。
   - 範囲の言葉（全社・全部門・グローバルなど）は、profile がその範囲を示す場合に限る。一部門の施策を「全社の」と書かない。

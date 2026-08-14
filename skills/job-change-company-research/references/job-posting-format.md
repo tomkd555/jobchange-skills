@@ -1,6 +1,6 @@
 # job_posting.json の原本仕様（job-posting-format）
 
-取り込んだ求人情報の構造化データ `job_posting.json` のフィールド仕様・記入基準・機械検証規則を定める原本である。求人票取込担当エージェント（job-change-posting-parser）がこの仕様に適合するオブジェクトを組み立て、`scripts/validate_job_posting.py` がこの仕様に照らして機械検査する。
+取り込んだ求人情報の構造化データ `job_posting.json` のフィールド仕様・記入基準・機械的な検証の規則を定める原本である。求人票取込担当エージェント（job-change-posting-parser）がこの仕様に適合するオブジェクトを組み立て、`scripts/validate_job_posting.py` がこの仕様に照らして機械的に検査する。
 
 出力先は `{DATA_ROOT}/companies/{企業スラッグ}/job_posting.json` である。ファイルを書くのは呼出元スキル（job-change-company-research 本体）であり、スラッグ解決後にのみ書く。posting-parser エージェントはファイルを書かず、`{company_name, aliases, job_posting}` を最終メッセージの JSON で返す。
 
@@ -102,9 +102,9 @@
 
 この扱いは入口によらない。`source_type` が `dialogue` の場合に利用者が答えられなかった項目も、同じ扱いとする。推定で補わず、`open_questions` に書く。
 
-## 機械検証規則（validate_job_posting.py）
+## 機械的な検証の規則（validate_job_posting.py）
 
-`scripts/validate_job_posting.py` が決定的に検査する。ERROR が1件でもあれば FAIL（終了コード1）、ERROR 0件なら PASS（終了コード0。WARN があっても PASS）。
+`scripts/validate_job_posting.py` が機械的に検査する。ERROR が1件でもあれば FAIL（終了コード1）、ERROR 0件なら PASS（終了コード0。WARN があっても PASS）。
 
 **ERROR（成果物として成立しない・型違反）**
 

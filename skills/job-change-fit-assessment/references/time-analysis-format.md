@@ -1,6 +1,6 @@
 # time_analysis.json の原本仕様（time-analysis-format）
 
-`time_analysis.json` の仕様と、`scripts/calculate_time_analysis.py` による算定の仕組みを定める原本である。応募先候補の求人票・企業研究・利用者入力から、1日および年間の拘束時間・労働時間・実質時給を決定的に算定し、time_fit（時間適合）評価の根拠として使う。
+`time_analysis.json` の仕様と、`scripts/calculate_time_analysis.py` による算定の仕組みを定める原本である。応募先候補の求人票・企業研究・利用者入力から、1日および年間の拘束時間・労働時間・実質時給を機械的に算定し、time_fit（時間適合）評価の根拠として使う。
 
 ## 配置と扱い
 

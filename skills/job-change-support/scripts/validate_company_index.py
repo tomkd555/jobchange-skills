@@ -1,7 +1,7 @@
-"""job-change-support: 企業スラッグ一覧（company_index.json）の決定的（非LLM）検証ツール。
+"""job-change-support: 企業スラッグ一覧（company_index.json）の機械的な（非LLM）検証ツール。
 
 標準ライブラリのみで、転職支援スキル群が企業名とスラッグの対応を単一の原本として持つ
-company_index.json を機械検査する。各サブスキル（企業研究・応募書類・面接対策・試験対策）が
+company_index.json を機械的に検査する。各サブスキル（企業研究・応募書類・面接対策・試験対策）が
 同じ企業を常に同じスラッグへ解決できるかを、ERROR（一覧として成立しない欠落・衝突）と
 WARN（成立するが情報が不足する点）に分けて報告する。仕様の原本は
 references/company-index-format.md である。

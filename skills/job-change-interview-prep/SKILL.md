@@ -131,7 +131,7 @@ Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-chan
   - `degraded` と `degraded_reason` が company_research.json の有無と整合する（company_research.json が無い場合は degraded: true）。company_research.json があり topic=selection_process の claims が0件の場合も degraded: true とし、`degraded_reason` に選考プロセスの claims が0件である旨を書く。
   - Step 3 の `scores` の各値が「充足」「一部」「不足」のいずれかである。
   - Step 3 の `feedback` と `improvement` に根拠参照（profile の該当箇所、self_analysis.json の narrative・reason_for_change、または claim id）を含む。
-- 成果物ゲート（Step 1・Step 2・Step 3、company モード時）では、保存した `interview_questions.json`・`interview_answers.json`・`interview_evaluation.json` を `validate_interview_artifacts.py` が PASS（ERROR 0件）とすることを確認する。FAIL なら次の Step へ進まない。この検証器は形式・`degraded` の整合・`question_id` の相互参照だけを見て、質問や評価の内容の当否は見ない。フォールバックモードでは成果物をファイルへ書き出さない場合があり、そのときはこのゲートを適用しない。
+- 成果物ゲート（Step 1・Step 2・Step 3、company モード時）では、保存した `interview_questions.json`・`interview_answers.json`・`interview_evaluation.json` を `validate_interview_artifacts.py` が PASS（ERROR 0件）とすることを確認する。FAIL なら次の Step へ進まない。この検証スクリプトは形式・`degraded` の整合・`question_id` の相互参照だけを見て、質問や評価の内容の当否は見ない。フォールバックモードでは成果物をファイルへ書き出さない場合があり、そのときはこのゲートを適用しない。
 
 差し戻しは同一ステップにつき最大2回とする。2回で解消しない場合は、当該の質問または評価を未決事項として利用者へ提示し、判断を委ねてから次へ進む。
 
@@ -177,7 +177,7 @@ python {HUB_SKILL_DIR}/scripts/check_freshness.py {DATA_ROOT}/companies/{企業�
 
 | ファイル | 何を | いつ読むか |
 |---|---|---|
-| `references/interview-format.md` | 3つの成果物（`interview_questions.json`・`interview_answers.json`・`interview_evaluation.json`）のフィールド仕様・記入基準・機械検証規則 | Step 1〜Step 3 の保存と検証 |
+| `references/interview-format.md` | 3つの成果物（`interview_questions.json`・`interview_answers.json`・`interview_evaluation.json`）のフィールド仕様・記入基準・機械的な検証の規則 | Step 1〜Step 3 の保存と検証 |
 | `references/question-bank.md` | 頻出質問の質問類型・面接官の評価観点・答え方の原則・逆質問の NG（出典付き） | Step 1 の想定質問生成、Step 2 の進行 |
 | `references/evaluation-rubric.md` | 4観点（STAR・具体性・一貫性・企業理解）と3段階のアンカー、良い回答の要素、学術的根拠（DOI 付き） | Step 3 の評価、Step 4 の総括 |
 | `references/foreign-interviews.md` | 外資系のビヘイビアラル/コンピテンシー面接・ケース面接の進め方と評価観点（出典付き） | 外資系選考の Step 1・Step 2・Step 3 |

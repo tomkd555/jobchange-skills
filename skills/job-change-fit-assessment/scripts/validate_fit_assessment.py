@@ -1,6 +1,6 @@
-"""job-change-fit-assessment: 適合性評価（fit_assessment.json）の決定的（非LLM）検証ツール。
+"""job-change-fit-assessment: 適合性評価（fit_assessment.json）の機械的な（非LLM）検証ツール。
 
-標準ライブラリのみで、適合性評価の原本である fit_assessment.json を機械検査する。
+標準ライブラリのみで、適合性評価の原本である fit_assessment.json を機械的に検査する。
 7次元（experience_proximity / aspiration_alignment / work_character_fit /
 condition_fit / culture_fit / compensation_fit / time_fit。schema_version 1.0 は
 skill_fit を含む5次元）の

@@ -134,7 +134,7 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 
 応募先企業を 0〜100 点で採点した結果である。軸ごとの実測値は、企業研究が `company_research.json` の `company_metrics` へ書く。その実測値を、利用者が `profile.json` の `company_score_axes` で申告した軸と重みで採点した結果は、`profile.json` を読める適合性評価が `company_score` へ書く。
 
-算出は `scripts/calculate_company_score.py` が決定的に行う。定量候補軸9個・点数への換算・基準の決め方・重みの配分・総合点の規則の原本は、job-change-company-research の `references/company-score-rubric.md` にある。統計由来の既定基準の原本は `scripts/calculate_company_score.py` の定数 `DEFAULT_THRESHOLDS` である。
+算出は `scripts/calculate_company_score.py` が機械的に行う。定量候補軸9個・点数への換算・基準の決め方・重みの配分・総合点の規則の原本は、job-change-company-research の `references/company-score-rubric.md` にある。統計由来の既定基準の原本は `scripts/calculate_company_score.py` の定数 `DEFAULT_THRESHOLDS` である。
 
 総合点は、利用者が選んだ軸と配分した重みに基づく数値であり、企業そのものの質の絶対評価ではない。異なる利用者の点数どうしを比べない。比べてよいのは、同じ利用者が同じ軸と重みで採点した企業どうしだけである。
 
@@ -175,14 +175,14 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 | `coverage` | integer | 判定できた軸の `weight` の合計（0〜100）。重みの合計が 100 のため、そのまま総合点の裏付けの割合になる |
 | `provisional` | boolean | 暫定の点数であること。`coverage` が `calculate_company_score.py` の定数 `COVERAGE_THRESHOLD` を下回るとき、および `total` が `null` のとき `true` |
 | `axes` | array | 利用者が申告した軸を申告順に並べる。判定できなかった軸も `score` を `null` にして並べる |
-| `rationale` | string | 点数に効いた軸と、判定できなかった軸をその理由とともに書く（非空）。スクリプトが決定的に組み立てる |
+| `rationale` | string | 点数に効いた軸と、判定できなかった軸をその理由とともに書く（非空）。スクリプトが機械的に組み立てる |
 
 `axes` の各要素:
 
 | フィールド | 型 | 内容 |
 |---|---|---|
 | `axis` | string | 軸の識別子（非空）。profile の `company_score_axes[].axis` をそのまま写す |
-| `kind` | string | `quantitative`（公表された数値を線形式で点数へ写す軸）・`qualitative`（利用者が判定条件を決める軸）のいずれか |
+| `kind` | string | `quantitative`（公表された数値を線形式で点数へ換算する軸）・`qualitative`（利用者が判定条件を決める軸）のいずれか |
 | `weight` | integer | 重み。1〜100 の整数。profile の申告をそのまま写す |
 | `value` | number \| null | 定量軸の実測値。`company_metrics` の当該軸の `value`。定性軸と、実測値が無い軸は `null` |
 | `unit` | string \| null | 実測値の単位。定性軸は `null` |
@@ -289,7 +289,7 @@ profile の `company_score_axes` のうち `kind` が `qualitative` の軸につ
 
 ## 検証規則（validate_fit_assessment.py）
 
-機械検証の原本は `scripts/validate_fit_assessment.py` である。終了コードは PASS（ERROR 0件）で 0、FAIL（ERROR 1件以上）で 1。WARN のみは PASS 扱いとする。
+機械的な検証の原本は `scripts/validate_fit_assessment.py` である。終了コードは PASS（ERROR 0件）で 0、FAIL（ERROR 1件以上）で 1。WARN のみは PASS 扱いとする。
 
 ### ERROR（成立しない）
 

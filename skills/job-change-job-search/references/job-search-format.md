@@ -1,6 +1,6 @@
 # job_search_results.json の原本仕様（job-search-format）
 
-求人検索の成果物 `job_search_results.json` のフィールド仕様・記入基準・機械検証規則を定める原本である。求人検索担当エージェント（job-change-job-searcher）がこの仕様で成果物を作り、`scripts/validate_job_search_results.py` がこの仕様に照らして機械検査する。
+求人検索の成果物 `job_search_results.json` のフィールド仕様・記入基準・機械的な検証の規則を定める原本である。求人検索担当エージェント（job-change-job-searcher）がこの仕様で成果物を作り、`scripts/validate_job_search_results.py` がこの仕様に照らして機械的に検査する。
 
 出力先は `{DATA_ROOT}/job-search/{YYYYMMDD}-{条件の短いスラッグ}/job_search_results.json` である。企業別の成果物ツリー（`companies/{企業スラッグ}/`）とは別に、`job-search/` 配下へ検索実行ごとのディレクトリを作る。
 
@@ -80,7 +80,7 @@
 | 値 | 意味 |
 |---|---|
 | `fuzzy` | 曖昧条件検索。利用者の希望を構造化した条件シートに基づく検索 |
-| `similar_better` | 類似高待遇検索。基準求人（baseline）の条件を上回る求人の検索 |
+| `similar_better` | 基準求人を上回る検索。基準求人（baseline）の条件を上回る求人の検索 |
 
 ### executed_at（文字列・必須）
 
@@ -195,7 +195,7 @@
 
 `apply_candidate`（応募候補）／`needs_more_research`（追加調査候補）／`excluded`（除外候補）のいずれか。他の値は ERROR。
 
-分類は軸判定から決定的に導く。上から順に評価し、最初に該当したものを採用する。
+分類は軸判定から機械的に導く。上から順に評価し、最初に該当したものを採用する。
 
 | 条件 | 分類 |
 |---|---|
@@ -263,9 +263,9 @@
 
 裏取りできなかった論点、条件との差分で応募前に確認すべき点などを記す。
 
-## 機械検証規則（validate_job_search_results.py）
+## 機械的な検証の規則（validate_job_search_results.py）
 
-`scripts/validate_job_search_results.py` が決定的に検査する。ERROR が1件でもあれば FAIL（終了コード1）、ERROR 0件なら PASS（終了コード0。WARN があっても PASS）。
+`scripts/validate_job_search_results.py` が機械的に検査する。ERROR が1件でもあれば FAIL（終了コード1）、ERROR 0件なら PASS（終了コード0。WARN があっても PASS）。
 
 ```
 python validate_job_search_results.py <job_search_results.json> [--json] [--profile <profile.json>]

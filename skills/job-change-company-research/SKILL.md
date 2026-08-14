@@ -3,7 +3,7 @@ name: job-change-company-research
 description: >-
   転職の企業研究を担うサブスキル。企業名と重点観点を受け、公式資料・報道・口コミサイト等から情報を集め、
   すべての主張に出典URLとエビデンスレベル（A=一次公式／B=信頼できる二次／C=口コミ集計／D=個人ブログ・伝聞）を
-  付した company_research.json を作り、機械検証と独立監査を通してから、トピック別の企業研究レポートを納品する。
+  付した company_research.json を作り、機械的な検証と独立監査を通してから、トピック別の企業研究レポートを納品する。
   求人情報URLを渡された場合は、求人票を取り込んで job_posting.json を作ってから調査へ入る。
   指示された軸の指標について公表値を集めるところまでを担い、点数化・重み付け・格付けは行わない（profile 非依存）。
   job-change-support（hub）から振り分けられて動く。
@@ -18,7 +18,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 # job-change-company-research
 
-転職の企業研究に取り組むとき、本スキル1つで収集から納品までの手順がそろう。すべての企業情報に出典URLとエビデンスレベルを付し、機械検証と独立監査で妥当性を担保したうえで、トピック別の企業研究レポートを納品する。
+転職の企業研究に取り組むとき、本スキル1つで収集から納品までの手順がそろう。すべての企業情報に出典URLとエビデンスレベルを付し、機械的な検証と独立監査で妥当性を担保したうえで、トピック別の企業研究レポートを納品する。
 
 本スキルは hub（job-change-support）から振り分けられて動く。収集・作成は企業研究担当エージェント（job-change-company-researcher）が、独立監査は企業研究監査担当エージェント（job-change-research-auditor）が担う。判断基準は `references/` で自己完結する。
 
@@ -144,7 +144,7 @@ topic は `philosophy`・`business`・`financials`・`compensation`・`benefits`
 
 指示書で渡された軸の指標を優先して集め、`company_metrics` の各項目へ実測値と出典を書く（原則6。profile を要しない、企業側の事実の収集）。点数も格付けも付けない。重点観点として渡された事柄は、確認できた事実と出典を claims へ書く。自分で `validate_company_research.py` を PASS させてから返す（`company_metrics` の欠落・構造不正は ERROR になる）。これが本エージェントの責務である。
 
-### Step 2 機械検証
+### Step 2 機械的な検証
 
 researcher が返した company_research.json を、オーケストレーター側でも検証する。
 
@@ -178,7 +178,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 - open_questions（裏取りできなかった論点・出所の食い違い・一次情報の代表性の限界）を明記する。
 - C・D を根拠とする記述は、レポート上でも限定表現を保つ（「口コミでは〜という声がある。傍証にとどめる」）。
 
-納品時に、`companies/{企業スラッグ}/_manifest.json` の `artifacts.company_research` を更新する（後述「_manifest.json の更新」）。`updated_at` を調査日にし、調査したトピックそれぞれの `last_researched` を調査日にする。あわせて Step 3 の監査で得た verdict を `audit_verdict` に、監査を行った日付を `audited_at` に書く。差し戻して再監査した場合は、最後の監査の verdict と日付を書く。
+納品時に、`companies/{企業スラッグ}/_manifest.json` の `artifacts.company_research` を更新する（後述「_manifest.json の更新」）。`updated_at` を調査日にし、調査したトピックそれぞれの `last_researched` を調査日にする。あわせて Step 3 の監査で得た verdict を `audit_verdict` に、監査した日付を `audited_at` に書く。差し戻して再監査した場合は、最後の監査の verdict と日付を書く。
 
 企業スラッグの接頭辞（ディレクトリ名）は変更しない。`career-private/company_index.json` の分類・一覧用のフィールドへ、企業の点数や格付けを書かない。点数は適合性評価が算出するためである。
 
@@ -207,7 +207,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 
 - `_manifest.json` が無ければ作る。あれば該当箇所のみを更新し、他の成果物（`fit_assessment` 等）の記録は残す。
 - Step 0.5 で job_posting.json を作ったときは `artifacts.job_posting` を更新する。
-- Step 4 の納品時に `artifacts.company_research.updated_at` と、調査したトピックの `topics.<トピック名>.last_researched` を更新する。同時に `audit_verdict`（Step 3 の verdict。`CLEAN`・`CONCERNS`・`BLOCK` のいずれか）と `audited_at`（監査を行った日付）を書く。差し戻して再監査した場合は最後の監査の結果で上書きする。
+- Step 4 の納品時に `artifacts.company_research.updated_at` と、調査したトピックの `topics.<トピック名>.last_researched` を更新する。同時に `audit_verdict`（Step 3 の verdict。`CLEAN`・`CONCERNS`・`BLOCK` のいずれか）と `audited_at`（監査した日付）を書く。差し戻して再監査した場合は最後の監査の結果で上書きする。
 
 ### トピック限定の差分再調査
 
@@ -216,7 +216,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 1. 指定トピックのみを重点観点として Step 1 の researcher を起動し、当該トピックの claims を得る。
 2. 既存の company_research.json を読み、指定トピックの claims だけを差し替え（マージ）、他トピックの claims はそのまま残す。
 3. 指定トピックに対応づく `company_metrics` の項目を再取得し、値・出典URL・レベル・時点（`as_of`）を更新する。再取得の対象外の項目はそのまま残す。確認できなくなった項目は `value` を `null` に戻す。
-4. Step 2 の機械検証を再度通す（PASS を確認する）。
+4. Step 2 の機械的な検証を再度通す（PASS を確認する）。
 5. `_manifest.json` の `artifacts.company_research.topics.<指定トピック>.last_researched` のみを更新する（他トピックの `last_researched` は変えない）。`updated_at` は今回の調査日にする。
 
 鮮度が切れたトピックの判定・再調査の指示は hub が行い、本スキルは指定されたトピックの再調査と記録の更新を担う。
@@ -227,10 +227,10 @@ company_research.json を、人が読める企業研究レポート `companies/{
 
 | ゲート | 通過条件と差し戻し先 |
 |---|---|
-| Step 2 の機械検証ゲート | `validate_company_research.py` が PASS（ERROR 0件）でなければ Step 3 以降へ進まない。ERROR は Step 1 へ差し戻す。 |
+| Step 2 の機械的な検証ゲート | `validate_company_research.py` が PASS（ERROR 0件）でなければ Step 3 以降へ進まない。ERROR は Step 1 へ差し戻す。 |
 | Step 3 の独立監査ゲート | `job-change-research-auditor` の verdict が `BLOCK`、または severity=重大の finding があれば Step 1 へ差し戻す。 |
 
-差し戻しは同一企業の調査につき最大2回まで行う。2回で解消しない指摘は、company-research-report.md の未決事項へ記録し、利用者へ判断を委ねてから納品する。機械検証の ERROR は差し戻しの上限にかかわらず解消してから納品し、未解決が監査の finding だけである場合に限り、未決事項として明記したうえで納品してよい。差し戻し時は、機械検証の ERROR 内容または監査の findings をそのまま researcher へ渡し、修正後に再度 Step 2 から通す。
+差し戻しは同一企業の調査につき最大2回まで行う。2回で解消しない指摘は、company-research-report.md の未決事項へ記録し、利用者へ判断を委ねてから納品する。機械的な検証の ERROR は差し戻しの上限にかかわらず解消してから納品し、未解決が監査の finding だけである場合に限り、未決事項として明記したうえで納品してよい。差し戻し時は、機械的な検証の ERROR 内容または監査の findings をそのまま researcher へ渡し、修正後に再度 Step 2 から通す。
 
 ## 役割の実行（ハーネス別）
 
@@ -275,10 +275,10 @@ cd {SKILL_DIR} && python -m unittest discover -s scripts/tests
 
 | ファイル | 何を | いつ読むか |
 |---|---|---|
-| `references/evidence-grading.md` | エビデンスレベルA〜Dの定義・判定基準・C/D断定禁止・自己宣伝的主張の確度制限・ソース突合・裏取り知見（口コミの選択バイアス・集約スコアの妥当性・有報の限界） | レベルと確度を付ける/検査する全段階 |
-| `references/company-research-format.md` | company_research.json のフィールド仕様・記入基準・機械検証規則 | company_research.json を書く/読む/検証する全段階 |
-| `references/source-catalog.md` | 情報源カタログ（EDINET有報・IR開示・就職四季報・しょくばらぼ・認定制度・口コミサイト）と各源の記載内容・限界・出典URL | Step 1 の収集、Step 3 の監査 |
+| `references/evidence-grading.md` | エビデンスレベルA〜Dの定義・判定基準・C/D断定禁止・自己宣伝的主張の確度制限・出所の突き合わせ・裏取り知見（口コミの選択バイアス・集約スコアの妥当性・有報の限界） | レベルと確度を付ける/検査する全段階 |
+| `references/company-research-format.md` | company_research.json のフィールド仕様・記入基準・機械的な検証の規則 | company_research.json を書く/読む/検証する全段階 |
+| `references/source-catalog.md` | 情報源カタログ（EDINET有報・IR開示・就職四季報・しょくばらぼ・認定制度・口コミサイト）と各情報源の記載内容・限界・出典URL | Step 1 の収集、Step 3 の監査 |
 | `references/philosophy-analysis.md` | 理念・社是・パーパス分析の収集源と分析手順（明文→行動指針→人事制度→開示との一貫性検証）、自己宣伝的主張の確度制限との関係 | topic=philosophy の収集・分析 |
 | `references/compensation-benefits.md` | 給与・福利厚生・働き方の調査観点と情報源カタログ（有報・しょくばらぼ・認定制度・就職四季報・OpenWork・公的統計）、company_metrics への格納ルール | topic=compensation/benefits/workstyle の収集 |
 | `references/company-score-rubric.md` | 定量候補軸9個（軸キー・指標・単位・方向・出所）の定義と `company_metrics` の記入形式、点数化・重み・総合点を適合性評価が担う分業 | Step 1 の実測値の収集、Step 3 の company_metrics 監査 |
-| `references/job-posting-format.md` | job_posting.json のフィールド仕様・記入基準・機械検証規則（4通りの入口と `source_type` を含む） | Step 0.5 で求人票を取り込む/検証する段階 |
+| `references/job-posting-format.md` | job_posting.json のフィールド仕様・記入基準・機械的な検証の規則（4通りの入口と `source_type` を含む） | Step 0.5 で求人票を取り込む/検証する段階 |

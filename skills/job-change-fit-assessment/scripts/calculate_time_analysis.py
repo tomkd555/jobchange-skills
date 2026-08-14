@@ -1,7 +1,7 @@
-"""job-change-fit-assessment: 拘束時間・実質時給の決定的（非LLM）算定ツール。
+"""job-change-fit-assessment: 拘束時間・実質時給の機械的な（非LLM）算定ツール。
 
 標準ライブラリのみで、求人票・企業研究・利用者入力から得た数値をもとに、1日および
-年間の拘束時間、年間労働時間、実質時給を決定的に算定し、time_analysis.json を生成する。
+年間の拘束時間、年間労働時間、実質時給を機械的に算定し、time_analysis.json を生成する。
 未指定の入力には官公庁の一次統計に基づく統計フォールバック定数（FALLBACKS）を適用し、
 適用した項目を fallbacks_used と assumptions に記録する。仕様の原本は
 references/time-analysis-format.md、フォールバック定数の原本は本ファイルの FALLBACKS /

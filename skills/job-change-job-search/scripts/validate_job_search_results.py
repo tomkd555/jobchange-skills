@@ -1,6 +1,6 @@
-"""job-change-job-search: job_search_results.json の決定的（非LLM）検証ツール。
+"""job-change-job-search: job_search_results.json の機械的な（非LLM）検証ツール。
 
-標準ライブラリのみで、求人検索の成果物である job_search_results.json を機械検査する。
+標準ライブラリのみで、求人検索の成果物である job_search_results.json を機械的に検査する。
 スキーマ（必須フィールド・型・列挙値・引用の存在）に加え、--profile を渡した場合は
 PII リントを行い、利用者の現勤務先名・氏名らしき値・現年収（salary.current）が成果物へ
 混入していないかを検出する。profile の読み取りはローカルに閉じ、外部へ送信しない。
@@ -436,7 +436,7 @@ def _validate_axis_judgements(
 
 
 def derive_classification(judgements: list[dict]) -> str:
-    """軸判定から分類を決定的に導く。判定表は job-search-format.md にある。"""
+    """軸判定から分類を機械的に導く。判定表は job-search-format.md にある。"""
     must = [j for j in judgements if j.get("level") == "must"]
     if any(j.get("judgement") == "not_meets" for j in must):
         return "excluded"

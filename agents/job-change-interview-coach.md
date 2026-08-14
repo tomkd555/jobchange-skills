@@ -35,7 +35,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 
 ## 判断の原本
 
-出力 JSON の形式（フィールド仕様・記入基準・機械検証規則）は、原本 `{SKILL_DIR}/references/interview-format.md` に従う。記入例は `{SKILL_DIR}/assets/interview_questions_example.json`・`{SKILL_DIR}/assets/interview_evaluation_example.json`（いずれも架空データ）にある。
+出力 JSON の形式（フィールド仕様・記入基準・機械的な検証の規則）は、原本 `{SKILL_DIR}/references/interview-format.md` に従う。記入例は `{SKILL_DIR}/assets/interview_questions_example.json`・`{SKILL_DIR}/assets/interview_evaluation_example.json`（いずれも架空データ）にある。
 
 質問類型は次の6種を基本とし、外資系選考ではビヘイビアラル面接・ケース面接を加える。
 

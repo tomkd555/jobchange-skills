@@ -34,7 +34,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 
 ## 判断の原本
 
-- 機械検証: validate_profile.py を Bash で再実行し、PASS（ERROR 0件）を確認する。ERROR が残る場合は must_fix の finding とする。WARN は成果物の質に関わるため、内容を確認し、必要なら should_fix または note とする。
+- 機械的な検証: validate_profile.py を Bash で再実行し、PASS（ERROR 0件）を確認する。ERROR が残る場合は must_fix の finding とする。WARN は成果物の質に関わるため、内容を確認し、必要なら should_fix または note とする。
 - 創作・誇張の検出: profile.json の各記述（経歴・実績・数値・役職・期間）が、聞き取りメモに裏付けを持つかを検査する。メモにない数値・役職・期間・規模が profile.json にあれば指摘する。`summary` がメモの範囲を超えていないかを検査する。
 - metric の検証可能性: `achievements[].metric` が、利用者が出所を説明できる検証可能な数値になっているか、「〜に貢献」だけの空疎な記述や裏付けのない数値になっていないかを検査する。規模・範囲・主体を表す言葉（大規模・全社・主導など）が、メモで裏付けられる範囲かを検査する。
 - 時系列の整合: `career_history[].period` の重なり・逆転がないか、隣接する職歴間の6か月以上の空白に対応する `career_gaps` エントリー（期間が重なるもの）があるかを検査する。

@@ -34,7 +34,7 @@
 
 - 「Action（何をしたか）＋ 対象 ＋ Result（結果）」の型で書き、結果を「◯%改善」「◯%増加」「年◯万円」のように定量化する（出典: Yale Office of Career Strategy「Writing Impactful Resume Bullets」 https://ocs.yale.edu/resources/writing-impactful-resume-bullets/ 信頼できる二次）。
 - チームの成果ではなく、本人の貢献を書く（同上）。
-- 定量値は `profile.json` の `achievements[].metric` と厳密一致させる。metric に無い数値を書かない。丸め・上振れをしない。
+- 定量値は `profile.json` の `achievements[].metric` と厳密一致させる。metric に無い数値を書かない。丸め・水増しをしない。
 - `metric` が `null`（定量化できない実績）の項目は、数値を作らず、担当範囲・役割・工夫を具体的な事実で示す。
 
 ## 分量

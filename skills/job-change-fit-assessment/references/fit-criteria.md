@@ -73,7 +73,7 @@ job_posting の勤務条件（`location`・`employment_type`・`working_hours` �
 
 company_research の philosophy・workstyle・reputation トピックと、self_analysis の行動証拠・価値観を突き合わせる。
 
-- **内省単独に重みを置かない。** self_analysis の主観的な自己申告だけで断定せず、self_analysis に記録された行動証拠（過去の具体的な行動・実績）との対応づけを優先する。
+- **内省単独に重きを置かない。** self_analysis の主観的な自己申告だけで断定せず、self_analysis に記録された行動証拠（過去の具体的な行動・実績）との対応づけを優先する。
 - 企業側の材料は、自己宣伝的主張（レベルAでも confidence が high でないもの）を断定に使わず、事実（制度の有無・開示数値・認定）と分けて扱う。
 - 口コミ由来（レベルC）は限定表現にとどめる。
 - self_analysis が無い場合（inputs.self_analysis=false）は、行動証拠を欠くため score を高くせず、verdict にその旨を書くか null にする。

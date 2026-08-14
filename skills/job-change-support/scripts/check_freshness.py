@@ -1,5 +1,5 @@
 """job-change-support: 企業別成果物（companies/{slug}/_manifest.json）の
-決定的（非LLM）鮮度判定ツール。
+機械的な（非LLM）鮮度判定ツール。
 
 標準ライブラリのみで、_manifest.json に記録された各成果物の最終更新日と、
 トピックごとの TTL（有効期限日数）を突き合わせ、fresh（TTL 内）・stale（TTL 超過）・
