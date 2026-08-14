@@ -33,7 +33,7 @@
 | `slug` | string | 必須 | 企業スラッグ。形式の原本は job-change-support の `references/company-index-format.md` にある |
 | `assessed_at` | string | 必須 | 評価日。`YYYY-MM-DD` |
 | `inputs` | object | 必須 | 各入力の有無を真偽値で記録。2.0 のキーは `job_posting`・`company_research`・`self_analysis`・`time_analysis`・`job_search_screening` の5つ |
-| `screening_source` | object | 任意 | 求人検索のスクリーニング結果への参照。`{search_id, result_index, classification, screened_at}` |
+| `screening_source` | object | 任意 | 求人検索のスクリーニング結果への参照。`{search_id, result_index, classification, screened_at}`。後述 |
 | `dimensions` | array | 必須 | 次元の評価。2.0 では過不足なく7件 |
 | `must_condition_results` | array | 必須 | 必須条件の判定。profile の必須条件と1対1 |
 | `company_score` | object | 任意 | 企業スコア（0〜100点）。`{total, coverage, provisional, axes, rationale}` |
@@ -213,6 +213,79 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 | `recommendation` | string | `推奨`・`条件付き推奨`・`非推奨`・`判断保留` のいずれか |
 | `rationale` | string | 総合判定の根拠（非空） |
 | `open_questions` | array | 未確認・未決の論点。空配列でもよい |
+
+## screening_source
+
+求人検索（`job-change-job-search`）のスクリーニングを経てこの評価へ来た場合に、そのときの判定の出所を書く。求人検索を経ずに企業研究から入った場合は書かない。
+
+```json
+{
+  "search_id": "20260725-remote-infra",
+  "result_index": 0,
+  "classification": "apply_candidate",
+  "screened_at": "2026-07-25"
+}
+```
+
+| フィールド | 型 | 内容 |
+|---|---|---|
+| `search_id` | string | 参照先の検索実行の識別子。`{DATA_ROOT}/job-search/{検索ID}/job_search_results.json` のトップレベルの `search_id` をそのまま写す。値はディレクトリ名 `{検索ID}` と同じである。形式と記入基準の原本は job-change-job-search の `references/job-search-format.md` にある |
+| `result_index` | integer | 参照先 `results[]` のうち当該求人を指す添字（0始まり） |
+| `classification` | string | 参照先 `results[result_index].classification` の値 |
+| `screened_at` | string | 参照先 `screening.screened_at`（判定日。`YYYY-MM-DD`） |
+
+`search_id` と `result_index` の2つで、どのファイルのどの求人を見て判定したかが定まる。求人検索の判定と適合性評価の判定が食い違った軸は、検証スクリプトが `result_index` で参照先を引いて WARN として報告する。
+
+## 中間成果物（sources.json・qualitative_judgment.json）
+
+Step 2 で fit-assessor が作る2つのファイルである。どちらも `fit_assessment.json` と同じ `{DATA_ROOT}/career-private/fit/{企業スラッグ}/` 配下へ置く。定性軸の判定条件は利用者が自分の言葉で書いたものであり、その判定結果も個人情報の派生値であるため、非個人情報ツリー（`companies/` 配下）へは置かない。置き場所を決めない一時ファイルにもしない。中断したあとの再開で、ファイルの有無から Step 2 のどこまで済んでいるかを決めるためである。
+
+### sources.json
+
+拘束時間の算定に使った各数値の出典メタである。`calculate_time_analysis.py` の `--sources-json` へ渡し、スクリプトは各キーのメタを `time_analysis.json` の `inputs` へ写す。
+
+```
+{DATA_ROOT}/career-private/fit/{企業スラッグ}/sources.json
+```
+
+```json
+{
+  "monthly_overtime_h": { "value": 18, "source": "research", "source_url": "https://...", "grade": "B" },
+  "annual_holidays": { "value": 125, "source": "posting", "source_url": "https://...", "grade": "A" },
+  "commute_oneway_min": { "value": 45, "source": "user", "source_url": null, "grade": null }
+}
+```
+
+キーは `calculate_time_analysis.py` の入力の識別子で、`scheduled_hours`・`break_minutes`・`monthly_overtime_h`・`annual_holidays`・`paid_leave_rate`・`paid_leave_granted`・`paid_leave_taken`・`commute_oneway_min`・`salary` を取りうる。CLI 引数で値を渡した項目だけを書く。渡さずに統計フォールバックへ委ねた項目はここへ書かない（スクリプトが `source` を `fallback` として補う）。
+
+| フィールド | 型 | 内容 |
+|---|---|---|
+| `value` | number | 抽出した値。CLI 引数へ渡した値と同じものを控えとして書く。点数の算出にはスクリプトが CLI 引数の値を使う |
+| `source` | string | `posting`（求人票 metrics）・`research`（企業研究の指標）・`user`（利用者の申告）・`fallback` のいずれか。既定値以外は `user` として扱われる |
+| `source_url` | string \| null | 出典 URL。利用者の申告など URL が無い場合は `null` |
+| `grade` | string \| null | 出典のエビデンスレベル（A〜D）。原本は job-change-company-research の `references/evidence-grading.md`。利用者の申告など付けられない場合は `null` |
+
+### qualitative_judgment.json
+
+profile の `company_score_axes` のうち `kind` が `qualitative` の軸について、判定条件（`judgment`）へ事実を当てはめた結果である。`calculate_company_score.py` の `--qualitative-json` へ渡し、スクリプトは `matched_score` をそのまま `company_score.axes[].score` へ、`evidence` を同 `evidence` へ写す。
+
+```
+{DATA_ROOT}/career-private/fit/{企業スラッグ}/qualitative_judgment.json
+```
+
+```json
+{
+  "tech_discretion": { "matched_score": 50, "evidence": "求人票の『設計から関与』の記載に合致した" },
+  "team_autonomy": { "matched_score": null, "evidence": null }
+}
+```
+
+キーは profile の `company_score_axes[].axis`（定性軸のみ）である。
+
+| フィールド | 型 | 内容 |
+|---|---|---|
+| `matched_score` | integer \| null | 最初に合致した判定条件の `score`。profile の当該軸の `judgment[].score` に無い値を書くと `calculate_company_score.py` が終了コード 2 で拒む。どの条件にも合致しない軸は `null` とし、中間の点数を推測で置かない |
+| `evidence` | string \| null | どの記載が条件に合致したかの説明。`matched_score` が `null` のときは `null` でよい |
 
 ## 検証規則（validate_fit_assessment.py）
 

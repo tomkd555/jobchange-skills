@@ -297,7 +297,7 @@ class ConsistencyWarnTest(unittest.TestCase):
         self.assertTrue(any("assessed_at" in w for w in result.warnings))
 
 
-class ExampleAssetTest(unittest.TestCase):
+class ExampleAssetWithoutProfileTest(unittest.TestCase):
     def test_bundled_example_passes(self):
         example_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),

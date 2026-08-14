@@ -28,6 +28,9 @@ _SLUG_RE = re.compile(
     r"[0-9A-Za-z぀-ヿ㐀-鿿＀-￯-]*$"
 )
 
+# 検索実行の識別子。成果物を置くディレクトリ名 {YYYYMMDD}-{条件の短いスラッグ} と同じ形式である。
+_SEARCH_ID_RE = re.compile(r"^[0-9]{8}-[0-9a-z][0-9a-z-]*$")
+
 _V1_SCHEMA_VERSION = "1.0"
 _V2_SCHEMA_VERSION = "2.0"
 _KNOWN_SCHEMA_VERSIONS = (_V1_SCHEMA_VERSION, _V2_SCHEMA_VERSION)
@@ -43,6 +46,22 @@ SCREENING_AXES = (
     "experience_distance",
     "salary_condition",
 )
+# 列挙で観測する軸と、その値域。語彙の原本は job-change-support の references/screening-axes.md にある。
+AXIS_ENUM_VALUES = {
+    "remote_certainty": ("guaranteed", "full_remote_possible", "hybrid", "onsite"),
+    "oncall_load": ("none_stated", "exists"),
+}
+# 数値で観測する軸と、その値域 (下限, 上限)。上限が None なら上限を設けない。
+# 単位は screening-axes.md にある（残業は月平均時間、年間休日は日／年、年収は円）。
+AXIS_NUMERIC_RANGE = {
+    "overtime_hours": (0, None),
+    "annual_holidays": (0, None),
+    "hands_on_ratio": (0.0, 1.0),
+    "coordination_ratio": (0.0, 1.0),
+    "salary_condition": (0, None),
+}
+# 年収下限は円単位である。これ未満は万円単位で書いた取り違えの疑いがあるため WARN にする。
+_SALARY_CONDITION_WARN_BELOW = 10000
 DUTY_CATEGORIES = {
     "build": "hands_on",
     "operate": "hands_on",
@@ -231,6 +250,63 @@ def _validate_duty_items(item: dict, path: str, result: ValidationResult) -> Non
             )
 
 
+def _validate_axis_value(
+    axis: str, observation: dict, obs_path: str, stated: bool, result: ValidationResult
+) -> None:
+    """観測1件の value を、軸ごとの型と値域に照らして検査する。"""
+    value = observation.get("value")
+
+    if axis == "experience_distance":
+        # この軸だけは観測層で距離を決めない。value は null 固定で、要件の引用と職種大分類を持つ。
+        if value is not None:
+            result.add_error(
+                f"{obs_path}.value",
+                "experience_distance の観測は value を null 固定とする。距離は判定層で決める",
+            )
+        if not stated:
+            return
+        required = observation.get("required_experience")
+        if not isinstance(required, list) or not all(_is_nonempty_str(q) for q in required):
+            result.add_error(
+                f"{obs_path}.required_experience",
+                "required_experience は必須要件の引用文（非空の文字列）の配列である",
+            )
+        if not _is_nonempty_str(observation.get("job_family")):
+            result.add_error(
+                f"{obs_path}.job_family",
+                "job_family は職種の大分類（非空の文字列）である",
+            )
+        return
+
+    if value is None:
+        return
+
+    if axis in AXIS_ENUM_VALUES:
+        if value not in AXIS_ENUM_VALUES[axis]:
+            result.add_error(
+                f"{obs_path}.value",
+                f"value は {'/'.join(AXIS_ENUM_VALUES[axis])} のいずれかである（実値: {value!r}）",
+            )
+        return
+
+    low, high = AXIS_NUMERIC_RANGE[axis]
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        result.add_error(f"{obs_path}.value", f"value は数値でなければならない（実値: {value!r}）")
+        return
+    if value < low or (high is not None and value > high):
+        upper = "上限なし" if high is None else str(high)
+        result.add_error(
+            f"{obs_path}.value",
+            f"value は {low} 以上・{upper} の範囲でなければならない（実値: {value}）",
+        )
+        return
+    if axis == "salary_condition" and value < _SALARY_CONDITION_WARN_BELOW:
+        result.add_warning(
+            f"{obs_path}.value",
+            f"salary_condition は円単位である。{value} は万円単位で書いていないか確かめる",
+        )
+
+
 def _validate_axis_observations(item: dict, path: str, result: ValidationResult) -> dict[str, dict]:
     """axis_observations を検査し、軸 id をキーとする辞書を返す。"""
     observations = item.get("axis_observations")
@@ -268,6 +344,7 @@ def _validate_axis_observations(item: dict, path: str, result: ValidationResult)
                 f"{obs_path}.value_text",
                 "stated=true かつ value が null の場合、定性表現を value_text に写す",
             )
+        _validate_axis_value(axis, observation, obs_path, stated, result)
 
     missing = [a for a in SCREENING_AXES if a not in seen]
     duplicated = sorted({a for a in seen if seen.count(a) > 1})
@@ -654,6 +731,16 @@ def validate(
         result.add_warning(
             "schema_version",
             f"schema_version が既知のバージョン（{'/'.join(_KNOWN_SCHEMA_VERSIONS)}）ではない（実値: {version!r}）",
+        )
+
+    search_id = document.get("search_id")
+    if not _is_nonempty_str(search_id):
+        result.add_error("search_id", "search_id は必須（非空）である。成果物を置くディレクトリ名と同じ値を書く")
+    elif not _SEARCH_ID_RE.match(search_id):
+        result.add_error(
+            "search_id",
+            "search_id は「実行日8桁（YYYYMMDD）＋ハイフン＋条件の短いスラッグ（英小文字・数字・ハイフン）」"
+            f"でなければならない（実値: {search_id!r}）",
         )
 
     mode = document.get("mode")

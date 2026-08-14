@@ -1,18 +1,12 @@
 ---
 name: job-change-company-research
 description: >-
-  転職の企業研究を担うサブスキル。企業名と重点観点を受け、EDINET有価証券報告書・決算資料・企業公式サイト・
-  統合報告書・認定制度データベース等の一次情報と、報道・口コミサイト等の二次以下の情報を収集し、すべての主張に
-  出典URLとエビデンスレベル（A=一次公式／B=信頼できる二次／C=口コミ集計／D=個人ブログ・伝聞）を付した
-  company_research.json を作る。理念・事業・財務・給与・福利厚生・働き方・評判・選考プロセスの8トピックを扱い、
-  機械検証（validate_company_research.py）と独立監査を通してから、トピック別の企業研究レポートを納品する。
-  求人情報URLを渡された場合は、求人票取込担当（job-change-posting-parser）でページを取得し job_posting.json を
-  作ってから調査へ入る。平均年間給与・年間休日・残業・有給取得率・離職率・男性の育児休業取得率などの
-  定量指標は、実測値・単位・出典URL・エビデンスレベルを添えて company_metrics へ構造化して格納する。
-  口コミ・伝聞だけでの事実断定を禁じ、企業自身の自己宣伝的主張には確度（confidence）を high としないという原則を保つ。
+  転職の企業研究を担うサブスキル。企業名と重点観点を受け、公式資料・報道・口コミサイト等から情報を集め、
+  すべての主張に出典URLとエビデンスレベル（A=一次公式／B=信頼できる二次／C=口コミ集計／D=個人ブログ・伝聞）を
+  付した company_research.json を作り、機械検証と独立監査を通してから、トピック別の企業研究レポートを納品する。
+  求人情報URLを渡された場合は、求人票を取り込んで job_posting.json を作ってから調査へ入る。
   指示された軸の指標について公表値を集めるところまでを担い、点数化・重み付け・格付けは行わない（profile 非依存）。
-  job-change-support（hub）から振り分けられて動く。収集・作成と独立監査は専用エージェント
-  （job-change-company-researcher / job-change-research-auditor / job-change-posting-parser）が担う。
+  job-change-support（hub）から振り分けられて動く。
   Use when the user researches a target company for a job change in Japan (including foreign-affiliated
   selection) — its philosophy, business, financials, compensation, benefits, work style, reputation, and
   selection process — or imports a job posting from a URL, and needs sourced, evidence-graded findings
@@ -38,7 +32,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 4. **一次情報も万能ではない。** レベルAの一次情報にも代表性・比較可能性の限界がある（有報の平均年間給与は全従業員平均で職種別内訳を欠く等）。限界を statement または open_questions に明示する。
 
-5. **個人情報を外部へ送信しない。** `profile.json` に含まれる個人情報（氏名・現年収・希望年収・居住地・学歴・在籍企業名・実績など）を、検索クエリ・fetch・外部APIを含む一切の外部送信に用いない。企業研究の Web 調査を担う job-change-company-researcher は WebSearch・WebFetch を持つため、`profile.json` を渡さない。重点観点は利用者の指示から与える。
+5. **個人情報を外部へ送信しない。** 利用者の個人情報を、検索クエリ・fetch・外部APIを含む一切の外部送信に用いない。対象の列挙と例外の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルの job-change-company-researcher と job-change-posting-parser、監査を担う job-change-research-auditor はいずれも WebSearch・WebFetch を持つため、`profile.json` と `career-private/` 配下のパス・内容を渡さない。渡してよいのは `company_score_axes` の quantitative 軸の識別子の配列だけである（原本の例外）。重点観点は利用者の指示から与える。
 
 6. **指示された軸の指標について実測値を出典付きで集める。評価も格付けもしない。** 企業研究は、指示書で渡された軸の識別子の配列（例 `["compensation_level", "annual_holidays"]`）に対応する定量指標の公表値を集め、`company_metrics` へ `value`・`unit`・`source_url`・`grade`・`as_of` を書く。軸の指定が無い場合は `compensation_level` を集める。実測値は企業側の事実であり、利用者プロファイル（希望年収・スキル・転職の軸）には依存しないため、profile.json を要しない。点数化・重み付け・総合点は、利用者がどの軸をどれだけ重んじるかに依存するため、適合性評価（job-change-fit-assessment）が算出する。定量候補軸9個の定義・単位・方向・出所と記入形式の原本は `references/company-score-rubric.md` にある。確認できなかった項目は `value` を `null` にし、推定値・概算値を入れない。
 
@@ -51,23 +45,21 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 ## パスの解決
 
-利用者データの置き場所は設定ファイルだけが決める。既定の置き場所を持たない。本文で `{DATA_ROOT}` と書いた箇所は、設定ファイルの `data_root` に読み替える。
+利用者データの置き場所は設定ファイルだけが決める。既定の置き場所を持たない。本文で `{DATA_ROOT}` と書いた箇所は、次のコマンドが返す `data_root` に読み替える。
 
-hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、次の順に設定ファイルを探し、最初に見つかったものを Read で読む。
-
-1. 環境変数 `JOB_CHANGE_CONFIG` が指すファイル
-2. カレントディレクトリから上位へたどった最初の `.job-change/config.json`
-3. `~/.job-change/config.json`
-
-Bash が使える場合は、次のコマンドでも解決できる（`paths` に各データの絶対パスが入る）。
+hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、作業のどの段階よりも先に次を実行する。
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 ```
 
-いずれの場所にも設定ファイルが無ければ未設定である。その場合は作業へ進まず、hub（job-change-support）へ戻して設定の作成を先行させる。
+| 終了コード | 状態 | 対応 |
+|---|---|---|
+| 0 | 設定済み | 出力の `paths` に各データの絶対パスが入る。そのまま作業へ進む |
+| 1 | 設定はあるが内容が不正 | 出力の `errors` を利用者へ示し、修復されるまで作業へ進まない |
+| 2 | 未設定 | Skill ツールで `job-change-support` を起動して設定を作らせ、`{DATA_ROOT}` を解決してから戻る |
 
-`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。設定ファイルの仕様は `docs/configuration.md` にある。
+`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。探索順序を含む設定ファイルの仕様は `docs/configuration.md` にある。
 
 ## 中間成果物: company_research.json
 
@@ -146,7 +138,7 @@ topic は `philosophy`・`business`・`financials`・`compensation`・`benefits`
 - 実測値を集める軸の識別子の配列（例 `["compensation_level", "annual_holidays"]`）。呼出元から軸の指定が無い場合は `["compensation_level"]` を渡す。利用者が定義した定性軸の記述は渡さない（本人の状況を映すため。判定は適合性評価が行う）。定性軸に関わる事柄を調べる必要がある場合、利用者が自分の言葉で重点観点として指示する。
 - 本スキルの絶対パス `{SKILL_DIR}`（references と scripts の所在）。
 
-重点観点は、8トピック（理念・事業・財務・給与・福利厚生・働き方・評判・選考）の強弱指定へ正規化して渡す。利用者の自由記述に含まれる個人情報（原則5の列挙）は指示書に含めず、該当トピックの強弱指定へ言い換える。
+重点観点は、8トピック（理念・事業・財務・給与・福利厚生・働き方・評判・選考）の強弱指定へ正規化して渡す。利用者の自由記述に含まれる個人情報（原則5、原本は `{HUB_SKILL_DIR}/references/pii-boundary.md`）は指示書に含めず、該当トピックの強弱指定へ言い換える。
 
 **profile.json は渡さない**（原則5。researcher は WebSearch・WebFetch を持つため）。Step 0.5 で job_posting.json を作った場合は、その所在を指示書に渡し、選考プロセス・求める人物像の照合に使わせる。エージェントは `references/evidence-grading.md`・`references/company-research-format.md`・`references/source-catalog.md`・`references/philosophy-analysis.md`・`references/compensation-benefits.md`・`references/company-score-rubric.md` を原本とする。これらに従い、収集した主張を claims 配列へ集約する。平均年間給与・年間休日・月平均残業・有給取得率・離職率などの数値は、文章の claim に埋めるだけでなく `company_metrics` へ構造化して格納する（単位・出典URL・レベル併記。確認できなければ value を null）。
 
@@ -186,11 +178,11 @@ company_research.json を、人が読める企業研究レポート `companies/{
 - open_questions（裏取りできなかった論点・出所の食い違い・一次情報の代表性の限界）を明記する。
 - C・D を根拠とする記述は、レポート上でも限定表現を保つ（「口コミでは〜という声がある。傍証にとどめる」）。
 
-納品時に、`companies/{企業スラッグ}/_manifest.json` の `artifacts.company_research` を更新する（後述「_manifest.json の更新」）。`updated_at` を調査日にし、調査したトピックそれぞれの `last_researched` を調査日にする。
+納品時に、`companies/{企業スラッグ}/_manifest.json` の `artifacts.company_research` を更新する（後述「_manifest.json の更新」）。`updated_at` を調査日にし、調査したトピックそれぞれの `last_researched` を調査日にする。あわせて Step 3 の監査で得た verdict を `audit_verdict` に、監査を行った日付を `audited_at` に書く。差し戻して再監査した場合は、最後の監査の verdict と日付を書く。
 
 企業スラッグの接頭辞（ディレクトリ名）は変更しない。`career-private/company_index.json` の分類・一覧用のフィールドへ、企業の点数や格付けを書かない。点数は適合性評価が算出するためである。
 
-最終メッセージには、軸ごとの実測値と出典の要点、主要トピックの要点、検証結果（validate の PASS・監査の verdict）、残る未決事項（差し戻し2回で解消しなかった論点があれば）を要約する。
+最終メッセージには、軸ごとの実測値と出典の要点、主要トピックの要点、検証結果（validate の PASS・監査の verdict）、残る未決事項（差し戻し2回で解消しなかった論点があれば）を要約する。レポートと最終メッセージはいずれも結論から述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
 
 ## _manifest.json の更新
 
@@ -205,6 +197,8 @@ company_research.json を、人が読める企業研究レポート `companies/{
     "job_posting": { "updated_at": "YYYY-MM-DD", "source_url": "https://..." },
     "company_research": {
       "updated_at": "YYYY-MM-DD",
+      "audit_verdict": "CLEAN",
+      "audited_at": "YYYY-MM-DD",
       "topics": { "financials": { "last_researched": "YYYY-MM-DD" } }
     }
   }
@@ -213,7 +207,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 
 - `_manifest.json` が無ければ作る。あれば該当箇所のみを更新し、他の成果物（`fit_assessment` 等）の記録は残す。
 - Step 0.5 で job_posting.json を作ったときは `artifacts.job_posting` を更新する。
-- Step 4 の納品時に `artifacts.company_research.updated_at` と、調査したトピックの `topics.<トピック名>.last_researched` を更新する。
+- Step 4 の納品時に `artifacts.company_research.updated_at` と、調査したトピックの `topics.<トピック名>.last_researched` を更新する。同時に `audit_verdict`（Step 3 の verdict。`CLEAN`・`CONCERNS`・`BLOCK` のいずれか）と `audited_at`（監査を行った日付）を書く。差し戻して再監査した場合は最後の監査の結果で上書きする。
 
 ### トピック限定の差分再調査
 
@@ -236,7 +230,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 | Step 2 の機械検証ゲート | `validate_company_research.py` が PASS（ERROR 0件）でなければ Step 3 以降へ進まない。ERROR は Step 1 へ差し戻す。 |
 | Step 3 の独立監査ゲート | `job-change-research-auditor` の verdict が `BLOCK`、または severity=重大の finding があれば Step 1 へ差し戻す。 |
 
-差し戻しは同一企業の調査につき最大2回まで行う。2回で解消しない指摘は、company-research-report.md の未決事項へ記録し、利用者へ判断を委ねてから納品する。差し戻し時は、機械検証の ERROR 内容または監査の findings をそのまま researcher へ渡し、修正後に再度 Step 2 から通す。
+差し戻しは同一企業の調査につき最大2回まで行う。2回で解消しない指摘は、company-research-report.md の未決事項へ記録し、利用者へ判断を委ねてから納品する。機械検証の ERROR は差し戻しの上限にかかわらず解消してから納品し、未解決が監査の finding だけである場合に限り、未決事項として明記したうえで納品してよい。差し戻し時は、機械検証の ERROR 内容または監査の findings をそのまま researcher へ渡し、修正後に再度 Step 2 から通す。
 
 ## 役割の実行（ハーネス別）
 
@@ -248,16 +242,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 | `job-change-research-auditor` | `{SKILL_DIR}/references/roles/research-auditor.md` |
 | `job-change-posting-parser` | `{SKILL_DIR}/references/roles/posting-parser.md` |
 
-**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` のコピーである。
-
-**サブエージェントを起動できないハーネス（Codex ほか）。** 各 Step の「エージェントを起動する」を「役割プロンプトを読み、その役割として自分で実行する」と読み替える。手順は次のとおり。
-
-1. 上表の役割プロンプトを Read で読む。
-2. Step に書かれた指示書の項目を、そのまま自分への指示として扱う。
-3. 役割プロンプトの「扱ってよい入力」のルールを守る。Web 送信手段を持たない役割として書かれている場合、その作業中は Web 検索・fetch を使わない。
-4. 成果物の形式・検証・合否ゲートは、ハーネスによらず同一である。
-
-本スキルは作成と監査を別の役割へ分け、監査者に作成者の判断理由を渡さないことで独立性を保つ。サブエージェントを使えないハーネスでは、同一の文脈で両方を担うためこの独立性が下がる。その場合、監査の段階では作成時の判断理由・迷った箇所・書き換えの経緯を一切参照せず、成果物と原本（`references/` の仕様）だけを見て判定する。判定を終えるまで、作成側の意図を補って読まない。
+ハーネス別の実行手順、起動する数の判断、作成と監査を分ける理由の原本は hub の `{HUB_SKILL_DIR}/references/role-execution.md` にある。
 
 ## エージェントのモデル方針
 

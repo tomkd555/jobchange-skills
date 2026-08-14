@@ -103,6 +103,15 @@ class ErrorCaseTest(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("schema_version" in e for e in result.errors))
 
+    def test_schema_version_of_wrong_type_errors(self):
+        for version in ("1", [], {}, True):
+            with self.subTest(version=version):
+                idx = _valid_index()
+                idx["schema_version"] = version
+                result = vci.validate(idx)
+                self.assertFalse(result.ok)
+                self.assertTrue(any("schema_version" in e for e in result.errors))
+
     def test_missing_companies(self):
         idx = _valid_index()
         del idx["companies"]
@@ -305,6 +314,17 @@ class WarnCaseTest(unittest.TestCase):
         self.assertTrue(result.ok)
         self.assertTrue(any("aliases" in w for w in result.warnings))
 
+    def test_unknown_schema_version_warns_but_passes(self):
+        idx = _valid_index()
+        idx["schema_version"] = 2
+        result = vci.validate(idx)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("schema_version" in w for w in result.warnings))
+
+    def test_known_schema_version_does_not_warn(self):
+        result = vci.validate(_valid_index())
+        self.assertFalse(any("schema_version" in w for w in result.warnings))
+
 
 class CliTest(unittest.TestCase):
     def _write_tmp(self, obj) -> str:
@@ -356,6 +376,15 @@ class ResultShapeTest(unittest.TestCase):
         snapshot = copy.deepcopy(idx)
         vci.validate(idx)
         self.assertEqual(idx, snapshot)
+
+
+class ExampleAssetTest(unittest.TestCase):
+    def test_bundled_example_passes(self):
+        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        document = vci.load_index(os.path.join(base, "assets", "company_index_example.json"))
+        result = vci.validate(document)
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
 
 
 if __name__ == "__main__":

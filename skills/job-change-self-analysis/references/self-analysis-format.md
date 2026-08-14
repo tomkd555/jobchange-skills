@@ -155,7 +155,8 @@ career adaptability の4次元。次元名の枠組みのみを用い、尺度�
 
 - JSON として読み込めない
 - `schema_version` の欠落または空
-- `behavioral_episodes` が空、または各要素で `situation`・`action`・`result` のいずれかが欠落・空
+- `behavioral_episodes` が空、または各要素で `id`・`situation`・`action`・`result` のいずれかが欠落・空
+- `others_feedback` の要素で `id` が欠落・空
 - `strengths` の要素で `statement` が欠落・空
 - `strengths` の要素で `episode_ids` と `feedback_ids` が両方とも空（内省単独の強み）
 - `strengths`・`values`・`career_adaptability` が参照する `episode_id` / `feedback_id` が実在しない（参照整合エラー）
@@ -165,6 +166,8 @@ career adaptability の4次元。次元名の枠組みのみを用い、尺度�
 ### WARN（成立するが情報不足で成果物の質を下げる）
 
 - `others_feedback` が0件（他者視点の欠落）
+- `behavioral_episodes` または `others_feedback` の中で `id` が重複している
+- `others_feedback` の要素の `source_type` が上表の値域にない
 - 全エピソードを通して `metric` が1件もない
 - `updated_at` の欠落
 - `interests` が空（domains・concrete_topics がともに空）

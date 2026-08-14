@@ -160,6 +160,8 @@ docs/                         設定と導入の手順
 
 ## 開発
 
+エージェント定義の二重管理・個人情報の境界・検証スクリプトとテストの約束ごとは、[CONTRIBUTING.md](CONTRIBUTING.md) にまとめています。変更を加える前にお読みください。
+
 ```bash
 # 全スキルの単体テスト
 for d in skills/*/; do [ -d "$d/scripts/tests" ] && (cd "$d" && python -m unittest discover -s scripts/tests); done

@@ -42,7 +42,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 - 条件の構造化（schema_version 2.0）: `conditions[]` の `axis`・`operator`・`value` が聞き取りメモの記録と一致するかを検査する。**メモにない軸・しきい値が入っていれば創作である。** 自由文の条件を機械的に軸へ割り付けた形跡（メモにしきい値の記録がないのに `operator` が比較演算子である）は must_fix とする。
 - 作業特性（schema_version 2.0）: `work_character_preferences` が8件あり、各 `desire` がメモの記録と一致するかを検査する。メモに記録がない特性へ値が入っていれば創作である。
 - 企業スコアの採点軸（schema_version 2.0）: `company_score_axes[]` の `axis`・`kind`・`weight`・`thresholds`・`note`、および定性軸の `label`・`definition`・`judgment` が聞き取りメモの記録と一致するかを検査する。メモに無い軸が入っていれば創作である。重みの記録が無いのに `weight` が入っている場合、メモに無い基準が `thresholds` に入っている場合、判定条件の記録が無いのに `judgment` が入っている場合も創作として指摘する。検算（架空2社の比較）の記録がメモにあるかも確認する。
-- 申告と実際の判断のずれ（schema_version 2.0）: `company_score_axes` の軸と重みが、`conditions[level=must]`・`work_character_preferences` の希望度と食い違う組み合わせを検出する（例: 残業の上限が必須条件なのに `monthly_overtime` を軸に選んでいない、`compensation_level` に最大の重みを置いているのに年収の条件が `want` である）。**どちらが本当かを裁定しない。** 食い違う両方を evidence に並べて示す finding（severity は note）とし、利用者の判断へ委ねる。メモに利用者の判断が記録されている場合は、その判断のとおりになっているかだけを検査する。
+- 申告と実際の判断のずれ（schema_version 2.0）: `company_score_axes` の軸と重みが、`conditions[level=must]`・`work_character_preferences` の希望度と食い違う組み合わせを検出する（例: 残業の上限が必須条件なのに `monthly_overtime` を軸に選んでいない、`compensation_level` に最大の重みを置いているのに年収の条件が `want` である）。**どちらが本当かを判定しない。** 食い違う両方を evidence に並べて示す finding（severity は note）とし、利用者の判断へ委ねる。メモに利用者の判断が記録されている場合は、その判断のとおりになっているかだけを検査する。
 - 監査観点の根拠は、スキルの `references/profile-methods.md`（採用側が見る情報・スキル分類・must/want の限界・経歴詐称の帰結）・`references/elicitation-guide.md`（任意の自己確認・空白期間）・`references/quantification-guide.md`（検証可能性の優先）に従う。
 
 ## 手順

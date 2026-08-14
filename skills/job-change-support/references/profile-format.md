@@ -128,7 +128,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `axis` | string または null | 必須 | `references/screening-axes.md` の8軸 id のいずれか、または `null`（8軸に当てはまらない質的条件）。他の値は ERROR |
 | `operator` | string | 必須 | `>=` / `<=` / `==` / `in` / `qualitative`。他の値は ERROR |
 | `value` | number / string / array / null | 条件付き必須 | 比較する値。`operator` が `qualitative` 以外なのに `null` なら ERROR |
-| `unit` | string | 任意 | `yen` / `h_month` / `days_year` / `ratio` / `none` |
+| `unit` | string | 任意 | `yen` / `h_month` / `days_year` / `ratio` / `none`。他の値は ERROR |
 | `verification` | string | 必須 | どこで確認できるか。`posting`（求人票）／`research`（企業研究）／`interview`（面接）／`unverifiable`。他の値は ERROR |
 | `priority` | integer | 任意 | 1が最優先。`level=must` の中での順位。欠落・重複は WARN |
 | `note` | string | 任意 | 補足 |
@@ -202,7 +202,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 
 | フィールド | 型 | 必須/任意 | 意味・記入基準 |
 |---|---|---|---|
-| `axis` | string | 必須 | 軸の識別子。空は ERROR。同じ軸が2回以上現れるのも ERROR。定量軸では company-score-rubric.md の定量候補軸9個のキーのいずれかであり、他の値は ERROR。定性軸では利用者が付ける識別子（半角英小文字・数字・アンダースコア） |
+| `axis` | string | 必須 | 軸の識別子。空は ERROR。同じ軸が2回以上現れるのも ERROR。定量軸では company-score-rubric.md の定量候補軸9個のキーのいずれかであり、他の値は ERROR。定性軸では利用者が付ける識別子（半角英小文字・数字・アンダースコア）であり、他の文字を含むと ERROR |
 | `kind` | string | 必須 | `quantitative`（公表された数値を線形式で点数へ写す軸）／`qualitative`（利用者が判定条件を決める軸）。他の値は ERROR |
 | `weight` | integer | 必須 | 重み。1以上100以下の整数。他の値は ERROR。全軸の合計が 100 でなければ ERROR |
 | `thresholds` | object | 定量軸のみ任意 | 点数の基準の上書き。`zero`（0点に相当する水準）と `full`（100点に相当する水準）をいずれも数値で持つ。定性軸に付けると ERROR。`zero` と `full` が数値でない場合、および両者が等しい場合は ERROR |
@@ -268,11 +268,13 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 - `conditions` が配列でない、または欠落している
 - `conditions[]` の `id` の形式不一致・重複、`level` の値域外、`statement` の空、`axis` の値域外、`operator` の値域外、`verification` の値域外
 - `operator` が `qualitative` 以外なのに `value` が `null`
+- `unit` があるのに `yen`／`h_month`／`days_year`／`ratio`／`none` のいずれでもない
 - `work_character_preferences` が配列でない、または欠落している
 - `work_character_preferences` が8特性を過不足なく持たない（欠落・重複・未知の `trait`）
 - `desire` の値域外、または `desire=must` なのに `statement` が空
 - `company_score_axes` があるのに配列でない、またはその要素がオブジェクトでない
 - `company_score_axes[].axis` の空・重複、`kind` の値域外、`kind` が `quantitative` の軸の `axis` が定量候補軸9個にない
+- `kind` が `qualitative` の軸の `axis` が、半角英小文字・数字・アンダースコア以外の文字を含む
 - `weight` が1以上100以下の整数でない、または `weight` の合計が 100 でない
 - `thresholds` を `kind` が `qualitative` の軸が持つ、`zero`・`full` が数値でない、または `zero` と `full` が等しい
 - `kind` が `qualitative` の軸で、`label`・`definition` が空、`judgment` が1件以上の配列でない、`judgment[].score` の値域外、`judgment[].condition` が空

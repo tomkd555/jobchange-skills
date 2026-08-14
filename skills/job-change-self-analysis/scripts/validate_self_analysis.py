@@ -20,6 +20,11 @@ from dataclasses import dataclass, field
 from typing import Any
 
 
+# others_feedback[].source_type の値域。
+# 語彙の原本は references/self-analysis-format.md の others_feedback 節にある。
+SOURCE_TYPES = ("上司", "同僚", "部下", "顧客", "友人・家族", "評価面談")
+
+
 @dataclass
 class ValidationResult:
     errors: list[str] = field(default_factory=list)
@@ -53,8 +58,23 @@ def _has_any_nonempty_str(values: Any) -> bool:
     return isinstance(values, list) and any(_is_nonempty_str(v) for v in values)
 
 
+def _check_id(entry: dict, path: str, seen: set[str], result: ValidationResult) -> None:
+    """id の欠落を ERROR、重複を WARN として報告し、有効な id を seen へ加える。
+
+    id が欠落したまま集合へ入らないと、その要素を指す参照が「実在しない id」として
+    検出されず、参照整合の検査そのものが意味を失う。このため id は必須とする。
+    """
+    value = entry.get("id")
+    if not _is_nonempty_str(value):
+        result.add_error(f"{path}.id", "id は必須（非空の文字列）である")
+        return
+    if value in seen:
+        result.add_warning(f"{path}.id", f"id '{value}' が重複している")
+    seen.add(value)
+
+
 def _validate_behavioral_episodes(document: dict, result: ValidationResult) -> set[str]:
-    """situation・action・result の欠落を検査し、参照整合用の episode_id 集合を返す。"""
+    """id と situation・action・result の欠落を検査し、参照整合用の episode_id 集合を返す。"""
     episodes = document.get("behavioral_episodes")
     episode_ids: set[str] = set()
     if not isinstance(episodes, list) or not episodes:
@@ -67,22 +87,33 @@ def _validate_behavioral_episodes(document: dict, result: ValidationResult) -> s
         if not isinstance(entry, dict):
             result.add_error(path, "エピソードの各要素はオブジェクトでなければならない")
             continue
-        if _is_nonempty_str(entry.get("id")):
-            episode_ids.add(entry["id"])
+        _check_id(entry, path, episode_ids, result)
         for key in ("situation", "action", "result"):
             if not _is_nonempty_str(entry.get(key)):
                 result.add_error(f"{path}.{key}", f"{key} は必須（非空）である")
     return episode_ids
 
 
-def _collect_feedback_ids(document: dict) -> set[str]:
+def _validate_others_feedback(document: dict, result: ValidationResult) -> set[str]:
+    """id と source_type を検査し、参照整合用の feedback_id 集合を返す。"""
     feedback = document.get("others_feedback")
     feedback_ids: set[str] = set()
     if not isinstance(feedback, list):
         return feedback_ids
-    for entry in feedback:
-        if isinstance(entry, dict) and _is_nonempty_str(entry.get("id")):
-            feedback_ids.add(entry["id"])
+    for i, entry in enumerate(feedback):
+        path = f"others_feedback[{i}]"
+        if not isinstance(entry, dict):
+            result.add_error(
+                path, "others_feedback の各要素はオブジェクトでなければならない"
+            )
+            continue
+        _check_id(entry, path, feedback_ids, result)
+        source_type = entry.get("source_type")
+        if source_type is not None and source_type not in SOURCE_TYPES:
+            result.add_warning(
+                f"{path}.source_type",
+                f"source_type '{source_type}' が規定の値域（{'・'.join(SOURCE_TYPES)}）にない",
+            )
     return feedback_ids
 
 
@@ -266,7 +297,7 @@ def validate(document: Any) -> ValidationResult:
         result.add_error("schema_version", "schema_version は必須（非空）である")
 
     episode_ids = _validate_behavioral_episodes(document, result)
-    feedback_ids = _collect_feedback_ids(document)
+    feedback_ids = _validate_others_feedback(document, result)
 
     _validate_strengths(document, result, episode_ids, feedback_ids)
     _validate_values(document, result, episode_ids)

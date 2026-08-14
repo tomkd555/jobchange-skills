@@ -41,7 +41,7 @@ ls -d "$HOME"/.agents/skills/job-change-* | wc -l
 
 `<REPO>/agents/` にある13ファイルは Claude Code 専用のエージェント定義であり、Codex では使わない。コピーしない。
 
-Codex では、各スキルの本体が `references/roles/*.md` を読み、その役割として自分で実行する。読み替えの手順は各スキルの `SKILL.md` の「役割の実行（ハーネス別）」に書いてある。
+Codex では、各スキルの本体が `references/roles/*.md` を読み、その役割として自分で実行する。読み替えの手順は `job-change-support/references/role-execution.md` に書いてある。
 
 **完了条件。** 次のコマンドが `13` を出力する（役割プロンプトがスキル側にそろっている）。
 

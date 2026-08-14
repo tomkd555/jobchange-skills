@@ -61,7 +61,7 @@ job_posting.json・company_research.json・profile.json のいずれかが欠け
    - 次に企業研究の指標（company_research.json の `company_metrics`。月平均残業は `monthly_overtime`、年間休日は `annual_holidays`、有給取得率は `paid_leave_rate`、有給取得日数は `avg_paid_leave_days_taken`、平均年間給与は `compensation_level`）。複数候補があればレベルの高いものを選ぶ。
    - 通勤片道分数は commute.json の `routes.{企業スラッグ}.one_way_minutes` を使う。同じ経路に任意項目の `transfers`（乗り換え回数）・`crowding`（混雑の程度）があれば読み、算定式には入れず `time_fit` の判断材料として使う。
    - いずれにも無い項目は指定せず、calculate_time_analysis.py の統計フォールバックに委ねる。
-2. 抽出した各数値の出典メタ（value・source（`posting`/`research`/`user`/`fallback`）・source_url・grade）を出典メタ JSON にまとめ、一時ファイルへ Write する。
+2. 抽出した各数値の出典メタ（value・source（`posting`/`research`/`user`/`fallback`）・source_url・grade）を `career-private/fit/{企業スラッグ}/sources.json` へ Write する。形式の原本は `{SKILL_DIR}/references/fit-format.md` にある。
 3. `calculate_time_analysis.py` を Bash で実行し、`career-private/fit/{企業スラッグ}/time_analysis.json` を生成する。抽出できた項目のみ引数で渡し、`--sources-json` に出典メタ JSON、`--out` に出力パスを渡す。
 
    ```bash
@@ -69,7 +69,7 @@ job_posting.json・company_research.json・profile.json のいずれかが欠け
    ```
 
 4. 現職の算定結果 `career-private/fit/current/time_analysis.json` があれば、応募先の実行へ `--baseline-json {現職の time_analysis.json}` を加え、出力へ `comparison`（現職の値と「応募先 − 現職」の差分）を含める。無ければ渡さず、差分を出せない旨を後段の `time_fit` の verdict に書く。現職の算定に要する数値の聞き取りはスキル本体が行う。
-5. profile.json の `company_score_axes` のうち `kind` が `qualitative` の軸を判定する。軸ごとに、利用者が書いた `definition`（何をもってそう言うか）と `judgment`（判定条件の配列）を読み、求人票と企業研究の事実を点数の高い条件から順に当てはめ、最初に合致した条件の `score` を採用する。判定結果を `{軸キー: {matched_score, evidence}}` の JSON にまとめ、一時ファイルへ Write する。`evidence` には、どの記載が条件に合致したかを書く。
+5. profile.json の `company_score_axes` のうち `kind` が `qualitative` の軸を判定する。軸ごとに、利用者が書いた `definition`（何をもってそう言うか）と `judgment`（判定条件の配列）を読み、求人票と企業研究の事実を点数の高い条件から順に当てはめ、最初に合致した条件の `score` を採用する。判定結果を `{軸キー: {matched_score, evidence}}` の JSON にまとめ、`career-private/fit/{企業スラッグ}/qualitative_judgment.json` へ Write する。`evidence` には、どの記載が条件に合致したかを書く。形式の原本は `{SKILL_DIR}/references/fit-format.md` にある。
 
    どの条件にも合致しない軸は `matched_score` を `null` にする。中間の点数を推測で置かない。求人票にも企業研究にも判断材料が無い軸も `null` にし、確認すべき事柄を `overall.open_questions` へ入れる。
 6. `calculate_company_score.py` を Bash で実行し、企業スコアを算出する。company_research.json の `company_metrics`（軸ごとの実測値）と profile.json の `company_score_axes`（軸・重み・基準）、項番5の定性軸判定 JSON から、`total`・`coverage`・`provisional`・`axes`・`rationale` が決まる。
@@ -104,7 +104,7 @@ job_posting.json・company_research.json・profile.json のいずれかが欠け
 
 ## 書込先制限
 
-- Write してよいのは `career-private/fit/{企業スラッグ}/` 配下（time_analysis.json・fit_assessment.json）と、出典メタ JSON・定性軸判定 JSON の一時ファイルに限る。
+- Write してよいのは `career-private/fit/{企業スラッグ}/` 配下の4ファイル（time_analysis.json・fit_assessment.json・sources.json・qualitative_judgment.json）に限る。この4つ以外を書かず、置き場所を決めない一時ファイルも作らない。
 - commute.json への通勤分数の転記はスキル本体が行う。あなたは commute.json を読むだけで、書き換えない。
 - job_posting.json・company_research.json・profile.json・self_analysis.json は読むだけで、書き換えない。
 

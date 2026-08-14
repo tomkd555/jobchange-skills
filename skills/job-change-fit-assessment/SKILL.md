@@ -5,13 +5,9 @@ description: >-
   条件の適合・文化の適合・報酬の適合・時間の適合）で適合性を評価するサブスキル。
   求人票 metrics と企業研究の指標から拘束時間・実質時給を算定し、profile の必須条件を
   1対1で判定し、推奨・条件付き推奨・非推奨・判断保留の総合判定を根拠つきで作成する。経験の近さと
-  志向の一致を別軸で評価し、不足する技術要件を3段階（3か月以内に補完可能・6〜12か月の学習が必要・
-  現時点では応募困難）で示す。すべての判定を evidence に対応づけ、エビデンスレベルC・D単独での断定を禁じ、材料が無い項目は創作せず unknown
-  とする。評価は fit_assessor エージェント（Web ツールなし・opus）が作成し、機械検証
-  （validate_fit_assessment.py）を PASS させてから納品する。成果物 fit_assessment.json・
-  time_analysis.json は個人情報の派生値のため career-private 配下に置き、Web ツールを持つエージェント
-  へ渡さない。応募先が決まった段階で、企業研究の後に使う。job-change-support（hub）から
-  振り分けられて動く。
+  志向の一致は別軸で評価し、不足する技術要件は補完に要する期間の段階で示す。すべての判定を evidence に
+  対応づけ、材料が無い項目は創作せず unknown とする。応募先が決まった段階で、企業研究の後に使う。
+  job-change-support（hub）から振り分けられて動く。
   Use when the user wants to assess how well a target company/job fits them for a job change in Japan —
   matching a job posting and company research against their profile, self-analysis, and working-time
   analysis across experience proximity / aspiration alignment / work character / condition / culture /
@@ -42,7 +38,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 2. **エビデンスレベルC・D単独で断定しない。** 口コミ・伝聞のみを根拠に次元を高く/低く断定しない。C・D を使う場合は限定表現にする。レベルの原本は `job-change-company-research` の `references/evidence-grading.md`。
 3. **材料が無い項目は創作せず unknown / null にする。** 必須条件の根拠が無ければ `unknown`、次元の判断材料が不足すれば score を `null`（判断保留）にする。求人票から判定できない作業特性を推測で埋めない。
 4. **経験の近さと志向の一致を混ぜない。** 経験が近いことを、その仕事を望んでいる根拠に使わない。経験に近い内容であっても、調整・管理・顧客折衝が中心の求人を、経験の近さだけで推奨しない。
-5. **個人情報の派生値を外部へ送信しない。** fit_assessment.json・time_analysis.json は profile・自己分析に由来する派生値を含むため、`career-private/fit/{企業スラッグ}/` 配下に置き、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ一切渡さない。本スキルが起動する fit-assessor は Web ツールを持たない。
+5. **個人情報の派生値を外部へ送信しない。** fit_assessment.json・time_analysis.json は profile・自己分析に由来する派生値を含むため、`career-private/fit/{企業スラッグ}/` 配下に置き、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ一切渡さない。派生値も原本と同じ境界の内側にある。境界の対象と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルが起動する fit-assessor は Web ツールを持たない。
 
 ## 範囲外
 
@@ -52,23 +48,21 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 ## パスの解決
 
-利用者データの置き場所は設定ファイルだけが決める。既定の置き場所を持たない。本文で `{DATA_ROOT}` と書いた箇所は、設定ファイルの `data_root` に読み替える。
+利用者データの置き場所は設定ファイルだけが決める。既定の置き場所を持たない。本文で `{DATA_ROOT}` と書いた箇所は、次のコマンドが返す `data_root` に読み替える。
 
-hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、次の順に設定ファイルを探し、最初に見つかったものを Read で読む。
-
-1. 環境変数 `JOB_CHANGE_CONFIG` が指すファイル
-2. カレントディレクトリから上位へたどった最初の `.job-change/config.json`
-3. `~/.job-change/config.json`
-
-Bash が使える場合は、次のコマンドでも解決できる（`paths` に各データの絶対パスが入る）。
+hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、作業のどの段階よりも先に次を実行する。
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 ```
 
-いずれの場所にも設定ファイルが無ければ未設定である。その場合は作業へ進まず、hub（job-change-support）へ戻して設定の作成を先行させる。
+| 終了コード | 状態 | 対応 |
+|---|---|---|
+| 0 | 設定済み | 出力の `paths` に各データの絶対パスが入る。そのまま作業へ進む |
+| 1 | 設定はあるが内容が不正 | 出力の `errors` を利用者へ示し、修復されるまで作業へ進まない |
+| 2 | 未設定 | Skill ツールで `job-change-support` を起動して設定を作らせ、`{DATA_ROOT}` を解決してから戻る |
 
-`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。設定ファイルの仕様は `docs/configuration.md` にある。
+`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。探索順序を含む設定ファイルの仕様は `docs/configuration.md` にある。
 
 ## データ配置
 
@@ -79,10 +73,13 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | `career-private/self_analysis.json` | 自己分析（任意入力） | job-change-self-analysis |
 | `career-private/commute.json` | 通勤時間（入力・利用者入力のみ） | 本スキル（Step 1 で転記） |
 | `career-private/fit/current/time_analysis.json` | 現職の拘束時間・実質時給（比較の基準。全企業で共通） | scripts/calculate_time_analysis.py |
+| `career-private/fit/{企業スラッグ}/sources.json` | 拘束時間の算定に使った各数値の出典メタ（Step 2 の中間成果物） | fit-assessor |
+| `career-private/fit/{企業スラッグ}/qualitative_judgment.json` | 定性軸の判定結果（Step 2 の中間成果物） | fit-assessor |
 | `career-private/fit/{企業スラッグ}/time_analysis.json` | 拘束時間・実質時給の算定結果（成果物） | scripts/calculate_time_analysis.py |
 | `career-private/fit/{企業スラッグ}/fit_assessment.json` | 適合性評価（成果物） | fit-assessor |
+| `career-private/fit/{企業スラッグ}/fit-report.md` | 適合性評価を人が読める形へ整形したレポート（成果物） | 本スキル本体（Step 5） |
 
-- fit_assessment.json・time_analysis.json は個人情報の派生値であり、`career-private/` 配下に置く。Web ツールを持つエージェントへ渡さない。
+- fit_assessment.json・time_analysis.json・sources.json・qualitative_judgment.json・fit-report.md は個人情報の派生値であり、`career-private/` 配下に置く。Web ツールを持つエージェントへ渡さない。とくに定性軸の判定条件は利用者が自分の言葉で書いたものであり、その判定結果を `companies/` 配下へ置かない。
 - スキル本体フォルダー（`skills/job-change-fit-assessment/`）に実データを置かない。`assets/fit_assessment_example.json` は架空の記入例であり実データではない。
 
 ## パイプライン
@@ -102,17 +99,19 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 fit-assessor を Agent ツールで起動し、拘束時間・実質時給と、企業スコア（0〜100点）を算出させる。fit-assessor は次を行う。
 
-- 数値を、**求人票 metrics（job_posting.json の `metrics`）> 企業研究の指標（company_research.json の `company_metrics`。レベル順に選ぶ）> 統計フォールバック**の優先順で抽出する。各数値の出典（`posting`/`research`/`user`/`fallback`）・出典URL・レベルを、`--sources-json` に渡す出典メタ JSON へ記録する。
+- 数値を、**求人票 metrics（job_posting.json の `metrics`）> 企業研究の指標（company_research.json の `company_metrics`。レベル順に選ぶ）> 統計フォールバック**の優先順で抽出する。各数値の出典（`posting`/`research`/`user`/`fallback`）・出典URL・レベルを `career-private/fit/{企業スラッグ}/sources.json` へ記録し、これを `--sources-json` へ渡す。
 - `scripts/calculate_time_analysis.py` を Bash で実行し、`career-private/fit/{企業スラッグ}/time_analysis.json` を生成する。CLI は全入力を引数で受ける（`--scheduled-hours`・`--break-minutes`・`--overtime-h-month`・`--annual-holidays`・`--paid-leave-rate`・`--paid-leave-granted`・`--paid-leave-taken`・`--commute-oneway-min`・`--salary`・`--sources-json <出典メタJSON>`・`--out <出力パス>`・`--json`）。スクリプトは、未指定の項目にのみ統計フォールバック定数を適用し、`fallbacks_used` へ記録する。
 - **現職についても同じ式で算定し、差分を出す。** `career-private/fit/current/time_analysis.json` が無ければ、現職の年収・所定労働時間・年間休日・月平均残業・片道通勤分数を AskUserQuestion で1回だけまとめて確認し、同じ CLI で生成する（年収は profile.json の現年収を使い、重ねて聞かない）。応募先の算定では `--baseline-json career-private/fit/current/time_analysis.json` を渡し、出力へ `comparison`（現職の値と「応募先 − 現職」の差分）を含める。現職の入力がそろわない場合は `--baseline-json` を渡さず、差分を出せない旨を `time_fit` の verdict に書く。
-- **定性軸を判定する。** profile の `company_score_axes` のうち `kind` が `qualitative` の軸について、求人票と企業研究の事実を判定条件（`judgment`）へ当てはめ、合致した条件の `score` と根拠を定性軸判定 JSON（`{軸キー: {matched_score, evidence}}`）へ書く。どの条件にも合致しない軸は `matched_score` を `null` にし、推測で中間点を置かない。判定条件が求人票と企業研究から確かめられない事柄は、`overall.open_questions` へ面接での確認事項として回す。
-- **企業スコアを算出する。** `scripts/calculate_company_score.py` を Bash で実行し、`company_research.json` の実測値（`company_metrics`）と profile の採点軸（`company_score_axes`）、定性軸判定 JSON から `total`（0〜100 または null）・`coverage`・`provisional`・`axes`・`rationale` を得る。結果は Step 3 で `fit_assessment.json` の `company_score` へそのまま入れる。
+- **定性軸を判定する。** profile の `company_score_axes` のうち `kind` が `qualitative` の軸について、求人票と企業研究の事実を判定条件（`judgment`）へ当てはめ、合致した条件の `score` と根拠を `career-private/fit/{企業スラッグ}/qualitative_judgment.json`（`{軸キー: {matched_score, evidence}}`）へ書く。どの条件にも合致しない軸は `matched_score` を `null` にし、推測で中間点を置かない。判定条件が求人票と企業研究から確かめられない事柄は、`overall.open_questions` へ面接での確認事項として回す。
+- **企業スコアを算出する。** `scripts/calculate_company_score.py` を Bash で実行し、`company_research.json` の実測値（`company_metrics`）と profile の採点軸（`company_score_axes`）、`qualitative_judgment.json` から `total`（0〜100 または null）・`coverage`・`provisional`・`axes`・`rationale` を得る。結果は Step 3 で `fit_assessment.json` の `company_score` へそのまま入れる。
 
   ```bash
-  python {SKILL_DIR}/scripts/calculate_company_score.py --research {DATA_ROOT}/companies/{企業スラッグ}/company_research.json --profile {DATA_ROOT}/career-private/profile.json --qualitative-json {定性軸判定.json} --json
+  python {SKILL_DIR}/scripts/calculate_company_score.py --research {DATA_ROOT}/companies/{企業スラッグ}/company_research.json --profile {DATA_ROOT}/career-private/profile.json --qualitative-json {DATA_ROOT}/career-private/fit/{企業スラッグ}/qualitative_judgment.json --json
   ```
 
   採点する軸の申告が無ければ `total` は `null` になる。この場合は点数を提示せず、hub の `job-change-profile` で `company_score_axes` を申告するよう促す。軸と重みを仮定して採点しない。
+
+中間成果物の `sources.json` と `qualitative_judgment.json` も `career-private/fit/{企業スラッグ}/` 配下へ残す。中断から再開するときは、会話の記憶ではなくこの2ファイルの有無で続きを決める。`sources.json` があれば数値の抽出をやり直さずそのまま `--sources-json` へ渡し、`qualitative_judgment.json` があれば定性軸の判定を省いてそのまま `--qualitative-json` へ渡す。ただし `job_posting.json` または `company_research.json` を取り直した場合は、抽出のもとが変わっているため両方を作り直す。
 
 calculate_time_analysis.py の定義式・フォールバック定数・出力仕様の原本は `references/time-analysis-format.md` にある。採点規則の原本は job-change-company-research の `references/company-score-rubric.md`、`company_score` の形式の原本は `references/fit-format.md` にある。
 
@@ -146,6 +145,20 @@ ERROR が1件でもあれば Step 3 へ差し戻す。PASS（ERROR 0件）にな
 
 ### Step 5 報告
 
+報告は結論から述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
+
+報告に先立ち、fit_assessment.json と time_analysis.json を、人が読める適合性評価レポート `career-private/fit/{企業スラッグ}/fit-report.md` へ整形する。整形は判定ではないため、fit-assessor ではなく本スキル本体が書く。適合性評価は個人情報の派生値であり（原則5）、整形したレポートも同じ境界の内側である `career-private/` 配下に置く。
+
+- 冒頭に総合判定（推奨/条件付き推奨/非推奨/判断保留）と rationale を置く。
+- 7次元を表にする（次元・score・verdict の要点・evidence の出所）。score が `null` の次元は判断保留と書き、その理由を添える。
+- 必須条件の判定を表にする（`ref`・条件の内容・`yes`/`no`/`unknown`・根拠）。profile の必須条件と1対1に並べ、間引かない。
+- 拘束時間と実質時給を表にする（応募先の値・現職の値・差分）。差分を出せていない場合は、その旨と理由を書く。
+- `company_score` の軸ごとの内訳を表にする（軸・実測値と単位・出典・点数・重み・基準の出所）。`total`・`coverage`・`provisional` を添え、7次元の score や総合判定の根拠ではない旨を1文書く。
+- `overall.open_questions` を、確認する手段（企業研究か面接か）とともに列挙する。
+- `skill_gap` が `none` 以外の場合は、不足する要件と補完に要する期間の段階を書く。
+
+利用者への報告は、このレポートをもとに次を述べる。
+
 - 総合判定（推奨/条件付き推奨/非推奨/判断保留）と、その根拠（rationale）・7次元の要点・未確認の論点（open_questions）を利用者へ提示する。
 - 経験の近さと志向の一致は別々に伝える。経験が近いことを推奨の理由にまとめない。
 - `skill_gap` が `none` 以外の場合は、不足する要件と補完に要する期間の段階を明示する。
@@ -171,14 +184,7 @@ ERROR が1件でもあれば Step 3 へ差し戻す。PASS（ERROR 0件）にな
 |---|---|
 | `job-change-fit-assessor` | `{SKILL_DIR}/references/roles/fit-assessor.md` |
 
-**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` のコピーである。
-
-**サブエージェントを起動できないハーネス（Codex ほか）。** 各 Step の「エージェントを起動する」を「役割プロンプトを読み、その役割として自分で実行する」と読み替える。手順は次のとおり。
-
-1. 上表の役割プロンプトを Read で読む。
-2. Step に書かれた指示書の項目を、そのまま自分への指示として扱う。
-3. 役割プロンプトの「扱ってよい入力」のルールを守る。Web 送信手段を持たない役割として書かれている場合、その作業中は Web 検索・fetch を使わない。
-4. 成果物の形式・検証・合否ゲートは、ハーネスによらず同一である。
+ハーネス別の実行手順と、起動する数の判断の原本は hub の `{HUB_SKILL_DIR}/references/role-execution.md` にある。
 
 ## エージェントのモデル方針
 
@@ -205,7 +211,7 @@ python {SKILL_DIR}/scripts/validate_fit_assessment.py {fit_assessment.json} --pr
 
 ```bash
 python {SKILL_DIR}/scripts/calculate_company_score.py --research {company_research.json} --profile {profile.json} --json
-python {SKILL_DIR}/scripts/calculate_company_score.py --research {company_research.json} --profile {profile.json} --qualitative-json {定性軸判定.json} --out {company_score.json}
+python {SKILL_DIR}/scripts/calculate_company_score.py --research {company_research.json} --profile {profile.json} --qualitative-json {qualitative_judgment.json} --out {company_score.json}
 ```
 
 `--out` は指定パスへ書き出し、`--json` は標準出力へ出す。単体テストは次で実行する。
@@ -218,7 +224,7 @@ cd {SKILL_DIR} && python -m unittest discover -s scripts/tests
 
 | ファイル | 何を | いつ読むか |
 |---|---|---|
-| `references/fit-format.md` | fit_assessment.json のフィールド仕様・検証規則・配置 | fit_assessment.json を書く/読む/検証する全段階 |
+| `references/fit-format.md` | fit_assessment.json のフィールド仕様・検証規則・配置と、中間成果物 sources.json・qualitative_judgment.json の形式 | Step 2 の中間成果物を書く段階と、fit_assessment.json を書く/読む/検証する全段階 |
 | `references/fit-criteria.md` | 7次元の判定基準・score の目安・evidence の付け方・unknown 優先 | Step 3 の評価の作成 |
 | `references/fit-methods.md` | 7次元の判定が依拠する知見（上司との適合・現職との比較・通勤・転職後の満足の推移）と、その限界（出典付き） | Step 3 の評価の作成、Step 5 の報告で留保を添える段階 |
 | `references/time-analysis-format.md` | time_analysis.json の定義式・フォールバック定数・CLI・出力仕様 | Step 2 の拘束時間算定 |

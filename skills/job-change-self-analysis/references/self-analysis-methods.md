@@ -3,7 +3,7 @@
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
 <!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
 
-job-change-self-analysis スキルが採用する分析軸の実証的裏付けと限界を定める原本である。SKILL.md の原則・question-bank.md の質問設計・エージェント2体（writer / auditor）がこのファイルを参照する。エビデンスレベルは A〜D の4段階（A=査読済みの学術研究・一次公式、B=信頼できる二次、C=口コミ・集計・HRブログ、D=個人ブログ・伝聞）で表記し、学術研究には DOI を記す。表記形式は `[E番号] 文献名 (年) レベル DOI:xxx https://doi.org/xxx` とし、末尾の「出典一覧」に対応づける。
+job-change-self-analysis スキルが採用する分析軸の実証的裏付けと限界を定める原本である。SKILL.md の原則・question-bank.md の質問設計・エージェント2体（writer / auditor）がこのファイルを参照する。エビデンスレベルは A〜D の4段階（A=一次・公式、B=信頼できる二次、C=口コミ・集計サイト、D=個人ブログ・伝聞・未確認）で表記し、学術研究には DOI を記す。定義の原本は `job-change-company-research/references/evidence-grading.md` にあり、査読済みの学術研究はレベル A に含まれる。表記形式は `[E番号] 文献名 (年) レベル DOI:xxx https://doi.org/xxx` とし、末尾の「出典一覧」に対応づける。
 
 ## 中核の制約: 内省は単独では信頼できない
 

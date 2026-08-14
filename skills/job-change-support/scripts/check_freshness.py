@@ -92,6 +92,10 @@ def check_freshness(manifest: Any, today: date) -> dict[str, list[dict]]:
                     f"company_research.{topic}", last_researched, ttl_days, today
                 )
                 result[bucket].append(entry)
+        else:
+            # topics が欠落・null・オブジェクト以外なら company_research 全体を missing とする
+            # （空のオブジェクトはトピック0件として判定対象にしない）
+            result["missing"].append({"artifact": "company_research"})
 
     return result
 

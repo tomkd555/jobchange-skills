@@ -5,7 +5,7 @@
 
 job-change-fit-assessment スキルの判定設計の根拠と限界を定める原本である。7次元（experience_proximity / aspiration_alignment / work_character_fit / condition_fit / culture_fit / compensation_fit / time_fit）のスコア、必須条件の1対1判定、総合判定の決め方そのものは `references/fit-criteria.md` が定める。本ファイルはその判定基準の背後にある知見を示し、どこまでが実証で支持され、どこからが運用上の取り決めかを分ける。エージェント（fit-assessor）が verdict と `overall.open_questions` を書くときの根拠として参照する。
 
-対象は日本国内での就業に限る。判定の根拠に据える知見は、日本の労働者を標本とする実証を優先する。欧米の標本だけの知見は、日本での妥当性が確かめられるまで判定の根拠に据えず、確認事項の設計や注記の材料として扱う。エビデンスレベルは A〜D の4段階（A=査読済みの学術研究・一次公式、B=信頼できる二次、C=口コミ・集計・HRブログ、D=個人ブログ・伝聞）で表記し、学術研究には DOI を記す。
+対象は日本国内での就業に限る。判定の根拠に据える知見は、日本の労働者を標本とする実証を優先する。欧米の標本だけの知見は、日本での妥当性が確かめられるまで判定の根拠に据えず、確認事項の設計や注記の材料として扱う。エビデンスレベルは A〜D の4段階（A=一次・公式、B=信頼できる二次、C=口コミ・集計サイト、D=個人ブログ・伝聞・未確認）で表記し、学術研究には DOI を記す。定義の原本は `job-change-company-research/references/evidence-grading.md` にあり、査読済みの学術研究はレベル A に含まれる。
 
 ## 直属上司との適合を score にしない理由
 

@@ -587,12 +587,19 @@ def _validate_aspiration_alignment(document: dict, result: ValidationResult) -> 
     if not isinstance(dimension, dict):
         return
     path = "dimensions(aspiration_alignment)"
+    inputs = document.get("inputs")
+    has_self_analysis = isinstance(inputs, dict) and inputs.get("self_analysis") is True
+    # WARN は score の有無によらず出す（自己分析が無いこと自体が根拠の弱さである）。
+    if not has_self_analysis:
+        result.add_warning(
+            f"{path}",
+            "自己分析が無いため志向の根拠が弱い。job-change-self-analysis の実施を促す",
+        )
+
     score = dimension.get("score")
     if score is None:
         return
 
-    inputs = document.get("inputs")
-    has_self_analysis = isinstance(inputs, dict) and inputs.get("self_analysis") is True
     if not has_self_analysis and _is_int(score) and score >= 4:
         result.add_error(
             f"{path}.score",
@@ -605,11 +612,6 @@ def _validate_aspiration_alignment(document: dict, result: ValidationResult) -> 
         result.add_error(
             f"{path}.evidence",
             "志向の一致には self_analysis または profile を根拠に含める（求人票だけで志向を断定しない）",
-        )
-    if not has_self_analysis:
-        result.add_warning(
-            f"{path}",
-            "自己分析が無いため志向の根拠が弱い。job-change-self-analysis の実施を促す",
         )
 
 

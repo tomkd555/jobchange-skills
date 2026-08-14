@@ -26,6 +26,7 @@ SLUG_PATTERN = re.compile(
     r"[0-9A-Za-z぀-ヿ㐀-鿿＀-￯-]*$"
 )
 _VALID_STATUSES = ("active", "closed")
+_KNOWN_SCHEMA_VERSIONS = (1,)
 _SCORE_MIN = 0
 _SCORE_MAX = 100
 
@@ -133,8 +134,17 @@ def validate(document: Any) -> ValidationResult:
         result.add_error("(root)", "ルート要素はオブジェクトでなければならない")
         return result
 
-    if document.get("schema_version") is None:
+    version = document.get("schema_version")
+    if version is None:
         result.add_error("schema_version", "schema_version は必須である")
+    elif isinstance(version, bool) or not isinstance(version, (int, float)):
+        result.add_error("schema_version", "schema_version は数値でなければならない")
+    elif version not in _KNOWN_SCHEMA_VERSIONS:
+        result.add_warning(
+            "schema_version",
+            f"schema_version が既知のバージョン（{'/'.join(str(v) for v in _KNOWN_SCHEMA_VERSIONS)}）"
+            f"ではない（実値: {version!r}）",
+        )
 
     companies = document.get("companies")
     if not isinstance(companies, dict):
