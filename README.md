@@ -13,7 +13,7 @@
 
 Claude Code と Codex の両方で動きます。スキルの書き方は [Agent Skills](https://agentskills.io) の形式（`SKILL.md`・`references/`・`scripts/`）に従っています。
 
-## 収録スキル
+## スキル
 
 | スキル | 役割 | 主な成果物 |
 |---|---|---|
@@ -25,7 +25,7 @@ Claude Code と Codex の両方で動きます。スキルの書き方は [Agent
 | `job-change-fit-assessment` | 求人と本人を7つの観点で照合します | `fit_assessment.json`・`time_analysis.json` |
 | `job-change-documents` | 職務経歴書・履歴書・志望動機などを作成します | `documents/` 配下の各書類 |
 | `job-change-exam-prep` | 応募先で使われる筆記試験と適性検査の種別を調べ、対策を立てます | `exam_assessment.json`・`exam-prep-plan.md` |
-| `job-change-interview-prep` | 企業ごとの想定質問を作り、回答を評価します | 想定質問集・`interview_answers.json` |
+| `job-change-interview-prep` | 企業ごとの想定質問を作り、回答を評価します | `interview_questions.json`・`interview_evaluation.json`・`interview-prep-report.md` |
 
 ## エビデンスレベル
 
@@ -51,8 +51,6 @@ Claude Code と Codex の両方で動きます。スキルの書き方は [Agent
 
 ### Claude Code
 
-次の2行で導入できます。
-
 ```
 /plugin marketplace add https://github.com/tomkd555/jobchange-skills.git
 /plugin install job-change@job-change-skills
@@ -64,13 +62,13 @@ Claude Code と Codex の両方で動きます。スキルの書き方は [Agent
 
 `skills/job-change-*` の9ディレクトリを、Codex のスキル探索先へ置きます。手順は [docs/install-codex.md](docs/install-codex.md) にあります。この文書は、AI エージェントに読ませてそのまま実行させることを想定して書いてあります。
 
-なお知人がCodexユーザーであったため、codex版も作成していますが、自分自身でテストは行っていません。
+なお知人がCodexユーザーであったため、codex版も作成していますがテストは行っていません。
 
 ## 使い方
 
-`/job-change-support` を実行するか、「転職の準備をしたい」と伝えると hub が起動します。
+`/job-change-support` を実行してください。
 
-hub は、まず利用者データの置き場所を尋ねます。置き場所は設定ファイルだけで決まり、既定値を持たないためです。現年収や居住地を含むデータをどこへ置くかは、自分自身で決定してください。設定ファイルの仕様と探索の順序は、[docs/configuration.md](docs/configuration.md) にあります。
+初回起動時に利用者データの配置場所を尋ねます。配置場所は設定ファイルだけで決まり、既定値を持たないためです。個人情報が記録されるため、安全な場所を選択してください。設定ファイルの仕様と探索の順序は、[docs/configuration.md](docs/configuration.md) にあります。
 
 その後、以下の順番で動作します。スキップする場合は直接スキルをコールしてください。
 
@@ -93,7 +91,7 @@ hub は、まず利用者データの置き場所を尋ねます。置き場所�
 
 ## 成果物の例
 
-企業研究が出す `company_research.json` は、主張1件ごとに出典 URL・エビデンスレベル・原文どおりの引用・取得日を持ちます。本 README に出てくる企業名は、記載時点で実在しない架空のものです。
+企業研究が出す `company_research.json` は、主張1件ごとに出典 URL・エビデンスレベル・原文どおりの引用・取得日を持ちます。
 
 ```json
 {
@@ -133,39 +131,11 @@ hub は、まず利用者データの置き場所を尋ねます。置き場所�
 
 `career-private/` を `companies/` の外側へ置いています。個人情報を切り離すためです。個人情報は、検索クエリにも fetch にも外部 API にも渡さないように指示をしていますが、LLMの仕様上、保証はできません。必ず自己責任で実行してください。
 
-## 設計のルール
-
-- 企業情報には、出典 URL と[エビデンスレベル](#エビデンスレベル)を必ず付けます。
-- 経歴・スキル・転職の軸は、`profile.json` の1か所に集約します。
-- 判断材料が足りない項目は `unknown` または保留とし、推測で補いません。
-
 ## 求人サイトの利用規約について
 
 求人検索と求人票の取り込みでは、AI エージェントが求人サイトの公開ページを取得します。対象は、ログインなしで閲覧できるページに限っています。
 
 ただし、自動的な取得を制限している求人サイトもあります。対象サイトの利用規約と `robots.txt` は、利用者自身で確認してください。取得の頻度も、サイトへ過度な負荷をかけない範囲に保ってください。
-
-## リポジトリの構成
-
-```
-skills/job-change-*/          9スキル本体
-  SKILL.md                    手順の定義
-  references/                 判断基準とデータ形式の定義
-  references/roles/           役割プロンプトの定義
-  scripts/                    検証スクリプトとその単体テスト
-  assets/                     架空の記入例
-agents/                       Claude Code 用のエージェント定義13体
-docs/                         設定と導入の手順
-```
-
-## 開発
-
-エージェント定義の二重管理・個人情報の境界・検証スクリプトとテストの約束ごとは、[CONTRIBUTING.md](CONTRIBUTING.md) にまとめています。変更を加える前にお読みください。
-
-```bash
-# 全スキルの単体テスト
-for d in skills/*/; do [ -d "$d/scripts/tests" ] && (cd "$d" && python -m unittest discover -s scripts/tests); done
-```
 
 ## 範囲外
 
@@ -180,7 +150,7 @@ for d in skills/*/; do [ -d "$d/scripts/tests" ] && (cd "$d" && python -m unitte
 
 このスキル群が作る書類・評価・想定質問は、いずれも下書きです。応募に使う前に、本人が中身を確認してください。
 
-企業情報には出典とエビデンスレベルを付けますが、これは収集した時点の公開情報であり、正確さと新しさを保証するものではありません。待遇・選考プロセス・労働条件は、応募先が公式に示す情報で確認してください。
+企業情報には出典とエビデンスレベルを付けますが、これは収集した時点の公開情報であり、正確さと最新性を保証するものではありません。待遇・選考プロセス・労働条件は、応募先が公式に示す情報をご自身で確認してください。
 
 LLMの仕様を理解したうえで、全て自己責任でお願いします。
 
