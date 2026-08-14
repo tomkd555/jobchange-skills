@@ -141,6 +141,18 @@ class CompanyResearchWholeMissingTest(unittest.TestCase):
             any(a.startswith("company_research.") for a in _labels(result["missing"]))
         )
 
+    def test_topics_key_absent_is_missing_as_whole(self):
+        manifest = _manifest(topics={})
+        del manifest["artifacts"]["company_research"]["topics"]
+        result = cf.check_freshness(manifest, TODAY)
+        self.assertIn("company_research", _labels(result["missing"]))
+
+    def test_null_topics_is_missing_as_whole(self):
+        manifest = _manifest(topics={})
+        manifest["artifacts"]["company_research"]["topics"] = None
+        result = cf.check_freshness(manifest, TODAY)
+        self.assertIn("company_research", _labels(result["missing"]))
+
     def test_empty_topics_produces_no_entries(self):
         manifest = _manifest(topics={})
         result = cf.check_freshness(manifest, TODAY)

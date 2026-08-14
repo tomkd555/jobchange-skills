@@ -1,12 +1,12 @@
 # job_posting.json の原本仕様（job-posting-format）
 
-取り込んだ求人情報の構造化データ `job_posting.json` のフィールド仕様・記入基準・機械検証規則を定める原本である。求人票取込担当エージェント（job-change-posting-parser）がこの仕様に適合するオブジェクトを組み立て、`scripts/validate_job_posting.py` がこの仕様に照らして機械検査する。
+取り込んだ求人情報の構造化データ `job_posting.json` のフィールド仕様・記入基準・機械的な検証の規則を定める原本である。求人票取込担当エージェント（job-change-posting-parser）がこの仕様に適合するオブジェクトを組み立て、`scripts/validate_job_posting.py` がこの仕様に照らして機械的に検査する。
 
 出力先は `{DATA_ROOT}/companies/{企業スラッグ}/job_posting.json` である。ファイルを書くのは呼出元スキル（job-change-company-research 本体）であり、スラッグ解決後にのみ書く。posting-parser エージェントはファイルを書かず、`{company_name, aliases, job_posting}` を最終メッセージの JSON で返す。
 
 ## 取込の入口
 
-求人票は、企業ごとの工程の1段目で必ず作る。入口は4通りあり、`source_type` で区別する。
+求人票は、企業ごとの工程の最初で必ず作る。入口は4通りあり、`source_type` で区別する。
 
 | `source_type` | 入口 | 取込のしかた | `source_url` |
 |---|---|---|---|
@@ -15,7 +15,7 @@
 | `file` | 求人票の PDF・画像 | 利用者が示したファイルを読み取って構造化する | null または省略 |
 | `dialogue` | 企業名のみ | 対話で必須項目を聞き取って構造化する | null または省略 |
 
-`url` 以外の入口でも、参考として URL を持つこと自体は妨げない。`source_url` を検査するのは `source_type` が `url` のときだけである。
+`url` 以外の入口でも、参考として URL を書くこと自体は妨げない。`source_url` を検査するのは `source_type` が `url` のときだけである。
 
 ## 全体構造
 
@@ -102,9 +102,9 @@
 
 この扱いは入口によらない。`source_type` が `dialogue` の場合に利用者が答えられなかった項目も、同じ扱いとする。推定で補わず、`open_questions` に書く。
 
-## 機械検証規則（validate_job_posting.py）
+## 機械的な検証の規則（validate_job_posting.py）
 
-`scripts/validate_job_posting.py` が決定的に検査する。ERROR が1件でもあれば FAIL（終了コード1）、ERROR 0件なら PASS（終了コード0。WARN があっても PASS）。
+`scripts/validate_job_posting.py` が機械的に検査する。ERROR が1件でもあれば FAIL（終了コード1）、ERROR 0件なら PASS（終了コード0。WARN があっても PASS）。
 
 **ERROR（成果物として成立しない・型違反）**
 

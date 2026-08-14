@@ -17,6 +17,12 @@ jobs:
         python-version: ["3.9", "3.13"]
     steps:
       - uses: actions/checkout@v4
+      - name: エージェント定義の同期確認
+        run: |
+          for f in skills/*/references/roles/*.md; do
+            a="agents/job-change-$(basename "$f")"
+            cmp "$a" "$f" || { echo "不一致: $a と $f"; exit 1; }
+          done
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}

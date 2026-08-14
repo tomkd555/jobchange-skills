@@ -3,11 +3,11 @@
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
 <!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
 
-job-change-profile スキルの設計判断の根拠と限界を定める原本である。SKILL.md の原則・エージェント2体（writer / auditor）の監査観点がこのファイルを参照する。証拠グレードは A〜D の4段階（A=査読済みの学術研究・一次公式、B=信頼できる二次、C=口コミ・集計・HRブログ、D=個人ブログ・伝聞）で表記し、学術研究には DOI を記す。
+job-change-profile スキルの設計判断の根拠と限界を定める原本である。SKILL.md の原則・エージェント2体（writer / auditor）の監査観点がこのファイルを参照する。エビデンスレベルは A〜D の4段階（A=一次・公式、B=信頼できる二次、C=口コミ・集計サイト、D=個人ブログ・伝聞・未確認）で表記し、学術研究には DOI を記す。定義の原本は `job-change-company-research/references/evidence-grading.md` にあり、査読済みの学術研究はレベル A に含まれる。
 
 ## 採用側が書類選考で見る情報
 
-採用側が中途採用の書類選考で評価する中核は、職務経歴・実績・スキルの内容と、それが求人要件へどう対応するかという点（relevance）である。加えて書類の提示品質（可読性・誤字の少なさ）が通過を左右する（確度: 可能性が非常に高い、80%以上90%未満）。
+採用側が中途採用の書類選考で評価する中核は、職務経歴・実績・スキルの内容と、それが求人要件へどう対応するかという点（relevance）である。加えて書類の可読性と誤字の少なさが通過を左右する（確度: 可能性が非常に高い、80%以上90%未満）。
 
 - 日本の採用担当者調査では、職務経歴・職務内容が最重視項目とされる（doda 調査で43.4%）[E1]。ただし IT 職に限れば「スキル・使用可能ツール」が最重視（48.4%）で、最重視項目は職種に依存する[E2]。**この2つの数値はそれぞれ単一の調査に由来する。**
 - 学術的には、person-job／person-organization 適合が入社前アウトカム（採用意図・内定）と広く関連する（172研究のメタ分析）[E13]。履歴書の属性がどう読み取られるかは対象職務に依存する[E12]。アイトラッキングでは Experience セクションの注視が通過判定を予測した[E15]。
@@ -22,7 +22,7 @@ job-change-profile スキルの設計判断の根拠と限界を定める原本�
 
 - O*NET はスキルを基礎スキルと転用可能スキル（cross-functional）に分け、各項目に操作的定義を付す[E40]。
 - 厚生労働省はポータブルスキルを「業種・職種が変わっても持ち運びできる職務遂行上のスキル」と公的に定義し、仕事のし方（対課題）5要素と人との関わり方（対人）4要素の計9要素で構成する[E44]。
-- ESCO はスキルの再利用性を transversal・cross-sectoral・sector-specific・occupation-specific の4段階で分類し、抽象的な横断スキルは職業文脈で具体化されて初めて使えると明文化する（スキル文脈化）[E47]。
+- ESCO はスキルの再利用性を transversal・cross-sectoral・sector-specific・occupation-specific の4段階で分類し、抽象的な横断スキルは職業文脈で具体化されて初めて使えると明文化する（スキルは職業の文脈に置いて初めて意味を持つ）[E47]。
 
 設計への含意: profile.json は technical / business / languages / certifications を入口としつつ、ポータブルスキル9要素（対課題・対人）を補助分類（`skills.portable`）として持ち、専門スキルと転用可能スキルを分けて棚卸しできる構造にする。要件との対応づけは応募時に応募書類サブスキルが行う。
 
@@ -36,7 +36,7 @@ must/want の分離は要件工学の MoSCoW と同じ構造を持つ実務標�
 
 設計への含意: `job_change_axis` では、譲れない条件と望ましい条件の分離を維持しつつ、必須条件を3件程度までに絞り、`priority_note` に優先順位と再評価時期を残す。恣意的な MUST 偏重と軸の固定化を抑える。
 
-**確信度を下げる証拠（限界）**: MoSCoW は各要件を相互順位付けする客観的方法論を欠き、どれを MUST とするかは主観に委ねられる[E61]。選択肢を絞ることの利得は、選択過多のメタ分析では平均効果量がほぼゼロであった[E69]。選好は聞き取りの過程で構成され経時変化する[E71][E66]。must/want 分離やマトリクスの効果を検証した グレードA・Bの実証研究は未取得である（エビデンスギャップ）。
+**確信度を下げる証拠（限界）**: MoSCoW は各要件を相互に順位付けする客観的方法論を欠き、どれを MUST とするかは主観に委ねられる[E61]。選択過多のメタ分析では、選択肢を絞ることの利得を表す平均効果量がほぼゼロであった[E69]。選好は聞き取りの過程で構成され経時変化する[E71][E66]。must/want 分離やマトリクスの効果を検証した レベルA・Bの実証研究は未取得である（エビデンスギャップ）。
 
 ## ATS・外資系対応の実像
 
@@ -51,12 +51,12 @@ must/want の分離は要件工学の MoSCoW と同じ構造を持つ実務標�
 
 ## 経歴詐称の帰結
 
-正確性・網羅性・鮮度の管理が失敗様式を防ぐ。経歴詐称の帰結は重大性・業務関連性・時間経過で変わるが、虚偽は実務上高率で発覚し、帰結は限定的でない（確度: 可能性が高い、65%以上80%未満）。
+正確性・網羅性・鮮度の管理が典型的な失敗を防ぐ。経歴詐称の帰結は重大性・業務関連性・時間経過で変わるが、虚偽は実務上高率で発覚し、帰結は限定的でない（確度: 可能性が高い、65%以上80%未満）。
 
 - 日本では経歴詐称を理由とする懲戒解雇が有効となるには「事前発覚なら雇入れなかったといえ、かつ客観的相当性がある」双方の要件を満たす必要がある[E92]。業務に支障がないこと・古い犯罪歴であること・内容が軽微であることなどを理由に無効とされた裁判例もあり、すべての詐称が致命的ではない[E94]。詐称は文書偽造・金銭目的の詐欺・資格詐称で刑事罰のしきい値を超える[E101]。詐称は社会保険・源泉徴収・リファレンスチェックの突合で客観的事実から露見する[E102]。
 - 米国調査では、虚偽の申告で採用された人の41%が内定取消・18%が解雇で、何の帰結もなかった人は29%にとどまる[E97]。
 
-設計への含意: profile.json は、聞き取りメモにある事実だけから起草する。実績値・期間・役職を推測で補完しない（SKILL.md 原則6）。空白期間は隠さず `career_gaps` に記録して説明可能にする。日付・年収・実績値のうち記憶が曖昧なものはエビデンスでの任意の確認を案内する（`elicitation-guide.md`）。
+設計への含意: profile.json は、聞き取りメモにある事実だけから作成する。実績値・期間・役職を推測で補完しない（SKILL.md 原則6）。空白期間は隠さず `career_gaps` に記録して説明可能にする。日付・年収・実績値のうち記憶が曖昧なものはエビデンスでの任意の確認を案内する（`elicitation-guide.md`）。
 
 ## 争いのある数値（両論併記）
 
@@ -67,49 +67,49 @@ must/want の分離は要件工学の MoSCoW と同じ構造を持つ実務標�
 
 ## 調査の限界とエビデンスギャップ（本スキルの前提）
 
-- 定量化そのものの効果を単離した査読フィールド実験は未取得である（`quantification-guide.md` 参照）。
-- must/want 分離・意思決定マトリクスの効果を検証した A/B級実証は未取得である。
-- 日本の中途採用でグレードA（厚労省調査）による重視項目の一次数値は本文を取得できておらず、doda・Geekly のグレードB/C 調査（単一ソース）に依拠している。
-- 空白期間が選考結果に与える影響の効果量の本文値は未取得である（`elicitation-guide.md` 参照）。
+- 定量化だけの効果を切り分けて測った査読済みのフィールド実験は未取得である（`quantification-guide.md` 参照）。
+- must/want の分離と意思決定マトリクスの効果を検証したレベルA・Bの実証研究は未取得である。
+- 日本の中途採用でレベルA（厚労省調査）による重視項目の一次資料の数値は本文から取得できておらず、doda・Geekly のレベルB/C 調査（単一ソース）に依拠している。
+- 空白期間が選考結果に与える影響の効果量の値は本文から取得できていない（`elicitation-guide.md` 参照）。
 
-これらのギャップから、本スキルの設計は「証拠が強い骨子（構造化聞き取り・エビデンスでの自己確認・失敗様式の回避・スキルの層分離）」を確定的に、「効果量が小さい論点（定量化の単離効果・must/want の意思決定改善）」を留保付きで扱う。
+これらのギャップから、本スキルの設計は「証拠が強い骨子（構造化聞き取り・エビデンスでの自己確認・典型的な失敗の回避・専門スキルと転用可能スキルの分離）」を確定的に、「効果量が小さい論点（定量化そのものの効果・must/want の意思決定改善）」を留保付きで扱う。
 
 ## 出典一覧
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる区画である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+<!-- 書誌形式（発行元. 表題. 年. レベル. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
 
-- [E1] doda（パーソルキャリア）. 中途採用の履歴書・職務経歴書で一番見られているのはどこ？. 2024. グレードB（単一ソース）. https://doda.jp/guide/saiyo/007.html
-- [E2] Geekly（ギークリー）. 【採用担当150名に聞いた】応募書類で重視するポイントとは？. 2021-12. グレードC（単一ソース・自己報告）. https://www.geekly.co.jp/column/cat-jobsearch/resume_point_byrecruiter/
-- [E7] マイナビ（マイナビ転職）. 書類選考とは？通過率は？突破する履歴書・職務経歴書の書き方を解説. 2025. グレードB（disputed）. https://tenshoku.mynavi.jp/knowhow/caripedia/276/
-- [E12] Journal of Applied Psychology. Biodata phenomenology: Recruiters' perceptions and use of biographical information in resume screening. 1994. グレードA. DOI:10.1037/0021-9010.79.6.897. https://doi.org/10.1037/0021-9010.79.6.897
-- [E13] Personnel Psychology. Consequences of Individuals' Fit at Work: A Meta-Analysis. 2005. グレードA. DOI:10.1111/j.1744-6570.2005.00672.x. https://doi.org/10.1111/j.1744-6570.2005.00672.x
-- [E14] Personnel Psychology. A meta-analysis of the criterion-related validity of prehire work experience. 2019. グレードA. DOI:10.1111/peps.12335. https://doi.org/10.1111/peps.12335
-- [E15] Machine Learning and Knowledge Extraction (MDPI). Using Machine Learning with Eye-Tracking Data to Predict if a Recruiter Will Approve a Resume. 2023. グレードA. DOI:10.3390/make5030038. https://doi.org/10.3390/make5030038
-- [E40] O*NET Resource Center (U.S. Department of Labor). The O*NET Content Model. 2025. グレードA. https://www.onetcenter.org/content.html
-- [E44] 厚生労働省. ポータブルスキル見える化ツール（職業能力診断ツール）. 2021. グレードA. https://www.mhlw.go.jp/stf/newpage_23112.html
-- [E47] European Commission (ESCO). Skill contextualisation — ESCOpedia. 2025. グレードA. https://esco.ec.europa.eu/en/about-esco/escopedia/escopedia/skill-contextualisation
-- [E53] Workitect. The One-Size-Fits-All Competency Model. 2023. グレードC. https://workitect.com/the-one-size-fits-all-competency-model/
-- [E54] リクルートエージェント. 転職の軸とは？転職の軸の作り方や譲れない条件一覧. 2023-12-22. グレードC. https://www.r-agent.com/guide/start/21312/
-- [E55] JAC Recruitment. 転職先の選び方｜キャリアを実現する業界・企業選びのポイントと具体例. 2024-12-02. グレードC. https://www.jac-recruitment.jp/market/knowhow/preparation/points-to-select/
-- [E56] Saylor Academy (open textbook). Personal Decision Criteria When Considering Possible Job Targets. 2020. グレードB. https://saylordotorg.github.io/text_six-steps-to-job-search-success/s07-03-personal-decision-criteria-whe.html
-- [E60] ProductPlan. MoSCoW Prioritization | Glossary. 2024. グレードB. https://www.productplan.com/glossary/moscow-prioritization/
-- [E61] ProductPlan. MoSCoW Prioritization | Glossary. 2024. グレードB. https://www.productplan.com/glossary/moscow-prioritization/
-- [E66] Vero Recruitment. Shifting Priorities. 2024. グレードC. https://verorecruitment.com/blog/shifting-priorities-career-advancement-tips
-- [E69] Journal of Consumer Research. Can There Ever Be Too Many Options? A Meta-Analytic Review of Choice Overload. 2010. グレードA. DOI:10.1086/651235. https://doi.org/10.1086/651235
-- [E71] American Psychologist. The construction of preference. 1995. グレードA. DOI:10.1037/0003-066x.50.5.364. https://doi.org/10.1037/0003-066x.50.5.364
-- [E72] Resume Optimizer Pro. How Resume Parsers Actually Work: Inside Workday, Greenhouse, Lever, iCIMS, Taleo. 2026-04-22. グレードC. https://resumeoptimizerpro.com/blog/how-resume-parsers-actually-work
-- [E73] Resume Optimizer Pro. How Resume Parsers Actually Work. 2026-04-22. グレードC. https://resumeoptimizerpro.com/blog/how-resume-parsers-actually-work
-- [E77] UnchartedCareer. The '75% of resumes are auto-rejected' myth, traced to its source. 2026-07-04. グレードC. https://unchartedcareer.com/blog/the-75-of-resumes-are-auto-rejected-myth-traced-to-its-source
-- [E79] Enhancv. Does the ATS Reject Your Resume? 25 Recruiters Explain What Really Happens. 2025-11-03. グレードC（単一ソース・ベンダー調査）. https://enhancv.com/blog/does-ats-reject-resumes/
-- [E84] エンワールド・ジャパン. 英文レジュメの書き方ガイド. 2019-03-18. グレードC. https://www.enworld.com/candidates/career-advices/foreign-job-change/resume/how-to-write-english-resume.html
-- [E85] エンワールド・ジャパン. 英文レジュメの書き方ガイド. 2019-03-18. グレードC. https://www.enworld.com/candidates/career-advices/foreign-job-change/resume/how-to-write-english-resume.html
-- [E86] エンワールド・ジャパン. 英文レジュメの書き方ガイド. 2019-03-18. グレードC. https://www.enworld.com/candidates/career-advices/foreign-job-change/resume/how-to-write-english-resume.html
-- [E92] 咲くやこの花法律事務所. 経歴詐称を理由に懲戒解雇できる？注意点や対応方法を裁判例付きで解説. 2022-12. グレードB. https://kigyobengo.com/media/useful/2984.html
-- [E94] 咲くやこの花法律事務所. 経歴詐称を理由に懲戒解雇できる？. 2022-12. グレードB. https://kigyobengo.com/media/useful/2984.html
-- [E95] StandOutCV. How many people lie on their resume to get a job? [Study]. 2023-12. グレードB（disputed）. https://standout-cv.com/usa/stats-usa/study-fake-job-references-resume-lies
-- [E97] ResumeBuilder.com. 1 in 3 Americans admit to lying on resume. 2021-07-16. グレードB. https://www.resumebuilder.com/1-in-3-americans-admit-to-lying-on-resume/
-- [E101] ベンナビ刑事事件（アシロ）. 経歴詐称とは｜成立要件と問われる罪. 2025. グレードC. https://keiji-pro.com/columns/213/
-- [E102] ASHIATO（エン・ジャパン）. バックグラウンドチェックで経歴詐称や転職活動はバレない？. 2024-09-19. グレードC. https://ashiatohr.com/news/7ecucee-k
+- [E1] doda（パーソルキャリア）. 中途採用の履歴書・職務経歴書で一番見られているのはどこ？. 2024. レベルB（単一ソース）. https://doda.jp/guide/saiyo/007.html
+- [E2] Geekly（ギークリー）. 【採用担当150名に聞いた】応募書類で重視するポイントとは？. 2021-12. レベルC（単一ソース・自己報告）. https://www.geekly.co.jp/column/cat-jobsearch/resume_point_byrecruiter/
+- [E7] マイナビ（マイナビ転職）. 書類選考とは？通過率は？突破する履歴書・職務経歴書の書き方を解説. 2025. レベルB（disputed）. https://tenshoku.mynavi.jp/knowhow/caripedia/276/
+- [E12] Journal of Applied Psychology. Biodata phenomenology: Recruiters' perceptions and use of biographical information in resume screening. 1994. レベルA. DOI:10.1037/0021-9010.79.6.897. https://doi.org/10.1037/0021-9010.79.6.897
+- [E13] Personnel Psychology. Consequences of Individuals' Fit at Work: A Meta-Analysis. 2005. レベルA. DOI:10.1111/j.1744-6570.2005.00672.x. https://doi.org/10.1111/j.1744-6570.2005.00672.x
+- [E14] Personnel Psychology. A meta-analysis of the criterion-related validity of prehire work experience. 2019. レベルA. DOI:10.1111/peps.12335. https://doi.org/10.1111/peps.12335
+- [E15] Machine Learning and Knowledge Extraction (MDPI). Using Machine Learning with Eye-Tracking Data to Predict if a Recruiter Will Approve a Resume. 2023. レベルA. DOI:10.3390/make5030038. https://doi.org/10.3390/make5030038
+- [E40] O*NET Resource Center (U.S. Department of Labor). The O*NET Content Model. 2025. レベルA. https://www.onetcenter.org/content.html
+- [E44] 厚生労働省. ポータブルスキル見える化ツール（職業能力診断ツール）. 2021. レベルA. https://www.mhlw.go.jp/stf/newpage_23112.html
+- [E47] European Commission (ESCO). Skill contextualisation — ESCOpedia. 2025. レベルA. https://esco.ec.europa.eu/en/about-esco/escopedia/escopedia/skill-contextualisation
+- [E53] Workitect. The One-Size-Fits-All Competency Model. 2023. レベルC. https://workitect.com/the-one-size-fits-all-competency-model/
+- [E54] リクルートエージェント. 転職の軸とは？転職の軸の作り方や譲れない条件一覧. 2023-12-22. レベルC. https://www.r-agent.com/guide/start/21312/
+- [E55] JAC Recruitment. 転職先の選び方｜キャリアを実現する業界・企業選びのポイントと具体例. 2024-12-02. レベルC. https://www.jac-recruitment.jp/market/knowhow/preparation/points-to-select/
+- [E56] Saylor Academy (open textbook). Personal Decision Criteria When Considering Possible Job Targets. 2020. レベルB. https://saylordotorg.github.io/text_six-steps-to-job-search-success/s07-03-personal-decision-criteria-whe.html
+- [E60] ProductPlan. MoSCoW Prioritization | Glossary. 2024. レベルB. https://www.productplan.com/glossary/moscow-prioritization/
+- [E61] ProductPlan. MoSCoW Prioritization | Glossary. 2024. レベルB. https://www.productplan.com/glossary/moscow-prioritization/
+- [E66] Vero Recruitment. Shifting Priorities. 2024. レベルC. https://verorecruitment.com/blog/shifting-priorities-career-advancement-tips
+- [E69] Journal of Consumer Research. Can There Ever Be Too Many Options? A Meta-Analytic Review of Choice Overload. 2010. レベルA. DOI:10.1086/651235. https://doi.org/10.1086/651235
+- [E71] American Psychologist. The construction of preference. 1995. レベルA. DOI:10.1037/0003-066x.50.5.364. https://doi.org/10.1037/0003-066x.50.5.364
+- [E72] Resume Optimizer Pro. How Resume Parsers Actually Work: Inside Workday, Greenhouse, Lever, iCIMS, Taleo. 2026-04-22. レベルC. https://resumeoptimizerpro.com/blog/how-resume-parsers-actually-work
+- [E73] Resume Optimizer Pro. How Resume Parsers Actually Work. 2026-04-22. レベルC. https://resumeoptimizerpro.com/blog/how-resume-parsers-actually-work
+- [E77] UnchartedCareer. The '75% of resumes are auto-rejected' myth, traced to its source. 2026-07-04. レベルC. https://unchartedcareer.com/blog/the-75-of-resumes-are-auto-rejected-myth-traced-to-its-source
+- [E79] Enhancv. Does the ATS Reject Your Resume? 25 Recruiters Explain What Really Happens. 2025-11-03. レベルC（単一ソース・ベンダー調査）. https://enhancv.com/blog/does-ats-reject-resumes/
+- [E84] エンワールド・ジャパン. 英文レジュメの書き方ガイド. 2019-03-18. レベルC. https://www.enworld.com/candidates/career-advices/foreign-job-change/resume/how-to-write-english-resume.html
+- [E85] エンワールド・ジャパン. 英文レジュメの書き方ガイド. 2019-03-18. レベルC. https://www.enworld.com/candidates/career-advices/foreign-job-change/resume/how-to-write-english-resume.html
+- [E86] エンワールド・ジャパン. 英文レジュメの書き方ガイド. 2019-03-18. レベルC. https://www.enworld.com/candidates/career-advices/foreign-job-change/resume/how-to-write-english-resume.html
+- [E92] 咲くやこの花法律事務所. 経歴詐称を理由に懲戒解雇できる？注意点や対応方法を裁判例付きで解説. 2022-12. レベルB. https://kigyobengo.com/media/useful/2984.html
+- [E94] 咲くやこの花法律事務所. 経歴詐称を理由に懲戒解雇できる？. 2022-12. レベルB. https://kigyobengo.com/media/useful/2984.html
+- [E95] StandOutCV. How many people lie on their resume to get a job? [Study]. 2023-12. レベルB（disputed）. https://standout-cv.com/usa/stats-usa/study-fake-job-references-resume-lies
+- [E97] ResumeBuilder.com. 1 in 3 Americans admit to lying on resume. 2021-07-16. レベルB. https://www.resumebuilder.com/1-in-3-americans-admit-to-lying-on-resume/
+- [E101] ベンナビ刑事事件（アシロ）. 経歴詐称とは｜成立要件と問われる罪. 2025. レベルC. https://keiji-pro.com/columns/213/
+- [E102] ASHIATO（エン・ジャパン）. バックグラウンドチェックで経歴詐称や転職活動はバレない？. 2024-09-19. レベルC. https://ashiatohr.com/news/7ecucee-k
 
 <!-- textlint-enable -->

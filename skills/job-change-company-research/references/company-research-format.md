@@ -1,6 +1,6 @@
 # company_research.json の原本仕様（company-research-format）
 
-企業研究の構造化データ `company_research.json` のフィールド仕様・記入基準・機械検証規則を定める原本である。企業研究担当エージェント（job-change-company-researcher）がこの仕様で成果物を作り、`scripts/validate_company_research.py` がこの仕様に照らして機械検査する。
+企業研究の構造化データ `company_research.json` のフィールド仕様・記入基準・機械的な検証の規則を定める原本である。企業研究担当エージェント（job-change-company-researcher）がこの仕様で成果物を作り、`scripts/validate_company_research.py` がこの仕様に照らして機械的に検査する。
 
 出力先は `{DATA_ROOT}/companies/{企業スラッグ}/company_research.json` である。
 
@@ -45,11 +45,11 @@
 | `securities_code` | 任意 | 上場企業の証券コード（4桁）。非上場・海外企業は省略してよい |
 | `edinet_code` | 任意 | EDINET コード（E + 5桁）。有報を出典に用いた場合は記す。無ければ省略してよい |
 
-`name` が空の場合は機械検証で ERROR となる。`securities_code`・`edinet_code` は無くても ERROR にはならない。
+`name` が空の場合は機械的な検証で ERROR となる。`securities_code`・`edinet_code` は無くても ERROR にはならない。
 
 ### research_date（文字列・推奨）
 
-調査を実施した日付（`YYYY-MM-DD`）。未設定の場合は機械検証で WARN となる。情報の鮮度を後で判断するために記す。
+調査を実施した日付（`YYYY-MM-DD`）。未設定の場合は機械的な検証で WARN となる。情報の鮮度を後で判断するために記す。
 
 ### claims（配列・必須、1件以上）
 
@@ -57,7 +57,7 @@
 
 | フィールド | 必須 | 記入基準 |
 |---|---|---|
-| `id` | 必須 | claim の識別子。`C001` から連番を推奨する（機械検証は連番までは要求しない） |
+| `id` | 必須 | claim の識別子。`C001` から連番を推奨する（機械的な検証は連番までは要求しない） |
 | `topic` | 必須 | 後述の8種のいずれか |
 | `statement` | 必須 | 反証可能な命題を1文で書く（後述） |
 | `evidence` | 必須 | 出典の配列。1件以上が必須 |
@@ -107,7 +107,7 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 | `medium` | A・B の裏付けはあるが単一出所、または一部に限定が残る |
 | `low` | C・D 中心で、傾向の傍証にとどまる |
 
-**ルール**: グレードC・Dのみを根拠とする claim に `high` を与えてはならない（ERROR）。企業自身の評価的・自己宣伝的主張は、出典がグレードAでも `high` にしない（B 相当扱い。機械検証では判定できず監査エージェントの領分）。
+**ルール**: レベルC・Dのみを根拠とする claim に `high` を与えてはならない（ERROR）。企業自身の評価的・自己宣伝的主張は、出典がレベルAでも `high` にしない（B 相当扱い。機械的な検証では判定できず監査エージェントの領分）。
 
 ### open_questions（配列・推奨）
 
@@ -115,7 +115,7 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 
 ### company_metrics（オブジェクト・必須）
 
-定量候補軸の実測値を、機械可読な数値として構造化するトップレベルの必須フィールドである。散文の `claims` とは独立に持ち、後続の処理（企業スコアの算出・実質時給の試算）が数値をそのまま使う。軸の定義・単位・方向の原本は `references/company-score-rubric.md` にある。
+定量候補軸の実測値を、機械可読な数値として構造化するトップレベルの必須フィールドである。文章の `claims` とは独立に持ち、後続の処理（企業スコアの算出・実質時給の試算）が数値をそのまま使う。軸の定義・単位・方向の原本は `references/company-score-rubric.md` にある。
 
 企業研究は実測値を集めるだけであり、点数化も格付けもしない。指示された軸に対応する指標を優先して集め、確認できなかった項目は `value` を `null` にする。推定値を入れない。
 
@@ -143,11 +143,11 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 | `grade` | `value` が非 null なら必須 | `A`〜`D`。定義は `references/evidence-grading.md` |
 | `as_of` | 推奨 | その値が指す時点（`YYYY-MM` または `YYYY`）。欠落は WARN |
 
-**ルール**: 年間休日・残業・有給取得率・平均年間給与などの数値を収集した場合は、散文の claim に埋めるだけでなく、必ずこの company_metrics へ構造化して格納する（単位・出典URL・グレード併記）。確認できなければ `value` を `null` のままにする。
+**ルール**: 年間休日・残業・有給取得率・平均年間給与などの数値を収集した場合は、文章の claim に埋めるだけでなく、必ずこの company_metrics へ構造化して格納する（単位・出典URL・レベル併記）。確認できなければ `value` を `null` のままにする。
 
-## 機械検証規則（validate_company_research.py）
+## 機械的な検証の規則（validate_company_research.py）
 
-`scripts/validate_company_research.py` が決定的に検査する。ERROR が1件でもあれば FAIL（終了コード1）、ERROR 0件なら PASS（終了コード0。WARN があっても PASS）。
+`scripts/validate_company_research.py` が機械的に検査する。ERROR が1件でもあれば FAIL（終了コード1）、ERROR 0件なら PASS（終了コード0。WARN があっても PASS）。
 
 **ERROR（成果物として成立しない・ルール違反）**
 
@@ -162,7 +162,7 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 - `grade` が A〜D 以外
 - `quote` が空
 - 必須7トピック（`philosophy`・`business`・`financials`・`compensation`・`benefits`・`workstyle`・`reputation`）のいずれかが1件も無い
-- グレードC・Dのみを根拠とする claim に `confidence=high`
+- レベルC・Dのみを根拠とする claim に `confidence=high`
 - `company_metrics` の欠落、または `company_metrics` が非オブジェクト
 - `company_metrics` のキーが定量候補軸9個の軸キーでも `avg_paid_leave_days_taken` でもない
 - `company_metrics` の各項目が非オブジェクト
@@ -173,7 +173,7 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 
 **WARN（成立するが根拠が弱い）**
 
-- あるトピックの claim がすべてグレードC・Dのみの根拠である
+- あるトピックの claim がすべてレベルC・Dのみの根拠である
 - `selection_process` の claim が0件
 - `research_date` が未設定
 - `value` が非 null の項目に `as_of` が無い

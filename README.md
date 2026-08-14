@@ -9,11 +9,11 @@
 
 プロファイルの作成から面接対策までを、9つのスキルと13体のエージェントが担います。
 
-設計の要は、出した答えを後から検証できる点にあります。企業について書いた内容には、出典 URL と証拠グレードを付けます。成果物の形式は、Python の検証スクリプトが機械的に検査します。書類を作成するエージェントと監査するエージェントは、判断が混ざらないよう別々に動きます。
+設計の要は、出した答えを後から検証できる点にあります。企業について書いた内容には、出典 URL とエビデンスレベルを付けます。成果物の形式は、Python の検証スクリプトが機械的に検査します。書類を作成するエージェントと監査するエージェントは、判断が混ざらないよう別々に動きます。
 
 Claude Code と Codex の両方で動きます。スキルの書き方は [Agent Skills](https://agentskills.io) の形式（`SKILL.md`・`references/`・`scripts/`）に従っています。
 
-## 収録スキル
+## スキル
 
 | スキル | 役割 | 主な成果物 |
 |---|---|---|
@@ -21,24 +21,24 @@ Claude Code と Codex の両方で動きます。スキルの書き方は [Agent
 | `job-change-profile` | 職務経歴・スキル・転職の軸をヒアリングします | `profile.json` |
 | `job-change-self-analysis` | 行動の記録と他者からの評価をもとに、自己分析を支援します | `self_analysis.json` |
 | `job-change-job-search` | Web 検索により求人を集め、掲載ページの引用と出典 URL を付けます | `job_search_results.json` |
-| `job-change-company-research` | 求人票を基に企業を調査します。出典 URL と証拠グレードを付与します | `job_posting.json`・`company_research.json` |
+| `job-change-company-research` | 求人票を基に企業を調査します。出典 URL とエビデンスレベルを付与します | `job_posting.json`・`company_research.json` |
 | `job-change-fit-assessment` | 求人と本人を7つの観点で照合します | `fit_assessment.json`・`time_analysis.json` |
 | `job-change-documents` | 職務経歴書・履歴書・志望動機などを作成します | `documents/` 配下の各書類 |
 | `job-change-exam-prep` | 応募先で使われる筆記試験と適性検査の種別を調べ、対策を立てます | `exam_assessment.json`・`exam-prep-plan.md` |
-| `job-change-interview-prep` | 企業ごとの想定質問を作り、回答を評価します | 想定質問集・`interview_answers.json` |
+| `job-change-interview-prep` | 企業ごとの想定質問を作り、回答を評価します | `interview_questions.json`・`interview_evaluation.json`・`interview-prep-report.md` |
 
-## 証拠グレード
+## エビデンスレベル
 
-企業についての主張には、出典 URL とあわせて証拠グレードを付けます。以下のように証拠グレードを分類しています。
+企業についての主張には、出典 URL とあわせてエビデンスレベルを付けます。以下のようにエビデンスレベルを分類しています。
 
-| グレード | 区分 | 具体例 |
+| レベル | 区分 | 具体例 |
 |---|---|---|
 | **A** | 一次・公式 | EDINET 有価証券報告書、決算説明資料、企業公式サイト、統合報告書、公的統計・政府の認定制度データベース、査読済みの学術研究 |
 | **B** | 信頼できる二次 | 大手報道機関、就職四季報、業界レポート、公的機関の解説ページ |
 | **C** | 口コミ・集計サイト | OpenWork・Glassdoor 等の口コミ集計、選考体験記の集計サイト |
 | **D** | 個人ブログ・伝聞・未確認 | 個人ブログ、SNS の伝聞、出所不明の転載、単発の匿名投稿 |
 
-グレードは、内容の正しさではなく誰が発信したかで決まります。企業自身が発信する評価的な主張（「風通しが良い」など）は、出所がグレードAでも内容の真偽は担保されないため、確信度を high にしません。C と D だけを根拠に事実を断定することも禁じています。
+レベルは、内容の正しさではなく誰が発信したかで決まります。企業自身が発信する評価的な主張（「風通しが良い」など）は、出所がレベルAでも内容の真偽は担保されないため、確信度を high にしません。C と D だけを根拠に事実を断定することも禁じています。
 
 判定基準・C と D を根拠とする記述の書き方・複数の出所を突き合わせる手順は、[skills/job-change-company-research/references/evidence-grading.md](skills/job-change-company-research/references/evidence-grading.md) に定めています。
 
@@ -51,8 +51,6 @@ Claude Code と Codex の両方で動きます。スキルの書き方は [Agent
 
 ### Claude Code
 
-次の2行で導入できます。
-
 ```
 /plugin marketplace add https://github.com/tomkd555/jobchange-skills.git
 /plugin install job-change@job-change-skills
@@ -64,13 +62,13 @@ Claude Code と Codex の両方で動きます。スキルの書き方は [Agent
 
 `skills/job-change-*` の9ディレクトリを、Codex のスキル探索先へ置きます。手順は [docs/install-codex.md](docs/install-codex.md) にあります。この文書は、AI エージェントに読ませてそのまま実行させることを想定して書いてあります。
 
-なお知人がCodexユーザーであったため、codex版も作成していますが、自分自身でテストは行っていません。
+なお知人がCodexユーザーであったため、codex版も作成していますがテストは行っていません。
 
 ## 使い方
 
-`/job-change-support` を実行するか、「転職の準備をしたい」と伝えると hub が起動します。
+`/job-change-support` を実行してください。
 
-hub は、まず利用者データの置き場所を尋ねます。置き場所は設定ファイルだけで決まり、既定値を持たないためです。現年収や居住地を含むデータをどこへ置くかは、自分自身で決定してください。設定ファイルの仕様と探索の順序は、[docs/configuration.md](docs/configuration.md) にあります。
+初回起動時に利用者データの配置場所を尋ねます。配置場所は設定ファイルだけで決まり、既定値を持たないためです。個人情報が記録されるため、安全な場所を選択してください。設定ファイルの仕様と探索の順序は、[docs/configuration.md](docs/configuration.md) にあります。
 
 その後、以下の順番で動作します。スキップする場合は直接スキルをコールしてください。
 
@@ -93,7 +91,7 @@ hub は、まず利用者データの置き場所を尋ねます。置き場所�
 
 ## 成果物の例
 
-企業研究が出す `company_research.json` は、主張1件ごとに出典 URL・証拠グレード・逐語引用・取得日を持ちます。企業名はreadme記載時点で架空です。
+企業研究が出す `company_research.json` は、主張1件ごとに出典 URL・エビデンスレベル・原文どおりの引用・取得日を持ちます。
 
 ```json
 {
@@ -113,7 +111,7 @@ hub は、まず利用者データの置き場所を尋ねます。置き場所�
 }
 ```
 
-この例の `confidence` が `medium` にとどまるのは、出典がグレードAでも、内容が企業の自己申告にあたるためです。グレードC・Dだけを根拠に `high` を付けると、`validate_company_research.py` が ERROR を返します。
+この例の `confidence` が `medium` にとどまるのは、出典がレベルAでも、内容が企業の自己申告にあたるためです。レベルC・Dだけを根拠に `high` を付けると、`validate_company_research.py` が ERROR を返します。
 
 ## データの取り扱い
 
@@ -133,37 +131,11 @@ hub は、まず利用者データの置き場所を尋ねます。置き場所�
 
 `career-private/` を `companies/` の外側へ置いています。個人情報を切り離すためです。個人情報は、検索クエリにも fetch にも外部 API にも渡さないように指示をしていますが、LLMの仕様上、保証はできません。必ず自己責任で実行してください。
 
-## 設計のルール
-
-- 企業情報には、出典 URL と[証拠グレード](#証拠グレード)を必ず付けます。
-- 経歴・スキル・転職の軸は、`profile.json` の1か所に集約します。
-- 判断材料が足りない項目は `unknown` または保留とし、推測で補いません。
-
 ## 求人サイトの利用規約について
 
 求人検索と求人票の取り込みでは、AI エージェントが求人サイトの公開ページを取得します。対象は、ログインなしで閲覧できるページに限っています。
 
 ただし、自動的な取得を制限している求人サイトもあります。対象サイトの利用規約と `robots.txt` は、利用者自身で確認してください。取得の頻度も、サイトへ過度な負荷をかけない範囲に保ってください。
-
-## リポジトリの構成
-
-```
-skills/job-change-*/          9スキル本体
-  SKILL.md                    手順の定義
-  references/                 判断基準とデータ形式の定義
-  references/roles/           役割プロンプトの定義
-  scripts/                    検証スクリプトとその単体テスト
-  assets/                     架空の記入例
-agents/                       Claude Code 用のエージェント定義13体
-docs/                         設定と導入の手順
-```
-
-## 開発
-
-```bash
-# 全スキルの単体テスト
-for d in skills/*/; do [ -d "$d/scripts/tests" ] && (cd "$d" && python -m unittest discover -s scripts/tests); done
-```
 
 ## 範囲外
 
@@ -178,7 +150,7 @@ for d in skills/*/; do [ -d "$d/scripts/tests" ] && (cd "$d" && python -m unitte
 
 このスキル群が作る書類・評価・想定質問は、いずれも下書きです。応募に使う前に、本人が中身を確認してください。
 
-企業情報には出典と証拠グレードを付けますが、これは収集した時点の公開情報であり、正確さと新しさを保証するものではありません。待遇・選考プロセス・労働条件は、応募先が公式に示す情報で確認してください。
+企業情報には出典とエビデンスレベルを付けますが、これは収集した時点の公開情報であり、正確さと最新性を保証するものではありません。待遇・選考プロセス・労働条件は、応募先が公式に示す情報をご自身で確認してください。
 
 LLMの仕様を理解したうえで、全て自己責任でお願いします。
 

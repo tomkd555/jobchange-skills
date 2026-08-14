@@ -23,7 +23,7 @@ _CLEAN_ARGS = dict(
     break_minutes=60.0,
     monthly_overtime_h=20.0,
     annual_holidays=125.0,
-    paid_leave_rate=0.5,
+    paid_leave_rate=50.0,
     paid_leave_granted=20.0,
     commute_oneway_min=45.0,
 )
@@ -40,7 +40,7 @@ class FormulaValueTest(unittest.TestCase):
         self.assertAlmostEqual(a.daily_overtime_h, 1.0)
         # 1日拘束 = 8 + 1(休憩) + 1(残業) + 0.75*2(通勤) = 11.5
         self.assertAlmostEqual(a.daily_binding_hours, 11.5)
-        # 有給取得 = 20 * 0.5 = 10
+        # 有給取得 = 20 * 50% = 10
         self.assertAlmostEqual(a.paid_leave_taken_days, 10.0)
         # 実出勤日 = 365 - 125 - 10 = 230
         self.assertAlmostEqual(a.annual_working_days, 230.0)
@@ -59,7 +59,7 @@ class FormulaValueTest(unittest.TestCase):
         # 割り切れない入力で内部値が丸められていないことを確認する。
         a = ct.analyze(
             scheduled_hours=7.5, break_minutes=45, monthly_overtime_h=23,
-            annual_holidays=120, paid_leave_rate=0.6, paid_leave_granted=17,
+            annual_holidays=120, paid_leave_rate=60, paid_leave_granted=17,
             commute_oneway_min=38,
         )
         month = (365 - 120) / 12
@@ -143,6 +143,13 @@ class ComparisonTest(unittest.TestCase):
         self.assertIsNone(c["current"]["hourly_wage_binding_basis"])
         # 時間の差分は算出できるため、実質時給の欠落に巻き込まれない。
         self.assertAlmostEqual(c["delta"]["annual_binding_hours"], -245.0)
+
+    def test_missing_offer_side_nulls_current(self):
+        offer = self._offer()
+        offer["effective_hourly_wage"] = {"binding_basis": None, "labor_basis": None}
+        c = ct.build_comparison(offer, self._baseline())
+        self.assertIsNone(c["current"]["hourly_wage_binding_basis"])
+        self.assertIsNone(c["delta"]["hourly_wage_binding_basis"])
 
     def test_absent_key_treated_as_missing(self):
         c = ct.build_comparison(self._offer(), {})
@@ -241,7 +248,7 @@ class ContradictionTest(unittest.TestCase):
 
     def test_paid_leave_rate_out_of_range_raises(self):
         with self.assertRaises(ct.CalcError):
-            ct.analyze(**{**_CLEAN_ARGS, "paid_leave_rate": 1.5})
+            ct.analyze(**{**_CLEAN_ARGS, "paid_leave_rate": 150})
 
     def test_working_days_nonpositive_raises(self):
         with self.assertRaises(ct.CalcError):
@@ -254,7 +261,7 @@ class CliTest(unittest.TestCase):
         base = {
             "--scheduled-hours": "8", "--break-minutes": "60",
             "--overtime-h-month": "20", "--annual-holidays": "125",
-            "--paid-leave-rate": "0.5", "--paid-leave-granted": "20",
+            "--paid-leave-rate": "50", "--paid-leave-granted": "20",
             "--commute-oneway-min": "45",
         }
         base.update(over)
@@ -327,6 +334,39 @@ class ResultShapeTest(unittest.TestCase):
         self.assertIsInstance(out["annual"]["working_days"], int)
         self.assertIsInstance(out["annual"]["paid_leave_taken_days"], int)
         self.assertIsInstance(out["effective_hourly_wage"]["binding_basis"], int)
+
+
+class ExampleAssetTest(unittest.TestCase):
+    """記入例 time_analysis_example.json が、現在の算定と一致することを確かめる。
+
+    time_analysis.json には検証スクリプトが無いため、記入例の入力から組み立て直して突き合わせる。
+    comparison は現職の time_analysis.json を材料に main が付ける項目なので、比較の対象外である。
+    """
+
+    def test_bundled_example_matches_recalculation(self):
+        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        path = os.path.join(base, "assets", "time_analysis_example.json")
+        with open(path, encoding="utf-8") as f:
+            example = json.load(f)
+
+        # source が fallback の入力は、記入例を作ったときに未指定だったものである。同じ条件で作り直す。
+        given = {
+            key: meta for key, meta in example["inputs"].items() if meta["source"] != "fallback"
+        }
+        provided = {key: meta["value"] for key, meta in given.items()}
+        sources = {
+            key: {
+                "source": meta["source"],
+                "source_url": meta["source_url"],
+                "grade": meta["grade"],
+            }
+            for key, meta in given.items()
+        }
+
+        rebuilt = ct.build_time_analysis(provided, sources)
+        for key in rebuilt:
+            with self.subTest(key=key):
+                self.assertEqual(rebuilt[key], example[key])
 
 
 if __name__ == "__main__":

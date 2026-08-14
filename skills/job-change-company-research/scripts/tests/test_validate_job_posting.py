@@ -359,5 +359,14 @@ class ResultShapeTest(unittest.TestCase):
         self.assertEqual(p, snapshot)
 
 
+class ExampleAssetTest(unittest.TestCase):
+    def test_bundled_example_passes(self):
+        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        document = vjp.load_posting(os.path.join(base, "assets", "job_posting_example.json"))
+        result = vjp.validate(document)
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,5 @@
 """job-change-support: 企業別成果物（companies/{slug}/_manifest.json）の
-決定的（非LLM）鮮度判定ツール。
+機械的な（非LLM）鮮度判定ツール。
 
 標準ライブラリのみで、_manifest.json に記録された各成果物の最終更新日と、
 トピックごとの TTL（有効期限日数）を突き合わせ、fresh（TTL 内）・stale（TTL 超過）・
@@ -92,6 +92,10 @@ def check_freshness(manifest: Any, today: date) -> dict[str, list[dict]]:
                     f"company_research.{topic}", last_researched, ttl_days, today
                 )
                 result[bucket].append(entry)
+        else:
+            # topics が欠落・null・オブジェクト以外なら company_research 全体を missing とする
+            # （空のオブジェクトはトピック0件として判定対象にしない）
+            result["missing"].append({"artifact": "company_research"})
 
     return result
 

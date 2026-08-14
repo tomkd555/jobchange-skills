@@ -20,7 +20,7 @@ import validate_company_research as vcr  # noqa: E402
 
 
 def _claim(cid: str, topic: str, grade: str = "A", confidence: str = "medium") -> dict:
-    """指定トピック・グレードの最小 claim を1件返す。"""
+    """指定トピック・レベルの最小 claim を1件返す。"""
     return {
         "id": cid,
         "topic": topic,
@@ -112,7 +112,7 @@ class ValidatePassTest(unittest.TestCase):
 
     def test_low_grade_claim_with_non_high_confidence_passes(self):
         r = _valid_research()
-        # reputation を C グレード・confidence=medium にする。ERROR にはならない。
+        # reputation を C レベル・confidence=medium にする。ERROR にはならない。
         r["claims"][6] = _claim("C007", "reputation", "C", "medium")
         result = vcr.validate(r)
         self.assertTrue(result.ok)
@@ -484,6 +484,15 @@ class ResultShapeTest(unittest.TestCase):
         snapshot = copy.deepcopy(r)
         vcr.validate(r)
         self.assertEqual(r, snapshot)
+
+
+class ExampleAssetTest(unittest.TestCase):
+    def test_bundled_example_passes(self):
+        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        document = vcr.load_research(os.path.join(base, "assets", "company_research_example.json"))
+        result = vcr.validate(document)
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
 
 
 if __name__ == "__main__":

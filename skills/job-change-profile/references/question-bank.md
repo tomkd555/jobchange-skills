@@ -4,7 +4,7 @@ job-change-profile スキルの Step 1〜4 で使う、有限の構造化され�
 
 ## 使い方のルール
 
-- 質問は AskUserQuestion の選択式を中心に運用する。1回の AskUserQuestion につき最大4問、各質問は最大4択とする。自由記述は、企業名・在籍期間・実績値など選択式にできない項目に限る。
+- 質問は AskUserQuestion の選択式を中心に運用する。1回の AskUserQuestion につき最大4問、各質問は最大4択とする。1つの問いで複数の答えを受けたい場合は `multiSelect: true` を使い、問いを分けて回数を増やさない。自由記述は、企業名・在籍期間・実績値など選択式にできない項目に限る。
 - 深掘りは、感情の反すうへ落とさず、事実（いつ・どの場面で・何をしたか）へ向ける。退職理由の建設的言い換え・強みの根拠づけは本スキルの範囲外とし、`job-change-self-analysis` へ誘導する。
 - 聞き取り結果は、聞き取り中に本体セッションが `career-private/profile_interview_notes.md` へ逐次追記する。
 
@@ -24,7 +24,7 @@ job-change-profile スキルの Step 1〜4 で使う、有限の構造化され�
 | 4 | 譲れない条件・望ましい条件と、その軸・しきい値・確認手段 | `job_change_axis.conditions[]` | 選択式＋自由記述 |
 | 4 | 8つの作業特性それぞれの希望度 | `job_change_axis.work_character_preferences[]` | 選択式 |
 | 4 | 企業スコアの定量候補軸9個のうち重視するものと、数値にならない事柄で重視するもの（定性軸の呼び名・定義・判定条件） | `company_score_axes[].axis`, `company_score_axes[].kind`, `company_score_axes[].label`, `company_score_axes[].definition`, `company_score_axes[].judgment[]` | 選択式＋自由記述 |
-| 4 | 選んだ軸への重みの配分（合計100）と、定量軸で使う基準 | `company_score_axes[].weight`, `company_score_axes[].thresholds` | 自由記述（数値）＋選択式（2社比較で検算） |
+| 4 | 選んだ軸への重みの配分（合計100）と、定量軸で使う基準（1回の AskUserQuestion でまとめて聞く） | `company_score_axes[].weight`, `company_score_axes[].thresholds` | 選択式（配分案・基準の別）＋自由記述（数値）＋選択式（2社比較で検算） |
 | 4 | 必須条件の優先順位・再評価時期 | `job_change_axis.priority_note` | 選択式＋自由記述 |
 | 4 | 志望する業界・職種・企業 | `targets.industries`, `targets.roles`, `targets.companies` | 選択式＋自由記述 |
 | 4 | 現年収・希望年収 | `salary.current`, `salary.desired` | 自由記述（数値） |
@@ -91,14 +91,14 @@ reasons → conditions → work_character_preferences → company_score_axes →
 - 8つの作業特性それぞれについて、必須か・重視するか・どちらでもよいか・不要かを選ぶ（2回に分けて4特性ずつ）。「どちらでもよい」「不要」も明示して選ばせる。
 - （必須条件の合計が4件以上になった場合）このうち、絶対に譲れない順に3件を選ぶとどれか。選に漏れたものは望ましい条件へ移す。順位と、次に軸を見直す時期を `priority_note` に残す。
 
-企業スコアの採点軸は、定量軸の選択・定性軸の作成・重みの配分・基準の確認・2社の比較による検算の順で確かめる。定量候補軸9個と重みの配分の規則は `job-change-company-research` の `references/company-score-rubric.md` にある。
+企業スコアの採点軸は、定量軸の選択・定性軸の作成・重みの配分と基準の確認（同じ AskUserQuestion で扱う）・2社の比較による検算の順で確かめる。定量候補軸9個と重みの配分の規則は `job-change-company-research` の `references/company-score-rubric.md` にある。
 
 | 確定する項目 | 問い |
 |---|---|
-| `axis`・`kind` | 処遇水準・年間休日総数・月平均残業時間・有給休暇の取得率・離職率・男性の育児休業取得率・売上高の成長率・営業利益率・自己資本比率のうち、企業を選ぶときに重視するものはどれか（3軸ずつ3回に分けて提示する。処遇水準は既定で選択済みとする） |
+| `axis`・`kind` | 処遇水準・年間休日総数・月平均残業時間・有給休暇の取得率・離職率・男性の育児休業取得率・売上高の成長率・営業利益率・自己資本比率のうち、企業を選ぶときに重視するものはどれか（1回の AskUserQuestion で3問に分け、各問が3軸を `multiSelect: true` で受ける。処遇水準は既定で選択済みとする） |
 | `label`・`definition`・`judgment` | （数値にならない事柄で重視するものがある場合）それを何と呼ぶか。何をもってそう言えるか。何が確認できたら100点で、何が確認できたら0点か（3段階程度）。判定条件まで決められない事柄は採点に入れず、面接での確認事項へ回す |
-| `weight` | 選んだ軸へ、合計が100になるようどう配分するか |
-| `thresholds` | （定量軸ごとに）統計に基づく既定の基準を使うか、自分の基準を使うか。自分の基準を使う場合、何点満点となる水準はどこで、0点となる水準はどこか |
+| `weight`・`thresholds` | （1回の AskUserQuestion の2問で聞く）選んだ軸へ、合計が100になるようどう配分するか。統計に基づく既定の基準を使うか、自分の基準を使うか |
+| `thresholds` の値 | （自分の基準を使う軸だけ、自由記述で）100点となる水準はどこで、0点となる水準はどこか |
 | 検算 | 配分した重みで採点すると点数が高いのはこちらだが、実際にどちらを選ぶか。例:「A社は年収が現職より120万円高いが残業が月30時間、B社は年収が現職と同水準で残業が月5時間」 |
 
 - （検算の答えと点数の高い側が食い違う場合）配分を見直すか、配分と実際の選択の両方を記録するか。どちらが本当の判断かはこちらで決めない。

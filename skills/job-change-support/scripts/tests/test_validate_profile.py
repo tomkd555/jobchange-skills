@@ -819,12 +819,33 @@ class V2CompanyScoreAxesTest(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("定量候補軸" in e for e in result.errors))
 
-    def test_qualitative_axis_key_is_free(self):
+    def test_qualitative_axis_key_accepts_a_user_identifier(self):
         axes = _company_score_axes()
-        axes[2]["axis"] = "onboarding_support"
+        axes[2]["axis"] = "onboarding_support2"
         result = self._validate(axes)
         self.assertTrue(result.ok)
         self.assertEqual(result.warnings, [])
+
+    def test_qualitative_axis_key_with_uppercase_is_an_error(self):
+        axes = _company_score_axes()
+        axes[2]["axis"] = "Onboarding_Support"
+        result = self._validate(axes)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("定性軸の axis" in e for e in result.errors))
+
+    def test_qualitative_axis_key_with_hyphen_is_an_error(self):
+        axes = _company_score_axes()
+        axes[2]["axis"] = "onboarding-support"
+        result = self._validate(axes)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("定性軸の axis" in e for e in result.errors))
+
+    def test_qualitative_axis_key_in_japanese_is_an_error(self):
+        axes = _company_score_axes()
+        axes[2]["axis"] = "裁量"
+        result = self._validate(axes)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("定性軸の axis" in e for e in result.errors))
 
     def test_non_integer_weight_is_an_error(self):
         axes = _company_score_axes()
@@ -937,6 +958,72 @@ class V2CompanyScoreAxesTest(unittest.TestCase):
         result = vp.validate(p)
         self.assertTrue(result.ok)
         self.assertFalse(any("company_score_axes" in w for w in result.warnings))
+
+
+class V2ConditionUnitTest(unittest.TestCase):
+    def _validate(self, unit) -> vp.ValidationResult:
+        p = _valid_v2_profile()
+        p["job_change_axis"]["conditions"][0]["unit"] = unit
+        return vp.validate(p)
+
+    def test_every_defined_unit_passes(self):
+        for unit in vp._CONDITION_UNITS:
+            with self.subTest(unit=unit):
+                result = self._validate(unit)
+                self.assertTrue(result.ok)
+                self.assertEqual(result.warnings, [])
+
+    def test_unknown_unit_is_an_error(self):
+        result = self._validate("万円")
+        self.assertFalse(result.ok)
+        self.assertTrue(any("conditions[0].unit" in e for e in result.errors))
+
+    def test_non_string_unit_is_an_error(self):
+        result = self._validate(1)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("conditions[0].unit" in e for e in result.errors))
+
+    def test_absent_unit_is_allowed(self):
+        p = _valid_v2_profile()
+        del p["job_change_axis"]["conditions"][0]["unit"]
+        result = vp.validate(p)
+        self.assertTrue(result.ok)
+        self.assertEqual(result.warnings, [])
+
+    def test_null_unit_is_allowed(self):
+        result = self._validate(None)
+        self.assertTrue(result.ok)
+        self.assertEqual(result.warnings, [])
+
+
+class SkillsPortableCategoryCountTest(unittest.TestCase):
+    """portable だけが埋まっている skills を「全カテゴリが空」と扱わない。"""
+
+    def test_only_portable_filled_does_not_warn(self):
+        p = _valid_profile()
+        p["skills"] = {
+            "technical": [],
+            "business": [],
+            "languages": [],
+            "certifications": [],
+            "portable": [{"skill": "課題の構造化", "category": "対課題"}],
+        }
+        result = vp.validate(p)
+        self.assertTrue(result.ok)
+        self.assertFalse(any("skills" in w for w in result.warnings))
+
+    def test_all_categories_including_portable_empty_warns(self):
+        p = _valid_profile()
+        p["skills"] = {
+            "technical": [],
+            "business": [],
+            "languages": [],
+            "certifications": [],
+            "portable": [],
+        }
+        result = vp.validate(p)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("全カテゴリが空" in w for w in result.warnings))
 
 
 class ExampleAssetTest(unittest.TestCase):

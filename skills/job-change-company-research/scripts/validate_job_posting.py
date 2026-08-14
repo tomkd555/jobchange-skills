@@ -1,6 +1,6 @@
-"""job-change-company-research: job_posting.json の決定的（非LLM）検証ツール。
+"""job-change-company-research: job_posting.json の機械的な（非LLM）検証ツール。
 
-標準ライブラリのみで、求人情報の取込成果物 job_posting.json を機械検査する。
+標準ライブラリのみで、求人情報の取込成果物 job_posting.json を機械的に検査する。
 取り込んだ求人票が、必須項目（schema_version・source_type・fetched_at・
 company_name・title）を備え、metrics（年間休日・月平均残業・有給取得率・付与日数）を
 仕様どおりの型で持つかを、ERROR（成果物として成立しない欠落・型違反）と WARN

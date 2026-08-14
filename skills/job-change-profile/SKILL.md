@@ -3,8 +3,8 @@ name: job-change-profile
 description: >-
   転職支援スキル群の profile.json 作成・更新に特化したサブスキル。利用者データの単一の原本である
   profile.json を、構造化した想起手がかり（時系列×プロジェクト単位）で聞き取り、実績の定量化・スキルの棚卸し・
-  転職の軸の構造化を支援し、起草・機械検証・独立監査を経て作る。聞き取りは AskUserQuestion の選択式を中心に、
-  1回最大4問×各4択で行い、自由記述は企業名・期間・実績値など選択式にできない項目に限る。日付・年収・実績値のうち記憶が曖昧なものについては、手元のエビデンスでの任意確認を案内し、単純な誤記を予防する。起草と独立監査は専用エージェント
+  転職の軸の構造化を支援し、作成・機械的な検証・独立監査を経て作る。聞き取りは AskUserQuestion の選択式を中心に、
+  1回最大4問×各4択で行い、自由記述は企業名・期間・実績値など選択式にできない項目に限る。日付・年収・実績値のうち記憶が曖昧なものについては、手元のエビデンスでの任意確認を案内し、単純な誤記を予防する。作成と独立監査は専用エージェント
   （job-change-profile-writer / job-change-profile-auditor）が担う。job-change-support（hub）から振り分けられて動く。
   強みの根拠づけ・キャリアの物語化は job-change-self-analysis、応募書類の文面は job-change-documents が担う。
   Use when the user creates or updates a job-change profile in Japan — registering career history, taking stock of
@@ -16,15 +16,15 @@ allowed-tools: Read, Write, Glob, Grep, Bash, AskUserQuestion, Agent, Skill
 
 # job-change-profile
 
-転職支援スキル群で利用者データの単一の原本となる profile.json を作る、または更新するとき、このスキル1つで聞き取りから納品までの手順がそろう。構造化した想起手がかり（企業→在籍期間→役割→担当プロジェクト→成果の時系列枠）で聞き取り、実績の定量化・スキルの棚卸し・転職の軸の構造化を支援し、起草・機械検証・独立監査を経て profile.json を確定する。成果物は後続のサブスキル（企業研究・応募書類作成・面接対策・試験対策・自己分析）がすべて入力として読む。
+転職支援スキル群で利用者データの単一の原本となる profile.json を作る、または更新するとき、このスキル1つで聞き取りから納品までの手順がそろう。構造化した想起手がかり（企業→在籍期間→役割→担当プロジェクト→成果の時系列枠）で聞き取り、実績の定量化・スキルの棚卸し・転職の軸の構造化を支援し、作成・機械的な検証・独立監査を経て profile.json を確定する。成果物は後続のサブスキル（企業研究・応募書類作成・面接対策・試験対策・自己分析）がすべて入力として読む。
 
 profile.json の中核は、職務経歴・実績・スキルの内容と、それが求人要件へどう対応するかという点（relevance）である（根拠は `references/profile-methods.md`）。ただし関連性（relevance）は応募先ごとに変わるため、profile.json には固定して保持しない。応募時に応募書類サブスキルが再構成する。本スキルは、応募先ごとの relevance を再構成できる粒度（職務単位の経歴・成果・定量値）の正確性・網羅性・鮮度を保つことに責任を持つ。
 
 ## 目的と原則
 
-1. **構造化した想起手がかりで聞き取る。** 自由記述に委ねず、時系列（在籍期間）×プロジェクト単位の枠に沿って聞く。構造化面接は非構造化面接の約2倍の妥当性を持ち、時系列・テーマ横断のカレンダー型手がかりは自伝的記憶の構造に沿って回顧の完全性・一貫性を高める（`references/elicitation-guide.md`）。
+1. **構造化した想起手がかりで聞き取る。** 自由記述に委ねず、時系列（在籍期間）×プロジェクト単位の枠に沿って聞く。構造化面接は非構造化面接の約2倍の妥当性を持ち、時系列・テーマ横断のカレンダー型手がかりは自伝的記憶の構造に沿って想起の完全性・一貫性を高める（`references/elicitation-guide.md`）。
 
-2. **自己報告の日付・実績値は任意の自己確認を案内する。** 作業歴の自己報告には内在的な誤差があり、日付は、実際より最近の出来事として記憶しやすい系統バイアス（前方テレスコーピング）を受ける。日本の採用実務では社会保険・源泉徴収・前職への照会（リファレンスチェック）で客観的に照合され、矛盾が露見する。そこで、日付・年収・実績値のうち記憶が曖昧なものに限り、手元にあるエビデンス（源泉徴収票・雇用保険の記録など）での任意の自己確認を案内する。書類の提出を求めるものではなく、エビデンスが手元に無ければ省いてよい。在籍期間・年収の情報を持たない書類（健康保険証など）は用いない（`references/elicitation-guide.md`、確認様式は `assets/verification_checklist.md`）。
+2. **自己報告の日付・実績値は任意の自己確認を案内する。** 職務経歴の自己報告には内在的な誤差があり、日付は、実際より最近の出来事として記憶しやすい系統誤差（前方テレスコーピング）を受ける。日本の採用実務では、採用側が社会保険・源泉徴収・前職への照会（リファレンスチェック）で申告内容を客観的に照合し、矛盾が露見する。そこで、日付・年収・実績値のうち記憶が曖昧なものに限り、手元にあるエビデンス（源泉徴収票・雇用保険の記録など）での任意の自己確認を案内する。書類の提出を求めるものではなく、エビデンスが手元に無ければ省いてよい。在籍期間・年収の情報を持たない書類（健康保険証など）は用いない（`references/elicitation-guide.md`、確認様式は `assets/verification_checklist.md`）。
 
 3. **実績は定量化を推奨しつつ、検証可能性を優先する。** 定量化困難な業務には、頻度・規模・対応人数・工程削減率・定性成果との接続という代替表現の型を用意する。ただし全実績への機械的な数値付与は強制しない。検証できない数値・過剰な数値は書類全体の信頼を毀損する（`references/quantification-guide.md`）。
 
@@ -34,7 +34,7 @@ profile.json の中核は、職務経歴・実績・スキルの内容と、そ�
 
 6. **事実を創作・補完しない。** profile.json に載せる経歴・実績・数値は、聞き取りメモに記録のある範囲に限る。実績値・期間・役職を推測で補完しない。経歴の詐称は懲戒・内定取消につながり、社会保険等の突合で高い確率で発覚する（`references/profile-methods.md`）。
 
-7. **個人情報を外部へ送信しない。** profile.json に含まれる個人情報（氏名・現年収・希望年収・居住地・学歴・在籍企業名・実績など）は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。非公開ディレクトリ `career-private/` 配下のパス（`profile.json`・`profile_interview_notes.md`）は、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ一切渡さない。本スキルの writer・auditor は Web 送信手段を持たないため、これらのパスを渡してよい。
+7. **個人情報を外部へ送信しない。** profile.json に含まれる個人情報は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルは境界の内側にある `profile.json`・`profile_interview_notes.md` を作る側であり、writer（job-change-profile-writer）・auditor（job-change-profile-auditor）はいずれも Web 送信手段を持たないため、これらのパスを渡してよい。
 
 ## 範囲外
 
@@ -47,23 +47,21 @@ profile.json の中核は、職務経歴・実績・スキルの内容と、そ�
 
 ## パスの解決
 
-利用者データの置き場所は設定ファイルだけが決める。既定の置き場所を持たない。本文で `{DATA_ROOT}` と書いた箇所は、設定ファイルの `data_root` に読み替える。
+利用者データの置き場所は設定ファイルだけが決める。既定の置き場所を持たない。本文で `{DATA_ROOT}` と書いた箇所は、次のコマンドが返す `data_root` に読み替える。
 
-hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、次の順に設定ファイルを探し、最初に見つかったものを Read で読む。
-
-1. 環境変数 `JOB_CHANGE_CONFIG` が指すファイル
-2. カレントディレクトリから上位へたどった最初の `.job-change/config.json`
-3. `~/.job-change/config.json`
-
-Bash が使える場合は、次のコマンドでも解決できる（`paths` に各データの絶対パスが入る）。
+hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、作業のどの段階よりも先に次を実行する。
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 ```
 
-いずれの場所にも設定ファイルが無ければ未設定である。その場合は作業へ進まず、hub（job-change-support）へ戻して設定の作成を先行させる。
+| 終了コード | 状態 | 対応 |
+|---|---|---|
+| 0 | 設定済み | 出力の `paths` に各データの絶対パスが入る。そのまま作業へ進む |
+| 1 | 設定はあるが内容が不正 | 出力の `errors` を利用者へ示し、修復されるまで作業へ進まない |
+| 2 | 未設定 | Skill ツールで `job-change-support` を起動して設定を作らせ、`{DATA_ROOT}` を解決してから戻る |
 
-`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。設定ファイルの仕様は `docs/configuration.md` にある。
+`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。探索順序を含む設定ファイルの仕様は `docs/configuration.md` にある。
 
 ## データ配置
 
@@ -72,7 +70,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | パス | 役割 | 入出力 |
 |---|---|---|
 | `career-private/profile.json` | 利用者プロファイルの単一の原本 | 出力（本スキルが作る・更新する） |
-| `career-private/profile_interview_notes.md` | 聞き取りメモ | 出力（聞き取り中に本体セッションが逐次追記。中断再開に対応） |
+| `career-private/profile_interview_notes.md` | 聞き取りメモ。記載形式の原本は `references/elicitation-guide.md` にある | 出力（聞き取り中に本体セッションが逐次追記。中断再開に対応） |
 
 - profile.json のフィールド仕様・記入基準・検証規則の原本は hub（`job-change-support`）の `references/profile-format.md` にある。本スキルはこれを編集しない。
 - 記入例は hub の `assets/profile_example.json`（架空の人物）にある。本スキル側に複製を置かない。
@@ -83,13 +81,13 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 受付から納品まで Step 0〜6 を順に進める。`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は hub（`job-change-support`）の絶対パス、`{PROFILE}` は `profile.json` の絶対パス、`{NOTES}` は `profile_interview_notes.md` の絶対パスに読み替える。
 
-聞き取りは本体セッションが AskUserQuestion で行う（サブエージェントは利用者と対話できない）。選択式を中心に、1回の AskUserQuestion につき最大4問・各質問は最大4択とする。自由記述は、企業名・在籍期間・実績値のように選択式にできない項目に限る。質問は `references/question-bank.md` の有限の構造化質問を使い、反すうを招く自由回答の質問を置かない。
+聞き取りは本体セッションが AskUserQuestion で行う（サブエージェントは利用者と対話できない）。選択式を中心に、1回の AskUserQuestion につき最大4問・各質問は最大4択とする。1つの問いで複数の答えを受けたい場合は `multiSelect: true` を使い、問いを分けて回数を増やさない。自由記述は、企業名・在籍期間・実績値のように選択式にできない項目に限る。質問は `references/question-bank.md` の有限の構造化質問を使い、反すうを招く自由回答の質問を置かない。
 
 ### Step 0 前提確認
 
 - `profile.json` の有無を確認する。有れば hub の `validate_profile.py` で検証し、現状を把握する。
-- モードを AskUserQuestion で確認する。選択肢は「初回作成」「区画更新（basic / 職歴 / スキル / 軸 / 志望 / 年収 のどれか）」「全面点検」。
-- 更新モードでは、既存の profile.json を読み、対象区画のみを聞き取り対象にする。
+- モードを AskUserQuestion で確認する。選択肢は「初回作成」「セクション更新（basic / 職歴 / スキル / 軸 / 志望 / 年収 のどれか）」「全面点検」。
+- 更新モードでは、既存の profile.json を読み、対象セクションのみを聞き取り対象にする。
 
 ### Step 1 職歴の骨格（時系列）
 
@@ -134,12 +132,12 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 
 #### 企業スコアの採点軸
 
-企業を0〜100点で採点する軸と重みを決め、`company_score_axes[]` へ入れる。定量候補軸9個・点数への写し方・重みの配分の規則は `job-change-company-research` の `references/company-score-rubric.md`、フィールド仕様は hub の `references/profile-format.md` にある。次の順で決める。
+企業を0〜100点で採点する軸と重みを決め、`company_score_axes[]` へ入れる。定量候補軸9個・点数への換算・重みの配分の規則は `job-change-company-research` の `references/company-score-rubric.md`、フィールド仕様は hub の `references/profile-format.md` にある。次の順で決める。
 
-1. 定量候補軸9個（処遇水準・年間休日総数・月平均残業時間・有給休暇の取得率・離職率・男性の育児休業取得率・売上高の成長率・営業利益率・自己資本比率）を提示し、重視するものを選ばせる（3回の AskUserQuestion で3軸ずつ）。処遇水準（`compensation_level`）は既定で選択済みとし、外すかどうかだけ確認する。
+1. 定量候補軸9個（処遇水準・年間休日総数・月平均残業時間・有給休暇の取得率・離職率・男性の育児休業取得率・売上高の成長率・営業利益率・自己資本比率）を提示し、重視するものを選ばせる。1回の AskUserQuestion で3問に分け、各問が3軸を `multiSelect: true` で受ける（1問あたりの選択肢は最大4件のため、9軸を1問へは入れられない）。処遇水準（`compensation_level`）は既定で選択済みとし、外すかどうかだけ確認する。
 2. 数値にならない事柄で重視したいものがあれば、定性軸として作る。ラベル（呼び名）・定義（何をもってそう言うか）・判定条件（何が確認できたら何点か。3段階程度）を利用者と決める。判定条件まで決められない事柄は採点に入れず、面接での確認事項へ回す旨をその場で伝える。
-3. 選んだ軸へ、合計が100になるよう重みを配分させる。重みが0になる軸は置かず、採点に入れない軸は外す。
-4. 定量軸ごとに、統計に基づく既定の基準をそのまま使うか、自分の基準を使うかを聞く。自分の基準を使う軸だけ、100点となる水準（`full`）と0点となる水準（`zero`）を聞き、`thresholds` へ入れる。処遇水準（`compensation_level`）は既定の基準を持たないため、必ず聞く。現年収を `zero`、希望年収（またはそれを上回る水準）を `full` に置く聞き方を既定とし、本人が別の置き方を望めばそれに従う。
+3. 選んだ軸への重みの配分（合計100）と、定量軸で使う基準を1回の AskUserQuestion でまとめて聞く。第1問は重みの配分で、選んだ軸の数に応じた配分案を選択肢に置き、当てはまるものが無ければ自由記述で受ける。第2問は、統計に基づく既定の基準をそのまま使うか、自分の基準を使うかである。重みが0になる軸は置かず、採点に入れない軸は外す。
+4. 自分の基準を使うと答えた軸は、100点となる水準（`full`）と0点となる水準（`zero`）を自由記述で聞き、`thresholds` へ入れる（数値の聞き取りであり、AskUserQuestion は使わない）。処遇水準（`compensation_level`）は既定の基準を持たないため、必ず聞く。現年収を `zero`、希望年収（またはそれを上回る水準）を `full` に置く聞き方を既定とし、本人が別の置き方を望めばそれに従う。
 5. 配分した重みで架空2社を採点し、点数の高い側と「実際にどちらを選ぶか」への答えが一致するかを検算する。軸名どうしの抽象的な比較ではなく、企業像の比較で聞く（例: 「A社は年収が現職より120万円高いが残業が月30時間、B社は年収が現職と同水準で残業が月5時間。どちらを選ぶか」）。
 
 検算が食い違った場合は、配分を見直すか、配分と実際の選択の両方を記録して利用者へ提示する。どちらが本当の判断かをスキルの側で決めない。軸を1つも選ばない場合は、企業スコアが出ない旨をその場で伝える。
@@ -158,13 +156,13 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 
 利用者が移行を望まない場合は 1.x のまま残す。その場合、求人検索の8軸判定と適合性評価の作業特性の次元が働かない旨を1回だけ伝える。
 
-### Step 5 起草→機械検証→独立監査
+### Step 5 作成→機械的な検証→独立監査
 
-聞き取りの結果は、その途中で本体セッションが `{NOTES}`（`profile_interview_notes.md`）へ逐次追記し集約しておく（中断再開に対応）。`job-change-profile-writer` エージェント（model: opus）を起動し、`{NOTES}`・既存 `{PROFILE}`（更新時）・hub の `references/profile-format.md`・出力先 `{PROFILE}` を渡す。起草担当はメモにある事実だけから profile.json を起草・更新する。戻り値を受け、本体セッションが hub の `validate_profile.py` を実行して ERROR 0 を確認する。続いて `job-change-profile-auditor` エージェント（model: opus、起草担当の判断理由を渡さない新規コンテキスト）を起動して監査する。`verdict` が BLOCK、または `severity` = must_fix の finding があれば Step 5 の起草へ差し戻す（最大2回。以降は利用者判断）。
+聞き取りの結果は、その途中で本体セッションが `{NOTES}`（`profile_interview_notes.md`）へ逐次追記し集約しておく（中断再開に対応）。`job-change-profile-writer` エージェント（model: opus）を起動し、`{NOTES}`・既存 `{PROFILE}`（更新時）・hub の `references/profile-format.md`・出力先 `{PROFILE}` を渡す。作成担当はメモにある事実だけから profile.json を作成・更新する。戻り値を受け、本体セッションが hub の `validate_profile.py` を実行して ERROR 0 を確認する。続いて `job-change-profile-auditor` エージェント（model: opus、作成担当の判断理由を渡さない新規コンテキスト）を起動して監査する。`verdict` が BLOCK、または `severity` = must_fix の finding があれば Step 5 の作成へ差し戻す（最大2回。以降は利用者判断）。
 
 ### Step 6 任意の自己確認と更新運用
 
-日付・年収・実績値のうち記憶が曖昧なものについて、手元にあるエビデンス（源泉徴収票・雇用保険の記録など）での任意の自己確認を案内する（様式は `assets/verification_checklist.md`）。書類の提出を求めるものではなく、手元に無ければ省いてよい。更新運用（実績が出るたびに追記し、少なくとも四半期に一度は見直す。応募書類へ書き起こすときは直近7〜10年を優先する）を案内し、`updated_at` を当日の日付へ書き換える。最後に、profile.json を入力に使える下流の作業（`job-change-self-analysis` の自己分析、`job-change-company-research` の企業研究、`job-change-documents` の応募書類作成）を案内する。
+日付・年収・実績値のうち記憶が曖昧なものについて、手元にあるエビデンス（源泉徴収票・雇用保険の記録など）での任意の自己確認を案内する（様式は `assets/verification_checklist.md`）。書類の提出を求めるものではなく、手元に無ければ省いてよい。更新運用（実績が出るたびに追記し、少なくとも四半期に一度は見直す。応募書類へ書き起こすときは直近7〜10年を優先する）を案内し、`updated_at` を当日の日付へ書き換える。profile.json は下流のサブスキルの入力であって単体の読み物ではないため、整形したファイルは作らない。代わりに、何が書かれたか（職務要約・職歴の件数と在籍期間・スキル・転職の軸と必須条件・企業スコアの採点軸・年収）を利用者へ要約して示す。最後に、profile.json を入力に使える下流の作業（`job-change-self-analysis` の自己分析、`job-change-company-research` の企業研究、`job-change-documents` の応募書類作成）を案内する。最終メッセージは結論から述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
 
 ## 合否ゲートと差し戻し
 
@@ -172,9 +170,9 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 
 | ゲート | 通過条件と差し戻し先 |
 |---|---|
-| Step 5 の検証・監査ゲート | hub の `validate_profile.py` が FAIL（ERROR 1件以上）の場合、または `job-change-profile-auditor` の `verdict` が BLOCK の場合、または `severity` = must_fix の finding がある場合は、Step 5 の起草へ差し戻す。差し戻しは同一成果物につき最大2回まで行う。 |
+| Step 5 の検証・監査ゲート | hub の `validate_profile.py` が FAIL（ERROR 1件以上）の場合、または `job-change-profile-auditor` の `verdict` が BLOCK の場合、または `severity` = must_fix の finding がある場合は、Step 5 の作成へ差し戻す。差し戻しは同一成果物につき最大2回まで行う。 |
 
-差し戻し時は、監査の findings（target・evidence・fix）をそのまま起草担当へ渡し、反映後に Step 5 の機械検証から再度通す。2回の差し戻しで解消しない指摘は、未決事項として利用者へ判断を委ねてから納品する（例: 聞き取りメモだけでは実績値の裏付けが足りない、という指摘は、エビデンスでの確認が要るため利用者の判断事項とする）。
+差し戻し時は、監査の findings（target・evidence・fix）をそのまま作成担当へ渡し、反映後に Step 5 の機械的な検証から再度通す。2回の差し戻しで解消しない指摘は、未決事項として利用者へ判断を委ねてから納品する（例: 聞き取りメモだけでは実績値の裏付けが足りない、という指摘は、エビデンスでの確認が要るため利用者の判断事項とする）。機械的な検証の ERROR は差し戻しの上限にかかわらず解消してから納品し、未解決が監査の finding だけである場合に限り、未決事項として明記したうえで納品してよい。
 
 ## 役割の実行（ハーネス別）
 
@@ -185,23 +183,14 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 | `job-change-profile-writer` | `{SKILL_DIR}/references/roles/profile-writer.md` |
 | `job-change-profile-auditor` | `{SKILL_DIR}/references/roles/profile-auditor.md` |
 
-**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` から同期生成されている。
-
-**サブエージェントを起動できないハーネス（Codex ほか）。** 各 Step の「エージェントを起動する」を「役割プロンプトを読み、その役割として自分で実行する」と読み替える。手順は次のとおり。
-
-1. 上表の役割プロンプトを Read で読む。
-2. Step に書かれた指示書の項目を、そのまま自分への指示として扱う。
-3. 役割プロンプトの「扱ってよい入力」のルールを守る。Web 送信手段を持たない役割として書かれている場合、その作業中は Web 検索・fetch を使わない。
-4. 成果物の形式・検証・合否ゲートは、ハーネスによらず同一である。
-
-本スキルは起草と監査を別の役割へ分け、監査者に起草者の判断理由を渡さないことで独立性を保つ。サブエージェントを使えないハーネスでは、同一の文脈で両方を担うためこの独立性が下がる。その場合、監査の段では起草時の判断理由・迷った箇所・書き換えの経緯を一切参照せず、成果物と原本（`references/` の仕様）だけを見て判定する。判定を終えるまで、起草側の意図を補って読まない。
+ハーネス別の実行手順、起動する数の判断、作成と監査を分ける理由の原本は hub の `{HUB_SKILL_DIR}/references/role-execution.md` にある。
 
 ## エージェントのモデル方針
 
 | エージェント | model | 責務 |
 |---|---|---|
-| `job-change-profile-writer` | opus | 聞き取りメモから profile.json を起草・更新（Step 5）と監査指摘の反映。メモに無い事実を創作しない |
-| `job-change-profile-auditor` | opus | 独立コンテキストでの創作・誇張・時系列整合・metric 検証可能性・軸の件数の監査、検証器の再実行（Step 5） |
+| `job-change-profile-writer` | opus | 聞き取りメモから profile.json を作成・更新（Step 5）と監査指摘の反映。メモに無い事実を創作しない |
+| `job-change-profile-auditor` | opus | 独立コンテキストでの創作・誇張・時系列整合・metric 検証可能性・軸の件数の監査、検証スクリプトの再実行（Step 5） |
 
 機械的検査は hub の `validate_profile.py` が担う。model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
 
@@ -222,5 +211,5 @@ python {HUB_SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/pr
 |---|---|---|
 | `references/elicitation-guide.md` | 時系列×プロジェクト単位の想起手がかりの根拠、自己報告の内在誤差と任意の自己確認、空白期間の扱い、選択式優先の運用、更新運用、DOI/URL 付き出典 | 聞き取りの方針を定めるとき、監査の観点を確認するとき |
 | `references/question-bank.md` | Step 1〜4 で使う有限の構造化質問と、各質問が埋めるフィールドの対応表、AskUserQuestion 用の選択肢案 | ヒアリングの各 Step で質問を選ぶとき |
-| `references/quantification-guide.md` | 定量化の型と代替表現、検証可能性の優先、事実と異なる数値のリスク、定量化の効果の限界、職種依存、DOI/URL 付き出典 | 実績の聞き取り・起草・監査で定量表現を判断するとき |
+| `references/quantification-guide.md` | 定量化の型と代替表現、検証可能性の優先、事実と異なる数値のリスク、定量化の効果の限界、職種依存、DOI/URL 付き出典 | 実績の聞き取り・作成・監査で定量表現を判断するとき |
 | `references/profile-methods.md` | 採用側が見る情報、スキル分類、must/want の根拠と限界、ATS の実像、経歴詐称の帰結、設計の限界とエビデンスギャップ、DOI/URL 付き出典 | 設計判断の根拠を確認するとき、監査の観点を定めるとき |

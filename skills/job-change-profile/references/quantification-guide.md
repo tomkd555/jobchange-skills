@@ -3,14 +3,14 @@
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
 <!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
 
-job-change-profile スキルの Step 2 で実績（achievements）を聞き取り・起草・監査するときに参照する原本である。SKILL.md の原則3・question-bank.md の Step 2・エージェント2体がこのファイルを参照する。証拠グレードは A〜D の4段階で表記し、学術研究には DOI を記す。
+job-change-profile スキルの Step 2 で実績（achievements）を聞き取り・作成・監査するときに参照する原本である。SKILL.md の原則3・question-bank.md の Step 2・エージェント2体がこのファイルを参照する。エビデンスレベルは A〜D の4段階で表記し、学術研究には DOI を記す。
 
 ## 定量化を推奨しつつ、検証可能性を優先する
 
 実績の定量化は実務で強く推奨されるが、数値は量より質（検証可能性・要件との関連）が重要である。全実績への機械的な数値付与は逆効果になりうる（確度: 可能性が高い、65%以上80%未満）。
 
 - 人材紹介会社は、実績を定量的な数字で表し、前年度比などで示すことを推奨する[E25]。
-- 学術的には、応募書類に competency statements（能力・実績の記述）を加えると評価が上がり、書類選考を通過する確率が高まる。ただしこの効果は記述の場所に依存せず、「一般的な書き方でも」生じた[E34]。**すなわち定量化そのものを単離した効果ではなく、記述の存在自体の効果が大きい。**
+- 学術的には、応募書類に competency statements（能力・実績の記述）を加えると評価が上がり、書類選考を通過する確率が高まる。ただしこの効果は記述の場所に依存せず、「一般的な書き方でも」生じた[E34]。**すなわち定量化そのものを切り分けた効果ではなく、記述の存在自体の効果が大きい。**
 - 過剰な数値や事実と異なる数値は逆効果である。箇条書きの全項目への機械的な数値付与や、事実と異なる数値は採用担当の不信を招く。採用側視点の記事は、事実と異なる数値が1つあるだけで書類全体の信頼を毀損すると指摘する[E29]。
 
 運用: `metric` は「検証可能な数値」を優先する。後でエビデンス（人事評価資料・社内報告）で確認できない数値は書かない。数値が出ない実績を無理に数値化せず、`metric` を `null` にして工夫した点と評価された点を `description` で具体化する。
@@ -33,15 +33,15 @@ job-change-profile スキルの Step 2 で実績（achievements）を聞き取�
 間接部門・定型業務・運用保守など、直接の数値が出にくい業務では、次の代替表現を使う（確度: 可能性が高い、65%以上80%未満）。
 
 - 定型業務でも、工夫点・ミス削減・効率化で表現できる[E26]。数値化が難しくても、工夫や評価された点を具体的に書けばよい[E27]。
-- 運用保守は、工程削減率・システム規模・定性成果の受注接続で示せる[E32]。
+- 運用保守は、工程削減率・システム規模・定性成果と受注との接続で示せる[E32]。
 - 直接の数値が出にくい業務でも、頻度・範囲・対応人数・概算のレンジで定量化できる[E28]。
 
-運用: 代替表現を使う場合も、規模・範囲・主体を表す語（大規模・全社・主導など）は、聞き取りメモで裏付けられる範囲を超えて用いない。裏付けのない誇張語は監査（auditor）が指摘する。
+運用: 代替表現を使う場合も、規模・範囲・主体を表す言葉（大規模・全社・主導など）は、聞き取りメモで裏付けられる範囲を超えて用いない。裏付けのない誇張した言葉は監査（auditor）が指摘する。
 
 ## 定量化の効果の限界（エビデンスギャップ）
 
-- 定量化そのものを単離して効果を測った査読済みのフィールド実験は、言語を問わず確認できていない（エビデンスギャップ）。効果量の主張の多くは人材サービス提供者の自己報告に依存する。記述の存在自体が評価を上げることは示されるが[E34]、「数値を足すほど評価が上がる」という単調な関係は実証されていない。
-- 数値・具体性の説得効果は文脈依存である。確率の言明では、数値と語のどちらが信頼を高めるかは文脈で変わる[E37]。過度な精度がかえって疑いを招く場合がある[E36]。
+- 定量化そのものを切り分けて効果を測った査読済みのフィールド実験は、言語を問わず確認できていない（エビデンスギャップ）。効果量の主張の多くは人材サービス提供者の自己報告に依存する。記述の存在自体が評価を上げることは示されるが[E34]、「数値を足すほど評価が上がる」という単調な関係は実証されていない。
+- 数値・具体性の説得効果は文脈依存である。確率の言明では、数値と言葉のどちらが信頼を高めるかは文脈で変わる[E37]。過度な精度がかえって疑いを招く場合がある[E36]。
 
 ## 職種依存
 
@@ -54,18 +54,18 @@ job-change-profile スキルの Step 2 で実績（achievements）を聞き取�
 ## 出典一覧
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる区画である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+<!-- 書誌形式（発行元. 表題. 年. レベル. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
 
-- [E2] Geekly（ギークリー）. 【採用担当150名に聞いた】応募書類で重視するポイントとは？. 2021-12. グレードC（単一ソース・自己報告）. https://www.geekly.co.jp/column/cat-jobsearch/resume_point_byrecruiter/
-- [E25] JAC Recruitment. 職務経歴書「実績」の書き方とは？職種別の記入例も解説. 2022-11-25. グレードC. https://www.jac-recruitment.jp/market/knowhow/resume/achievements/
-- [E26] JAC Recruitment. 職務経歴書「実績」の書き方とは？職種別の記入例も解説. 2022-11-25. グレードC. https://www.jac-recruitment.jp/market/knowhow/resume/achievements/
-- [E27] エン・ジャパン（エン転職）. 転職Q&A「【職務経歴書】数字で示せる実績がない。何を書けば良い？」. 2023. グレードC. https://employment.en-japan.com/qa_1199_2040/
-- [E28] The Muse. How to Quantify Your Resume Bullets (When You Don't Work With Numbers). 2020-06-19. グレードC. https://www.themuse.com/advice/how-to-quantify-your-resume-bullets-when-you-dont-work-with-numbers
-- [E29] The Resume Writers (AU). The Metric Mirage: How Overusing Resume Numbers Is Undermining Their Impact. 2025-08-28. グレードC. https://theresumewriters.com.au/the-metric-mirage-how-overusing-resume-numbers-is-undermining-their-impact/
-- [E31] Geekly（ギークリー）. 【採用担当150名に聞いた】応募書類で重視するポイントとは？. 2021-12. グレードC（単一ソース・自己報告）. https://www.geekly.co.jp/column/cat-jobsearch/resume_point_byrecruiter/
-- [E32] type転職エージェント. インフラエンジニアの職務経歴書｜職務経歴書の書き方. 2023. グレードC. https://type.career-agent.jp/knowhow/documents/keirekisho/network.html
-- [E34] International Journal of Selection and Assessment. The Impact of Competency Statements on Resumes for Short-listing Decisions. 2000. グレードA. DOI:10.1111/1468-2389.00132. https://doi.org/10.1111/1468-2389.00132
-- [E36] Strategic Management Journal. Give it to us straight (most of the time). 2018. グレードA. DOI:10.1002/smj.2733. https://doi.org/10.1002/smj.2733
-- [E37] Judgment and Decision Making. Cultivating credibility with probability words and numbers. 2019. グレードA. DOI:10.1017/S1930297500005404. https://doi.org/10.1017/S1930297500005404
+- [E2] Geekly（ギークリー）. 【採用担当150名に聞いた】応募書類で重視するポイントとは？. 2021-12. レベルC（単一ソース・自己報告）. https://www.geekly.co.jp/column/cat-jobsearch/resume_point_byrecruiter/
+- [E25] JAC Recruitment. 職務経歴書「実績」の書き方とは？職種別の記入例も解説. 2022-11-25. レベルC. https://www.jac-recruitment.jp/market/knowhow/resume/achievements/
+- [E26] JAC Recruitment. 職務経歴書「実績」の書き方とは？職種別の記入例も解説. 2022-11-25. レベルC. https://www.jac-recruitment.jp/market/knowhow/resume/achievements/
+- [E27] エン・ジャパン（エン転職）. 転職Q&A「【職務経歴書】数字で示せる実績がない。何を書けば良い？」. 2023. レベルC. https://employment.en-japan.com/qa_1199_2040/
+- [E28] The Muse. How to Quantify Your Resume Bullets (When You Don't Work With Numbers). 2020-06-19. レベルC. https://www.themuse.com/advice/how-to-quantify-your-resume-bullets-when-you-dont-work-with-numbers
+- [E29] The Resume Writers (AU). The Metric Mirage: How Overusing Resume Numbers Is Undermining Their Impact. 2025-08-28. レベルC. https://theresumewriters.com.au/the-metric-mirage-how-overusing-resume-numbers-is-undermining-their-impact/
+- [E31] Geekly（ギークリー）. 【採用担当150名に聞いた】応募書類で重視するポイントとは？. 2021-12. レベルC（単一ソース・自己報告）. https://www.geekly.co.jp/column/cat-jobsearch/resume_point_byrecruiter/
+- [E32] type転職エージェント. インフラエンジニアの職務経歴書｜職務経歴書の書き方. 2023. レベルC. https://type.career-agent.jp/knowhow/documents/keirekisho/network.html
+- [E34] International Journal of Selection and Assessment. The Impact of Competency Statements on Resumes for Short-listing Decisions. 2000. レベルA. DOI:10.1111/1468-2389.00132. https://doi.org/10.1111/1468-2389.00132
+- [E36] Strategic Management Journal. Give it to us straight (most of the time). 2018. レベルA. DOI:10.1002/smj.2733. https://doi.org/10.1002/smj.2733
+- [E37] Judgment and Decision Making. Cultivating credibility with probability words and numbers. 2019. レベルA. DOI:10.1017/S1930297500005404. https://doi.org/10.1017/S1930297500005404
 
 <!-- textlint-enable -->

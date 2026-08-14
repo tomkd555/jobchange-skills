@@ -2,7 +2,7 @@
 
 job-change-self-analysis スキルにおける、自己分析成果物 self_analysis.json の原本である。`scripts/validate_self_analysis.py` の実装は、この仕様に厳密に従う。
 
-self_analysis.json は、profile.json（利用者データの原本。hub が管理）を土台に、強み・キャリアの軸を行動証拠と他者視点で根拠づけて深化させた成果物である。面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が入力として読む。profile.json のスキーマは変更しない。その結果は profile.json の `strengths`（短文）と `job_change_axis.reasons`（constructive_version に基づく文言）へ値のみ反映する。
+self_analysis.json は、profile.json（利用者データの原本。hub が管理）を土台に、強み・キャリアの軸を行動証拠と他者視点で根拠づけて深化させた成果物である。面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が入力として読む。profile.json のスキーマは変更しない。自己分析の結果は profile.json の `strengths`（短文）と `job_change_axis.reasons`（constructive_version に基づく文言）へ値のみ反映する。
 
 ## 配置
 
@@ -58,7 +58,7 @@ self_analysis.json は、profile.json（利用者データの原本。hub が管
 | `reproducibility` | string または null | 任意 | 環境が変わっても機能する根拠（再現性）。企業は行動プロセスの再現性を見極める。このため、可能な範囲で書く |
 | `emotion_note` | string または null | 任意 | 当時のモチベーション・感情の記録。将来の感情予測ではなく、当時の記録に限る |
 
-- `metric` は可能な限り定量値で埋める。全エピソードを通して `metric` が1件もない場合、検証器は WARN を出す。
+- `metric` は可能な限り定量値で埋める。全エピソードを通して `metric` が1件もない場合、検証スクリプトは WARN を出す。
 - `situation`・`action`・`result` の3つはエピソードの骨格であり、いずれかが欠けるとエピソードとして成立しないため ERROR とする。
 
 ## others_feedback
@@ -155,7 +155,8 @@ career adaptability の4次元。次元名の枠組みのみを用い、尺度�
 
 - JSON として読み込めない
 - `schema_version` の欠落または空
-- `behavioral_episodes` が空、または各要素で `situation`・`action`・`result` のいずれかが欠落・空
+- `behavioral_episodes` が空、または各要素で `id`・`situation`・`action`・`result` のいずれかが欠落・空
+- `others_feedback` の要素で `id` が欠落・空
 - `strengths` の要素で `statement` が欠落・空
 - `strengths` の要素で `episode_ids` と `feedback_ids` が両方とも空（内省単独の強み）
 - `strengths`・`values`・`career_adaptability` が参照する `episode_id` / `feedback_id` が実在しない（参照整合エラー）
@@ -165,6 +166,8 @@ career adaptability の4次元。次元名の枠組みのみを用い、尺度�
 ### WARN（成立するが情報不足で成果物の質を下げる）
 
 - `others_feedback` が0件（他者視点の欠落）
+- `behavioral_episodes` または `others_feedback` の中で `id` が重複している
+- `others_feedback` の要素の `source_type` が上表の値域にない
 - 全エピソードを通して `metric` が1件もない
 - `updated_at` の欠落
 - `interests` が空（domains・concrete_topics がともに空）

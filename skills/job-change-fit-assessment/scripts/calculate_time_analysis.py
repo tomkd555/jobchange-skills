@@ -1,7 +1,7 @@
-"""job-change-fit-assessment: 拘束時間・実質時給の決定的（非LLM）算定ツール。
+"""job-change-fit-assessment: 拘束時間・実質時給の機械的な（非LLM）算定ツール。
 
 標準ライブラリのみで、求人票・企業研究・利用者入力から得た数値をもとに、1日および
-年間の拘束時間、年間労働時間、実質時給を決定的に算定し、time_analysis.json を生成する。
+年間の拘束時間、年間労働時間、実質時給を機械的に算定し、time_analysis.json を生成する。
 未指定の入力には官公庁の一次統計に基づく統計フォールバック定数（FALLBACKS）を適用し、
 適用した項目を fallbacks_used と assumptions に記録する。仕様の原本は
 references/time-analysis-format.md、フォールバック定数の原本は本ファイルの FALLBACKS /
@@ -38,7 +38,7 @@ FALLBACKS: dict[str, dict[str, Any]] = {
         "note": "令和7年調査（令和6年＝2024年実績）。労働者1人平均の年間休日総数",
     },
     "paid_leave_rate": {
-        "value": 0.669,
+        "value": 66.9,
         "survey": "就労条件総合調査",
         "survey_year": 2025,
         "source_url": "https://www.mhlw.go.jp/toukei/itiran/roudou/jikan/syurou/25/dl/gaikyou.pdf",
@@ -133,7 +133,7 @@ def analyze(
     _check_range("scheduled_hours", scheduled_hours, low=0, high=24)
     _check_range("break_minutes", break_minutes, low=0)
     _check_range("monthly_overtime_h", monthly_overtime_h, low=0)
-    _check_range("paid_leave_rate", paid_leave_rate, low=0, high=1)
+    _check_range("paid_leave_rate", paid_leave_rate, low=0, high=100)
     _check_range("paid_leave_granted", paid_leave_granted, low=0)
     _check_range("commute_oneway_min", commute_oneway_min, low=0)
     if paid_leave_taken is not None:
@@ -150,7 +150,7 @@ def analyze(
     if paid_leave_taken is not None:
         taken_days = paid_leave_taken
     else:
-        taken_days = paid_leave_granted * paid_leave_rate
+        taken_days = paid_leave_granted * paid_leave_rate / 100
 
     annual_working_days = 365 - annual_holidays - taken_days
     if annual_working_days <= 0:
@@ -181,7 +181,7 @@ def effective_hourly_wage(
     annual_binding_hours: float,
     annual_labor_hours: float,
 ) -> dict[str, int] | None:
-    """実質時給を算定する。グレード付き想定年収が無ければ None を返す。"""
+    """実質時給を算定する。レベル付き想定年収が無ければ None を返す。"""
     if salary is None:
         return None
     return {
@@ -323,7 +323,7 @@ def build_time_analysis(
     wage = effective_hourly_wage(salary, result.annual_binding_hours, result.annual_labor_hours)
     if salary is None:
         assumptions.append(
-            "グレード付き想定年収が無いため、実質時給（effective_hourly_wage）は算定しない（null）。"
+            "レベル付き想定年収が無いため、実質時給（effective_hourly_wage）は算定しない（null）。"
         )
 
     sens = sensitivity(
@@ -358,7 +358,7 @@ def build_time_analysis(
         add_input("paid_leave_granted", paid_leave_granted, is_survey=True)
         assumptions.append(
             f"有給取得日数は付与日数×取得率で推計した"
-            f"（付与 {paid_leave_granted} 日 × 取得率 {paid_leave_rate}）。"
+            f"（付与 {paid_leave_granted} 日 × 取得率 {paid_leave_rate}%）。"
         )
     if salary is not None:
         meta = _source_meta("salary", True, sources, None)
@@ -419,18 +419,20 @@ def _dig_number(document: dict, path: tuple[str, ...]) -> float | None:
 def build_comparison(analysis: dict, baseline: dict) -> dict:
     """現職の time_analysis（baseline）と応募先の算定結果を突き合わせる。
 
-    current は現職の値、delta は「応募先 − 現職」である。どちらかが欠けている
-    項目の delta は None にする。時間は小数第1位、円は整数へ丸める。
+    current は現職の値、delta は「応募先 − 現職」である。どちらか一方でも数値として
+    取れない項目は、current・delta ともに None にする。時間は小数第1位、円は整数へ丸める。
     """
     current: dict[str, Any] = {}
     delta: dict[str, Any] = {}
     for name, path in _COMPARISON_KEYS.items():
         base_value = _dig_number(baseline, path)
         offer_value = _dig_number(analysis, path)
-        current[name] = base_value
         if base_value is None or offer_value is None:
+            current[name] = None
             delta[name] = None
-        elif name.startswith("annual_"):
+            continue
+        current[name] = base_value
+        if name.startswith("annual_"):
             delta[name] = round(offer_value - base_value, 1)
         else:
             delta[name] = int(round(offer_value - base_value))
@@ -450,7 +452,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--break-minutes", type=float, default=None, help="1日の休憩時間（分）")
     parser.add_argument("--overtime-h-month", type=float, default=None, help="月平均の残業時間")
     parser.add_argument("--annual-holidays", type=float, default=None, help="年間休日総数")
-    parser.add_argument("--paid-leave-rate", type=float, default=None, help="有給取得率（0〜1）")
+    parser.add_argument("--paid-leave-rate", type=float, default=None, help="有給取得率（%%）")
     parser.add_argument("--paid-leave-granted", type=float, default=None, help="有給付与日数")
     parser.add_argument("--paid-leave-taken", type=float, default=None, help="有給取得日数の実績")
     parser.add_argument("--commute-oneway-min", type=float, default=None, help="通勤片道（分）")

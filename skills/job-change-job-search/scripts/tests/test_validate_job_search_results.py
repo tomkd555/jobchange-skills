@@ -23,6 +23,7 @@ def _valid_fuzzy() -> dict:
     """ERROR 0件・WARN 0件になる fuzzy モードの結果を返す。"""
     return {
         "schema_version": "1.0",
+        "search_id": "20260717-remote-saas-be",
         "mode": "fuzzy",
         "executed_at": "2026-07-17",
         "conditions": {
@@ -54,6 +55,7 @@ def _valid_similar_better() -> dict:
     """ERROR 0件・WARN 0件になる similar_better モードの結果を返す。"""
     return {
         "schema_version": "1.0",
+        "search_id": "20260717-better-than-cloudworks",
         "mode": "similar_better",
         "executed_at": "2026-07-17",
         "baseline": {"slug": "kakuu-cloudworks"},
@@ -111,6 +113,36 @@ class RootAndTopLevelErrorTest(unittest.TestCase):
         result = vj.validate(p)
         self.assertFalse(result.ok)
         self.assertTrue(any("schema_version" in e for e in result.errors))
+
+    def test_missing_search_id(self):
+        p = _valid_fuzzy()
+        del p["search_id"]
+        result = vj.validate(p)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_id" in e for e in result.errors))
+
+    def test_empty_search_id(self):
+        p = _valid_fuzzy()
+        p["search_id"] = "  "
+        result = vj.validate(p)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_id" in e for e in result.errors))
+
+    def test_search_id_without_date_prefix(self):
+        p = _valid_fuzzy()
+        p["search_id"] = "remote-saas-be"
+        result = vj.validate(p)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_id" in e for e in result.errors))
+
+    def test_search_id_with_disallowed_characters(self):
+        for value in ("20260717-リモート", "20260717-Remote", "20260717--", "20260717-remote saas"):
+            with self.subTest(search_id=value):
+                p = _valid_fuzzy()
+                p["search_id"] = value
+                result = vj.validate(p)
+                self.assertFalse(result.ok)
+                self.assertTrue(any("search_id" in e for e in result.errors))
 
     def test_missing_executed_at(self):
         p = _valid_fuzzy()
@@ -412,7 +444,13 @@ def _observations(duty_items: list[dict]) -> list[dict]:
         _observation("oncall_load", value="none_stated"),
         _observation("hands_on_ratio", stated=ratios is not None, value=hands_on),
         _observation("coordination_ratio", stated=ratios is not None, value=coordination),
-        _observation("experience_distance", value=None, value_text="必須要件の引用文", job_family="インフラ"),
+        _observation(
+            "experience_distance",
+            value=None,
+            value_text="必須要件の引用文",
+            required_experience=["AWS を用いたインフラ構築の実務経験3年以上"],
+            job_family="インフラエンジニア",
+        ),
         _observation("salary_condition", value=6500000),
     ]
 
@@ -582,6 +620,102 @@ class V2ObservationTest(unittest.TestCase):
         result = self._validate(mutate)
         self.assertFalse(result.ok)
         self.assertTrue(any("再計算" in e for e in result.errors))
+
+
+class V2ObservationValueTest(unittest.TestCase):
+    """軸ごとの観測値の型と値域の検査。"""
+
+    def _validate(self, axis: str, **changes) -> vj.ValidationResult:
+        document = _valid_v2()
+        for observation in document["results"][0]["axis_observations"]:
+            if observation["axis"] == axis:
+                observation.update(changes)
+        return vj.validate(document, pii_terms=[])
+
+    def test_enum_axes_accept_every_defined_value(self):
+        for axis, values in vj.AXIS_ENUM_VALUES.items():
+            for value in values:
+                with self.subTest(axis=axis, value=value):
+                    self.assertEqual(self._validate(axis, value=value).errors, [])
+
+    def test_remote_certainty_unknown_value_is_an_error(self):
+        result = self._validate("remote_certainty", value="banana")
+        self.assertFalse(result.ok)
+        self.assertTrue(any("guaranteed" in e for e in result.errors))
+
+    def test_oncall_load_number_is_an_error(self):
+        result = self._validate("oncall_load", value=42)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("none_stated/exists" in e for e in result.errors))
+
+    def test_unstated_axis_with_a_bogus_value_is_an_error(self):
+        result = self._validate("oncall_load", stated=False, value="banana", quote=None)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("none_stated/exists" in e for e in result.errors))
+
+    def test_overtime_hours_string_is_an_error(self):
+        result = self._validate("overtime_hours", value="少なめ")
+        self.assertFalse(result.ok)
+        self.assertTrue(any("数値でなければならない" in e for e in result.errors))
+
+    def test_overtime_hours_negative_is_an_error(self):
+        result = self._validate("overtime_hours", value=-5)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("範囲" in e for e in result.errors))
+
+    def test_annual_holidays_negative_is_an_error(self):
+        result = self._validate("annual_holidays", value=-1)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("範囲" in e for e in result.errors))
+
+    def test_annual_holidays_boolean_is_an_error(self):
+        result = self._validate("annual_holidays", value=True)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("数値でなければならない" in e for e in result.errors))
+
+    def test_ratio_above_one_is_an_error(self):
+        result = self._validate("hands_on_ratio", value=1.5)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("範囲" in e for e in result.errors))
+
+    def test_ratio_below_zero_is_an_error(self):
+        result = self._validate("coordination_ratio", value=-0.2)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("範囲" in e for e in result.errors))
+
+    def test_salary_condition_negative_is_an_error(self):
+        result = self._validate("salary_condition", value=-6500000)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("範囲" in e for e in result.errors))
+
+    def test_salary_condition_in_man_yen_warns_but_passes(self):
+        result = self._validate("salary_condition", value=650)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("万円単位" in w for w in result.warnings))
+
+    def test_experience_distance_with_a_value_is_an_error(self):
+        result = self._validate("experience_distance", value="near")
+        self.assertFalse(result.ok)
+        self.assertTrue(any("null 固定" in e for e in result.errors))
+
+    def test_experience_distance_without_required_experience_is_an_error(self):
+        document = _valid_v2()
+        for observation in document["results"][0]["axis_observations"]:
+            if observation["axis"] == "experience_distance":
+                del observation["required_experience"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("required_experience" in e for e in result.errors))
+
+    def test_experience_distance_required_experience_must_hold_strings(self):
+        result = self._validate("experience_distance", required_experience=["", 3])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("required_experience" in e for e in result.errors))
+
+    def test_experience_distance_without_job_family_is_an_error(self):
+        result = self._validate("experience_distance", job_family="")
+        self.assertFalse(result.ok)
+        self.assertTrue(any("job_family" in e for e in result.errors))
 
 
 class V2JudgementTest(unittest.TestCase):

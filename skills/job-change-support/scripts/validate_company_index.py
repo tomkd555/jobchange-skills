@@ -1,8 +1,8 @@
-"""job-change-support: 企業スラッグ台帳（company_index.json）の決定的（非LLM）検証ツール。
+"""job-change-support: 企業スラッグ一覧（company_index.json）の機械的な（非LLM）検証ツール。
 
 標準ライブラリのみで、転職支援スキル群が企業名とスラッグの対応を単一の原本として持つ
-company_index.json を機械検査する。各サブスキル（企業研究・応募書類・面接対策・試験対策）が
-同じ企業を常に同じスラッグへ解決できるかを、ERROR（台帳として成立しない欠落・衝突）と
+company_index.json を機械的に検査する。各サブスキル（企業研究・応募書類・面接対策・試験対策）が
+同じ企業を常に同じスラッグへ解決できるかを、ERROR（一覧として成立しない欠落・衝突）と
 WARN（成立するが情報が不足する点）に分けて報告する。仕様の原本は
 references/company-index-format.md である。
 
@@ -26,6 +26,7 @@ SLUG_PATTERN = re.compile(
     r"[0-9A-Za-z぀-ヿ㐀-鿿＀-￯-]*$"
 )
 _VALID_STATUSES = ("active", "closed")
+_KNOWN_SCHEMA_VERSIONS = (1,)
 _SCORE_MIN = 0
 _SCORE_MAX = 100
 
@@ -133,8 +134,17 @@ def validate(document: Any) -> ValidationResult:
         result.add_error("(root)", "ルート要素はオブジェクトでなければならない")
         return result
 
-    if document.get("schema_version") is None:
+    version = document.get("schema_version")
+    if version is None:
         result.add_error("schema_version", "schema_version は必須である")
+    elif isinstance(version, bool) or not isinstance(version, (int, float)):
+        result.add_error("schema_version", "schema_version は数値でなければならない")
+    elif version not in _KNOWN_SCHEMA_VERSIONS:
+        result.add_warning(
+            "schema_version",
+            f"schema_version が既知のバージョン（{'/'.join(str(v) for v in _KNOWN_SCHEMA_VERSIONS)}）"
+            f"ではない（実値: {version!r}）",
+        )
 
     companies = document.get("companies")
     if not isinstance(companies, dict):
@@ -178,7 +188,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception:
         pass
 
-    parser = argparse.ArgumentParser(description="job-change-support 企業スラッグ台帳検証ツール")
+    parser = argparse.ArgumentParser(description="job-change-support 企業スラッグ一覧検証ツール")
     parser.add_argument("index_path", help="検証対象の company_index.json ファイルパス")
     parser.add_argument("--json", action="store_true", help="結果をJSON形式で出力する")
     args = parser.parse_args(argv)

@@ -89,7 +89,7 @@ _OVERTIME_DEFAULT = {
 
 
 class LinearMappingTest(unittest.TestCase):
-    """実測値を 0〜100 点へ写す線形式。原本は company-score-rubric.md。"""
+    """実測値を 0〜100 点へ換算する線形式。原本は company-score-rubric.md。"""
 
     def test_value_at_zero_threshold_is_0(self):
         self.assertEqual(cs.score_from_value(4500000, 4500000, 7000000), 0)

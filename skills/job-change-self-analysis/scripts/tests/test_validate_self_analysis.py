@@ -139,6 +139,63 @@ class ErrorCaseTest(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("result" in e for e in result.errors))
 
+    def test_episode_missing_id(self):
+        d = _valid_self_analysis()
+        del d["behavioral_episodes"][0]["id"]
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("behavioral_episodes[0].id" in e for e in result.errors))
+
+    def test_episode_empty_id(self):
+        d = _valid_self_analysis()
+        d["behavioral_episodes"][0]["id"] = "  "
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("behavioral_episodes[0].id" in e for e in result.errors))
+
+    def test_episode_non_str_id(self):
+        d = _valid_self_analysis()
+        d["behavioral_episodes"][0]["id"] = 1
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("behavioral_episodes[0].id" in e for e in result.errors))
+
+    def test_episode_missing_id_keeps_reference_check_working(self):
+        """id が欠落しても、その id を指す参照は参照整合エラーとして検出される。"""
+        d = _valid_self_analysis()
+        del d["behavioral_episodes"][0]["id"]
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any("strengths[0].episode_ids" in e and "参照整合" in e for e in result.errors)
+        )
+        self.assertTrue(
+            any("values[0].evidence_episode_ids" in e and "参照整合" in e for e in result.errors)
+        )
+
+    def test_feedback_missing_id(self):
+        d = _valid_self_analysis()
+        del d["others_feedback"][0]["id"]
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("others_feedback[0].id" in e for e in result.errors))
+
+    def test_feedback_missing_id_keeps_reference_check_working(self):
+        d = _valid_self_analysis()
+        del d["others_feedback"][0]["id"]
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any("strengths[0].feedback_ids" in e and "参照整合" in e for e in result.errors)
+        )
+
+    def test_feedback_not_object(self):
+        d = _valid_self_analysis()
+        d["others_feedback"] = ["文字列"]
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("others_feedback[0]" in e for e in result.errors))
+
     def test_strengths_missing_statement(self):
         d = _valid_self_analysis()
         del d["strengths"][0]["statement"]
@@ -264,6 +321,34 @@ class WarnCaseTest(unittest.TestCase):
         self.assertTrue(result.ok)
         self.assertTrue(any("values" in w for w in result.warnings))
 
+    def test_duplicate_episode_id_warns_but_passes(self):
+        d = _valid_self_analysis()
+        d["behavioral_episodes"].append(copy.deepcopy(d["behavioral_episodes"][0]))
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("behavioral_episodes[1].id" in w for w in result.warnings))
+
+    def test_duplicate_feedback_id_warns_but_passes(self):
+        d = _valid_self_analysis()
+        d["others_feedback"].append(copy.deepcopy(d["others_feedback"][0]))
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("others_feedback[1].id" in w for w in result.warnings))
+
+    def test_unknown_source_type_warns_but_passes(self):
+        d = _valid_self_analysis()
+        d["others_feedback"][0]["source_type"] = "取引先"
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("source_type" in w for w in result.warnings))
+
+    def test_absent_source_type_does_not_warn(self):
+        d = _valid_self_analysis()
+        d["others_feedback"][0]["source_type"] = None
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertEqual(result.warnings, [])
+
     def test_constructive_version_same_as_raw_reasons_warns(self):
         d = _valid_self_analysis()
         d["reason_for_change"]["constructive_version"] = "裁量が小さい"
@@ -324,6 +409,17 @@ class ResultShapeTest(unittest.TestCase):
         snapshot = copy.deepcopy(d)
         vsa.validate(d)
         self.assertEqual(d, snapshot)
+
+
+class ExampleAssetTest(unittest.TestCase):
+    def test_bundled_example_passes(self):
+        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        document = vsa.load_self_analysis(
+            os.path.join(base, "assets", "self_analysis_example.json")
+        )
+        result = vsa.validate(document)
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
 
 
 if __name__ == "__main__":

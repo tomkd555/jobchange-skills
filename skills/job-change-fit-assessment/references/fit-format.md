@@ -33,7 +33,7 @@
 | `slug` | string | 必須 | 企業スラッグ。形式の原本は job-change-support の `references/company-index-format.md` にある |
 | `assessed_at` | string | 必須 | 評価日。`YYYY-MM-DD` |
 | `inputs` | object | 必須 | 各入力の有無を真偽値で記録。2.0 のキーは `job_posting`・`company_research`・`self_analysis`・`time_analysis`・`job_search_screening` の5つ |
-| `screening_source` | object | 任意 | 求人検索のスクリーニング結果への参照。`{search_id, result_index, classification, screened_at}` |
+| `screening_source` | object | 任意 | 求人検索のスクリーニング結果への参照。`{search_id, result_index, classification, screened_at}`。後述 |
 | `dimensions` | array | 必須 | 次元の評価。2.0 では過不足なく7件 |
 | `must_condition_results` | array | 必須 | 必須条件の判定。profile の必須条件と1対1 |
 | `company_score` | object | 任意 | 企業スコア（0〜100点）。`{total, coverage, provisional, axes, rationale}` |
@@ -125,16 +125,16 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 | フィールド | 型 | 内容 |
 |---|---|---|
 | `ref` | string | profile の `conditions[].id` または `work_character_preferences[].trait`（2.0 で必須。重複は ERROR） |
-| `condition` | string | 条件の文言（非空）。`statement` の写しであり、利用者向けの表示に使う |
+| `condition` | string | 条件の文言（非空）。`statement` のコピーであり、利用者向けの表示に使う |
 | `met` | string | `yes`・`no`・`unknown` のいずれか |
 | `negotiable` | boolean | 任意。`met=no` の条件が交渉・制度運用で解消しうるか。既定は `false`。`true` にするには evidence が1件以上要る |
 | `evidence` | array | 根拠。`met` が `yes`・`no` のときは1件以上必須。`unknown` のときは空でよい |
 
 ## company_score
 
-応募先企業を 0〜100 点で採点した結果である。軸ごとの実測値は企業研究が `company_research.json` の `company_metrics` へ書き、利用者が `profile.json` の `company_score_axes` で申告した軸と重みに基づく採点は、`profile.json` を読める適合性評価が `company_score` へ書く。
+応募先企業を 0〜100 点で採点した結果である。軸ごとの実測値は、企業研究が `company_research.json` の `company_metrics` へ書く。その実測値を、利用者が `profile.json` の `company_score_axes` で申告した軸と重みで採点した結果は、`profile.json` を読める適合性評価が `company_score` へ書く。
 
-算出は `scripts/calculate_company_score.py` が決定的に行う。定量候補軸9個・点数への写し方・基準の決め方・重みの配分・総合点の規則の原本は、job-change-company-research の `references/company-score-rubric.md` にある。統計由来の既定基準の原本は `scripts/calculate_company_score.py` の定数 `DEFAULT_THRESHOLDS` である。
+算出は `scripts/calculate_company_score.py` が機械的に行う。定量候補軸9個・点数への換算・基準の決め方・重みの配分・総合点の規則の原本は、job-change-company-research の `references/company-score-rubric.md` にある。統計由来の既定基準の原本は `scripts/calculate_company_score.py` の定数 `DEFAULT_THRESHOLDS` である。
 
 総合点は、利用者が選んだ軸と配分した重みに基づく数値であり、企業そのものの質の絶対評価ではない。異なる利用者の点数どうしを比べない。比べてよいのは、同じ利用者が同じ軸と重みで採点した企業どうしだけである。
 
@@ -175,21 +175,21 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 | `coverage` | integer | 判定できた軸の `weight` の合計（0〜100）。重みの合計が 100 のため、そのまま総合点の裏付けの割合になる |
 | `provisional` | boolean | 暫定の点数であること。`coverage` が `calculate_company_score.py` の定数 `COVERAGE_THRESHOLD` を下回るとき、および `total` が `null` のとき `true` |
 | `axes` | array | 利用者が申告した軸を申告順に並べる。判定できなかった軸も `score` を `null` にして並べる |
-| `rationale` | string | 点数に効いた軸と、判定できなかった軸をその理由とともに書く（非空）。スクリプトが決定的に組み立てる |
+| `rationale` | string | 点数に効いた軸と、判定できなかった軸をその理由とともに書く（非空）。スクリプトが機械的に組み立てる |
 
 `axes` の各要素:
 
 | フィールド | 型 | 内容 |
 |---|---|---|
 | `axis` | string | 軸の識別子（非空）。profile の `company_score_axes[].axis` をそのまま写す |
-| `kind` | string | `quantitative`（公表された数値を線形式で点数へ写す軸）・`qualitative`（利用者が判定条件を決める軸）のいずれか |
+| `kind` | string | `quantitative`（公表された数値を線形式で点数へ換算する軸）・`qualitative`（利用者が判定条件を決める軸）のいずれか |
 | `weight` | integer | 重み。1〜100 の整数。profile の申告をそのまま写す |
 | `value` | number \| null | 定量軸の実測値。`company_metrics` の当該軸の `value`。定性軸と、実測値が無い軸は `null` |
 | `unit` | string \| null | 実測値の単位。定性軸は `null` |
 | `score` | integer \| null | その軸の点数（0〜100 の整数）。実測値か基準を欠く定量軸、判定結果を得られない定性軸は `null` |
 | `threshold_source` | string \| null | 点数の基準の出所。`user`（profile の `thresholds`）・`statistic`（`DEFAULT_THRESHOLDS`）のいずれか。基準が無い軸と定性軸は `null` |
 | `thresholds` | object \| null | 適用した基準。`{zero, full}`。基準が無い軸と定性軸は `null` |
-| `grade` | string \| null | 実測値の証拠グレード（A〜D）。`company_metrics` の当該軸の `grade` を写す。定性軸は `null` |
+| `grade` | string \| null | 実測値のエビデンスレベル（A〜D）。`company_metrics` の当該軸の `grade` を写す。定性軸は `null` |
 | `source_url` | string \| null | 実測値の出典 URL。`company_metrics` の当該軸の `source_url` を写す。定性軸は `null` |
 | `evidence` | string \| null | 定性軸のみ。判定条件のどれに合致したかの説明。fit-assessor の判定結果をそのまま写す |
 | `reason` | string | 判定できなかった軸のみ。実測値が無い・基準が無い・判定結果が無いのいずれであるかを書く |
@@ -214,9 +214,82 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 | `rationale` | string | 総合判定の根拠（非空） |
 | `open_questions` | array | 未確認・未決の論点。空配列でもよい |
 
+## screening_source
+
+求人検索（`job-change-job-search`）のスクリーニングを経てこの評価へ来た場合に、そのときの判定の出所を書く。求人検索を経ずに企業研究から入った場合は書かない。
+
+```json
+{
+  "search_id": "20260725-remote-infra",
+  "result_index": 0,
+  "classification": "apply_candidate",
+  "screened_at": "2026-07-25"
+}
+```
+
+| フィールド | 型 | 内容 |
+|---|---|---|
+| `search_id` | string | 参照先の検索実行の識別子。`{DATA_ROOT}/job-search/{検索ID}/job_search_results.json` のトップレベルの `search_id` をそのまま写す。値はディレクトリ名 `{検索ID}` と同じである。形式と記入基準の原本は job-change-job-search の `references/job-search-format.md` にある |
+| `result_index` | integer | 参照先 `results[]` のうち当該求人を指す添字（0始まり） |
+| `classification` | string | 参照先 `results[result_index].classification` の値 |
+| `screened_at` | string | 参照先 `screening.screened_at`（判定日。`YYYY-MM-DD`） |
+
+`search_id` と `result_index` の2つで、どのファイルのどの求人を見て判定したかが定まる。求人検索の判定と適合性評価の判定が食い違った軸は、検証スクリプトが `result_index` で参照先を引いて WARN として報告する。
+
+## 中間成果物（sources.json・qualitative_judgment.json）
+
+Step 2 で fit-assessor が作る2つのファイルである。どちらも `fit_assessment.json` と同じ `{DATA_ROOT}/career-private/fit/{企業スラッグ}/` 配下へ置く。定性軸の判定条件は利用者が自分の言葉で書いたものであり、その判定結果も個人情報の派生値であるため、非個人情報ツリー（`companies/` 配下）へは置かない。置き場所を決めない一時ファイルにもしない。中断したあとの再開で、ファイルの有無から Step 2 のどこまで済んでいるかを決めるためである。
+
+### sources.json
+
+拘束時間の算定に使った各数値の出典メタである。`calculate_time_analysis.py` の `--sources-json` へ渡し、スクリプトは各キーのメタを `time_analysis.json` の `inputs` へ写す。
+
+```
+{DATA_ROOT}/career-private/fit/{企業スラッグ}/sources.json
+```
+
+```json
+{
+  "monthly_overtime_h": { "value": 18, "source": "research", "source_url": "https://...", "grade": "B" },
+  "annual_holidays": { "value": 125, "source": "posting", "source_url": "https://...", "grade": "A" },
+  "commute_oneway_min": { "value": 45, "source": "user", "source_url": null, "grade": null }
+}
+```
+
+キーは `calculate_time_analysis.py` の入力の識別子で、`scheduled_hours`・`break_minutes`・`monthly_overtime_h`・`annual_holidays`・`paid_leave_rate`・`paid_leave_granted`・`paid_leave_taken`・`commute_oneway_min`・`salary` を取りうる。CLI 引数で値を渡した項目だけを書く。渡さずに統計フォールバックへ委ねた項目はここへ書かない（スクリプトが `source` を `fallback` として補う）。
+
+| フィールド | 型 | 内容 |
+|---|---|---|
+| `value` | number | 抽出した値。CLI 引数へ渡した値と同じものを控えとして書く。点数の算出にはスクリプトが CLI 引数の値を使う |
+| `source` | string | `posting`（求人票 metrics）・`research`（企業研究の指標）・`user`（利用者の申告）・`fallback` のいずれか。既定値以外は `user` として扱われる |
+| `source_url` | string \| null | 出典 URL。利用者の申告など URL が無い場合は `null` |
+| `grade` | string \| null | 出典のエビデンスレベル（A〜D）。原本は job-change-company-research の `references/evidence-grading.md`。利用者の申告など付けられない場合は `null` |
+
+### qualitative_judgment.json
+
+profile の `company_score_axes` のうち `kind` が `qualitative` の軸について、判定条件（`judgment`）へ事実を当てはめた結果である。`calculate_company_score.py` の `--qualitative-json` へ渡し、スクリプトは `matched_score` をそのまま `company_score.axes[].score` へ、`evidence` を同 `evidence` へ写す。
+
+```
+{DATA_ROOT}/career-private/fit/{企業スラッグ}/qualitative_judgment.json
+```
+
+```json
+{
+  "tech_discretion": { "matched_score": 50, "evidence": "求人票の『設計から関与』の記載に合致した" },
+  "team_autonomy": { "matched_score": null, "evidence": null }
+}
+```
+
+キーは profile の `company_score_axes[].axis`（定性軸のみ）である。
+
+| フィールド | 型 | 内容 |
+|---|---|---|
+| `matched_score` | integer \| null | 最初に合致した判定条件の `score`。profile の当該軸の `judgment[].score` に無い値を書くと `calculate_company_score.py` が終了コード 2 で拒む。どの条件にも合致しない軸は `null` とし、中間の点数を推測で置かない |
+| `evidence` | string \| null | どの記載が条件に合致したかの説明。`matched_score` が `null` のときは `null` でよい |
+
 ## 検証規則（validate_fit_assessment.py）
 
-機械検証の原本は `scripts/validate_fit_assessment.py` である。終了コードは PASS（ERROR 0件）で 0、FAIL（ERROR 1件以上）で 1。WARN のみは PASS 扱いとする。
+機械的な検証の原本は `scripts/validate_fit_assessment.py` である。終了コードは PASS（ERROR 0件）で 0、FAIL（ERROR 1件以上）で 1。WARN のみは PASS 扱いとする。
 
 ### ERROR（成立しない）
 

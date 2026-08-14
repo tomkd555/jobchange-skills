@@ -1,11 +1,11 @@
-"""job-change-company-research: company_research.json の決定的（非LLM）検証ツール。
+"""job-change-company-research: company_research.json の機械的な（非LLM）検証ツール。
 
-標準ライブラリのみで、企業研究の中間成果物である company_research.json を機械検査する。
-すべての主張（claim）が出典・証拠グレード・確度を伴い、必須トピックを網羅し、低グレード
-（C・D）のみの根拠で断定（confidence=high）していないか、および定量候補軸の実測値
+標準ライブラリのみで、企業研究の中間成果物である company_research.json を機械的に検査する。
+すべての主張（claim）が出典・エビデンスレベル・確度を伴い、必須トピックを網羅し、レベルの低い
+（C・D）根拠だけで断定（confidence=high）していないか、および定量候補軸の実測値
 （company_metrics）が単位と出典を伴うかを、ERROR（成果物として成立しない欠落・ルール違反）と
 WARN（成立するが根拠が弱い点）に分けて報告する。仕様の原本は
-references/company-research-format.md、証拠グレードの原本は references/evidence-grading.md、
+references/company-research-format.md、エビデンスレベルの原本は references/evidence-grading.md、
 定量候補軸の原本は references/company-score-rubric.md である。
 
 CLI:
@@ -88,7 +88,7 @@ def _is_number(value: Any) -> bool:
 def _validate_company_metrics(document: dict, result: ValidationResult) -> None:
     """必須フィールド company_metrics（定量候補軸の実測値）の構造・単位・出典を検査する。
 
-    実測値が出典の記載と一致するかは機械検査せず、独立監査（job-change-research-auditor）の
+    実測値が出典の記載と一致するかは機械的に検査せず、独立監査（job-change-research-auditor）の
     領分とする。仕様の原本は references/company-score-rubric.md。
     """
     if "company_metrics" not in document:
@@ -168,11 +168,11 @@ def _validate_company(document: dict, result: ValidationResult) -> None:
 
 
 def _validate_evidence(evidence: Any, claim_path: str, result: ValidationResult) -> dict:
-    """evidence 配列を検査し、有効グレードの集約情報を返す。
+    """evidence 配列を検査し、有効レベルの集約情報を返す。
 
     返す dict:
-        valid_grades: A〜D のうち有効値だったグレードの一覧
-        has_high:     A または B のグレードが1件以上あるか
+        valid_grades: A〜D のうち有効値だったレベルの一覧
+        has_high:     A または B のレベルが1件以上あるか
     """
     if not isinstance(evidence, list) or not evidence:
         result.add_error(f"{claim_path}.evidence", "evidence は1件以上必要である")
@@ -247,12 +247,12 @@ def _validate_claim(claim: Any, index: int, result: ValidationResult) -> dict | 
 
     ev_info = _validate_evidence(claim.get("evidence"), path, result)
 
-    # C・Dのみを根拠とする claim（有効グレードが存在し、そのすべてが C・D）
+    # C・Dのみを根拠とする claim（有効レベルが存在し、そのすべてが C・D）
     low_only = bool(ev_info["valid_grades"]) and not ev_info["has_high"]
     if low_only and confidence == "high":
         result.add_error(
             path,
-            "グレードC・Dのみを根拠とする claim に confidence=high を与えてはならない",
+            "レベルC・Dのみを根拠とする claim に confidence=high を与えてはならない",
         )
 
     return {"topic": valid_topic, "low_only": low_only}
@@ -294,12 +294,12 @@ def validate(document: Any) -> ValidationResult:
                     f"必須トピック {t!r} の claim が1件も無い",
                 )
 
-        # あるトピックの claim がすべてグレードC・Dのみの根拠であれば WARN。
+        # あるトピックの claim がすべてレベルC・Dのみの根拠であれば WARN。
         for t, flags in topic_low_only.items():
             if flags and all(flags):
                 result.add_warning(
                     f"claims(topic={t})",
-                    "このトピックの claim がすべてグレードC・Dのみの根拠である。"
+                    "このトピックの claim がすべてレベルC・Dのみの根拠である。"
                     "一次・二次（A・B）の裏付けを追加することを推奨する",
                 )
 

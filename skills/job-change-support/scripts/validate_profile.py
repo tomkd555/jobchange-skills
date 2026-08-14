@@ -1,6 +1,6 @@
-"""job-change-support: 利用者プロファイル（profile.json）の決定的（非LLM）検証ツール。
+"""job-change-support: 利用者プロファイル（profile.json）の機械的な（非LLM）検証ツール。
 
-標準ライブラリのみで、転職支援スキル群の原本である profile.json を機械検査する。
+標準ライブラリのみで、転職支援スキル群の原本である profile.json を機械的に検査する。
 プロファイルが後続のサブスキル（企業研究・応募書類・面接対策・試験対策）の前提を
 満たすかを、ERROR（プロファイルとして成立しない欠落）と WARN（成立するが情報が
 不足し成果物の質を下げる点）に分けて報告する。仕様の原本は
@@ -65,9 +65,12 @@ _SCORE_WEIGHT_TOTAL = 100
 _DEFAULT_SELECTED_AXIS = "compensation_level"
 _CONDITION_LEVELS = ("must", "want")
 _CONDITION_OPERATORS = (">=", "<=", "==", "in", "qualitative")
+_CONDITION_UNITS = ("yen", "h_month", "days_year", "ratio", "none")
 _CONDITION_VERIFICATIONS = ("posting", "research", "interview", "unverifiable")
 _DESIRE_LEVELS = ("must", "important", "neutral", "not_required")
 _CONDITION_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+# 定性軸の識別子は利用者が付ける。半角英小文字・数字・アンダースコアだけを使う。
+_QUALITATIVE_AXIS_RE = re.compile(r"^[a-z0-9_]+$")
 _MUST_CONDITION_SOFT_LIMIT = 4
 
 
@@ -198,7 +201,7 @@ def _warn_skills(profile: dict, result: ValidationResult) -> None:
     if not isinstance(skills, dict):
         result.add_warning("skills", "skills が未記入である")
         return
-    categories = ("technical", "business", "languages", "certifications")
+    categories = ("technical", "business", "languages", "certifications", "portable")
     if not any(isinstance(skills.get(c), list) and skills.get(c) for c in categories):
         result.add_warning("skills", "skills の全カテゴリが空である")
 
@@ -219,7 +222,7 @@ def _warn_updated_at(profile: dict, result: ValidationResult) -> None:
 
 
 def _warn_schema_version_known(profile: dict, result: ValidationResult) -> None:
-    """W1: schema_version が既知のバージョン（1.0/1.1）以外である。"""
+    """W1: schema_version が既知のバージョン（1.0/1.1/2.0）以外である。"""
     version = profile.get("schema_version")
     if _is_nonempty_str(version) and version not in _KNOWN_SCHEMA_VERSIONS:
         result.add_warning(
@@ -438,6 +441,13 @@ def _validate_conditions(axis: dict, result: ValidationResult) -> None:
                 "operator が qualitative でない条件に value は必須である（比較できない条件を機械条件にしない）",
             )
 
+        unit = condition.get("unit")
+        if unit is not None and unit not in _CONDITION_UNITS:
+            result.add_error(
+                f"{path}.unit",
+                f"unit は {'/'.join(_CONDITION_UNITS)} のいずれかである",
+            )
+
         verification = condition.get("verification")
         if verification not in _CONDITION_VERIFICATIONS:
             result.add_error(
@@ -449,7 +459,7 @@ def _validate_conditions(axis: dict, result: ValidationResult) -> None:
         if count > 1:
             result.add_warning(
                 "job_change_axis.conditions",
-                f"同じ軸に必須条件が{count}件ある（axis={axis_id}）。判定では最も厳しいしきい値を採る",
+                f"同じ軸に必須条件が{count}件ある（axis={axis_id}）。判定では最も厳しいしきい値を採用する",
             )
 
     must_list = _must_conditions(axis)
@@ -557,7 +567,7 @@ def _validate_score_thresholds(path: str, entry: dict, kind: Any, result: Valida
     if zero == full:
         result.add_error(
             f"{path}.thresholds",
-            "zero と full は異なる値である（同値では実測値を点数へ写せない）",
+            "zero と full は異なる値である（同値では実測値を点数へ換算できない）",
         )
 
 
@@ -641,6 +651,15 @@ def _validate_company_score_axes(profile: dict, result: ValidationResult) -> Non
             result.add_error(
                 f"{path}.axis",
                 "定量軸の axis は company-score-rubric.md の定量候補軸9個のいずれかである",
+            )
+        elif (
+            kind == "qualitative"
+            and _is_nonempty_str(axis_key)
+            and not _QUALITATIVE_AXIS_RE.match(axis_key)
+        ):
+            result.add_error(
+                f"{path}.axis",
+                "定性軸の axis は半角英小文字・数字・アンダースコアだけの識別子である",
             )
 
         weight = entry.get("weight")
