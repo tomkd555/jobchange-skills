@@ -3,7 +3,7 @@
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
 <!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
 
-job-change-self-analysis スキルが、自己分析の素材（エピソード・他者証言・興味・価値観・career adaptability）を「一貫したキャリア・ナラティブ」と「退職理由の建設的な言語化」へ統合する基準の原本である。writer エージェントが career_narrative と reason_for_change を起草するとき、また面接対策・志望動機の深化（interview-prep / documents）が一貫性の根拠として読むときに参照する。証拠グレードと DOI 表記は self-analysis-methods.md と同じ規約に従う。
+job-change-self-analysis スキルが、自己分析の素材（エピソード・他者証言・興味・価値観・career adaptability）を「一貫したキャリア・ナラティブ」と「退職理由の建設的な言語化」へ統合する基準の原本である。writer エージェントが career_narrative と reason_for_change を作成するとき、また面接対策・志望動機の深化（interview-prep / documents）が一貫性の根拠として読むときに参照する。エビデンスレベルと DOI 表記は self-analysis-methods.md と同じ規約に従う。
 
 ## なぜナラティブへ接続するのか
 
@@ -38,7 +38,7 @@ reason_for_change は、不満の列挙（raw_reasons）を、発揮したい価
 
 1. raw_reasons を加工せずに記録する。現状の不満や、退職を考える元の理由を、飾らずに列挙する。これは変換の出発点であり、そのまま外部へ出す文ではない。
 2. 不満の裏にある「発揮したい価値」を特定する。各不満について、「では何を実現したいのか」を問い、values・career_narrative の consistent_motivation と対応づける。不満（避けたいこと）を、実現したいこと（向かいたいこと）へ言い換える。
-3. constructive_version を、実現したいことを主語にして書く。現職の否定ではなく、発揮したい価値を軸に書く。constructive_version は raw_reasons と別の文でなければならない（同一の文字列のままであれば、検証器が WARN とする）。
+3. constructive_version を、実現したいことを主語にして書く。現職の否定ではなく、発揮したい価値を軸に書く。constructive_version は raw_reasons と別の文でなければならない（同一の文字列のままであれば、検証スクリプトが WARN とする）。
 4. consistency_note で profile.json との整合を確認する。profile.json の `job_change_axis.reasons`（次に実現したいことで書かれた転職理由）と、constructive_version の軸が一致するかを確認し、ずれがあれば説明する。
 
 変換の例を次に示す。構造のみを示すものであり、実データは利用者の素材による。
@@ -66,14 +66,14 @@ reason_for_change は、不満の列挙（raw_reasons）を、発揮したい価
 ## 出典一覧
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+<!-- 書誌形式（発行元. 表題. 年. レベル. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
 
-- [E24] 厚生労働省. 令和2年転職者実態調査の概況（採用時の問題 84.1%）. 2021-12. グレードA. https://www.mhlw.go.jp/toukei/list/dl/6-18c-r02-gaikyo.pdf
-- [E25] 厚生労働省. 令和2年転職者実態調査の概況（問題の内訳）. 2021-12. グレードA. https://www.mhlw.go.jp/toukei/list/6-18c-r02.html
-- [E40] 株式会社学情. 20代経験者採用で面接の際に見ているポイント（人事担当者アンケート 421社）. 2023-05. グレードB. https://prtimes.jp/main/html/rd/p/000001051.000013485.html
-- [E41] Geekly（ギークリー）. 面接で志望動機を聞かれなかったのはなぜ？. 2024-08-30. グレードC. https://www.geekly.co.jp/column/cat-jobsearch/interview/jobinterview_reasons_for_application/
-- [E42] Humanage, Inc.（i-note）. 中途採用で活躍する人材を見極める面接術（再現性）. 2025-05-30. グレードC. https://www.i-note.jp/assessment/tekisei-kensa/articles/028.html
-- [E43] PMC（一次は Savickas 2011, APA Career Counseling）. Career construction theory: tools, interventions（CCI）. 2024. グレードA. https://pmc.ncbi.nlm.nih.gov/articles/PMC11026660/
-- [E55] Current Directions in Psychological Science. Affective forecasting: Knowing what to want. 2005. グレードA. DOI:10.1111/j.0963-7214.2005.00355.x. https://doi.org/10.1111/j.0963-7214.2005.00355.x
+- [E24] 厚生労働省. 令和2年転職者実態調査の概況（採用時の問題 84.1%）. 2021-12. レベルA. https://www.mhlw.go.jp/toukei/list/dl/6-18c-r02-gaikyo.pdf
+- [E25] 厚生労働省. 令和2年転職者実態調査の概況（問題の内訳）. 2021-12. レベルA. https://www.mhlw.go.jp/toukei/list/6-18c-r02.html
+- [E40] 株式会社学情. 20代経験者採用で面接の際に見ているポイント（人事担当者アンケート 421社）. 2023-05. レベルB. https://prtimes.jp/main/html/rd/p/000001051.000013485.html
+- [E41] Geekly（ギークリー）. 面接で志望動機を聞かれなかったのはなぜ？. 2024-08-30. レベルC. https://www.geekly.co.jp/column/cat-jobsearch/interview/jobinterview_reasons_for_application/
+- [E42] Humanage, Inc.（i-note）. 中途採用で活躍する人材を見極める面接術（再現性）. 2025-05-30. レベルC. https://www.i-note.jp/assessment/tekisei-kensa/articles/028.html
+- [E43] PMC（一次は Savickas 2011, APA Career Counseling）. Career construction theory: tools, interventions（CCI）. 2024. レベルA. https://pmc.ncbi.nlm.nih.gov/articles/PMC11026660/
+- [E55] Current Directions in Psychological Science. Affective forecasting: Knowing what to want. 2005. レベルA. DOI:10.1111/j.0963-7214.2005.00355.x. https://doi.org/10.1111/j.0963-7214.2005.00355.x
 
 <!-- textlint-enable -->

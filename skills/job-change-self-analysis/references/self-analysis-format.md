@@ -58,7 +58,7 @@ self_analysis.json は、profile.json（利用者データの原本。hub が管
 | `reproducibility` | string または null | 任意 | 環境が変わっても機能する根拠（再現性）。企業は行動プロセスの再現性を見極める。このため、可能な範囲で書く |
 | `emotion_note` | string または null | 任意 | 当時のモチベーション・感情の記録。将来の感情予測ではなく、当時の記録に限る |
 
-- `metric` は可能な限り定量値で埋める。全エピソードを通して `metric` が1件もない場合、検証器は WARN を出す。
+- `metric` は可能な限り定量値で埋める。全エピソードを通して `metric` が1件もない場合、検証スクリプトは WARN を出す。
 - `situation`・`action`・`result` の3つはエピソードの骨格であり、いずれかが欠けるとエピソードとして成立しないため ERROR とする。
 
 ## others_feedback

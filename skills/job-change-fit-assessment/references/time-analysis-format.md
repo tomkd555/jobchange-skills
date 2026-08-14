@@ -20,7 +20,7 @@
 - 実質時給（binding_basis）= `想定年収 ÷ 年間拘束時間`
 - 実質時給（labor_basis）= `想定年収 ÷ 年間労働時間`
 
-グレード付きの想定年収が無いとき、`effective_hourly_wage` は `null` にする。実質時給を創作しない。
+レベル付きの想定年収が無いとき、`effective_hourly_wage` は `null` にする。実質時給を創作しない。
 
 内部計算では丸めをかけない。出力時にのみ、時間は小数第1位、日数と円は整数へ丸める。
 
@@ -55,11 +55,11 @@
 | 優先度 | 出所 | 内容 |
 |---|---|---|
 | 1 | 求人票（`posting`） | `job_posting.json` の `working_hours`・`metrics` に引用付きで載る値。最優先とする。 |
-| 2 | 企業研究の指標（`research`） | `company_research.json` の `company_metrics`（月平均残業は `monthly_overtime`、年間休日は `annual_holidays`、有給取得率は `paid_leave_rate`、有給取得日数は `avg_paid_leave_days_taken`）。同一項目に複数の候補があるときは証拠グレード（A → B → C → D）が最も高いものを採用する。証拠グレードの定義の原本は `job-change-company-research` の `references/evidence-grading.md` にある。C・D 単独での断定は避け、値を採用するときも確度を下げて扱う。 |
+| 2 | 企業研究の指標（`research`） | `company_research.json` の `company_metrics`（月平均残業は `monthly_overtime`、年間休日は `annual_holidays`、有給取得率は `paid_leave_rate`、有給取得日数は `avg_paid_leave_days_taken`）。同一項目に複数の候補があるときはエビデンスレベル（A → B → C → D）が最も高いものを採用する。エビデンスレベルの定義の原本は `job-change-company-research` の `references/evidence-grading.md` にある。C・D 単独での断定は避け、値を採用するときも確度を下げて扱う。 |
 | 3 | 利用者入力（`user`） | 通勤時間など、利用者本人が申告する値。 |
 | 4 | 統計フォールバック（`fallback`） | 上位のいずれでも埋まらない項目に、官公庁の一次統計に基づく既定値を適用する。 |
 
-呼び出し側（fit-assessment スキル本体）が優先度を裁定し、確定値を CLI 引数へ、各値の出所のメタデータを `--sources-json` へ渡す。スクリプト自身は `job_posting.json`・`company_research.json` を読まず、渡された値と、未指定項目へのフォールバック適用だけを行う。
+呼び出し側（fit-assessment スキル本体）が優先度に従って値を決め、確定値を CLI 引数へ、各値の出所のメタデータを `--sources-json` へ渡す。スクリプト自身は `job_posting.json`・`company_research.json` を読まず、渡された値と、未指定項目へのフォールバック適用だけを行う。
 
 ## 通勤時間が未入力のときの扱い
 

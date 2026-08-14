@@ -1,12 +1,12 @@
 # 適合性評価の判定基準（fit-criteria）
 
-`fit_assessment.json` の7次元（experience_proximity / aspiration_alignment / work_character_fit / condition_fit / culture_fit / compensation_fit / time_fit）の判定基準を定める。データ構造・検証規則の原本は `references/fit-format.md`、証拠グレードA〜Dの原本は `job-change-company-research` スキルの `references/evidence-grading.md` にある。
+`fit_assessment.json` の7次元（experience_proximity / aspiration_alignment / work_character_fit / condition_fit / culture_fit / compensation_fit / time_fit）の判定基準を定める。データ構造・検証規則の原本は `references/fit-format.md`、エビデンスレベルA〜Dの原本は `job-change-company-research` スキルの `references/evidence-grading.md` にある。
 
 ## 全次元に共通するルール
 
 1. **evidence のない主張を書かない。** 各次元の verdict は evidence（1件以上）に対応づける。裏付けのない印象・憶測を score や verdict に反映しない。
-2. **証拠グレードC・D単独で断定しない。** 口コミ・伝聞（company_research 内でグレードC・Dが付いた claim）のみを根拠に、その次元を高い、または低いと断定しない。C・D を根拠にする場合は verdict を限定表現にする（「口コミでは〜という声がある。傍証にとどめる」）。グレードの定義と限定表現の書き方は evidence-grading.md に従う。
-3. **企業自身の自己宣伝的主張に高い確度を置かない。** 採用サイトの「風通しが良い」等は、company_research 側でグレードAでも confidence を high にしていない。これを culture_fit の断定材料にしない。
+2. **エビデンスレベルC・D単独で断定しない。** 口コミ・伝聞（company_research 内でレベルC・Dが付いた claim）のみを根拠に、その次元を高い、または低いと断定しない。C・D を根拠にする場合は verdict を限定表現にする（「口コミでは〜という声がある。傍証にとどめる」）。レベルの定義と限定表現の書き方は evidence-grading.md に従う。
+3. **企業自身の自己宣伝的主張に高い確度を置かない。** 採用サイトの「風通しが良い」等は、company_research 側でレベルAでも confidence を high にしていない。これを culture_fit の断定材料にしない。
 4. **材料が無いときは score を null（判断保留）にする。** 憶測で数値を埋めない。unknown を優先する方針を守る。
 5. **profile・self_analysis に無い事実を創作しない。** 本人の経歴・強み・条件は profile.json と self_analysis.json の記載を根拠にする。
 
@@ -74,8 +74,8 @@ job_posting の勤務条件（`location`・`employment_type`・`working_hours` �
 company_research の philosophy・workstyle・reputation トピックと、self_analysis の行動証拠・価値観を突き合わせる。
 
 - **内省単独に重みを置かない。** self_analysis の主観的な自己申告だけで断定せず、self_analysis に記録された行動証拠（過去の具体的な行動・実績）との対応づけを優先する。
-- 企業側の材料は、自己宣伝的主張（グレードAでも confidence が high でないもの）を断定に使わず、事実（制度の有無・開示数値・認定）と分けて扱う。
-- 口コミ由来（グレードC）は限定表現にとどめる。
+- 企業側の材料は、自己宣伝的主張（レベルAでも confidence が high でないもの）を断定に使わず、事実（制度の有無・開示数値・認定）と分けて扱う。
+- 口コミ由来（レベルC）は限定表現にとどめる。
 - self_analysis が無い場合（inputs.self_analysis=false）は、行動証拠を欠くため score を高くせず、verdict にその旨を書くか null にする。
 - evidence の source は主に `company_research`・`self_analysis`。
 
@@ -94,7 +94,7 @@ company_research の philosophy・workstyle・reputation トピックと、self_
 time_analysis.json の年間拘束時間・実質時給と、must/want 条件（残業・通勤・労働時間に関するもの）を突き合わせる。
 
 - time_analysis.json の `annual.binding_hours`（年間拘束時間）・`annual.labor_hours`（年間労働時間）・`effective_hourly_wage`（実質時給。拘束基準・労働基準）を主たる材料にする。
-- 実質時給は、想定年収にグレード付きの根拠がある場合にのみ算出される（無ければ time_analysis 側で null）。null の場合は金額比較を断定に使わない。
+- 実質時給は、想定年収にレベル付きの根拠がある場合にのみ算出される（無ければ time_analysis 側で null）。null の場合は金額比較を断定に使わない。
 - time_analysis の入力に統計フォールバックが使われた項目（`fallbacks_used`）は、実測でない旨を verdict に反映し、確度を上げすぎない。
 - 残業・通勤・労働時間に関する must/want 条件との整合を見る。
 - time_analysis.json に `comparison` があれば、年間拘束時間の現職との差分（`comparison.delta.annual_binding_hours`）を verdict の根拠にする。`comparison` が無い場合は、現職と比較できていない旨を verdict に書く。
@@ -125,4 +125,4 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 - `skill_gap` が `not_applicable_now` の場合は `推奨`・`条件付き推奨` にしない。
 - rationale には、判定を分けた決め手と、条件付きの場合は解消すべき条件を書く。未確認の論点は `open_questions` に列挙する。求人票から判定できない作業特性（完了条件の明確さ・一人で完結しやすさ・結果を短期で確認できる度合い）は、必ず `open_questions` へ面接での確認事項として入れる。
 - **直属上司の関与のしかたを必ず `open_questions` へ入れる。** 日本の従業員標本では上司との適合が定着と満足を左右するが、求人票と企業研究からは判定できない。8番目の次元を作らず、`culture_fit` の score にも織り込まず、面接での確認事項として立てる（根拠は `references/fit-methods.md`）。
-- **判定の時点性を rationale に明記する。** 判定は現時点で得られている材料に基づくものであり、入社直後の満足の高さがそのまま持続するとは限らない。この注記を rationale の末尾へ置く（根拠は `references/fit-methods.md`）。
+- **判定がその時点の材料に基づくことを rationale に明記する。** 判定は現時点で得られている材料に基づくものであり、入社直後の満足の高さがそのまま持続するとは限らない。この注記を rationale の末尾へ置く（根拠は `references/fit-methods.md`）。

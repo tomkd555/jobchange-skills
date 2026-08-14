@@ -5,7 +5,7 @@ description: >-
   GAB/CAB・TG-WEB・TAL・内田クレペリン・性格検査・外資系オンラインアセスメント）を、受検案内 URL の
   ドメイン判別と job-change-exam-scout エージェントの調査で特定し、検査種別ごとに対策計画（科目別の
   学習項目・時間配分・教材方針・スケジュール）を作り、出題形式を模した自作問題で演習する。確定情報と
-  推定を区別し、能力検査は反復練習、性格検査は一貫した正直な回答という、検査種別ごとの対策差に従う。実在の
+  推定を区別し、能力検査は反復練習、性格検査は一貫した正直な回答という、検査種別ごとの対策の差に従う。実在の
   検査問題は複製しない。hub（job-change-support）から振り分けられて使う。
   Use when the user prepares for a written test or aptitude assessment in a Japanese mid-career job change
   (including foreign-affiliated online assessments) — identifying which test a company uses, building a
@@ -25,7 +25,7 @@ allowed-tools: Read, Write, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
 
 1. **検査種別を先に特定する。** 対策は検査種別に依存するため、種別が定まらないまま学習項目を決めない。受検案内 URL があれば `references/domain-detection.md` のドメイン判別で系統を即時に絞り、`job-change-exam-scout` の調査で種別を確定・補強する。確定情報（採用ページ等での明記）と推定（選考体験記からの類推）を区別し、推定を確定であるかのように書かない。
 
-2. **対策は検査種別ごとに分ける。** 能力検査（SPI3・玉手箱・TG-WEB・GAB・CAB 等）は反復練習で得点が上がる。一方、性格検査・TAL・内田クレペリンは対策可能性が限定的であり、このうち性格検査では一貫した正直な回答を勧める。回答のゆがみ（faking）が妥当性へ与える影響は学術的に未決着であり、両論は `references/prep-methods.md` に併記する。この対策差の原本は `references/prep-methods.md` である。
+2. **対策は検査種別ごとに分ける。** 能力検査（SPI3・玉手箱・TG-WEB・GAB・CAB 等）は反復練習で得点が上がる。一方、性格検査・TAL・内田クレペリンは対策可能性が限定的であり、このうち性格検査では一貫した正直な回答を勧める。回答のゆがみ（faking）が妥当性へ与える影響は学術的に未決着であり、両論は `references/prep-methods.md` に併記する。この対策の差の原本は `references/prep-methods.md` である。
 
 3. **実在の検査問題を複製しない。** 演習は `references/assessment-catalog.md` の出題形式知識に基づき、形式を模した自作問題で行う。実在の検査問題・著作物の複製、受検代行、替え玉受検は行わない。
 
@@ -89,8 +89,8 @@ Step 0 から Step 3 を順に進める。
 
 `job-change-exam-scout` エージェント（model: sonnet）を Agent ツールで起動し、対象企業の中途採用で使われる検査種別を調査させる。
 
-- 指示書に渡すもの: 企業名（正式名称）・応募職種（あれば）・求人票（あれば）。`companies/{企業スラッグ}/company_research.json` があれば、topic=selection_process の claims の要約（主張・出典URL・証拠グレード）も渡す。既に集めた証拠を捨てて調査をやり直させないためである。この要約は企業についての公開情報であり個人情報を含まないため、Web ツールを持つ調査担当へ渡してよい。`profile.json` は渡さない（原則 4）。
-- 調査結果が、渡した claims と食い違う場合は、証拠グレードの高いほうを採用する。同じグレードなら調査日の新しいほうを採用し、`exam_assessment.json` の備考に双方の主張と採否の理由を残す。
+- 指示書に渡すもの: 企業名（正式名称）・応募職種（あれば）・求人票（あれば）。`companies/{企業スラッグ}/company_research.json` があれば、topic=selection_process の claims の要約（主張・出典URL・エビデンスレベル）も渡す。既に集めた証拠を捨てて調査をやり直させないためである。この要約は企業についての公開情報であり個人情報を含まないため、Web ツールを持つ調査担当へ渡してよい。`profile.json` は渡さない（原則 4）。
+- 調査結果が、渡した claims と食い違う場合は、エビデンスレベルの高いほうを採用する。同じレベルなら調査日の新しいほうを採用し、`exam_assessment.json` の備考に双方の主張と採否の理由を残す。
 - 出力先: エージェントは `{DATA_ROOT}/companies/{企業スラッグ}/exam_assessment.json` へ結果を書き出し、同一の JSON を返す。
 - 出力 JSON の骨格（原本はエージェント定義）:
 
@@ -123,7 +123,7 @@ Step 0 から Step 3 を順に進める。
 |---|---|
 | 科目別の学習項目 | 検査種別の出題科目（言語・非言語・計数・英語・法則性・命令表・暗号など）ごとに、習得すべき項目を挙げる。`references/assessment-catalog.md` の出題形式を根拠にする。 |
 | 時間配分 | 実施方式・制限時間の特徴（玉手箱・TG-WEB のように短時間で同一形式を連続出題する検査では時間管理が要点になる）を踏まえ、科目別の学習・演習の時間配分を示す。 |
-| 教材方針 | 検査種別に対応する定番教材の系統を示す（`references/prep-methods.md`）。対策困難な検査（TAL 等）は、その旨を明示して過剰な教材投入を避ける。 |
+| 教材方針 | 検査種別に対応する定番教材の系統を示す（`references/prep-methods.md`）。対策困難な検査（TAL 等）は、その旨を明示して教材の過剰な投入を避ける。 |
 | スケジュール | 受検までの日数に応じた学習順序を示す。反復練習が効く能力検査を優先し、性格検査は回答方針の確認にとどめる。 |
 
 対策可能性の差（`references/prep-methods.md`）に従い、性格検査・TAL・内田クレペリンには過度な対策を勧めない。性格検査については、一貫した正直な回答を勧める。
@@ -159,7 +159,7 @@ Step 0 から Step 3 を順に進める。
 |---|---|
 | `job-change-exam-scout` | `{SKILL_DIR}/references/roles/exam-scout.md` |
 
-**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` の写しである。
+**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` のコピーである。
 
 **サブエージェントを起動できないハーネス（Codex ほか）。** 各 Step の「エージェントを起動する」を「役割プロンプトを読み、その役割として自分で実行する」と読み替える。手順は次のとおり。
 

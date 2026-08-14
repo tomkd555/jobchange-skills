@@ -107,7 +107,7 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 | `medium` | A・B の裏付けはあるが単一出所、または一部に限定が残る |
 | `low` | C・D 中心で、傾向の傍証にとどまる |
 
-**ルール**: グレードC・Dのみを根拠とする claim に `high` を与えてはならない（ERROR）。企業自身の評価的・自己宣伝的主張は、出典がグレードAでも `high` にしない（B 相当扱い。機械検証では判定できず監査エージェントの領分）。
+**ルール**: レベルC・Dのみを根拠とする claim に `high` を与えてはならない（ERROR）。企業自身の評価的・自己宣伝的主張は、出典がレベルAでも `high` にしない（B 相当扱い。機械検証では判定できず監査エージェントの領分）。
 
 ### open_questions（配列・推奨）
 
@@ -115,7 +115,7 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 
 ### company_metrics（オブジェクト・必須）
 
-定量候補軸の実測値を、機械可読な数値として構造化するトップレベルの必須フィールドである。散文の `claims` とは独立に持ち、後続の処理（企業スコアの算出・実質時給の試算）が数値をそのまま使う。軸の定義・単位・方向の原本は `references/company-score-rubric.md` にある。
+定量候補軸の実測値を、機械可読な数値として構造化するトップレベルの必須フィールドである。文章の `claims` とは独立に持ち、後続の処理（企業スコアの算出・実質時給の試算）が数値をそのまま使う。軸の定義・単位・方向の原本は `references/company-score-rubric.md` にある。
 
 企業研究は実測値を集めるだけであり、点数化も格付けもしない。指示された軸に対応する指標を優先して集め、確認できなかった項目は `value` を `null` にする。推定値を入れない。
 
@@ -143,7 +143,7 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 | `grade` | `value` が非 null なら必須 | `A`〜`D`。定義は `references/evidence-grading.md` |
 | `as_of` | 推奨 | その値が指す時点（`YYYY-MM` または `YYYY`）。欠落は WARN |
 
-**ルール**: 年間休日・残業・有給取得率・平均年間給与などの数値を収集した場合は、散文の claim に埋めるだけでなく、必ずこの company_metrics へ構造化して格納する（単位・出典URL・グレード併記）。確認できなければ `value` を `null` のままにする。
+**ルール**: 年間休日・残業・有給取得率・平均年間給与などの数値を収集した場合は、文章の claim に埋めるだけでなく、必ずこの company_metrics へ構造化して格納する（単位・出典URL・レベル併記）。確認できなければ `value` を `null` のままにする。
 
 ## 機械検証規則（validate_company_research.py）
 
@@ -162,7 +162,7 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 - `grade` が A〜D 以外
 - `quote` が空
 - 必須7トピック（`philosophy`・`business`・`financials`・`compensation`・`benefits`・`workstyle`・`reputation`）のいずれかが1件も無い
-- グレードC・Dのみを根拠とする claim に `confidence=high`
+- レベルC・Dのみを根拠とする claim に `confidence=high`
 - `company_metrics` の欠落、または `company_metrics` が非オブジェクト
 - `company_metrics` のキーが定量候補軸9個の軸キーでも `avg_paid_leave_days_taken` でもない
 - `company_metrics` の各項目が非オブジェクト
@@ -173,7 +173,7 @@ statement は「反証可能な命題」で書く。真偽を出典で確認で�
 
 **WARN（成立するが根拠が弱い）**
 
-- あるトピックの claim がすべてグレードC・Dのみの根拠である
+- あるトピックの claim がすべてレベルC・Dのみの根拠である
 - `selection_process` の claim が0件
 - `research_date` が未設定
 - `value` が非 null の項目に `as_of` が無い

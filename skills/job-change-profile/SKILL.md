@@ -3,8 +3,8 @@ name: job-change-profile
 description: >-
   転職支援スキル群の profile.json 作成・更新に特化したサブスキル。利用者データの単一の原本である
   profile.json を、構造化した想起手がかり（時系列×プロジェクト単位）で聞き取り、実績の定量化・スキルの棚卸し・
-  転職の軸の構造化を支援し、起草・機械検証・独立監査を経て作る。聞き取りは AskUserQuestion の選択式を中心に、
-  1回最大4問×各4択で行い、自由記述は企業名・期間・実績値など選択式にできない項目に限る。日付・年収・実績値のうち記憶が曖昧なものについては、手元のエビデンスでの任意確認を案内し、単純な誤記を予防する。起草と独立監査は専用エージェント
+  転職の軸の構造化を支援し、作成・機械検証・独立監査を経て作る。聞き取りは AskUserQuestion の選択式を中心に、
+  1回最大4問×各4択で行い、自由記述は企業名・期間・実績値など選択式にできない項目に限る。日付・年収・実績値のうち記憶が曖昧なものについては、手元のエビデンスでの任意確認を案内し、単純な誤記を予防する。作成と独立監査は専用エージェント
   （job-change-profile-writer / job-change-profile-auditor）が担う。job-change-support（hub）から振り分けられて動く。
   強みの根拠づけ・キャリアの物語化は job-change-self-analysis、応募書類の文面は job-change-documents が担う。
   Use when the user creates or updates a job-change profile in Japan — registering career history, taking stock of
@@ -16,7 +16,7 @@ allowed-tools: Read, Write, Glob, Grep, Bash, AskUserQuestion, Agent, Skill
 
 # job-change-profile
 
-転職支援スキル群で利用者データの単一の原本となる profile.json を作る、または更新するとき、このスキル1つで聞き取りから納品までの手順がそろう。構造化した想起手がかり（企業→在籍期間→役割→担当プロジェクト→成果の時系列枠）で聞き取り、実績の定量化・スキルの棚卸し・転職の軸の構造化を支援し、起草・機械検証・独立監査を経て profile.json を確定する。成果物は後続のサブスキル（企業研究・応募書類作成・面接対策・試験対策・自己分析）がすべて入力として読む。
+転職支援スキル群で利用者データの単一の原本となる profile.json を作る、または更新するとき、このスキル1つで聞き取りから納品までの手順がそろう。構造化した想起手がかり（企業→在籍期間→役割→担当プロジェクト→成果の時系列枠）で聞き取り、実績の定量化・スキルの棚卸し・転職の軸の構造化を支援し、作成・機械検証・独立監査を経て profile.json を確定する。成果物は後続のサブスキル（企業研究・応募書類作成・面接対策・試験対策・自己分析）がすべて入力として読む。
 
 profile.json の中核は、職務経歴・実績・スキルの内容と、それが求人要件へどう対応するかという点（relevance）である（根拠は `references/profile-methods.md`）。ただし関連性（relevance）は応募先ごとに変わるため、profile.json には固定して保持しない。応募時に応募書類サブスキルが再構成する。本スキルは、応募先ごとの relevance を再構成できる粒度（職務単位の経歴・成果・定量値）の正確性・網羅性・鮮度を保つことに責任を持つ。
 
@@ -158,9 +158,9 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 
 利用者が移行を望まない場合は 1.x のまま残す。その場合、求人検索の8軸判定と適合性評価の作業特性の次元が働かない旨を1回だけ伝える。
 
-### Step 5 起草→機械検証→独立監査
+### Step 5 作成→機械検証→独立監査
 
-聞き取りの結果は、その途中で本体セッションが `{NOTES}`（`profile_interview_notes.md`）へ逐次追記し集約しておく（中断再開に対応）。`job-change-profile-writer` エージェント（model: opus）を起動し、`{NOTES}`・既存 `{PROFILE}`（更新時）・hub の `references/profile-format.md`・出力先 `{PROFILE}` を渡す。起草担当はメモにある事実だけから profile.json を起草・更新する。戻り値を受け、本体セッションが hub の `validate_profile.py` を実行して ERROR 0 を確認する。続いて `job-change-profile-auditor` エージェント（model: opus、起草担当の判断理由を渡さない新規コンテキスト）を起動して監査する。`verdict` が BLOCK、または `severity` = must_fix の finding があれば Step 5 の起草へ差し戻す（最大2回。以降は利用者判断）。
+聞き取りの結果は、その途中で本体セッションが `{NOTES}`（`profile_interview_notes.md`）へ逐次追記し集約しておく（中断再開に対応）。`job-change-profile-writer` エージェント（model: opus）を起動し、`{NOTES}`・既存 `{PROFILE}`（更新時）・hub の `references/profile-format.md`・出力先 `{PROFILE}` を渡す。作成担当はメモにある事実だけから profile.json を作成・更新する。戻り値を受け、本体セッションが hub の `validate_profile.py` を実行して ERROR 0 を確認する。続いて `job-change-profile-auditor` エージェント（model: opus、作成担当の判断理由を渡さない新規コンテキスト）を起動して監査する。`verdict` が BLOCK、または `severity` = must_fix の finding があれば Step 5 の作成へ差し戻す（最大2回。以降は利用者判断）。
 
 ### Step 6 任意の自己確認と更新運用
 
@@ -172,9 +172,9 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 
 | ゲート | 通過条件と差し戻し先 |
 |---|---|
-| Step 5 の検証・監査ゲート | hub の `validate_profile.py` が FAIL（ERROR 1件以上）の場合、または `job-change-profile-auditor` の `verdict` が BLOCK の場合、または `severity` = must_fix の finding がある場合は、Step 5 の起草へ差し戻す。差し戻しは同一成果物につき最大2回まで行う。 |
+| Step 5 の検証・監査ゲート | hub の `validate_profile.py` が FAIL（ERROR 1件以上）の場合、または `job-change-profile-auditor` の `verdict` が BLOCK の場合、または `severity` = must_fix の finding がある場合は、Step 5 の作成へ差し戻す。差し戻しは同一成果物につき最大2回まで行う。 |
 
-差し戻し時は、監査の findings（target・evidence・fix）をそのまま起草担当へ渡し、反映後に Step 5 の機械検証から再度通す。2回の差し戻しで解消しない指摘は、未決事項として利用者へ判断を委ねてから納品する（例: 聞き取りメモだけでは実績値の裏付けが足りない、という指摘は、エビデンスでの確認が要るため利用者の判断事項とする）。
+差し戻し時は、監査の findings（target・evidence・fix）をそのまま作成担当へ渡し、反映後に Step 5 の機械検証から再度通す。2回の差し戻しで解消しない指摘は、未決事項として利用者へ判断を委ねてから納品する（例: 聞き取りメモだけでは実績値の裏付けが足りない、という指摘は、エビデンスでの確認が要るため利用者の判断事項とする）。
 
 ## 役割の実行（ハーネス別）
 
@@ -185,7 +185,7 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 | `job-change-profile-writer` | `{SKILL_DIR}/references/roles/profile-writer.md` |
 | `job-change-profile-auditor` | `{SKILL_DIR}/references/roles/profile-auditor.md` |
 
-**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` の写しである。
+**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` のコピーである。
 
 **サブエージェントを起動できないハーネス（Codex ほか）。** 各 Step の「エージェントを起動する」を「役割プロンプトを読み、その役割として自分で実行する」と読み替える。手順は次のとおり。
 
@@ -194,14 +194,14 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 3. 役割プロンプトの「扱ってよい入力」のルールを守る。Web 送信手段を持たない役割として書かれている場合、その作業中は Web 検索・fetch を使わない。
 4. 成果物の形式・検証・合否ゲートは、ハーネスによらず同一である。
 
-本スキルは起草と監査を別の役割へ分け、監査者に起草者の判断理由を渡さないことで独立性を保つ。サブエージェントを使えないハーネスでは、同一の文脈で両方を担うためこの独立性が下がる。その場合、監査の段では起草時の判断理由・迷った箇所・書き換えの経緯を一切参照せず、成果物と原本（`references/` の仕様）だけを見て判定する。判定を終えるまで、起草側の意図を補って読まない。
+本スキルは作成と監査を別の役割へ分け、監査者に作成者の判断理由を渡さないことで独立性を保つ。サブエージェントを使えないハーネスでは、同一の文脈で両方を担うためこの独立性が下がる。その場合、監査の段階では作成時の判断理由・迷った箇所・書き換えの経緯を一切参照せず、成果物と原本（`references/` の仕様）だけを見て判定する。判定を終えるまで、作成側の意図を補って読まない。
 
 ## エージェントのモデル方針
 
 | エージェント | model | 責務 |
 |---|---|---|
-| `job-change-profile-writer` | opus | 聞き取りメモから profile.json を起草・更新（Step 5）と監査指摘の反映。メモに無い事実を創作しない |
-| `job-change-profile-auditor` | opus | 独立コンテキストでの創作・誇張・時系列整合・metric 検証可能性・軸の件数の監査、検証器の再実行（Step 5） |
+| `job-change-profile-writer` | opus | 聞き取りメモから profile.json を作成・更新（Step 5）と監査指摘の反映。メモに無い事実を創作しない |
+| `job-change-profile-auditor` | opus | 独立コンテキストでの創作・誇張・時系列整合・metric 検証可能性・軸の件数の監査、検証スクリプトの再実行（Step 5） |
 
 機械的検査は hub の `validate_profile.py` が担う。model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
 
@@ -222,5 +222,5 @@ python {HUB_SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/pr
 |---|---|---|
 | `references/elicitation-guide.md` | 時系列×プロジェクト単位の想起手がかりの根拠、自己報告の内在誤差と任意の自己確認、空白期間の扱い、選択式優先の運用、更新運用、DOI/URL 付き出典 | 聞き取りの方針を定めるとき、監査の観点を確認するとき |
 | `references/question-bank.md` | Step 1〜4 で使う有限の構造化質問と、各質問が埋めるフィールドの対応表、AskUserQuestion 用の選択肢案 | ヒアリングの各 Step で質問を選ぶとき |
-| `references/quantification-guide.md` | 定量化の型と代替表現、検証可能性の優先、事実と異なる数値のリスク、定量化の効果の限界、職種依存、DOI/URL 付き出典 | 実績の聞き取り・起草・監査で定量表現を判断するとき |
+| `references/quantification-guide.md` | 定量化の型と代替表現、検証可能性の優先、事実と異なる数値のリスク、定量化の効果の限界、職種依存、DOI/URL 付き出典 | 実績の聞き取り・作成・監査で定量表現を判断するとき |
 | `references/profile-methods.md` | 採用側が見る情報、スキル分類、must/want の根拠と限界、ATS の実像、経歴詐称の帰結、設計の限界とエビデンスギャップ、DOI/URL 付き出典 | 設計判断の根拠を確認するとき、監査の観点を定めるとき |

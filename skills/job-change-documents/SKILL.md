@@ -3,8 +3,8 @@ name: job-change-documents
 description: >-
   転職の応募書類（職務経歴書・履歴書・英文レジュメ・志望動機書）を、profile.json の実績と求人要件・
   企業研究の結果に基づいて作成するサブスキル。求人要件と実績の対応表（アピールマッピング）を作り、
-  書類種別ごとの標準形式で起草し、独立した監査（日本語文法、誇張・創作の検出、要件との対応、英文レジュメの観点、分量）を通してから納品する。定量値は profile.json の metric と厳密一致させ、記載のない実績を
-  創作しない、という原則を保つ。job-change-support（hub）から振り分けられて動く。個々の起草・監査は
+  書類種別ごとの標準形式で作成し、独立した監査（日本語文法、誇張・創作の検出、要件との対応、英文レジュメの観点、分量）を通してから納品する。定量値は profile.json の metric と厳密一致させ、記載のない実績を
+  創作しない、という原則を保つ。job-change-support（hub）から振り分けられて動く。個々の作成・監査は
   専用エージェント（job-change-document-writer / job-change-document-auditor）が担う。
   Use when the user writes job application documents for a career change in Japan (including
   foreign-affiliated selection) — a shokumu-keirekisho (work-history CV), rirekisho (resume), English
@@ -15,21 +15,21 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 # job-change-documents
 
-転職の応募書類を作成するとき、このスキル1つで受付から納品までの手順がそろう。求人要件と利用者の実績を対応づけ、書類種別ごとの標準形式で起草し、起草担当とは独立した監査を通してから納品する。日本の中途採用を中心とし、外資系選考向けの英文レジュメにも対応する。
+転職の応募書類を作成するとき、このスキル1つで受付から納品までの手順がそろう。求人要件と利用者の実績を対応づけ、書類種別ごとの標準形式で作成し、作成担当とは独立した監査を通してから納品する。日本の中途採用を中心とし、外資系選考向けの英文レジュメにも対応する。
 
-起草と監査はそれぞれ専用エージェント（`job-change-document-writer`・`job-change-document-auditor`）が担い、本スキルはその起動・差し戻し・納品を統括する。書類種別ごとの記述基準は `references/` で完結する。
+作成と監査はそれぞれ専用エージェント（`job-change-document-writer`・`job-change-document-auditor`）が担い、本スキルはその起動・差し戻し・納品を統括する。書類種別ごとの記述基準は `references/` で完結する。
 
 ## 目的と原則
 
 1. **実績は profile.json の範囲内でのみ書く。** 書類に載せる経歴・実績・数値は、すべて `profile.json` に記載のある範囲に限る。記載のない実績・経歴を創作しない（虚偽記載の禁止）。定量値は `profile.json` の `achievements[].metric` と厳密一致させ、丸め・上振れをしない。規模・範囲・主体を表す言葉（大規模・全社・主導など）は、`profile.json` の記述で裏付けられる範囲を超えて用いない。
 
-2. **求人要件と実績を対応づけてから書く。** 起草の前に、求人要件と `profile.json` の実績を突き合わせたアピールマッピング（要件・対応する実績・裏付け）を作る。訴求点は必ず求人要件に対応づける。要件に対応する実績が profile.json に無い項目は、該当なしとして扱い、創作で埋めない。
+2. **求人要件と実績を対応づけてから書く。** 作成の前に、求人要件と `profile.json` の実績を突き合わせたアピールマッピング（要件・対応する実績・裏付け）を作る。訴求点は必ず求人要件に対応づける。要件に対応する実績が profile.json に無い項目は、該当なしとして扱い、創作で埋めない。
 
-3. **起草と監査を分離する。** 起草担当の判断理由を渡さない新規コンテキストで監査担当を起動し、成果物そのものに基づいて検査させる。監査は書類を書き換えず、指摘（findings）だけを返す。反映は起草担当が行う。
+3. **作成と監査を分離する。** 作成担当の判断理由を渡さない新規コンテキストで監査担当を起動し、成果物そのものに基づいて検査させる。監査は書類を書き換えず、指摘（findings）だけを返す。反映は作成担当が行う。
 
 4. **企業固有の調整には企業研究の結果を用いる。** 志望動機・企業別カスタマイズは、対象企業の `company_research.json`（理念・求める人物像など）を根拠とする。`company_research.json` が無い場合は企業固有の調整をせず、簡易対応（企業に依存しない汎用の書式・自己PRの骨子まで）である旨を利用者へ明示する。
 
-5. **個人情報を外部へ送信しない。** `profile.json` に含まれる個人情報（氏名・現年収・希望年収・居住地・学歴・在籍企業名・実績など）は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。本スキルの起草・監査エージェントは Web 送信手段を持たないが、このルールは本スキルおよび下流のすべての手順で保つ。
+5. **個人情報を外部へ送信しない。** `profile.json` に含まれる個人情報（氏名・現年収・希望年収・居住地・学歴・在籍企業名・実績など）は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。本スキルの作成・監査エージェントは Web 送信手段を持たないが、このルールは本スキルおよび下流のすべての手順で保つ。
 
 ## 範囲外
 
@@ -60,7 +60,7 @@ hub（job-change-support）から振り分けられた場合は、hub が解決�
 | `career-private/profile.json` | 利用者プロファイルの原本 | 入力（読むのみ） |
 | `career-private/self_analysis.json` | 自己分析の成果物（原本は `job-change-self-analysis`） | 入力（任意。あれば志望動機書・自己PRの入力に加える。無くても進行できる） |
 | `career-private/fit/{企業スラッグ}/fit_assessment.json` | 適合性評価の成果物（原本は `job-change-fit-assessment`） | 入力（任意。あればアピールマッピングの訴求点選定に加える。無くても進行できる） |
-| `companies/{企業スラッグ}/company_research.json` | 企業研究の構造化データ | 入力（任意。無ければ縮退） |
+| `companies/{企業スラッグ}/company_research.json` | 企業研究の構造化データ | 入力（任意。無ければフォールバック） |
 | `companies/{企業スラッグ}/documents/` | 作成した応募書類の出力先 | 出力 |
 
 - 企業スラッグは hub と同じ規約に従い、`career-private/company_index.json` で解決する（例: 架空クラウドワークス社 → `kakuu-cloudworks`）。
@@ -73,8 +73,8 @@ hub（job-change-support）から振り分けられた場合は、hub が解決�
 
 | 中間成果物 | 内容 |
 |---|---|
-| アピールマッピング | 求人要件・対応する実績・裏付けの3列の対応表。起草担当が Step 1 で作り、出力 JSON（`appeal_mapping`）と成果物に載せる。誇張のない訴求の根拠であり、監査担当が要件対応の検査に用いる。 |
-| 形式選定の記録 | 職務経歴書で編年体式・逆編年体式・キャリア式のどれを選んだか、その理由（起草担当の出力 JSON の `format`）。 |
+| アピールマッピング | 求人要件・対応する実績・裏付けの3列の対応表。作成担当が Step 1 で作り、出力 JSON（`appeal_mapping`）と成果物に載せる。誇張のない訴求の根拠であり、監査担当が要件対応の検査に用いる。 |
+| 形式選定の記録 | 職務経歴書で編年体式・逆編年体式・キャリア式のどれを選んだか、その理由（作成担当の出力 JSON の `format`）。 |
 
 ## パイプライン
 
@@ -96,9 +96,9 @@ profile.json のゲートは必須である。
 - `profile.json` が未作成の場合は先へ進まない。hub（`job-change-support`）のプロファイル整備へ戻し、作成してから再開する（プロファイルの作成は hub と `job-change-profile` の責務である）。
 - 検証が FAIL（ERROR 1件以上）の場合は、ERROR の内容を利用者へ示し、`job-change-profile` での整備を勧める。ただし、利用者が欠落を承知のうえで着手を希望する場合は、欠けた項目の値を直接引用または前提とする記述を作らないという条件で進めてよい。その場合は、どの項目が欠けたままかを納品時に明記する。
 
-company_research.json の確認は任意であり、無い場合は縮退を明示する。
+company_research.json の確認は任意であり、無い場合はフォールバックを明示する。
 
-- 対象企業の `company_research.json` の有無を確認する。無い場合はエラーとせず、企業固有の調整をしない縮退動作とすること、および企業研究（`job-change-company-research`）を先に実行すれば志望動機・企業別カスタマイズの精度が上がることを、利用者へ明示する。
+- 対象企業の `company_research.json` の有無を確認する。無い場合はエラーとせず、企業固有の調整をしないフォールバック動作とすること、および企業研究（`job-change-company-research`）を先に実行すれば志望動機・企業別カスタマイズの精度が上がることを、利用者へ明示する。
 
 self_analysis.json の確認は任意である。
 
@@ -106,21 +106,21 @@ self_analysis.json の確認は任意である。
 
 fit_assessment.json の確認は任意である。
 
-- `career-private/fit/{企業スラッグ}/fit_assessment.json` の有無を確認する。あればアピールマッピングの訴求点選定に、`dimensions` の `evidence` と `must_condition_results` を参照材料として加える。無くても進行できる（求人要件と `profile.json` の実績の突き合わせのみで進める）。fit_assessment.json は career-private 配下の成果物であり、Web ツールを持つエージェントへは渡さない。
+- `career-private/fit/{企業スラッグ}/fit_assessment.json` の有無を確認する。あればアピールマッピングの訴求点選定に、`dimensions` の `evidence` と `must_condition_results` を判断材料として加える。無くても進行できる（求人要件と `profile.json` の実績の突き合わせのみで進める）。fit_assessment.json は career-private 配下の成果物であり、Web ツールを持つエージェントへは渡さない。
 
-### Step 1 起草
+### Step 1 作成
 
-`job-change-document-writer` エージェント（model: opus）を起動し、Step 1（起草）を指示する。指示書には次を渡す。
+`job-change-document-writer` エージェント（model: opus）を起動し、Step 1（作成）を指示する。指示書には次を渡す。
 
 - 実行するステップ（= 1）・書類種別・`{PROFILE}`・`{COMPANY_RESEARCH}`（あれば）・`{SELF_ANALYSIS}`（あれば）・`{FIT_ASSESSMENT}`（あれば）・求人票（あれば）・出力先 `{OUT_DIR}`。
 
-起草担当には次を行う責務がある。求人要件と（あれば）企業研究の理念・求める人物像を抽出し、`profile.json` の実績と突き合わせてアピールマッピングを作り、書類種別ごとの標準形式を理由とともに選定して起草する。書類は `{OUT_DIR}` の下に書き出す。`company_research.json` が無い場合は企業固有の調整をせず、その旨を成果物と出力 JSON（`company_research_used: false`・`degraded_reason`）に明記する。`fit_assessment.json` がある場合、アピールマッピングの訴求点選定に `dimensions` の `evidence` と `must_condition_results` を参照材料として加える。無い場合は求人要件と `profile.json` の実績の突き合わせのみで進める。
+作成担当には次を行う責務がある。求人要件と（あれば）企業研究の理念・求める人物像を抽出し、`profile.json` の実績と突き合わせてアピールマッピングを作り、書類種別ごとの標準形式を理由とともに選定して作成する。書類は `{OUT_DIR}` の下に書き出す。`company_research.json` が無い場合は企業固有の調整をせず、その旨を成果物と出力 JSON（`company_research_used: false`・`degraded_reason`）に明記する。`fit_assessment.json` がある場合、アピールマッピングの訴求点選定に `dimensions` の `evidence` と `must_condition_results` を判断材料として加える。無い場合は求人要件と `profile.json` の実績の突き合わせのみで進める。
 
-志望動機書・自己PRでは、`self_analysis.json` がある場合、`career_narrative`（ライフテーマ・一貫する動機）と根拠付きの `strengths`（episode_id・feedback_id に対応づけられた強み）、`reason_for_change.constructive_version`（発揮したい価値を軸にした転職理由の言い換え）を、profile.json の実績と併せて素材に用いる。`self_analysis.json` が無い場合は profile.json の `strengths`・`job_change_axis.reasons` のみを素材とする。この場合は、企業固有の調整のときとは異なり、縮退した旨を明示する必要はない。
+志望動機書・自己PRでは、`self_analysis.json` がある場合、`career_narrative`（ライフテーマ・一貫する動機）と根拠付きの `strengths`（episode_id・feedback_id に対応づけられた強み）、`reason_for_change.constructive_version`（発揮したい価値を軸にした転職理由の言い換え）を、profile.json の実績と併せて素材に用いる。`self_analysis.json` が無い場合は profile.json の `strengths`・`job_change_axis.reasons` のみを素材とする。この場合は、企業固有の調整のときとは異なり、フォールバックした旨を明示する必要はない。
 
 ### Step 2 独立監査
 
-`job-change-document-auditor` エージェント（model: sonnet）を、起草担当の判断理由を渡さない新規コンテキストで起動し、Step 2（監査）を指示する。指示書には監査対象の書類ファイルの絶対パス・書類種別・`{PROFILE}`・求人票（あれば）を渡す。
+`job-change-document-auditor` エージェント（model: sonnet）を、作成担当の判断理由を渡さない新規コンテキストで起動し、Step 2（監査）を指示する。指示書には監査対象の書類ファイルの絶対パス・書類種別・`{PROFILE}`・求人票（あれば）を渡す。
 
 監査担当が検査するのは次の4点である。
 
@@ -135,7 +135,7 @@ fit_assessment.json の確認は任意である。
 
 `verdict` が CLEAN でなければ、findings を `job-change-document-writer` へ渡し、Step 3（監査指摘の反映）を指示する。指示書には Step 1 と同じ入力に加えて、監査担当の findings を渡す。
 
-起草担当は findings を1件ずつ確認し、`profile.json` の範囲内で対応できる指摘を書類へ反映する。反映しなかった指摘は理由を明記する（例: profile.json に裏付けが無く、要求された加筆が創作になる場合）。
+作成担当は findings を1件ずつ確認し、`profile.json` の範囲内で対応できる指摘を書類へ反映する。反映しなかった指摘は理由を明記する（例: profile.json に裏付けが無く、要求された加筆が創作になる場合）。
 
 - `verdict` が BLOCK、または `severity` = 重大 の finding がある場合は、反映後に Step 2 へ戻して再監査する（差し戻しの1回に数える）。
 - `verdict` が CONCERNS で重大 finding が無い場合（警告・軽微のみ）は、指摘を反映し、再監査は任意とする。反映を終えてから、または反映できなかった指摘を調整根拠に記録してから、Step 4 へ進む。
@@ -146,7 +146,7 @@ fit_assessment.json の確認は任意である。
 
 1. **応募書類**（`{OUT_DIR}` 配下のファイル）。
 2. **アピールマッピング表**（求人要件・対応する実績・裏付け）。
-3. **調整根拠の説明**（選定した形式とその理由、企業別カスタマイズで何をどの `company_research.json` の claim に基づいて調整したか、および監査結果）。縮退時は企業固有の調整をしていない旨を書く。監査結果には最終 verdict と、未反映で残した指摘があればその理由を含める。
+3. **調整根拠の説明**（選定した形式とその理由、企業別カスタマイズで何をどの `company_research.json` の claim に基づいて調整したか、および監査結果）。フォールバック時は企業固有の調整をしていない旨を書く。監査結果には最終 verdict と、未反映で残した指摘があればその理由を含める。
 
 最終メッセージには、作成した書類の種別とファイルパス、選定形式、監査の最終 verdict、未解決事項（あれば）を要約する。
 
@@ -156,10 +156,10 @@ fit_assessment.json の確認は任意である。
 
 | ゲート | 通過条件と差し戻し先 |
 |---|---|
-| Step 0 のプロファイルゲート | `profile.json` が `validate_profile.py` で PASS していなければ起草へ進まない。未作成・FAIL は hub のプロファイル整備へ戻す。ただし FAIL の場合は、ERROR の内容を示し、利用者が欠落を承知で着手を希望するなら、欠けた項目の値を直接引用または前提とする記述を作らないという条件で進めてよい。どの項目が欠けたままかを成果物に明記する。 |
-| Step 2 の独立監査ゲート | `job-change-document-auditor` の `verdict` が BLOCK、または `severity` = 重大 の finding があれば Step 3 で起草担当へ差し戻す。差し戻しは同一書類につき最大2回まで行う。 |
+| Step 0 のプロファイルゲート | `profile.json` が `validate_profile.py` で PASS していなければ作成へ進まない。未作成・FAIL は hub のプロファイル整備へ戻す。ただし FAIL の場合は、ERROR の内容を示し、利用者が欠落を承知で着手を希望するなら、欠けた項目の値を直接引用または前提とする記述を作らないという条件で進めてよい。どの項目が欠けたままかを成果物に明記する。 |
+| Step 2 の独立監査ゲート | `job-change-document-auditor` の `verdict` が BLOCK、または `severity` = 重大 の finding があれば Step 3 で作成担当へ差し戻す。差し戻しは同一書類につき最大2回まで行う。 |
 
-差し戻し時は、監査の findings（target・evidence・fix）をそのまま起草担当へ渡し、反映後に Step 2 から再度通す。2回の差し戻しで解消しない指摘は、未決事項として調整根拠の説明に明記し、利用者へ判断を委ねてから納品する。例えば「profile.json の実績だけでは求人要件を十分に満たせない」という指摘は、経歴の補強か応募判断の見直しが要るため、利用者の判断事項とする。
+差し戻し時は、監査の findings（target・evidence・fix）をそのまま作成担当へ渡し、反映後に Step 2 から再度通す。2回の差し戻しで解消しない指摘は、未決事項として調整根拠の説明に明記し、利用者へ判断を委ねてから納品する。例えば「profile.json の実績だけでは求人要件を十分に満たせない」という指摘は、経歴の補強か応募判断の見直しが要るため、利用者の判断事項とする。
 
 ## 役割の実行（ハーネス別）
 
@@ -170,7 +170,7 @@ fit_assessment.json の確認は任意である。
 | `job-change-document-writer` | `{SKILL_DIR}/references/roles/document-writer.md` |
 | `job-change-document-auditor` | `{SKILL_DIR}/references/roles/document-auditor.md` |
 
-**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` の写しである。
+**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` のコピーである。
 
 **サブエージェントを起動できないハーネス（Codex ほか）。** 各 Step の「エージェントを起動する」を「役割プロンプトを読み、その役割として自分で実行する」と読み替える。手順は次のとおり。
 
@@ -179,13 +179,13 @@ fit_assessment.json の確認は任意である。
 3. 役割プロンプトの「扱ってよい入力」のルールを守る。Web 送信手段を持たない役割として書かれている場合、その作業中は Web 検索・fetch を使わない。
 4. 成果物の形式・検証・合否ゲートは、ハーネスによらず同一である。
 
-本スキルは起草と監査を別の役割へ分け、監査者に起草者の判断理由を渡さないことで独立性を保つ。サブエージェントを使えないハーネスでは、同一の文脈で両方を担うためこの独立性が下がる。その場合、監査の段階では起草時の判断理由・迷った箇所・書き換えの経緯を一切参照せず、成果物と原本（`references/` の仕様）だけを見て判定する。判定を終えるまで、起草側の意図を補って読まない。
+本スキルは作成と監査を別の役割へ分け、監査者に作成者の判断理由を渡さないことで独立性を保つ。サブエージェントを使えないハーネスでは、同一の文脈で両方を担うためこの独立性が下がる。その場合、監査の段階では作成時の判断理由・迷った箇所・書き換えの経緯を一切参照せず、成果物と原本（`references/` の仕様）だけを見て判定する。判定を終えるまで、作成側の意図を補って読まない。
 
 ## エージェントのモデル方針
 
 | エージェント | model | 責務 |
 |---|---|---|
-| `job-change-document-writer` | opus | アピールマッピング・形式選定・起草（Step 1）と監査指摘の反映（Step 3） |
+| `job-change-document-writer` | opus | アピールマッピング・形式選定・作成（Step 1）と監査指摘の反映（Step 3） |
 | `job-change-document-auditor` | sonnet | 独立コンテキストでの書類監査（Step 2）。和文の文法・表記も自身で検査する |
 
 model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
@@ -205,7 +205,7 @@ python {HUB_SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/pr
 
 | ファイル | 何を | いつ読むか |
 |---|---|---|
-| `references/shokumu-keirekisho.md` | 職務経歴書の3形式・使い分け・職務要約・実績の定量化・分量・採用担当者の観点 | 職務経歴書を起草/監査するとき |
-| `references/rirekisho.md` | 履歴書様式の現行事情（厚労省様式例）・手書き/パソコン・使い回しの回避 | 履歴書を起草/監査するとき |
-| `references/english-resume.md` | 英文レジュメの標準構成・記載しない個人情報・定量化・ATS対応 | 英文レジュメを起草/監査するとき |
+| `references/shokumu-keirekisho.md` | 職務経歴書の3形式・使い分け・職務要約・実績の定量化・分量・採用担当者の観点 | 職務経歴書を作成/監査するとき |
+| `references/rirekisho.md` | 履歴書様式の現行事情（厚労省様式例）・手書き/パソコン・使い回しの回避 | 履歴書を作成/監査するとき |
+| `references/english-resume.md` | 英文レジュメの標準構成・記載しない個人情報・定量化・ATS対応 | 英文レジュメを作成/監査するとき |
 | `references/tailoring.md` | 企業別カスタマイズ・志望動機の構成・アピールマッピング・誇張禁止基準 | 志望動機/企業別調整を行うとき、全書類の誇張検査の基準として |

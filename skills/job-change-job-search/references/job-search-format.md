@@ -195,7 +195,7 @@
 | フィールド | 必須 | 記入基準 |
 |---|---|---|
 | `screened_at` | 必須 | 判定日（`YYYY-MM-DD`） |
-| `profile_schema_version` | 必須 | 判定に用いた profile の `schema_version`。縮退の有無を後から検証できるようにする |
+| `profile_schema_version` | 必須 | 判定に用いた profile の `schema_version`。フォールバックの有無を後から検証できるようにする |
 | `axes_source` | 必須 | `job_change_axis.conditions`（通常）／`degraded`（profile が 1.x で軸判定ができない） |
 | `counts` | 必須 | `apply_candidate`・`needs_more_research`・`excluded`・`total` の整数。実集計と不一致は ERROR |
 | `recommendation` | 必須 | `応募推奨あり` / `応募推奨なし` / `判定不能` |

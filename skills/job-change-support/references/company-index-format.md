@@ -48,7 +48,7 @@ company_index.json は「企業名からスラッグを解決するための単�
 | `aliases` | array | 必須 | 別表記の文字列の配列。別表記が無ければ空配列 `[]` にする。配列でない・文字列以外を含むと ERROR |
 | `created` | string | 任意 | `YYYY-MM-DD` 形式の登録日。欠落は WARN |
 | `status` | string | 任意 | 選考状況。`"active"`（選考中）または `"closed"`（選考終了・見送り）のいずれか。欠落時は `active` 扱いとする。`closed` になっても成果物は保持し続け、削除・アーカイブ移動は行わない。値の型不正・許容値外は ERROR |
-| `score` | integer | 任意 | 企業スコア。0以上100以下の整数。`fit_assessment.json` の `company_score.total` を写した機械可読な値で、原本は `fit_assessment.json` 側にある（一覧・並べ替え用の写し）。適合性評価スキル（job-change-fit-assessment）が転記・更新する。`company_score.total` が `null`（採点する軸の未申告、または判定できた軸が無い）のときは転記しない。欠落は許容（未調査・未採点の企業）。値の型不正・範囲外は ERROR。スラッグ接頭辞（例 `A_`）とは独立で、点数が変わってもスラッグ（ディレクトリ名）はリネームしない |
+| `score` | integer | 任意 | 企業スコア。0以上100以下の整数。`fit_assessment.json` の `company_score.total` を写した機械可読な値で、原本は `fit_assessment.json` 側にある（一覧・並べ替え用のコピー）。適合性評価スキル（job-change-fit-assessment）が転記・更新する。`company_score.total` が `null`（採点する軸の未申告、または判定できた軸が無い）のときは転記しない。欠落は許容（未調査・未採点の企業）。値の型不正・範囲外は ERROR。スラッグ接頭辞（例 `A_`）とは独立で、点数が変わってもスラッグ（ディレクトリ名）はリネームしない |
 
 `name` と全エントリーの `aliases` は、一覧全体で企業を一意に指す識別子として働く。同一の文字列が複数のスラッグに現れると、各スキルが同じ名前から別々のスラッグを引きうるため ERROR とする。
 

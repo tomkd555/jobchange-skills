@@ -125,7 +125,7 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 | フィールド | 型 | 内容 |
 |---|---|---|
 | `ref` | string | profile の `conditions[].id` または `work_character_preferences[].trait`（2.0 で必須。重複は ERROR） |
-| `condition` | string | 条件の文言（非空）。`statement` の写しであり、利用者向けの表示に使う |
+| `condition` | string | 条件の文言（非空）。`statement` のコピーであり、利用者向けの表示に使う |
 | `met` | string | `yes`・`no`・`unknown` のいずれか |
 | `negotiable` | boolean | 任意。`met=no` の条件が交渉・制度運用で解消しうるか。既定は `false`。`true` にするには evidence が1件以上要る |
 | `evidence` | array | 根拠。`met` が `yes`・`no` のときは1件以上必須。`unknown` のときは空でよい |
@@ -189,7 +189,7 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 | `score` | integer \| null | その軸の点数（0〜100 の整数）。実測値か基準を欠く定量軸、判定結果を得られない定性軸は `null` |
 | `threshold_source` | string \| null | 点数の基準の出所。`user`（profile の `thresholds`）・`statistic`（`DEFAULT_THRESHOLDS`）のいずれか。基準が無い軸と定性軸は `null` |
 | `thresholds` | object \| null | 適用した基準。`{zero, full}`。基準が無い軸と定性軸は `null` |
-| `grade` | string \| null | 実測値の証拠グレード（A〜D）。`company_metrics` の当該軸の `grade` を写す。定性軸は `null` |
+| `grade` | string \| null | 実測値のエビデンスレベル（A〜D）。`company_metrics` の当該軸の `grade` を写す。定性軸は `null` |
 | `source_url` | string \| null | 実測値の出典 URL。`company_metrics` の当該軸の `source_url` を写す。定性軸は `null` |
 | `evidence` | string \| null | 定性軸のみ。判定条件のどれに合致したかの説明。fit-assessor の判定結果をそのまま写す |
 | `reason` | string | 判定できなかった軸のみ。実測値が無い・基準が無い・判定結果が無いのいずれであるかを書く |

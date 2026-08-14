@@ -181,7 +181,7 @@ def effective_hourly_wage(
     annual_binding_hours: float,
     annual_labor_hours: float,
 ) -> dict[str, int] | None:
-    """実質時給を算定する。グレード付き想定年収が無ければ None を返す。"""
+    """実質時給を算定する。レベル付き想定年収が無ければ None を返す。"""
     if salary is None:
         return None
     return {
@@ -323,7 +323,7 @@ def build_time_analysis(
     wage = effective_hourly_wage(salary, result.annual_binding_hours, result.annual_labor_hours)
     if salary is None:
         assumptions.append(
-            "グレード付き想定年収が無いため、実質時給（effective_hourly_wage）は算定しない（null）。"
+            "レベル付き想定年収が無いため、実質時給（effective_hourly_wage）は算定しない（null）。"
         )
 
     sens = sensitivity(

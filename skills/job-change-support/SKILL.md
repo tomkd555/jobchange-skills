@@ -6,7 +6,7 @@ description: >-
   利用者プロファイル（profile.json）については、有無確認と validate_profile.py によるゲート、および誤字・
   updated_at 等の軽微な単一フィールド修正のみを本スキルが直接担い、初回作成・全面点検・セクション更新のヒアリング
   は job-change-profile サブスキルへ委譲する。日本の転職市場を中心に外資系選考にも対応する。すべての
-  企業情報は出典URLと証拠グレードを付けて扱い、口コミ・伝聞だけでの断定を禁じ、プロファイルの原本は
+  企業情報は出典URLとエビデンスレベルを付けて扱い、口コミ・伝聞だけでの断定を禁じ、プロファイルの原本は
   profile.json の1か所のみとする、という原則を保つ。利用者データの置き場所は設定ファイルだけが決め、
   未設定なら本スキルが対話で設定ファイルを作るまで、サブスキルへ振り分けない。応募先が決まった直後など複数の作業が絡む依頼では
   推奨順序（プロファイル作成→自己分析→（求人検索）→求人票取込→企業研究→適合性評価→応募書類作成→
@@ -34,15 +34,15 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, Skill
 
 ## 目的と原則
 
-1. **企業情報は出典と証拠グレードを付けて扱う。** すべての企業情報には、出典 URL と証拠グレード（A=一次・公式、B=信頼できる二次、C=口コミ・集計、D=個人ブログ・伝聞・未確認）を添える。C・D 単独での事実の断定は禁じる。各グレードの定義・判定基準・運用ルールの原本は `job-change-company-research` スキルの `references/evidence-grading.md` にある。企業研究の成果物では、各主張にグレードを併記する。
+1. **企業情報は出典とエビデンスレベルを付けて扱う。** すべての企業情報には、出典 URL とエビデンスレベル（A=一次・公式、B=信頼できる二次、C=口コミ・集計、D=個人ブログ・伝聞・未確認）を添える。C・D 単独での事実の断定は禁じる。各レベルの定義・判定基準・運用ルールの原本は `job-change-company-research` スキルの `references/evidence-grading.md` にある。企業研究の成果物では、各主張にレベルを併記する。
 
-   グレード A のうち、企業自身が発信する評価的・自己宣伝的な主張（採用サイトの「風通しが良い」「働きやすい」など）は、出所が一次・公式であっても事実性が保証されるわけではない。この種の主張については、企業自身が所有するページ由来である旨を出典に明示し、確度（confidence）を「高」にしない（B 相当として扱う）。
+   レベル A のうち、企業自身が発信する評価的・自己宣伝的な主張（採用サイトの「風通しが良い」「働きやすい」など）は、出所が一次・公式であっても事実性が保証されるわけではない。この種の主張については、企業自身が所有するページ由来である旨を出典に明示し、確度（confidence）を「高」にしない（B 相当として扱う）。
 
 2. **プロファイルの原本は1か所のみ。** 利用者の経歴・スキル・転職の軸は `profile.json` の1か所に集約する。同じ情報を複数の場所に持たない。全サブスキルはこの profile.json を参照する。仕様の原本は `references/profile-format.md` にある。
 
 3. **エージェントの model は固定である。** 転職支援スキル群の各サブスキルが用いる専用エージェントの model は、各エージェントの frontmatter に固定済み（opus または sonnet）である。起動時に model を上書きしない。
 
-   サブエージェントを起動できないハーネス（Codex ほか）では、各サブスキルの本体が `references/roles/` の役割プロンプトを読み、その役割として自分で実行する。読み替えの手順は各サブスキルの「役割の実行（ハーネス別）」にある。監査の段階では起草時の判断理由を参照せず、成果物と仕様だけを見て判定する。
+   サブエージェントを起動できないハーネス（Codex ほか）では、各サブスキルの本体が `references/roles/` の役割プロンプトを読み、その役割として自分で実行する。読み替えの手順は各サブスキルの「役割の実行（ハーネス別）」にある。監査の段階では作成時の判断理由を参照せず、成果物と仕様だけを見て判定する。
 
 4. **個人情報を外部へ送信しない。** `profile.json` に含まれる個人情報（氏名・現年収・希望年収・居住地・学歴・在籍企業名・実績など）は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。`profile.json` を渡してよいのは、Web 送信手段（WebSearch・WebFetch など）を持たないエージェントに限る。Web 送信を伴う作業（企業研究の Web 調査・求人検索の Web 調査など）には、`profile.json` の内容を渡さない。非公開ディレクトリ `career-private/` 配下のパス・内容（`profile.json`・`company_index.json`・`self_analysis.json`・`commute.json`・`fit/{企業スラッグ}/` 配下の `fit_assessment.json`・`time_analysis.json`）は、Web 送信手段を持つエージェントへ一切渡さない。`fit_assessment.json`・`time_analysis.json` は profile・自己分析・通勤時間から導いた個人情報であり、`commute.json` は利用者の居住地を示唆する。いずれも Web ツールを持つエージェント（`job-change-company-researcher`・`job-change-posting-parser`・`job-change-job-searcher`）へ渡さない。
 
@@ -138,7 +138,7 @@ python {SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/profil
 
 ERROR が出ている場合は `job-change-profile` へ整備を委譲し、PASS（終了コード 0）を確認してから次の作業へ進む。WARN のみは PASS 扱いだが、内容を利用者に伝え、`job-change-profile` での補充を促してよい。
 
-### スキーマ版と縮退
+### スキーマのバージョンとフォールバック
 
 `profile.json` の `schema_version` が `1.0` または `1.1` の場合、検証は PASS するが、8軸スクリーニングと作業特性の評価が働かない。求人検索・適合性評価へ振り分ける前に、次を1回だけ伝える。
 
@@ -146,7 +146,7 @@ ERROR が出ている場合は `job-change-profile` へ整備を委譲し、PASS
 - 適合性評価は、作業特性の一致と志向の一致を「判断保留」にする。
 - 解消するには `job-change-profile` の「条件の構造化」で対話しながら `2.0` へ移す。自由文の条件を機械的に割り付けることはしない。
 
-利用者が移行を望まない場合は、縮退した状態のまま進めてよい。伝えるのは1回に限り、以後の作業で繰り返さない。
+利用者が移行を望まない場合は、フォールバックした状態のまま進めてよい。伝えるのは1回に限り、以後の作業で繰り返さない。
 
 ### 軽微な修正
 
@@ -191,7 +191,7 @@ ERROR が出ている場合は `job-change-profile` へ整備を委譲し、PASS
 0. `jc_config.py --show` で `{DATA_ROOT}` を解決する。未設定なら「設定ゲート」に従って設定を作る。
 1. `career-private/profile.json` の有無を確認する。無ければ `job-change-profile` を起動して作成する。あれば `validate_profile.py` で PASS を確認する。
 2. `job-change-self-analysis` を起動し、`career-private/self_analysis.json` を作る（省略可）。省略する場合は次へ進む。
-3. `job-change-company-research` を起動する。Step 0.5 で求人票を取り込んで `companies/{企業スラッグ}/job_posting.json` を作り、続く Step 1 以降で `company_research.json` を作る。企業情報には出典と証拠グレードを付ける。
+3. `job-change-company-research` を起動する。Step 0.5 で求人票を取り込んで `companies/{企業スラッグ}/job_posting.json` を作り、続く Step 1 以降で `company_research.json` を作る。企業情報には出典とエビデンスレベルを付ける。
 4. `job-change-fit-assessment` を起動し、`fit_assessment.json`・`time_analysis.json` を作る。評価結果を利用者へ示し、応募を進める判断を確認する。
 5. `job-change-documents` を起動し、profile.json（あれば self_analysis.json も）と企業研究の結果を入力に、職務経歴書・履歴書・志望動機を作る。
 6. 選考段階に応じて `job-change-exam-prep`・`job-change-interview-prep` を起動する。
@@ -216,7 +216,7 @@ profile.json は応募書類作成・面接対策の前提である。企業別�
 - 設定の解決は、すべてのゲートに先行する。`jc_config.py --show` が終了コード 0 を返すまで、どのサブスキルへも振り分けない。手順は「設定ゲート」にある。
 - 企業別の作業に入る前に、対象企業のスラッグを `career-private/company_index.json` で解決する。解決に入る前に `scripts/validate_company_index.py` で一覧を検証し、FAIL（ERROR 1件以上）なら指摘内容を利用者へ示し、修復してから進む。企業名が `name` または `aliases` に一致すればそのスラッグを使い、一致が無いときのみ一度だけ導出して index へ登録し `companies/{スラッグ}/` を作る。スラッグの再導出はしない。手順の原本は `references/company-index-format.md` にある。
 - profile.json が未作成、または `validate_profile.py` が FAIL（ERROR 1件以上）の場合、`job-change-documents`・`job-change-interview-prep` へ進む前に、プロファイルの整備を先行させる。整備は `job-change-profile` を起動して行い、PASS を確認してからサブスキルへ振り分ける。
-- 応募書類作成（`job-change-documents`）・面接対策（`job-change-interview-prep`）は、対象企業の `company_research.json`（`companies/{企業スラッグ}/company_research.json`）を前提とする。これらへ進む前に、対象企業の company_research.json の有無を確認する。無ければ、先に企業研究（`job-change-company-research`）を実行することを提案する。利用者が企業研究を望まない場合、縮退して進めてよいかどうかの確認はサブスキル側が行う。hub はここで選択を求めず、そのままサブスキルへ振り分ける。hub とサブスキルが同じ選択を2回求めないためである。
+- 応募書類作成（`job-change-documents`）・面接対策（`job-change-interview-prep`）は、対象企業の `company_research.json`（`companies/{企業スラッグ}/company_research.json`）を前提とする。これらへ進む前に、対象企業の company_research.json の有無を確認する。無ければ、先に企業研究（`job-change-company-research`）を実行することを提案する。利用者が企業研究を望まない場合、フォールバックして進めてよいかどうかの確認はサブスキル側が行う。hub はここで選択を求めず、そのままサブスキルへ振り分ける。hub とサブスキルが同じ選択を2回求めないためである。
 - 企業研究（`job-change-company-research`）と試験対策（`job-change-exam-prep`）は、プロファイルが無くても着手できる。ただし企業研究の結果は応募書類・面接対策で使うため、着手時に `job-change-profile` でのプロファイル作成を促す。
 - 応募書類作成（`job-change-documents`）の志望動機書と面接対策（`job-change-interview-prep`）は、`career-private/self_analysis.json` があれば入力に加える。無くても進行できるが、着手時に自己分析（`job-change-self-analysis`）の実施を促す。
 

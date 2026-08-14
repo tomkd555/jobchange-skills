@@ -27,7 +27,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 ## 目的と原則
 
-1. **無償の公開Web検索だけで探す。** 有償の求人API・会員限定の非公開求人には依存しない。検索方法のカタログは `references/query-catalog.md` にある（各サイトのログイン要否・URL構造・取得項目・制約・縮退方法）。会員登録が必要な求人を範囲外にした場合は、成果物の `coverage_notes` に記す。
+1. **無償の公開Web検索だけで探す。** 有償の求人API・会員限定の非公開求人には依存しない。検索方法のカタログは `references/query-catalog.md` にある（各サイトのログイン要否・URL構造・取得項目・制約・フォールバック方法）。会員登録が必要な求人を範囲外にした場合は、成果物の `coverage_notes` に記す。
 
 2. **掲載ページの引用と出典URLを付す。** 各求人には、掲載ページからの引用（`quote`）と出典URL（`url`）・掲載サイト名（`source_site`）を必ず付す。取得できない求人を創作しない。給与が「応相談」等で数値が読めない場合は `salary_range` を `null` にする。
 
@@ -93,7 +93,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 利用者の曖昧な希望を構造化条件シートへ変換し、確認してから検索する。
 
-1. 利用者の希望（例「リモート多め・年収600万以上・SaaS系」）を、次の軸へ構造化して条件シートを起草する。
+1. 利用者の希望（例「リモート多め・年収600万以上・SaaS系」）を、次の軸へ構造化して条件シートを作成する。
    - 職種（`roles`）・業界（`industries`）・年収下限（`salary_min`、円単位の数値）・勤務地/リモート（`location`・`remote_policy`）・雇用形態（`employment_type`）・その他条件（`other`）。
    - 現勤務先名・氏名・現年収は条件に含めない（原則3）。希望年収の下限は `salary_min` として含めてよい。
 2. 構造化した条件シートを AskUserQuestion で確認する。選択式を中心に、最大4問・各4択までとする。曖昧な軸（リモートの頻度・年収の下限・職種の範囲など）を優先して確認する。
@@ -149,7 +149,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 4. `references/job-search-format.md` の決定表から `classification` を導き、`classification_reasons` を書く。導出結果を手で変える場合は、厳格化する方向にのみ `classification_override` を付ける。
 5. `screening` を導出値として書く。`counts`・`unmet_axis_summary` は実集計と一致させる。`current_employer_exclusion` には Step 3 の実施結果を記録する（未実施なら `performed: false`・`excluded_count: null`）。
 
-`profile.json` の `schema_version` が `1.0` または `1.1` の場合は縮退動作にする。観測層はそのまま残し、全軸を `level: none`・`judgement: unknown`、全 result を `needs_more_research`、`screening.axes_source` を `degraded`、`recommendation` を `判定不能` にする。分類結果を「応募候補」として提示せず、`job-change-profile` での条件の構造化を案内する。
+`profile.json` の `schema_version` が `1.0` または `1.1` の場合はフォールバック動作にする。観測層はそのまま残し、全軸を `level: none`・`judgement: unknown`、全 result を `needs_more_research`、`screening.axes_source` を `degraded`、`recommendation` を `判定不能` にする。分類結果を「応募候補」として提示せず、`job-change-profile` での条件の構造化を案内する。
 
 判定に使う語彙（8軸・8作業特性・業務分類）の原本は、hub（`job-change-support`）の `references/screening-axes.md` にある。
 
@@ -193,7 +193,7 @@ similar_better では各求人の `better_points`（基準求人より改善し�
 |---|---|
 | Step 4 の機械検証・PII リント | `validate_job_search_results.py --profile` が PASS（ERROR 0件）でなければ納品しない。PII 混入の ERROR は匿名化の漏れであり、成果物から除去してから再検証する。 |
 | 応募推奨 | `screening.recommendation` が `応募推奨なし` の場合、既定では企業研究・適合性評価へ接続しない。必須条件の見直し（`job-change-profile` の条件更新）、または検索条件・検索経路の見直しへ戻す。応募候補が0件のときに、除外候補や追加調査候補から最有力候補を仕立てない。**例外**: 満たさない必須条件を求人ごとにすべて列挙したうえで、利用者が特定の求人について先へ進むことを明示的に希望した場合は、その求人を企業研究へ接続してよい。この判定の材料は求人票の記載だけであり、判定そのものが企業研究や面接で覆りうるためである。接続する場合は、どの必須条件が未充足のままかを引き継ぎに明記する。利用者が希望していないのに、本スキルから接続を提案しない。 |
-| 縮退の明示 | `screening.recommendation` が `判定不能`（profile が 1.x）の場合、判定できていない旨を明示する。分類結果を「応募候補」として提示せず、`job-change-profile` での条件の構造化を案内する。 |
+| フォールバックの明示 | `screening.recommendation` が `判定不能`（profile が 1.x）の場合、判定できていない旨を明示する。分類結果を「応募候補」として提示せず、`job-change-profile` での条件の構造化を案内する。 |
 
 ## 役割の実行（ハーネス別）
 
@@ -203,7 +203,7 @@ similar_better では各求人の `better_points`（基準求人より改善し�
 |---|---|
 | `job-change-job-searcher` | `{SKILL_DIR}/references/roles/job-searcher.md` |
 
-**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` の写しである。
+**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` のコピーである。
 
 **サブエージェントを起動できないハーネス（Codex ほか）。** 各 Step の「エージェントを起動する」を「役割プロンプトを読み、その役割として自分で実行する」と読み替える。手順は次のとおり。
 
@@ -241,7 +241,7 @@ cd {SKILL_DIR} && python -m unittest discover -s scripts/tests
 | ファイル | 何を | いつ読むか |
 |---|---|---|
 | `references/job-search-format.md` | job_search_results.json のフィールド仕様・記入基準・機械検証規則・PII リント | 成果物を作る/読む/検証する全段階 |
-| `references/query-catalog.md` | 無償の公開Web検索で求人を探す方法（サイト別のログイン要否・URL構造・取得項目・制約・縮退方法） | Step 2 の検索、検索担当エージェントへの指示 |
+| `references/query-catalog.md` | 無償の公開Web検索で求人を探す方法（サイト別のログイン要否・URL構造・取得項目・制約・フォールバック方法） | Step 2 の検索、検索担当エージェントへの指示 |
 | `references/search-methods.md` | 探索の量と就業の質の関係、満足化の運用、観測と判定を分ける理由の根拠（出典付き） | 報告のしかたを決める段階、応募推奨なしのときの提案を組み立てる段階 |
 | `{HUB_SKILL_DIR}/references/screening-axes.md` | 8スクリーニング軸・8作業特性・業務分類の語彙と境界例 | Step 2 の観測、Step 3.5 の判定 |
 | `references/roles/job-searcher.md` | 検索担当の役割プロンプト（観測層までを担う） | Step 2。サブエージェントを使えないハーネスでは本体が読む |

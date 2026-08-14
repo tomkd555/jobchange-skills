@@ -3,7 +3,7 @@
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
 <!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
 
-模擬面接で収集した回答を評価するアンカー（各段階の判定基準を言語化した記述）の原本である。job-change-interview-coach の Step 3 の判定定義と一致させる。評価は4観点で行い、各観点を3段階（充足・一部・不足）で判定する。企業非依存の縮退モードでは企業理解観点を対象外とする。
+模擬面接で収集した回答を評価するアンカー（各段階の判定基準を言語化した記述）の原本である。job-change-interview-coach の Step 3 の判定定義と一致させる。評価は4観点で行い、各観点を3段階（充足・一部・不足）で判定する。企業非依存のフォールバックモードでは企業理解観点を対象外とする。
 
 ## 4観点と3段階のアンカー
 
@@ -41,7 +41,7 @@
 
 ### 企業理解（`scores.company_fit`）
 
-回答が company_research.json の claim に結び付いているかで判定する。縮退モード（company_research.json が無い場合）は対象外とする。
+回答が company_research.json の claim に結び付いているかで判定する。フォールバックモード（company_research.json が無い場合）は対象外とする。
 
 | 段階 | 判定 |
 |---|---|
@@ -74,7 +74,7 @@
 | 推定 | 内容 |
 |---|---|
 | 古典的推定（Schmidt & Hunter 1998） | 選考手法の予測的妥当性を85年分の研究で総括し、一般知的能力（GMA）単独 .51、GMA＋構造化面接 .63 等を示した[E73]。この .51 前後の値が長く標準として用いられてきた。 |
-| 下方修正（Sackett et al. 2022） | 従来の推定は range restriction（選抜による分散の縮小）の過大補正を含むとして妥当性を下方修正し、構造化面接を相対的に最上位に位置づけた。構造化面接の妥当性は約 .42 と見積もられる[E75]。ただしこの下方修正（range restriction 補正の是非）は Oh, Le & Roth（2023）との間で係争中であり、いずれの係数も確定値ではない[E82]。相対順位（構造化面接・作業標本・GMA が上位）はおおむね保持される。 |
+| 下方修正（Sackett et al. 2022） | 従来の推定は range restriction（選抜による分散の縮小）の過大補正を含むとして妥当性を下方修正し、構造化面接を相対的に最上位に位置づけた。構造化面接の妥当性は約 .42 と見積もられる[E75]。ただしこの下方修正（range restriction 補正の是非）は Oh, Le & Roth（2023）との間で論争中であり、いずれの係数も確定値ではない[E82]。相対順位（構造化面接・作業標本・GMA が上位）はおおむね変わらない。 |
 
 含意: 構造化・行動面接を前提とした STAR 準備は学術的に支持される。ただし妥当性の絶対水準は下方修正されており、面接手法を万能視しない。
 
@@ -101,14 +101,14 @@ Levashina & Campion（2007）は、面接で応募者の90%超が何らかの印
 
 ## 出典
 
-- [E69] CareerTestPrep. Behavioural Interview Questions: The Complete STAR Method Guide 2026. 2026-05-31. グレードB. https://www.careertestprep.com/blog/behavioural-interview-questions-star-method
-- [E73] Psychological Bulletin. The validity and utility of selection methods in personnel psychology: Practical and theoretical implications of 85 years of research findings. 1998. グレードA. DOI:10.1037/0033-2909.124.2.262 https://doi.org/10.1037/0033-2909.124.2.262
-- [E74] Journal of Applied Psychology. The validity of employment interviews: A comprehensive review and meta-analysis. 1994. グレードA. DOI:10.1037/0021-9010.79.4.599 https://doi.org/10.1037/0021-9010.79.4.599
-- [E75] Journal of Applied Psychology. Revisiting meta-analytic estimates of validity in personnel selection: Addressing systematic overcorrection for restriction of range. 2022. グレードA. DOI:10.1037/apl0000994 https://doi.org/10.1037/apl0000994
-- [E78] Journal of Occupational and Organizational Psychology. Asking applicants what they would do versus what they did do: A meta-analytic comparison of situational and past behaviour employment interview questions. 2002. グレードA. DOI:10.1348/096317902320369712 https://doi.org/10.1348/096317902320369712
-- [E79] Journal of Applied Psychology. A meta-analysis of interrater and internal consistency reliability of selection interviews. 1995. グレードA. DOI:10.1037/0021-9010.80.5.565 https://doi.org/10.1037/0021-9010.80.5.565
-- [E80] Journal of Applied Psychology. Measuring faking in the employment interview: Development and validation of an interview faking behavior scale. 2007. グレードA（単一研究）. DOI:10.1037/0021-9010.92.6.1638 https://doi.org/10.1037/0021-9010.92.6.1638
-- [E82] Journal of Applied Psychology. Correcting for range restriction in meta-analysis: A reply to Oh et al. (2023). 2023. グレードA. DOI:10.1037/apl0001116 https://doi.org/10.1037/apl0001116
-- [E105] 鈴木 2013. グレードA. DOI:10.24592/jshrm.14.2_4 https://doi.org/10.24592/jshrm.14.2_4
-- [E106] 鈴木 2016. グレードA. DOI:10.24592/jshrm.17.1_69 https://doi.org/10.24592/jshrm.17.1_69
-- [E107] 竹田 2004. グレードA. DOI:10.4992/jjpsy.75.339 https://doi.org/10.4992/jjpsy.75.339
+- [E69] CareerTestPrep. Behavioural Interview Questions: The Complete STAR Method Guide 2026. 2026-05-31. レベルB. https://www.careertestprep.com/blog/behavioural-interview-questions-star-method
+- [E73] Psychological Bulletin. The validity and utility of selection methods in personnel psychology: Practical and theoretical implications of 85 years of research findings. 1998. レベルA. DOI:10.1037/0033-2909.124.2.262 https://doi.org/10.1037/0033-2909.124.2.262
+- [E74] Journal of Applied Psychology. The validity of employment interviews: A comprehensive review and meta-analysis. 1994. レベルA. DOI:10.1037/0021-9010.79.4.599 https://doi.org/10.1037/0021-9010.79.4.599
+- [E75] Journal of Applied Psychology. Revisiting meta-analytic estimates of validity in personnel selection: Addressing systematic overcorrection for restriction of range. 2022. レベルA. DOI:10.1037/apl0000994 https://doi.org/10.1037/apl0000994
+- [E78] Journal of Occupational and Organizational Psychology. Asking applicants what they would do versus what they did do: A meta-analytic comparison of situational and past behaviour employment interview questions. 2002. レベルA. DOI:10.1348/096317902320369712 https://doi.org/10.1348/096317902320369712
+- [E79] Journal of Applied Psychology. A meta-analysis of interrater and internal consistency reliability of selection interviews. 1995. レベルA. DOI:10.1037/0021-9010.80.5.565 https://doi.org/10.1037/0021-9010.80.5.565
+- [E80] Journal of Applied Psychology. Measuring faking in the employment interview: Development and validation of an interview faking behavior scale. 2007. レベルA（単一研究）. DOI:10.1037/0021-9010.92.6.1638 https://doi.org/10.1037/0021-9010.92.6.1638
+- [E82] Journal of Applied Psychology. Correcting for range restriction in meta-analysis: A reply to Oh et al. (2023). 2023. レベルA. DOI:10.1037/apl0001116 https://doi.org/10.1037/apl0001116
+- [E105] 鈴木 2013. レベルA. DOI:10.24592/jshrm.14.2_4 https://doi.org/10.24592/jshrm.14.2_4
+- [E106] 鈴木 2016. レベルA. DOI:10.24592/jshrm.17.1_69 https://doi.org/10.24592/jshrm.17.1_69
+- [E107] 竹田 2004. レベルA. DOI:10.4992/jjpsy.75.339 https://doi.org/10.4992/jjpsy.75.339

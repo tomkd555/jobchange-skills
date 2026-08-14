@@ -3,7 +3,7 @@
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
 <!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
 
-job-change-self-analysis スキルが採用する分析軸の実証的裏付けと限界を定める原本である。SKILL.md の原則・question-bank.md の質問設計・エージェント2体（writer / auditor）がこのファイルを参照する。証拠グレードは A〜D の4段階（A=査読済みの学術研究・一次公式、B=信頼できる二次、C=口コミ・集計・HRブログ、D=個人ブログ・伝聞）で表記し、学術研究には DOI を記す。表記形式は `[E番号] 文献名 (年) グレード DOI:xxx https://doi.org/xxx` とし、末尾の「出典一覧」に対応づける。
+job-change-self-analysis スキルが採用する分析軸の実証的裏付けと限界を定める原本である。SKILL.md の原則・question-bank.md の質問設計・エージェント2体（writer / auditor）がこのファイルを参照する。エビデンスレベルは A〜D の4段階（A=査読済みの学術研究・一次公式、B=信頼できる二次、C=口コミ・集計・HRブログ、D=個人ブログ・伝聞）で表記し、学術研究には DOI を記す。表記形式は `[E番号] 文献名 (年) レベル DOI:xxx https://doi.org/xxx` とし、末尾の「出典一覧」に対応づける。
 
 ## 中核の制約: 内省は単独では信頼できない
 
@@ -15,7 +15,7 @@ job-change-self-analysis スキルが採用する分析軸の実証的裏付け�
 
 この制約から、本スキルは次を運用規則とする。
 
-1. 強み（strengths）は、行動証拠（behavioral_episodes）または他者証言（others_feedback）への対応づけを必須とする。内省だけを根拠とする強みは成果物として認めない（検証器が ERROR とする）。
+1. 強み（strengths）は、行動証拠（behavioral_episodes）または他者証言（others_feedback）への対応づけを必須とする。内省だけを根拠とする強みは成果物として認めない（検証スクリプトが ERROR とする）。
 2. 他者フィードバックの受け取りは課題志向で行う。「あなたはこういう人だ」という人格評価としてではなく、「どの行動が、どの結果につながったか」という行動と結果への対応づけとして記録する[E50]。
 3. 内省で得た価値観・興味は、可能な限り過去の行動エピソードへ対応づけて裏付ける。
 
@@ -82,32 +82,32 @@ job-change-self-analysis スキルが採用する分析軸の実証的裏付け�
 ## 出典一覧
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+<!-- 書誌形式（発行元. 表題. 年. レベル. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
 
-- [E1] Journal of Applied Psychology (APA). Are you interested? A meta-analysis of relations between vocational interests and performance/turnover. 2011. グレードA. DOI:10.1037/a0024343. https://doi.org/10.1037/a0024343
-- [E2] Perspectives on Psychological Science (SAGE/APS). Vocational Interests and Performance: A Quantitative Summary. 2012. グレードA. DOI:10.1177/1745691612449021. https://doi.org/10.1177/1745691612449021
-- [E6] 組織科学（組織学会）. キャリア・アンカー9因子モデルの適合性の検証. 2024. グレードA. DOI:10.11207/soshikikagaku.20240702-4. https://doi.org/10.11207/soshikikagaku.20240702-4
-- [E7] Journal of Career Assessment (SAGE). Underlying Factor Structure of Schein's Career Anchor Model. 2013. グレードA. DOI:10.1177/1069072712475179. https://doi.org/10.1177/1069072712475179
-- [E8] キャリア・カウンセリング研究（日本キャリア・カウンセリング学会）. 日本語版キャリア・アダプタビリティ尺度の開発. 2024. グレードA. DOI:10.34512/careercounseling.26.1_1. https://doi.org/10.34512/careercounseling.26.1_1
-- [E10] Journal of Affective Disorders (Elsevier). Internalising symptoms and wellbeing: Meta-analysis of buffering. 2025. グレードA. DOI:10.1016/j.jad.2025.119809. https://doi.org/10.1016/j.jad.2025.119809
-- [E11] Journal of Vocational Behavior (Elsevier). Interest fit and job satisfaction: A systematic review and meta-analysis. 2020. グレードA. DOI:10.1016/j.jvb.2020.103503. https://doi.org/10.1016/j.jvb.2020.103503
-- [E12] Journal of Happiness Studies (Springer). The Impact of Signature Character Strengths Interventions: A Meta-Analysis. 2019. グレードA. DOI:10.1007/s10902-018-9990-2. https://doi.org/10.1007/s10902-018-9990-2
-- [E14] リクルート（リクナビNEXT）. 自己分析のフレームワーク＆手法11種（Will-Can-Must）. 2021-05-28. グレードB（自己報告）. https://next.rikunabi.com/tenshokuknowhow/archives/25424/
-- [E17] リクルート（リクナビNEXT）. 自己分析手法11種の一覧. 2021-05-28. グレードB（自己報告）. https://next.rikunabi.com/tenshokuknowhow/archives/25424/
-- [E19] キャリコンスタディ（LIFE&CAREER LLC）. 【キャリコン】自己理解の支援. 2020-09-24. グレードC. https://careerconsultant-study.com/jikorikai-support/
-- [E22] THE CAREER STORY（就活の教科書）. 法政大学 児美川孝一郎教授インタビュー. 2024-08-20. グレードC. https://reashu.com/story/professor-interview-komikawa/
-- [E23] Frontiers in Organizational Psychology. RIASEC self-assessment tools as career interventions. 2026-04-24. グレードA. https://www.frontiersin.org/journals/organizational-psychology/articles/10.3389/forgp.2026.1792707/full
-- [E42] Humanage, Inc.（i-note）. 中途採用で活躍する人材を見極める面接術（再現性）. 2025-05-30. グレードC. https://www.i-note.jp/assessment/tekisei-kensa/articles/028.html
-- [E44] Annual Review of Psychology. Self-knowledge: its limits, value, and potential for improvement. 2004. グレードA. DOI:10.1146/annurev.psych.55.090902.141954. https://doi.org/10.1146/annurev.psych.55.090902.141954
-- [E45] Psychological Review (APA). Telling more than we can know: Verbal reports on mental processes. 1977. グレードA. DOI:10.1037/0033-295X.84.3.231. https://doi.org/10.1037/0033-295X.84.3.231
-- [E46] Journal of Personality and Social Psychology (APA). Unskilled and unaware of it. 1999. グレードA. DOI:10.1037/0022-3514.77.6.1121. https://doi.org/10.1037/0022-3514.77.6.1121
-- [E47] Journal of Personality and Social Psychology (APA). Unskilled, unaware, or both? The better-than-average heuristic. 2002. グレードA. DOI:10.1037/0022-3514.82.2.180. https://doi.org/10.1037/0022-3514.82.2.180
-- [E48] Intelligence (Elsevier). The Dunning-Kruger effect is (mostly) a statistical artefact. 2020. グレードA. DOI:10.1016/j.intell.2020.101449. https://doi.org/10.1016/j.intell.2020.101449
-- [E49] Psychological Bulletin (APA). An other perspective on personality: Meta-analytic integration of observers' accuracy. 2010. グレードA. DOI:10.1037/a0021212. https://doi.org/10.1037/a0021212
-- [E50] Psychological Bulletin (APA). The effects of feedback interventions on performance. 1996. グレードA. DOI:10.1037/0033-2909.119.2.254. https://doi.org/10.1037/0033-2909.119.2.254
-- [E51] Advances in Experimental Social Psychology (Elsevier). The Introspection Illusion. 2009. グレードA. DOI:10.1016/s0065-2601(08)00401-2. https://doi.org/10.1016/s0065-2601(08)00401-2
-- [E52] Perspectives on Psychological Science. Rethinking Rumination. 2008. グレードA. DOI:10.1111/j.1745-6924.2008.00088.x. https://doi.org/10.1111/j.1745-6924.2008.00088.x
-- [E54] 感情心理学研究（日本感情心理学会）. 自己反すうと自己内省が社交不安に及ぼす影響. 2017. グレードA. DOI:10.4092/jsre.25.1_17. https://doi.org/10.4092/jsre.25.1_17
-- [E55] Current Directions in Psychological Science. Affective forecasting: Knowing what to want. 2005. グレードA. DOI:10.1111/j.0963-7214.2005.00355.x. https://doi.org/10.1111/j.0963-7214.2005.00355.x
+- [E1] Journal of Applied Psychology (APA). Are you interested? A meta-analysis of relations between vocational interests and performance/turnover. 2011. レベルA. DOI:10.1037/a0024343. https://doi.org/10.1037/a0024343
+- [E2] Perspectives on Psychological Science (SAGE/APS). Vocational Interests and Performance: A Quantitative Summary. 2012. レベルA. DOI:10.1177/1745691612449021. https://doi.org/10.1177/1745691612449021
+- [E6] 組織科学（組織学会）. キャリア・アンカー9因子モデルの適合性の検証. 2024. レベルA. DOI:10.11207/soshikikagaku.20240702-4. https://doi.org/10.11207/soshikikagaku.20240702-4
+- [E7] Journal of Career Assessment (SAGE). Underlying Factor Structure of Schein's Career Anchor Model. 2013. レベルA. DOI:10.1177/1069072712475179. https://doi.org/10.1177/1069072712475179
+- [E8] キャリア・カウンセリング研究（日本キャリア・カウンセリング学会）. 日本語版キャリア・アダプタビリティ尺度の開発. 2024. レベルA. DOI:10.34512/careercounseling.26.1_1. https://doi.org/10.34512/careercounseling.26.1_1
+- [E10] Journal of Affective Disorders (Elsevier). Internalising symptoms and wellbeing: Meta-analysis of buffering. 2025. レベルA. DOI:10.1016/j.jad.2025.119809. https://doi.org/10.1016/j.jad.2025.119809
+- [E11] Journal of Vocational Behavior (Elsevier). Interest fit and job satisfaction: A systematic review and meta-analysis. 2020. レベルA. DOI:10.1016/j.jvb.2020.103503. https://doi.org/10.1016/j.jvb.2020.103503
+- [E12] Journal of Happiness Studies (Springer). The Impact of Signature Character Strengths Interventions: A Meta-Analysis. 2019. レベルA. DOI:10.1007/s10902-018-9990-2. https://doi.org/10.1007/s10902-018-9990-2
+- [E14] リクルート（リクナビNEXT）. 自己分析のフレームワーク＆手法11種（Will-Can-Must）. 2021-05-28. レベルB（自己報告）. https://next.rikunabi.com/tenshokuknowhow/archives/25424/
+- [E17] リクルート（リクナビNEXT）. 自己分析手法11種の一覧. 2021-05-28. レベルB（自己報告）. https://next.rikunabi.com/tenshokuknowhow/archives/25424/
+- [E19] キャリコンスタディ（LIFE&CAREER LLC）. 【キャリコン】自己理解の支援. 2020-09-24. レベルC. https://careerconsultant-study.com/jikorikai-support/
+- [E22] THE CAREER STORY（就活の教科書）. 法政大学 児美川孝一郎教授インタビュー. 2024-08-20. レベルC. https://reashu.com/story/professor-interview-komikawa/
+- [E23] Frontiers in Organizational Psychology. RIASEC self-assessment tools as career interventions. 2026-04-24. レベルA. https://www.frontiersin.org/journals/organizational-psychology/articles/10.3389/forgp.2026.1792707/full
+- [E42] Humanage, Inc.（i-note）. 中途採用で活躍する人材を見極める面接術（再現性）. 2025-05-30. レベルC. https://www.i-note.jp/assessment/tekisei-kensa/articles/028.html
+- [E44] Annual Review of Psychology. Self-knowledge: its limits, value, and potential for improvement. 2004. レベルA. DOI:10.1146/annurev.psych.55.090902.141954. https://doi.org/10.1146/annurev.psych.55.090902.141954
+- [E45] Psychological Review (APA). Telling more than we can know: Verbal reports on mental processes. 1977. レベルA. DOI:10.1037/0033-295X.84.3.231. https://doi.org/10.1037/0033-295X.84.3.231
+- [E46] Journal of Personality and Social Psychology (APA). Unskilled and unaware of it. 1999. レベルA. DOI:10.1037/0022-3514.77.6.1121. https://doi.org/10.1037/0022-3514.77.6.1121
+- [E47] Journal of Personality and Social Psychology (APA). Unskilled, unaware, or both? The better-than-average heuristic. 2002. レベルA. DOI:10.1037/0022-3514.82.2.180. https://doi.org/10.1037/0022-3514.82.2.180
+- [E48] Intelligence (Elsevier). The Dunning-Kruger effect is (mostly) a statistical artefact. 2020. レベルA. DOI:10.1016/j.intell.2020.101449. https://doi.org/10.1016/j.intell.2020.101449
+- [E49] Psychological Bulletin (APA). An other perspective on personality: Meta-analytic integration of observers' accuracy. 2010. レベルA. DOI:10.1037/a0021212. https://doi.org/10.1037/a0021212
+- [E50] Psychological Bulletin (APA). The effects of feedback interventions on performance. 1996. レベルA. DOI:10.1037/0033-2909.119.2.254. https://doi.org/10.1037/0033-2909.119.2.254
+- [E51] Advances in Experimental Social Psychology (Elsevier). The Introspection Illusion. 2009. レベルA. DOI:10.1016/s0065-2601(08)00401-2. https://doi.org/10.1016/s0065-2601(08)00401-2
+- [E52] Perspectives on Psychological Science. Rethinking Rumination. 2008. レベルA. DOI:10.1111/j.1745-6924.2008.00088.x. https://doi.org/10.1111/j.1745-6924.2008.00088.x
+- [E54] 感情心理学研究（日本感情心理学会）. 自己反すうと自己内省が社交不安に及ぼす影響. 2017. レベルA. DOI:10.4092/jsre.25.1_17. https://doi.org/10.4092/jsre.25.1_17
+- [E55] Current Directions in Psychological Science. Affective forecasting: Knowing what to want. 2005. レベルA. DOI:10.1111/j.0963-7214.2005.00355.x. https://doi.org/10.1111/j.0963-7214.2005.00355.x
 
 <!-- textlint-enable -->

@@ -3,7 +3,7 @@
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
 <!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
 
-job-change-profile スキルの聞き取り設計の原本である。SKILL.md の原則・question-bank.md の質問設計・エージェント2体（writer / auditor）がこのファイルを参照する。証拠グレードは A〜D の4段階（A=査読済みの学術研究・一次公式、B=信頼できる二次、C=口コミ・集計・HRブログ、D=個人ブログ・伝聞）で表記し、学術研究には DOI を記す。表記形式は末尾の「出典一覧」に対応づける。
+job-change-profile スキルの聞き取り設計の原本である。SKILL.md の原則・question-bank.md の質問設計・エージェント2体（writer / auditor）がこのファイルを参照する。エビデンスレベルは A〜D の4段階（A=査読済みの学術研究・一次公式、B=信頼できる二次、C=口コミ・集計・HRブログ、D=個人ブログ・伝聞）で表記し、学術研究には DOI を記す。表記形式は末尾の「出典一覧」に対応づける。
 
 ## 構造化した想起手がかりで聞き取る
 
@@ -38,13 +38,13 @@ job-change-profile スキルの聞き取り設計の原本である。SKILL.md �
 
 運用: 空白は隠すのではなく、`career_gaps` に期間・説明・期間中の活動（学習・資格取得・介護・療養など）を記録し、説明可能な形にする。これは詐称に頼らず正確性・網羅性を保つための欄であり、空白を有利に見せるための創作の場ではない。
 
-**確信度を下げる証拠（限界）**: HBR による空白期間の研究については、効果量の本文値を取得できておらず、空白が選考結果に与える影響の定量的な大きさは本スキルとして確定していない（エビデンスギャップ）。
+**確信度を下げる証拠（限界）**: HBR による空白期間の研究については、効果量の値を本文から取得できておらず、空白が選考結果に与える影響の定量的な大きさは本スキルとして確定していない（エビデンスギャップ）。
 
 ## 選択式を中心にした聞き取りの運用
 
 - 聞き取りは AskUserQuestion の選択式を中心に運用する。1回の AskUserQuestion につき最大4問、各質問は最大4択とする。自由記述は、企業名・在籍期間・実績値のように選択式にできない項目に限る。
 - 深掘りは、感情の反すうへ落とさず、事実（いつ・どの場面で・何をしたか）へ向ける。退職理由の建設的言い換え・強みの根拠づけといった内省の深掘りは本スキルの範囲外とし、`job-change-self-analysis` へ誘導する。
-- 聞き取り結果は、聞き取り中に本体セッションが `career-private/profile_interview_notes.md` へ逐次追記する。これにより中断と再開に対応できる。起草担当（writer）は、このメモにある事実だけを使う。
+- 聞き取り結果は、聞き取り中に本体セッションが `career-private/profile_interview_notes.md` へ逐次追記する。これにより中断と再開に対応できる。作成担当（writer）は、このメモにある事実だけを使う。
 
 ## 更新運用
 
@@ -57,20 +57,20 @@ profile.json は一度作って終わりにせず、鮮度を保つ（確度: �
 ## 出典一覧
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. グレード. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+<!-- 書誌形式（発行元. 表題. 年. レベル. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
 
-- [E17] Psychological Bulletin (APA). The validity and utility of selection methods in personnel psychology. 1998. グレードA. DOI:10.1037/0033-2909.124.2.262. https://doi.org/10.1037/0033-2909.124.2.262
-- [E18] Journal of Applied Psychology (APA). The validity of employment interviews: A comprehensive review and meta-analysis. 1994. グレードA. DOI:10.1037/0021-9010.79.4.599. https://doi.org/10.1037/0021-9010.79.4.599
-- [E19] Journal of Occupational Psychology. A meta-analytic investigation of the impact of interview format and degree of structure. 1988. グレードA. DOI:10.1111/j.2044-8325.1988.tb00467.x. https://doi.org/10.1111/j.2044-8325.1988.tb00467.x
-- [E20] Memory. The structure of autobiographical memory and the event history calendar. 1998-07. グレードA. DOI:10.1080/741942610. https://doi.org/10.1080/741942610
-- [E21] Public Opinion Quarterly. Event history calendars and question list surveys: a direct comparison of interviewing methods. 2001. グレードA. DOI:10.1086/320037. https://doi.org/10.1086/320037
-- [E22] British Journal of Industrial Medicine. An investigation of the validity of self-reported work histories. 1987. グレードA. DOI:10.1136/oem.44.10.702. https://doi.org/10.1136/oem.44.10.702
-- [E23] International Journal of Methods in Psychiatric Research. Forward telescoping bias in reported age of onset. 2005. グレードA. DOI:10.1002/mpr.2. https://doi.org/10.1002/mpr.2
-- [E24] Quality & Quantity. Applications of calendar instruments in social surveys: a review. 2009. グレードA. DOI:10.1007/s11135-007-9129-8. https://doi.org/10.1007/s11135-007-9129-8
-- [E99] Harvard Business Review (Groysberg, Lin). Research: Resume Gaps Still Matter. 2024-07-31. グレードB. https://hbr.org/2024/07/research-resume-gaps-still-matter
-- [E100] JAC Recruitment. 面接での経歴の空白期間の好印象な答え方は？. 2024-06-12. グレードC. https://www.jac-recruitment.jp/market/knowhow/interview/interview-blank-period/
-- [E102] ASHIATO（エン・ジャパン）. バックグラウンドチェックで経歴詐称や転職活動はバレない？. 2024-09-19. グレードC. https://ashiatohr.com/news/7ecucee-k
-- [E103] Forbes JAPAN. 2026年の採用市場で差がつく「職務経歴書」5つの更新ポイント. 2026-03-15. グレードC. https://forbesjapan.com/articles/detail/93818
-- [E104] Indeed / ResumeGenius 他. Guide To Updating Your Resume. 2024. グレードC. https://www.indeed.com/career-advice/resumes-cover-letters/guide-to-updating-your-resume
+- [E17] Psychological Bulletin (APA). The validity and utility of selection methods in personnel psychology. 1998. レベルA. DOI:10.1037/0033-2909.124.2.262. https://doi.org/10.1037/0033-2909.124.2.262
+- [E18] Journal of Applied Psychology (APA). The validity of employment interviews: A comprehensive review and meta-analysis. 1994. レベルA. DOI:10.1037/0021-9010.79.4.599. https://doi.org/10.1037/0021-9010.79.4.599
+- [E19] Journal of Occupational Psychology. A meta-analytic investigation of the impact of interview format and degree of structure. 1988. レベルA. DOI:10.1111/j.2044-8325.1988.tb00467.x. https://doi.org/10.1111/j.2044-8325.1988.tb00467.x
+- [E20] Memory. The structure of autobiographical memory and the event history calendar. 1998-07. レベルA. DOI:10.1080/741942610. https://doi.org/10.1080/741942610
+- [E21] Public Opinion Quarterly. Event history calendars and question list surveys: a direct comparison of interviewing methods. 2001. レベルA. DOI:10.1086/320037. https://doi.org/10.1086/320037
+- [E22] British Journal of Industrial Medicine. An investigation of the validity of self-reported work histories. 1987. レベルA. DOI:10.1136/oem.44.10.702. https://doi.org/10.1136/oem.44.10.702
+- [E23] International Journal of Methods in Psychiatric Research. Forward telescoping bias in reported age of onset. 2005. レベルA. DOI:10.1002/mpr.2. https://doi.org/10.1002/mpr.2
+- [E24] Quality & Quantity. Applications of calendar instruments in social surveys: a review. 2009. レベルA. DOI:10.1007/s11135-007-9129-8. https://doi.org/10.1007/s11135-007-9129-8
+- [E99] Harvard Business Review (Groysberg, Lin). Research: Resume Gaps Still Matter. 2024-07-31. レベルB. https://hbr.org/2024/07/research-resume-gaps-still-matter
+- [E100] JAC Recruitment. 面接での経歴の空白期間の好印象な答え方は？. 2024-06-12. レベルC. https://www.jac-recruitment.jp/market/knowhow/interview/interview-blank-period/
+- [E102] ASHIATO（エン・ジャパン）. バックグラウンドチェックで経歴詐称や転職活動はバレない？. 2024-09-19. レベルC. https://ashiatohr.com/news/7ecucee-k
+- [E103] Forbes JAPAN. 2026年の採用市場で差がつく「職務経歴書」5つの更新ポイント. 2026-03-15. レベルC. https://forbesjapan.com/articles/detail/93818
+- [E104] Indeed / ResumeGenius 他. Guide To Updating Your Resume. 2024. レベルC. https://www.indeed.com/career-advice/resumes-cover-letters/guide-to-updating-your-resume
 
 <!-- textlint-enable -->

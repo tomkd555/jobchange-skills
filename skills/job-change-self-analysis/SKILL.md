@@ -6,7 +6,7 @@ description: >-
   根拠づけた強み、キャリア・ナラティブ、退職理由の建設的な言い換えの3点を持つ self_analysis.json を作る。
   面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が読める成果物にする。
   強みは行動証拠または他者証言への対応づけを必須とし、内省単独に高い重みを与えない。質問を有限の構造化された問いに限って反すうを防ぎ、診断結果を確定ラベルとして扱わず、事実の創作・誇張をせず、metric を厳密に一致させる。
-  起草と独立監査は専用エージェント（job-change-self-analysis-writer / job-change-self-analysis-auditor）が担う。
+  作成と独立監査は専用エージェント（job-change-self-analysis-writer / job-change-self-analysis-auditor）が担う。
   job-change-support（hub）から振り分けられて動く。
   Use when the user does self-analysis for a job change in Japan — organizing strengths, taking stock of
   their career, deepening their reasons for changing jobs, or building a consistent career narrative for
@@ -20,11 +20,11 @@ allowed-tools: Read, Write, Glob, Grep, Bash, AskUserQuestion, Agent, Skill
 
 転職の自己分析に取り組むとき、このスキル1つで棚卸しから成果物の納品までの手順がそろう。profile.json を土台に、行動エピソード（STAR素材）と他者フィードバックを内省と対等に集め、興味・価値観・career adaptability の4次元・過去の行動の4軸で構造化し、根拠づけた強み、キャリア・ナラティブ、退職理由の建設的な言い換えの3点を持つ self_analysis.json を作る。成果物は面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が入力として読む。
 
-本スキルは、行動証拠と他者視点を内省と併用する（根拠は `references/self-analysis-methods.md`）。起草と独立監査はそれぞれ専用エージェント（`job-change-self-analysis-writer`・`job-change-self-analysis-auditor`）が担い、本スキルはその起動・差し戻し・納品を統括する。
+本スキルは、行動証拠と他者視点を内省と併用する（根拠は `references/self-analysis-methods.md`）。作成と独立監査はそれぞれ専用エージェント（`job-change-self-analysis-writer`・`job-change-self-analysis-auditor`）が担い、本スキルはその起動・差し戻し・納品を統括する。
 
 ## 目的と原則
 
-1. **他者視点と行動証拠を内省と併用する。** 強み（strengths）は、行動エピソード（behavioral_episodes）または他者証言（others_feedback）への対応づけを必須とし、内省単独の強みは認めない（検証器が ERROR とする）。他者フィードバックの受け取りは課題志向で行い、人格評価としてではなく行動と結果への対応づけとして記録する。
+1. **他者視点と行動証拠を内省と併用する。** 強み（strengths）は、行動エピソード（behavioral_episodes）または他者証言（others_feedback）への対応づけを必須とし、内省単独の強みは認めない（検証スクリプトが ERROR とする）。他者フィードバックの受け取りは課題志向で行い、人格評価としてではなく行動と結果への対応づけとして記録する。
 
 2. **有限の構造化された問いに限る（反すう防止）。** 質問は `references/question-bank.md` の有限の問いに限定し、無制限の「なぜ」の反復を促さない。深掘りは感情の反すうへ落とさず、必ず行動・事実（エピソード）へ対応づける。感情の将来予測（「転職すれば幸せになれる」）を確信・断定の根拠にしない。
 
@@ -98,13 +98,13 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 `references/question-bank.md` の Step 3 の有限の問いだけを使い、興味（RIASEC の枠組み）・価値観（エピソードへ対応づける）・career adaptability の4次元（concern / control / curiosity / confidence）を構造化する。無制限の「なぜ」の反復を禁じ、深掘りは必ずエピソード（事実）へ対応づける。Schein の8分類・CCI 型5問は呼び水として使い、結果を確定ラベルにしない。
 
-### Step 4 統合（起草）
+### Step 4 統合（作成）
 
-`job-change-self-analysis-writer` エージェント（model: opus）を起動し、Step 1〜3 で集めた素材（episodes / feedback / interests / values / adaptability）と `{PROFILE}`・出力先 `{SELF}` を渡す。起草担当は、strengths の根拠づけ（episode / feedback への対応づけ必須）、career_narrative の作成（ライフテーマ・転機・一貫する動機）、reason_for_change.constructive_version の作成（不満の列挙でなく発揮したい価値を軸に）を行う。戻り値を利用者へ提示し、AskUserQuestion の選択式で修正点を確認する。
+`job-change-self-analysis-writer` エージェント（model: opus）を起動し、Step 1〜3 で集めた素材（episodes / feedback / interests / values / adaptability）と `{PROFILE}`・出力先 `{SELF}` を渡す。作成担当は、strengths の根拠づけ（episode / feedback への対応づけ必須）、career_narrative の作成（ライフテーマ・転機・一貫する動機）、reason_for_change.constructive_version の作成（不満の列挙でなく発揮したい価値を軸に）を行う。戻り値を利用者へ提示し、AskUserQuestion の選択式で修正点を確認する。
 
 ### Step 5 機械検証＋独立監査
 
-`validate_self_analysis.py` で `{SELF}` を検証し、PASS（ERROR 0件）を確認する。続いて `job-change-self-analysis-auditor` エージェント（model: opus、起草担当の判断理由を渡さない新規コンテキスト）を起動し、誇張・創作／一貫性／内省単独の重み／反すう・感情予測型の記述を監査する。指摘は Step 4 へ差し戻す（最大2回。以降は利用者の判断による）。
+`validate_self_analysis.py` で `{SELF}` を検証し、PASS（ERROR 0件）を確認する。続いて `job-change-self-analysis-auditor` エージェント（model: opus、作成担当の判断理由を渡さない新規コンテキスト）を起動し、誇張・創作／一貫性／内省単独の重み／反すう・感情予測型の記述を監査する。指摘は Step 4 へ差し戻す（最大2回。以降は利用者の判断による）。
 
 ### Step 6 反映と接続案内
 
@@ -117,9 +117,9 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | ゲート | 通過条件と差し戻し先 |
 |---|---|
 | Step 0 のプロファイルゲート | `profile.json` が `validate_profile.py` で PASS していなければ着手しない。未作成・FAIL は hub（`job-change-support`）経由で `job-change-profile` サブスキルへ戻す。ただし FAIL の場合は、ERROR の内容を示し、利用者が欠落を承知で着手を希望するなら、欠けた項目の値を直接引用または前提とする記述を作らないという条件で進めてよい。どの項目が欠けたままかを成果物に明記する。 |
-| Step 5 の検証・監査ゲート | `validate_self_analysis.py` が FAIL（ERROR 1件以上）の場合、または `job-change-self-analysis-auditor` の `verdict` が BLOCK の場合、または `severity` = must_fix の finding がある場合は、Step 4 で起草担当へ差し戻す。差し戻しは同一成果物につき最大2回まで行う。 |
+| Step 5 の検証・監査ゲート | `validate_self_analysis.py` が FAIL（ERROR 1件以上）の場合、または `job-change-self-analysis-auditor` の `verdict` が BLOCK の場合、または `severity` = must_fix の finding がある場合は、Step 4 で作成担当へ差し戻す。差し戻しは同一成果物につき最大2回まで行う。 |
 
-差し戻し時は、監査の findings（target・evidence・fix）をそのまま起草担当へ渡し、反映後に Step 5 から再度通す。2回の差し戻しで解消しない指摘は、未決事項として利用者へ判断を委ねてから納品する（例: profile.json の実績だけでは強みの裏付けが足りない、という指摘は、他者フィードバックの追加収集か訴求の見直しが要るため利用者の判断事項とする）。
+差し戻し時は、監査の findings（target・evidence・fix）をそのまま作成担当へ渡し、反映後に Step 5 から再度通す。2回の差し戻しで解消しない指摘は、未決事項として利用者へ判断を委ねてから納品する（例: profile.json の実績だけでは強みの裏付けが足りない、という指摘は、他者フィードバックの追加収集か訴求の見直しが要るため利用者の判断事項とする）。
 
 ## 役割の実行（ハーネス別）
 
@@ -130,7 +130,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | `job-change-self-analysis-writer` | `{SKILL_DIR}/references/roles/self-analysis-writer.md` |
 | `job-change-self-analysis-auditor` | `{SKILL_DIR}/references/roles/self-analysis-auditor.md` |
 
-**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` の写しである。
+**サブエージェントを起動できるハーネス（Claude Code）。** 各 Step の記述どおり、上表のエージェント名を Agent ツールで起動し、指示書を渡す。エージェント定義はリポジトリの `agents/` にあり、`references/roles/` のコピーである。
 
 **サブエージェントを起動できないハーネス（Codex ほか）。** 各 Step の「エージェントを起動する」を「役割プロンプトを読み、その役割として自分で実行する」と読み替える。手順は次のとおり。
 
@@ -139,14 +139,14 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 3. 役割プロンプトの「扱ってよい入力」のルールを守る。Web 送信手段を持たない役割として書かれている場合、その作業中は Web 検索・fetch を使わない。
 4. 成果物の形式・検証・合否ゲートは、ハーネスによらず同一である。
 
-本スキルは起草と監査を別の役割へ分け、監査者に起草者の判断理由を渡さないことで独立性を保つ。サブエージェントを使えないハーネスでは、同一の文脈で両方を担うためこの独立性が下がる。その場合、監査の段では起草時の判断理由・迷った箇所・書き換えの経緯を一切参照せず、成果物と原本（`references/` の仕様）だけを見て判定する。判定を終えるまで、起草側の意図を補って読まない。
+本スキルは作成と監査を別の役割へ分け、監査者に作成者の判断理由を渡さないことで独立性を保つ。サブエージェントを使えないハーネスでは、同一の文脈で両方を担うためこの独立性が下がる。その場合、監査の段では作成時の判断理由・迷った箇所・書き換えの経緯を一切参照せず、成果物と原本（`references/` の仕様）だけを見て判定する。判定を終えるまで、作成側の意図を補って読まない。
 
 ## エージェントのモデル方針
 
 | エージェント | model | 責務 |
 |---|---|---|
-| `job-change-self-analysis-writer` | opus | strengths の根拠づけ・career_narrative の起草・reason_for_change の建設的言い換え（Step 4）と監査指摘の反映 |
-| `job-change-self-analysis-auditor` | opus | 独立コンテキストでの誇張・一貫性・内省単独の重み・反すう/感情予測型記述の監査、検証器の再実行（Step 5） |
+| `job-change-self-analysis-writer` | opus | strengths の根拠づけ・career_narrative の作成・reason_for_change の建設的言い換え（Step 4）と監査指摘の反映 |
+| `job-change-self-analysis-auditor` | opus | 独立コンテキストでの誇張・一貫性・内省単独の重み・反すう/感情予測型記述の監査、検証スクリプトの再実行（Step 5） |
 
 機械的検査は `validate_self_analysis.py` が担う。model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
 
@@ -168,4 +168,4 @@ python {SKILL_DIR}/scripts/validate_self_analysis.py {DATA_ROOT}/career-private/
 | `references/self-analysis-methods.md` | 採用4軸の実証的裏付けと限界、内省の限界と他者視点併用の根拠、反すう防止の運用規則、論争点の両論併記、DOI 付き出典 | 原則の根拠を確認するとき、監査の観点を定めるとき |
 | `references/self-analysis-format.md` | self_analysis.json のフィールド仕様・記入基準・検証規則（ERROR/WARN 一覧） | 成果物を作る/更新する/検証する全段階 |
 | `references/question-bank.md` | Step 1〜3 で使う有限の構造化質問（STAR 棚卸し・他己分析・興味/価値観/adaptability・Schein 呼び水・CCI 型5問） | ヒアリングの各 Step で質問を選ぶとき |
-| `references/narrative-guide.md` | キャリア・ナラティブの構成、退職理由の建設的言い換え手順、企業側評価との接続と留保、DOI 付き出典 | career_narrative・reason_for_change を起草/監査するとき |
+| `references/narrative-guide.md` | キャリア・ナラティブの構成、退職理由の建設的言い換え手順、企業側評価との接続と留保、DOI 付き出典 | career_narrative・reason_for_change を作成/監査するとき |

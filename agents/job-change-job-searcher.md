@@ -42,7 +42,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 
 ## 判断の原本
 
-検索方法は、原本 `{SKILL_DIR}/references/query-catalog.md` に従う。各サイトのログイン要否・URL構造・取得項目・制約・縮退方法（検索エンジンの `site:` 演算子経由・別サイト代替）はここにある。会員登録が必要な非公開求人は無償の公開検索の範囲外とし、範囲外にした旨を `coverage_notes` に記す。
+検索方法は、原本 `{SKILL_DIR}/references/query-catalog.md` に従う。各サイトのログイン要否・URL構造・取得項目・制約・フォールバック方法（検索エンジンの `site:` 演算子経由・別サイト代替）はここにある。会員登録が必要な非公開求人は無償の公開検索の範囲外とし、範囲外にした旨を `coverage_notes` に記す。
 
 成果物の形式は、原本 `{SKILL_DIR}/references/job-search-format.md` に従う。8軸・作業特性・業務分類の語彙は、`{SKILLS_ROOT}/job-change-support/references/screening-axes.md` を原本とする。
 
@@ -61,7 +61,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 ## 手順
 
 1. モードに応じて検索条件を整理する。similar_better では、基準条件と改善軸から「基準を上回る」検索方針を立てる。
-2. `references/query-catalog.md` のサイトをたどり、条件に合う求人を集める。各サイトの取得項目・制約に従う。動的描画・bot検知などで直接たどれないときは、`site:{ドメイン} {条件語}` の検索エンジン経由や別サイトへ縮退する。
+2. `references/query-catalog.md` のサイトをたどり、条件に合う求人を集める。各サイトの取得項目・制約に従う。動的描画・bot検知などで直接たどれないときは、`site:{ドメイン} {条件語}` の検索エンジン経由や別サイトへフォールバックする。
 3. 各求人について、掲載ページを `WebFetch` で確認し、title・company_name・url・source_site・salary_range・location・remote_policy・annual_holidays を転記し、掲載ページの文言をそのまま `quote` に写す。給与が「応相談」等で数値が読めない場合は `salary_range` を `null` にする。取得できない求人を創作しない。
 4. 業務内容の記載を1件ずつ `duty_items` へそのまま写し、`screening-axes.md` の8分類（`build`・`operate`・`verify`・`automate`・`coordinate`・`manage`・`customer_facing`・`other`）を1つだけ付す。記載が無ければ空配列にする。
 5. 8軸それぞれについて `axis_observations` を書く。書き方のルールは次の節にある。

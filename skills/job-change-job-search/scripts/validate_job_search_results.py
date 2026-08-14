@@ -705,7 +705,7 @@ def validate(
 def _run_pii_lint(
     document: dict, pii_terms: list[tuple[str, str]], result: ValidationResult
 ) -> None:
-    """成果物 JSON 全体を文字列化し、profile 由来の PII 語が混入していないか検査する。"""
+    """成果物 JSON 全体を文字列化し、profile 由来の PII に当たる文字列が混入していないか検査する。"""
     blob = json.dumps(document, ensure_ascii=False)
     for label, value in pii_terms:
         if value and value in blob:
