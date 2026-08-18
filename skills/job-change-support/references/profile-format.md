@@ -60,6 +60,8 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 
 職歴の配列。1件以上必須。新しい職歴を先頭に置く。各要素は次のフィールドを持つ。
 
+同じ時期に複数の職に就いていた場合（兼務・出向・副業・自営）は、それぞれを1件の要素として持ち、`period` が重なることを許容する。重なりは不整合ではない。どの立場での在籍かは `role` に書き分ける（例「バックエンドエンジニア」「業務委託（副業）」）。
+
 | フィールド | 型 | 必須/任意 | 意味・記入基準 |
 |---|---|---|---|
 | `company` | string | 必須 | 在籍企業名。欠落は ERROR |
@@ -76,12 +78,16 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 |---|---|---|---|
 | `description` | string | 任意 | 実績の説明 |
 | `metric` | string または null | 任意 | 定量値。「応答時間を40%短縮」「売上を年3000万円増」のように、数値・割合・金額で示す。定量化できない実績は `null` にする |
+| `project` | string | 任意 | 案件・プロジェクトの呼び名。1つの職で複数の案件を並行して回した場合に、どの案件の成果かを区別する。案件が1つだけの職では書かない |
+| `period` | string | 任意 | その案件の期間。`YYYY-MM〜YYYY-MM` 形式。在籍中の案件は `〜現在`。在籍期間の中に収まる。案件が1つだけの職では書かない |
 
-`metric` は可能な限り定量値で埋める。全職歴を通して定量的な `metric` が1件もない場合、`validate_profile.py` は WARN を出す。`metric` には検証可能な数値を優先する。
+`metric` は可能な限り定量値で埋める。全職歴を通して定量的な `metric` が1件もない場合、`validate_profile.py` は WARN を出す。`metric` には本人が述べた数値をそのまま書く。
+
+`project` と `period` は任意であり、`validate_profile.py` は検査しない。聞き取りメモとの一致は監査担当（`job-change-profile-auditor`）が確かめる。
 
 ## career_gaps
 
-空白期間（6か月以上、職歴と職歴の間で在籍のない期間）の説明の配列。各要素は次のフィールドを持つ。
+空白期間（6か月以上、どの職歴の在籍期間にも覆われない期間）の説明の配列。各要素は次のフィールドを持つ。
 
 | フィールド | 型 | 必須/任意 | 意味・記入基準 |
 |---|---|---|---|
@@ -89,7 +95,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `explanation` | string | 必須 | 空白期間の理由。欠落・空は WARN |
 | `activities` | array | 任意 | 期間中に行った活動の文字列の配列 |
 
-職歴間に6か月以上の空白があり、対応する `career_gaps` の記載がない場合、`validate_profile.py` は WARN を出す（`career_history[].period` が全件解析可能な場合に限る）。
+どの職歴の在籍期間にも覆われない期間が6か月以上あり、対応する `career_gaps` の記載がない場合、`validate_profile.py` は WARN を出す（`career_history[].period` が全件解析可能な場合に限る）。判定は全職歴の在籍期間の和集合に対して行うため、在籍期間が重なる職歴があっても空白を誤検出しない。
 
 ## skills
 
@@ -288,7 +294,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 - `schema_version` が既知のバージョン（`1.0`／`1.1`／`2.0`）以外である
 - `schema_version` が `1.0` または `1.1` である（2.0 への移行を推奨する）
 - `career_history[].period` が `YYYY-MM〜YYYY-MM` または `YYYY-MM〜現在` の形式でない
-- `career_history[].period` が全件解析可能な場合に、隣接する職歴間に6か月以上の空白があり、対応する `career_gaps`（期間が重なるもの）がない
+- `career_history[].period` が全件解析可能な場合に、どの職歴の在籍期間にも覆われない6か月以上の空白があり、対応する `career_gaps`（期間が重なるもの）がない
 - `skills.languages` の要素が `{"language","level"}` を持つオブジェクトでない
 - `salary.current` / `salary.desired` が number でも null でもない
 - 必須条件の件数が4件以上である（1.x では `must_conditions` の件数、2.0 では `conditions[level=must]` と `work_character_preferences[desire=must]` の合計）

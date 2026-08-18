@@ -440,6 +440,77 @@ class W3CareerGapTest(unittest.TestCase):
         self.assertFalse(any("career_gaps" in w for w in result.warnings))
 
 
+    def test_concurrent_side_jobs_inside_a_main_job_do_not_warn(self):
+        """本業が全期間を覆う場合、離れた副業2件の間を空白と見なさない。"""
+        p = _valid_profile()
+        p["career_history"] = [
+            {
+                "company": "本業株式会社",
+                "period": "2015-04〜現在",
+                "role": "バックエンドエンジニア",
+                "achievements": [{"description": "実績", "metric": "10%改善"}],
+            },
+            {
+                "company": "副業クライアントA",
+                "period": "2020-04〜2021-03",
+                "role": "業務委託（副業）",
+            },
+            {
+                "company": "副業クライアントB",
+                "period": "2023-04〜現在",
+                "role": "業務委託（副業）",
+            },
+        ]
+        result = vp.validate(p)
+        self.assertTrue(result.ok)
+        self.assertFalse(any("career_gaps" in w for w in result.warnings))
+
+    def test_real_gap_after_concurrent_jobs_still_warns(self):
+        """並行職歴があっても、どの職歴にも覆われない6ヶ月以上の空白は検出する。"""
+        p = _valid_profile()
+        p["career_history"] = [
+            {
+                "company": "本業株式会社",
+                "period": "2015-04〜2018-03",
+                "role": "エンジニア",
+                "achievements": [{"description": "実績", "metric": "10%改善"}],
+            },
+            {
+                "company": "副業クライアント",
+                "period": "2016-04〜2017-03",
+                "role": "業務委託（副業）",
+            },
+            {
+                "company": "現職",
+                "period": "2019-06〜現在",
+                "role": "エンジニア",
+            },
+        ]
+        result = vp.validate(p)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("career_gaps" in w for w in result.warnings))
+
+    def test_identical_periods_do_not_break_merge(self):
+        """在籍期間が完全に一致する2件でも空白判定が壊れない。"""
+        p = _valid_profile()
+        p["career_history"] = [
+            {
+                "company": "出向元",
+                "period": "2020-04〜2022-03",
+                "role": "エンジニア",
+                "achievements": [{"description": "実績", "metric": "10%改善"}],
+            },
+            {
+                "company": "出向先",
+                "period": "2020-04〜2022-03",
+                "role": "出向者",
+            },
+        ]
+        result = vp.validate(p)
+        self.assertTrue(result.ok)
+        self.assertFalse(any("career_gaps" in w for w in result.warnings))
+
+
 class W4LanguagesShapeTest(unittest.TestCase):
     def test_language_missing_level_warns(self):
         p = _valid_profile()
