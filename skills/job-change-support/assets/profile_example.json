@@ -6,9 +6,25 @@
     "current_role": "バックエンドエンジニア（チームリード）",
     "years_of_experience": 8,
     "location": "東京都",
-    "education": ["架空工科大学 情報工学部 卒業（2018-03）"]
+    "education": [
+      "架空工科大学 情報工学部 卒業（2018-03）"
+    ]
   },
   "career_history": [
+    {
+      "company": "架空ヘルスケアラボ株式会社",
+      "period": "2023-04〜2026-06",
+      "role": "業務委託（副業）／バックエンドエンジニア",
+      "responsibilities": [
+        "予約システムの API 実装（Python, GCP）"
+      ],
+      "achievements": [
+        {
+          "description": "予約枠の在庫計算をリアルタイム化",
+          "metric": "予約確定までの待ち時間を平均12秒から2秒へ短縮"
+        }
+      ]
+    },
     {
       "company": "架空リテールテック株式会社",
       "period": "2021-10〜2026-06",
@@ -21,11 +37,15 @@
       "achievements": [
         {
           "description": "モノリスからマイクロサービスへの段階移行を主導",
-          "metric": "ピーク時 API 応答時間を平均820msから310msへ短縮（約62%改善）"
+          "metric": "ピーク時 API 応答時間を平均820msから310msへ短縮（約62%改善）",
+          "project": "決済基盤のマイクロサービス移行",
+          "period": "2022-04〜2024-03"
         },
         {
           "description": "リリースプロセスの CI/CD 整備",
-          "metric": "デプロイ頻度を週1回から日次へ（約5倍）、障害回復時間を平均4時間から40分へ短縮"
+          "metric": "デプロイ頻度を週1回から日次へ（約5倍）、障害回復時間を平均4時間から40分へ短縮",
+          "project": "リリース基盤の刷新",
+          "period": "2023-01〜2023-12"
         }
       ]
     },
@@ -49,20 +69,52 @@
     {
       "period": "2021-04〜2021-09",
       "explanation": "転職活動とビジネス英語の語学研修に専念した期間",
-      "activities": ["オンライン語学学校でのビジネス英語学習", "AWS認定資格の取得に向けた学習"]
+      "activities": [
+        "オンライン語学学校でのビジネス英語学習",
+        "AWS認定資格の取得に向けた学習"
+      ]
     }
   ],
   "skills": {
-    "technical": ["Python", "Java", "AWS（ECS, Lambda, RDS）", "PostgreSQL", "Terraform", "Docker"],
-    "business": ["チームマネジメント", "要件定義", "技術面接", "アジャイル開発（スクラム）"],
-    "languages": [
-      {"language": "日本語", "level": "母語"},
-      {"language": "英語", "level": "TOEIC 850・技術文書の読解と簡単な会話"}
+    "technical": [
+      "Python",
+      "Java",
+      "AWS（ECS, Lambda, RDS）",
+      "PostgreSQL",
+      "Terraform",
+      "Docker"
     ],
-    "certifications": ["応用情報技術者", "AWS Certified Solutions Architect - Associate"],
+    "business": [
+      "チームマネジメント",
+      "要件定義",
+      "技術面接",
+      "アジャイル開発（スクラム）"
+    ],
+    "languages": [
+      {
+        "language": "日本語",
+        "level": "母語"
+      },
+      {
+        "language": "英語",
+        "level": "TOEIC 850・技術文書の読解と簡単な会話"
+      }
+    ],
+    "certifications": [
+      "応用情報技術者",
+      "AWS Certified Solutions Architect - Associate"
+    ],
     "portable": [
-      {"skill": "課題の構造化と優先順位付け", "category": "対課題", "note": "マイクロサービス移行の計画立案で発揮"},
-      {"skill": "チームメンバーへの傾聴とフィードバック", "category": "対人", "note": "5名チームのマネジメントで発揮"}
+      {
+        "skill": "課題の構造化と優先順位付け",
+        "category": "対課題",
+        "note": "マイクロサービス移行の計画立案で発揮"
+      },
+      {
+        "skill": "チームメンバーへの傾聴とフィードバック",
+        "category": "対人",
+        "note": "5名チームのマネジメントで発揮"
+      }
     ]
   },
   "strengths": [
@@ -94,7 +146,11 @@
         "statement": "リモートワークが可能であること（週2日以上の在宅）",
         "axis": "remote_certainty",
         "operator": "in",
-        "value": ["guaranteed", "full_remote_possible", "hybrid"],
+        "value": [
+          "guaranteed",
+          "full_remote_possible",
+          "hybrid"
+        ],
         "unit": "none",
         "verification": "posting",
         "priority": 2
@@ -157,13 +213,36 @@
         "desire": "important",
         "statement": "設計と実装に自分で手を動かして関わりたい"
       },
-      {"trait": "build_ops_ratio", "desire": "important"},
-      {"trait": "low_coordination", "desire": "neutral", "note": "調整業務も一定量は許容する"},
-      {"trait": "full_remote_guaranteed", "desire": "important"},
-      {"trait": "no_oncall", "desire": "important"},
-      {"trait": "clear_completion", "desire": "neutral"},
-      {"trait": "solo_completable", "desire": "not_required", "note": "チームでの開発を望む"},
-      {"trait": "short_feedback", "desire": "important"}
+      {
+        "trait": "build_ops_ratio",
+        "desire": "important"
+      },
+      {
+        "trait": "low_coordination",
+        "desire": "neutral",
+        "note": "調整業務も一定量は許容する"
+      },
+      {
+        "trait": "full_remote_guaranteed",
+        "desire": "important"
+      },
+      {
+        "trait": "no_oncall",
+        "desire": "important"
+      },
+      {
+        "trait": "clear_completion",
+        "desire": "neutral"
+      },
+      {
+        "trait": "solo_completable",
+        "desire": "not_required",
+        "note": "チームでの開発を望む"
+      },
+      {
+        "trait": "short_feedback",
+        "desire": "important"
+      }
     ],
     "priority_note": "優先順位は「モダンな技術スタックと CI/CD」＞「リモートワーク可」。次回の再評価は2027-01を予定。"
   },
@@ -178,7 +257,10 @@
       "axis": "compensation_level",
       "kind": "quantitative",
       "weight": 30,
-      "thresholds": {"zero": 6800000, "full": 9000000},
+      "thresholds": {
+        "zero": 6800000,
+        "full": 9000000
+      },
       "note": "現年収を0点、希望年収より上を100点とする自分の基準を使う"
     },
     {
@@ -193,16 +275,35 @@
       "label": "技術選定の裁量",
       "definition": "使う言語・フレームワーク・クラウド構成を開発チームが決められること",
       "judgment": [
-        {"score": 100, "condition": "技術ブログか求人票に、開発チームが技術選定を担う旨の記載があり、面接でも確認できた"},
-        {"score": 50, "condition": "記載はあるが、決定の範囲が読み取れず未確認である"},
-        {"score": 0, "condition": "全社の標準スタックに従う旨が明記されている"}
+        {
+          "score": 100,
+          "condition": "技術ブログか求人票に、開発チームが技術選定を担う旨の記載があり、面接でも確認できた"
+        },
+        {
+          "score": 50,
+          "condition": "記載はあるが、決定の範囲が読み取れず未確認である"
+        },
+        {
+          "score": 0,
+          "condition": "全社の標準スタックに従う旨が明記されている"
+        }
       ]
     }
   ],
   "targets": {
-    "industries": ["SaaS", "フィンテック"],
-    "roles": ["テックリード", "エンジニアリングマネージャー", "シニアバックエンドエンジニア"],
-    "companies": ["架空クラウドワークス社", "架空ペイメンツ社"]
+    "industries": [
+      "SaaS",
+      "フィンテック"
+    ],
+    "roles": [
+      "テックリード",
+      "エンジニアリングマネージャー",
+      "シニアバックエンドエンジニア"
+    ],
+    "companies": [
+      "架空クラウドワークス社",
+      "架空ペイメンツ社"
+    ]
   },
   "salary": {
     "current": 6800000,

@@ -250,7 +250,7 @@ def _warn_career_history_period_format(profile: dict, result: ValidationResult) 
 
 
 def _warn_career_gaps(profile: dict, result: ValidationResult) -> None:
-    """W3: 全 period が解析可能な場合に限り、6ヶ月以上の空白で career_gaps 未記載のものを検出する。"""
+    """W3: 全 period が解析可能な場合に限り、どの職歴にも覆われない6ヶ月以上の空白を検出する。"""
     career = profile.get("career_history")
     if not isinstance(career, list) or len(career) < 2:
         return
@@ -265,9 +265,20 @@ def _warn_career_gaps(profile: dict, result: ValidationResult) -> None:
             return  # 解析不能な period が1件でもあれば W3 は判定しない
         parsed.append((span[0], span[1], period))
 
+    # 在籍期間は重なりうる（兼務・出向・副業・自営）。隣どうしの差ではなく、
+    # 全期間の和集合で覆われない区間だけを空白と見なす。
     ordered = sorted(parsed, key=lambda item: item[0])
+    merged: list[list] = []
+    for start, end, period in ordered:
+        if merged and start <= merged[-1][1] + 1:
+            if end > merged[-1][1]:
+                merged[-1][1] = end
+                merged[-1][2] = period
+        else:
+            merged.append([start, end, period])
+
     gaps: list[tuple[int, int, str, str]] = []
-    for prev, nxt in zip(ordered, ordered[1:]):
+    for prev, nxt in zip(merged, merged[1:]):
         gap_months = nxt[0] - prev[1] - 1
         if gap_months >= 6:
             gaps.append((prev[1] + 1, nxt[0] - 1, prev[2], nxt[2]))
