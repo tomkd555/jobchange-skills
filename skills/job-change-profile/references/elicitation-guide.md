@@ -43,6 +43,19 @@ job-change-profile スキルの聞き取り設計の原本である。SKILL.md �
 
 **確信度を下げる証拠（限界）**: HBR による空白期間の研究については、効果量の値を本文から取得できておらず、空白が選考結果に与える影響の定量的な大きさは本スキルとして確定していない（エビデンスギャップ）。
 
+## 既存書類の取込と初回の軽量化
+
+聞き取りを短くする手立ては、聞く項目を減らすことと、手元の書類から取り込むことの2つである。対話という形式そのものは入力を速くしない（確度: 可能性が高い、65%以上80%未満）。
+
+- チャットボット形式の調査は、Web フォーム形式より所要時間が長い（26分44秒 対 17分30秒）。一方で回答の差別化が進み、手を抜いた回答（satisficing）が減る[E105]。対話形式は速さのためではなく、回答の質と、中断しても続きから再開できることのために用いる。
+- 応募フォームの完了率は所要時間に強く依存する。5分未満で 12.47%、15分以上で 3.61% である[E106]。初回に聞く項目の数が、そのまま完了率に効く。
+- レジュメからの自動抽出の精度は、在籍期間で F1 0.963、会社名・役職で F1 0.932、長文の業務記述で F1 0.838 である[E107]。骨格（企業名・在籍期間・役職）は書類から取り込んで確認だけで済み、人の目を要するのは長文の記述である。
+- 立ち入った情報は後ろへ置く。フォームの認知負荷を下げる原則として、機微でない情報から始め、職歴や希望年収のような項目は後段へ回すことが挙げられている[E108]。
+
+運用: 初回は職歴の骨格・現職の役割・転職理由・主要な条件・作業特性8件までで profile.json を成立させ、実績の定量化・スキルの棚卸し・企業スコアの採点軸・条件の網羅と優先順位付け・現年収の実額は、それを要する工程の直前へ倒す（`SKILL.md` の「ライト初回と深掘り」）。書類は最初に有無だけを1問で聞き、提出を求めない。あれば読んで骨格を聞き取りメモへ転記し（`.docx` の取り出し方は `SKILL.md` の Step 1 にある）、抽出結果を一覧で示して違うところだけを申告させる（全項目の是認は求めない。同意が既定の答えになる聞き方を避けるためである）。長文の記述には `（要確認）` を付ける。書類から読んだ事実も本人の申告と同格であり、物証として扱わない（前節「利用者の申告を裏取りしない」）。
+
+**確信度を下げる証拠（限界）**: 応募フォームの完了率も、レジュメ抽出の F1 も、母集団と課題が本スキルの聞き取りとは異なる。所要時間と完了率の関係も、書類からの抽出精度も、この聞き取りでの値は測っていない。
+
 ## 選択式を中心にした聞き取りの運用
 
 - 聞き取りは AskUserQuestion の選択式を中心に運用する。1回の AskUserQuestion につき最大4問、各質問は最大4択とする。自由記述は、企業名・在籍期間・実績値のように選択式にできない項目に限る。
@@ -59,6 +72,7 @@ job-change-profile スキルの聞き取り設計の原本である。SKILL.md �
 - 1件を1行の箇条書きにし、`- {項目}: {利用者の回答}` の形で書く。`{項目}` には `references/question-bank.md` の質問項目名か profile.json のフィールド名を使う。
 - 企業名・在籍期間・役職・実績の数値は、利用者の言葉のまま写す。単位と時点（いつの数値か）を落とさない。
 - 利用者が答えなかった項目は `- {項目}: 未回答` と書き、行ごと落とさない。本人が不確かだと述べた値には `（本人が不確かとした）` を付ける。
+- 既存書類から取り込んだ記述のうち、利用者の確認が済んでいないものには `（要確認）` を付け、確認が済んだ時点で外す。書類由来であることを理由に扱いを変えない。取り込んだ内容も本人の申告と同格であり、確認の済んだ記述は他の回答と同じに扱う。
 - 聞き取り側の解釈・要約・推測を書かない。メモに無い事実は profile.json に書けないため、書き加えれば創作の入口になる。
 
 ## 更新運用
@@ -84,5 +98,9 @@ profile.json は一度作って終わりにせず、鮮度を保つ（確度: �
 - [E100] JAC Recruitment. 面接での経歴の空白期間の好印象な答え方は？. 2024-06-12. レベルC. https://www.jac-recruitment.jp/market/knowhow/interview/interview-blank-period/
 - [E103] Forbes JAPAN. 2026年の採用市場で差がつく「職務経歴書」5つの更新ポイント. 2026-03-15. レベルC. https://forbesjapan.com/articles/detail/93818
 - [E104] Indeed / ResumeGenius 他. Guide To Updating Your Resume. 2024. レベルC. https://www.indeed.com/career-advice/resumes-cover-letters/guide-to-updating-your-resume
+- [E105] ACM CHI (Kim, Lee, Gweon). Comparing Data from Chatbot and Web Surveys: Effects of Platform and Conversational Style on Survey Response Quality. 2019-05. レベルA. DOI:10.1145/3290605.3300316. https://doi.org/10.1145/3290605.3300316
+- [E106] Appcast. Recruitment Marketing Benchmark Report. 2025. レベルB. https://info.appcast.io/whitepaper/2025-recruitment-marketing-benchmark-report
+- [E107] arXiv (Zhu ほか). Layout-Aware Parsing Meets Efficient LLMs: A Unified, Scalable Framework for Resume Information Extraction and Evaluation. 2025-10. レベルB. arXiv:2510.09722. https://arxiv.org/abs/2510.09722
+- [E108] Nielsen Norman Group. Four Principles to Reduce Cognitive Load in Forms. レベルB. https://www.nngroup.com/articles/4-principles-reduce-cognitive-load/
 
 <!-- textlint-enable -->

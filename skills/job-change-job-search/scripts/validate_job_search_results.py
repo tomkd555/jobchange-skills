@@ -13,6 +13,7 @@ CLI:
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import re
 import sys
@@ -33,7 +34,43 @@ _SEARCH_ID_RE = re.compile(r"^[0-9]{8}-[0-9a-z][0-9a-z-]*$")
 
 _V1_SCHEMA_VERSION = "1.0"
 _V2_SCHEMA_VERSION = "2.0"
-_KNOWN_SCHEMA_VERSIONS = (_V1_SCHEMA_VERSION, _V2_SCHEMA_VERSION)
+_V21_SCHEMA_VERSION = "2.1"
+_KNOWN_SCHEMA_VERSIONS = (_V1_SCHEMA_VERSION, _V2_SCHEMA_VERSION, _V21_SCHEMA_VERSION)
+# 観測層・判定層・総括を持つバージョン。
+_SCREENING_SCHEMA_VERSIONS = (_V2_SCHEMA_VERSION, _V21_SCHEMA_VERSION)
+
+# 取得日時。YYYY-MM-DD、または ISO 8601（日付に時刻が続く形）を受ける。
+_FETCHED_AT_RE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}([T ][0-9:.+\-Z]+)?$")
+
+# similar_better の軸別比較。4軸は screening-axes.md の語彙をそのまま用い、
+# employment_type・scope_of_change は基準比較専用の追加軸である。原本は references/job-search-format.md にある。
+BASELINE_COMPARISON_AXES = (
+    "salary_condition",
+    "remote_certainty",
+    "annual_holidays",
+    "overtime_hours",
+    "employment_type",
+    "scope_of_change",
+)
+# 尺度上の関係。良し悪しではなく、事実としてどちら側かだけを表す。
+RELATIONS = ("higher", "lower", "same", "unknown")
+# 雇用形態は順序を持たないため、同一か否かの3値を用いる。
+_EMPLOYMENT_TYPE_RELATIONS = ("same", "different", "unknown")
+# 改善軸に選ばれたときの (改善方向, 逆方向)。良し悪しはここで初めて現れる（判定層）。
+# employment_type は尺度上の方向を持たないため改善軸に取れない。雇用形態の希望は conditions で扱う。
+_IMPROVEMENT_DIRECTION = {
+    "salary_condition": ("higher", "lower"),
+    "annual_holidays": ("higher", "lower"),
+    "overtime_hours": ("lower", "higher"),
+    "remote_certainty": ("higher", "lower"),
+    "scope_of_change": ("lower", "higher"),
+}
+IMPROVEMENT_AXES = tuple(_IMPROVEMENT_DIRECTION)
+BASELINE_OVERALLS = ("better", "not_better")
+
+
+def _axis_relations(axis: str) -> tuple[str, ...]:
+    return _EMPLOYMENT_TYPE_RELATIONS if axis == "employment_type" else RELATIONS
 
 # 語彙の原本は job-change-support の references/screening-axes.md にある。
 SCREENING_AXES = (
@@ -158,7 +195,242 @@ def _validate_baseline(document: dict, mode: str | None, result: ValidationResul
         )
 
 
-def _validate_result_item(item: Any, index: int, mode: str | None, result: ValidationResult) -> None:
+def _is_valid_fetched_at(value: Any) -> bool:
+    """YYYY-MM-DD 形式の実在日付、または日付で始まる ISO 8601 であれば True を返す。"""
+    if not isinstance(value, str) or not _FETCHED_AT_RE.match(value):
+        return False
+    try:
+        datetime.date.fromisoformat(value[:10])
+    except ValueError:
+        return False
+    return True
+
+
+def _validate_search_log(document: dict, version: Any, result: ValidationResult) -> None:
+    """検索の実行ログを検査する。2.1 では必須である。"""
+    log = document.get("search_log")
+    required = version == _V21_SCHEMA_VERSION
+    if log is None:
+        if required:
+            result.add_error(
+                "search_log",
+                "search_log は必須である。実行したクエリと取得元を記録しないまま網羅性を主張できない",
+            )
+        return
+    if not isinstance(log, list):
+        result.add_error("search_log", "search_log は配列でなければならない")
+        return
+    if not log and required:
+        result.add_error("search_log", "search_log が空である。実行したクエリを1件以上記録する")
+
+    for i, entry in enumerate(log):
+        path = f"search_log[{i}]"
+        if not isinstance(entry, dict):
+            result.add_error(path, "search_log の各要素はオブジェクトでなければならない")
+            continue
+        for key in ("query", "source"):
+            if not _is_nonempty_str(entry.get(key)):
+                result.add_error(f"{path}.{key}", f"{key} は必須（非空）である")
+        for key in ("url", "fetched_at", "hit_count", "adopted_count"):
+            if key not in entry:
+                result.add_error(
+                    f"{path}.{key}",
+                    f"{key} は必須である。取得できなかった場合は null を書く",
+                )
+        url = entry.get("url")
+        if url is not None and not (isinstance(url, str) and url.startswith("http")):
+            result.add_error(
+                f"{path}.url",
+                f"url は http で始まる文字列または null でなければならない（実値: {url!r}）",
+            )
+        fetched_at = entry.get("fetched_at")
+        if fetched_at is not None and not _is_valid_fetched_at(fetched_at):
+            result.add_error(
+                f"{path}.fetched_at",
+                f"fetched_at は YYYY-MM-DD 形式の実在日付・ISO 8601・null のいずれかである"
+                f"（実値: {fetched_at!r}）",
+            )
+        for key in ("hit_count", "adopted_count"):
+            count = entry.get(key)
+            if count is None:
+                continue
+            if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+                result.add_error(
+                    f"{path}.{key}",
+                    f"{key} は0以上の整数または null でなければならない（実値: {count!r}）",
+                )
+
+
+def derive_baseline_overall(axes: list[dict], improvement_axes: list[str]) -> str:
+    """改善軸と軸別の関係から総合判定を導く。判定表は job-search-format.md にある。
+
+    利用者が選んだ改善軸だけを見る。選ばれなかった軸は表示用の記録であり、総合判定に効かせない。
+    """
+    relations = {axis.get("axis"): axis.get("relation") for axis in axes}
+    improved = False
+    for axis in improvement_axes:
+        direction = _IMPROVEMENT_DIRECTION.get(axis)
+        if direction is None:
+            continue
+        relation = relations.get(axis)
+        if relation == direction[1]:
+            return "not_better"
+        if relation == direction[0]:
+            improved = True
+    return "better" if improved else "not_better"
+
+
+def _validate_improvement_axes(
+    document: dict, mode: str | None, version: Any, result: ValidationResult
+) -> list[str]:
+    """トップレベルの improvement_axes を検査し、有効な軸 id の一覧を返す。"""
+    axes = document.get("improvement_axes")
+    if axes is None:
+        if mode == "similar_better" and version == _V21_SCHEMA_VERSION:
+            result.add_warning(
+                "improvement_axes",
+                "similar_better では利用者が選んだ改善軸（improvement_axes）の記録を推奨する",
+            )
+        return []
+    if not isinstance(axes, list):
+        result.add_error("improvement_axes", "improvement_axes は配列でなければならない")
+        return []
+    if mode == "fuzzy" and axes:
+        result.add_warning("improvement_axes", "fuzzy では improvement_axes は用いない（similar_better 専用）")
+    if not axes and mode == "similar_better" and version == _V21_SCHEMA_VERSION:
+        result.add_warning("improvement_axes", "improvement_axes が空である。狙う改善軸を1つ以上記録する")
+
+    valid: list[str] = []
+    for i, axis in enumerate(axes):
+        if axis == "employment_type":
+            result.add_error(
+                f"improvement_axes[{i}]",
+                "employment_type は尺度上の方向を持たないため改善軸に取れない。"
+                "雇用形態の希望は conditions の必須条件として扱う",
+            )
+            continue
+        if axis not in IMPROVEMENT_AXES:
+            result.add_error(
+                f"improvement_axes[{i}]",
+                f"改善軸は {'/'.join(IMPROVEMENT_AXES)} のいずれかである（実値: {axis!r}）",
+            )
+            continue
+        if axis in valid:
+            result.add_error(f"improvement_axes[{i}]", f"改善軸が重複している: {axis}")
+            continue
+        valid.append(axis)
+    return valid
+
+
+def _validate_baseline_comparison(
+    item: dict,
+    path: str,
+    mode: str | None,
+    version: Any,
+    improvement_axes: list[str],
+    result: ValidationResult,
+) -> None:
+    comparison = item.get("baseline_comparison")
+    bc_path = f"{path}.baseline_comparison"
+    if comparison is None:
+        if mode == "similar_better" and version == _V21_SCHEMA_VERSION:
+            result.add_warning(
+                bc_path,
+                "similar_better では基準求人との軸別比較（baseline_comparison）の記載を推奨する",
+            )
+        return
+    if not isinstance(comparison, dict):
+        result.add_error(bc_path, "baseline_comparison はオブジェクトでなければならない")
+        return
+    if mode == "fuzzy":
+        result.add_warning(bc_path, "fuzzy では baseline_comparison は用いない（similar_better 専用）")
+
+    axes = comparison.get("axes")
+    if not isinstance(axes, list):
+        result.add_error(f"{bc_path}.axes", "axes は配列が必須である")
+        return
+
+    seen: list[str] = []
+    valid: list[dict] = []
+    for j, entry in enumerate(axes):
+        e_path = f"{bc_path}.axes[{j}]"
+        if not isinstance(entry, dict):
+            result.add_error(e_path, "axes の各要素はオブジェクトでなければならない")
+            continue
+        axis = entry.get("axis")
+        if axis not in BASELINE_COMPARISON_AXES:
+            result.add_error(
+                f"{e_path}.axis",
+                f"axis は {'/'.join(BASELINE_COMPARISON_AXES)} のいずれかである",
+            )
+            continue
+        seen.append(axis)
+        relation = entry.get("relation")
+        allowed = _axis_relations(axis)
+        if relation not in allowed:
+            result.add_error(
+                f"{e_path}.relation",
+                f"{axis} の relation は {'/'.join(allowed)} のいずれかである（実値: {relation!r}）",
+            )
+            continue
+        valid.append(entry)
+        if relation == "unknown":
+            continue
+        # 記載が無い軸は unknown にする。同等（same）も含め、比べたと言う以上は両側の値と引用が要る。
+        for key in ("baseline_value", "candidate_value"):
+            if not _is_nonempty_str(entry.get(key)):
+                result.add_error(
+                    f"{e_path}.{key}",
+                    f"relation が {relation} の軸には {key} が必須である。"
+                    "求人票に記載が無い軸は unknown とする（記載の無さを same と扱ってはならない）",
+                )
+        if not _is_nonempty_str(entry.get("quote")):
+            result.add_error(
+                f"{e_path}.quote",
+                f"relation が {relation} の軸には掲載ページからの引用（quote）が必須である",
+            )
+
+    missing = [a for a in BASELINE_COMPARISON_AXES if a not in seen]
+    duplicated = sorted({a for a in seen if seen.count(a) > 1})
+    if missing:
+        result.add_error(f"{bc_path}.axes", f"6軸を過不足なく持つ必要がある。欠落: {', '.join(missing)}")
+    if duplicated:
+        result.add_error(f"{bc_path}.axes", f"axis が重複している: {', '.join(duplicated)}")
+
+    overall = comparison.get("overall")
+    if overall not in BASELINE_OVERALLS:
+        result.add_error(
+            f"{bc_path}.overall",
+            f"overall は {'/'.join(BASELINE_OVERALLS)} のいずれかである",
+        )
+        return
+    if not improvement_axes:
+        if mode == "similar_better":
+            result.add_error(
+                f"{bc_path}.overall",
+                "改善軸（improvement_axes）が無いまま総合判定を書いてはならない。"
+                "どの軸で上回りたいかが決まらなければ、より良いかどうかは導けない",
+            )
+        return  # fuzzy では baseline_comparison 自体が場違いであり、既に WARN で示している。
+    if len(valid) != len(BASELINE_COMPARISON_AXES):
+        return  # 軸側が壊れている場合、導出結果との照合は行わない。
+    derived = derive_baseline_overall(valid, improvement_axes)
+    if overall != derived:
+        result.add_error(
+            f"{bc_path}.overall",
+            f"改善軸（{'/'.join(improvement_axes)}）から導かれる総合判定は {derived} である"
+            "（改善軸の1つ以上が改善方向で、かつ改善軸に逆方向が1つも無いときだけ better）",
+        )
+
+
+def _validate_result_item(
+    item: Any,
+    index: int,
+    mode: str | None,
+    version: Any,
+    improvement_axes: list[str],
+    result: ValidationResult,
+) -> None:
     path = f"results[{index}]"
     if not isinstance(item, dict):
         result.add_error(path, "results の各要素はオブジェクトでなければならない")
@@ -211,6 +483,8 @@ def _validate_result_item(item: Any, index: int, mode: str | None, result: Valid
             f"{path}.better_points",
             "similar_better では基準求人より改善している点（better_points）の記載を推奨する",
         )
+
+    _validate_baseline_comparison(item, path, mode, version, improvement_axes, result)
 
 
 def _duty_ratios(duty_items: Any) -> tuple[float, float] | None:
@@ -758,6 +1032,8 @@ def validate(
     _validate_conditions(document, result)
     _validate_baseline(document, valid_mode, result)
 
+    improvement_axes = _validate_improvement_axes(document, valid_mode, version, result)
+
     results = document.get("results")
     if not isinstance(results, list):
         result.add_error("results", "results は配列でなければならない")
@@ -768,9 +1044,11 @@ def validate(
         )
     else:
         for i, item in enumerate(results):
-            _validate_result_item(item, i, valid_mode, result)
+            _validate_result_item(item, i, valid_mode, version, improvement_axes, result)
 
-    if version == _V2_SCHEMA_VERSION:
+    _validate_search_log(document, version, result)
+
+    if version in _SCREENING_SCHEMA_VERSIONS:
         if isinstance(results, list):
             for i, item in enumerate(results):
                 _validate_v2_result_item(item, i, result)

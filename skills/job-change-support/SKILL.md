@@ -130,6 +130,8 @@ python {SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/profil
 
 ERROR が出ている場合、整備を先行させるか条件付きで先へ進めるかは、振り分け先によって変わる。判断の原本は「ゲート」にある。WARN のみは PASS 扱いだが、内容を利用者に伝え、`job-change-profile` での補充を促してよい。
 
+`job-change-profile` の初回作成はライト初回（職歴の骨格・現職の役割・転職理由・主要な条件・作業特性8件）を既定とするため、実績・スキル・採点軸が空のままの profile.json も有効である。この構成で出る WARN を欠落として扱わず、hub の側から深掘りを促さない。深掘りが要る時点で、それを要する下流のサブスキルが案内する（対応の原本は `job-change-profile` の「ライト初回と深掘り」）。
+
 ### スキーマのバージョンとフォールバック
 
 `profile.json` の `schema_version` が `1.0` または `1.1` の場合、検証は PASS するが、8軸スクリーニングと作業特性の評価が働かない。求人検索・適合性評価へ振り分ける前に、次を1回だけ伝える。
@@ -263,3 +265,4 @@ python {SKILL_DIR}/scripts/check_freshness.py {DATA_ROOT}/companies/{企業ス�
 | `references/freshness-policy.md` | `_manifest.json` の仕様・トピック別 TTL 対応表・fresh/stale/missing の判定規則 | 鮮度ゲートで `check_freshness.py` を使う全段階、`_manifest.json` を読み書きするとき |
 | `references/pii-boundary.md` | 個人情報として扱う項目の列挙・例外・役割ごとの可否・機械検出できる3項目 | 材料をエージェントへ渡す前、役割の `tools` を変えるとき |
 | `references/role-execution.md` | ハーネス別の役割の実行手順・起動する数の判断・作成と監査を分ける理由 | サブスキルがエージェントを起動するとき、起動できないハーネスで読み替えるとき |
+| `references/market-data-sources.md` | 転職市場の需給・賃金・転職者動向の公開データの一覧と使い分け | 求人倍率・年収の相場・転職者の動向を根拠に語るとき |

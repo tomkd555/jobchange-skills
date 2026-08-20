@@ -19,28 +19,32 @@ job-change-profile スキルの Step 1〜4 で使う、有限の構造化され�
 
 ## 質問とフィールドの対応表
 
-| Step | 問い | 埋まるフィールド | 形式 |
-|---|---|---|---|
-| 1 | 在籍した企業と在籍期間を、古い順（または新しい順）に挙げる | `career_history[].company`, `career_history[].period` | 自由記述（企業名・期間） |
-| 1 | 各社での役割・役職 | `career_history[].role` | 自由記述 |
-| 1 | 同じ時期に2つ以上の職に在籍していた期間の有無と、その内訳 | 並行する `career_history[]` の要素 | 選択式＋自由記述 |
-| 1 | 検出された空白期間（6か月以上）の理由と期間中の活動 | `career_gaps[].period`, `career_gaps[].explanation`, `career_gaps[].activities` | 選択式（活動種別）＋自由記述 |
-| 2 | 各職での担当業務 | `career_history[].responsibilities` | 自由記述 |
-| 2 | 主要プロジェクトと、そこでの実績（何を・どの規模で・どう変えたか） | `career_history[].achievements[].description` | 自由記述 |
-| 2 | （並行して回した案件がある場合）その実績はどの案件のものか | `career_history[].achievements[].project` | 自由記述 |
-| 2 | （同上）その案件はいつからいつまでか | `career_history[].achievements[].period` | 自由記述（期間） |
-| 2 | その実績を数値で表せるか（前年度比・件数・規模など） | `career_history[].achievements[].metric` | 自由記述（数値。表せなければ null） |
-| 3 | 職歴から逆引きした保有スキル（言語・フレームワーク・クラウド／業務／語学／資格） | `skills.technical`, `skills.business`, `skills.languages`, `skills.certifications` | 選択式（Step 2 の発話から作った候補）＋自由記述 |
-| 3 | ポータブルスキル9要素のうち発揮した経験があるもの | `skills.portable[].skill`, `skills.portable[].category` | 選択式 |
-| 4 | 転職で次に実現したいこと（転職理由） | `job_change_axis.reasons` | 選択式＋自由記述 |
-| 4 | 譲れない条件・望ましい条件と、その軸・しきい値・確認手段 | `job_change_axis.conditions[]` | 選択式＋自由記述 |
-| 4 | 8つの作業特性それぞれの希望度 | `job_change_axis.work_character_preferences[]` | 選択式 |
-| 4 | 企業スコアの定量候補軸9個のうち重視するものと、数値にならない事柄で重視するもの（定性軸の呼び名・定義・判定条件） | `company_score_axes[].axis`, `company_score_axes[].kind`, `company_score_axes[].label`, `company_score_axes[].definition`, `company_score_axes[].judgment[]` | 選択式＋自由記述 |
-| 4 | 選んだ軸への重みの配分（合計100）と、定量軸で使う基準（1回の AskUserQuestion でまとめて聞く） | `company_score_axes[].weight`, `company_score_axes[].thresholds` | 選択式（配分案・基準の別）＋自由記述（数値）＋選択式（2社比較で検算） |
-| 4 | 必須条件の優先順位・再評価時期 | `job_change_axis.priority_note` | 選択式＋自由記述 |
-| 4 | 志望する業界・職種・企業 | `targets.industries`, `targets.roles`, `targets.companies` | 選択式＋自由記述 |
-| 4 | 現年収・希望年収 | `salary.current`, `salary.desired` | 自由記述（数値） |
-| 0/1 | 基本情報（現職の役割・経験年数・居住地・学歴） | `basic.current_role`, `basic.years_of_experience`, `basic.location`, `basic.education` | 選択式＋自由記述 |
+「初回」の列は、ライト初回（`SKILL.md` の「ライト初回と深掘り」）で聞く問いに `初回`、そこでは飛ばして下流の工程の直前にセクション更新で聞く問いに `深掘り` と記す。
+
+| Step | 問い | 埋まるフィールド | 形式 | 初回 |
+|---|---|---|---|---|
+| 1 | 職務経歴書・履歴書・レジュメのファイルが手元にあるか | （読めた内容を聞き取りメモへ転記する） | 選択式 | 初回 |
+| 1 | 書類から抽出した企業名・在籍期間・役職・担当業務のうち、違うところ | `career_history[]` の各フィールドの訂正 | 自由記述（訂正のあった項目だけ） | 初回 |
+| 1 | 在籍した企業と在籍期間を、古い順（または新しい順）に挙げる | `career_history[].company`, `career_history[].period` | 自由記述（企業名・期間） | 初回 |
+| 1 | 各社での役割・役職 | `career_history[].role` | 自由記述 | 初回 |
+| 1 | 同じ時期に2つ以上の職に在籍していた期間の有無と、その内訳 | 並行する `career_history[]` の要素 | 選択式＋自由記述 | 初回 |
+| 1 | 検出された空白期間（6か月以上）の理由と期間中の活動 | `career_gaps[].period`, `career_gaps[].explanation`, `career_gaps[].activities` | 選択式（活動種別）＋自由記述 | 初回 |
+| 2 | 各職での担当業務 | `career_history[].responsibilities` | 自由記述 | 深掘り |
+| 2 | 主要プロジェクトと、そこでの実績（何を・どの規模で・どう変えたか） | `career_history[].achievements[].description` | 自由記述 | 深掘り |
+| 2 | （並行して回した案件がある場合）その実績はどの案件のものか | `career_history[].achievements[].project` | 自由記述 | 深掘り |
+| 2 | （同上）その案件はいつからいつまでか | `career_history[].achievements[].period` | 自由記述（期間） | 深掘り |
+| 2 | その実績を数値で表せるか（前年度比・件数・規模など） | `career_history[].achievements[].metric` | 自由記述（数値。表せなければ null） | 深掘り |
+| 3 | 職歴から逆引きした保有スキル（言語・フレームワーク・クラウド／業務／語学／資格） | `skills.technical`, `skills.business`, `skills.languages`, `skills.certifications` | 選択式（Step 2 の発話から作った候補）＋自由記述 | 深掘り |
+| 3 | ポータブルスキル9要素のうち発揮した経験があるもの | `skills.portable[].skill`, `skills.portable[].category` | 選択式 | 深掘り |
+| 4 | 転職で次に実現したいこと（転職理由） | `job_change_axis.reasons` | 選択式＋自由記述 | 初回 |
+| 4 | 譲れない条件・望ましい条件と、その軸・しきい値・確認手段 | `job_change_axis.conditions[]` | 選択式＋自由記述 | 初回は主要な条件だけ。網羅は深掘り |
+| 4 | 8つの作業特性それぞれの希望度 | `job_change_axis.work_character_preferences[]` | 選択式 | 初回 |
+| 4 | 企業スコアの定量候補軸9個のうち重視するものと、数値にならない事柄で重視するもの（定性軸の呼び名・定義・判定条件） | `company_score_axes[].axis`, `company_score_axes[].kind`, `company_score_axes[].label`, `company_score_axes[].definition`, `company_score_axes[].judgment[]` | 選択式＋自由記述 | 深掘り |
+| 4 | 選んだ軸への重みの配分（合計100）と、定量軸で使う基準（1回の AskUserQuestion でまとめて聞く） | `company_score_axes[].weight`, `company_score_axes[].thresholds` | 選択式（配分案・基準の別）＋自由記述（数値）＋選択式（2社比較で検算） | 深掘り |
+| 4 | 必須条件の優先順位・再評価時期 | `job_change_axis.priority_note` | 選択式＋自由記述 | 深掘り |
+| 4 | 志望する業界・職種・企業 | `targets.industries`, `targets.roles`, `targets.companies` | 選択式＋自由記述 | 深掘り |
+| 4 | 現年収・希望年収 | `salary.current`, `salary.desired` | 自由記述（数値） | 深掘り |
+| 0/1 | 基本情報（現職の役割・経験年数・居住地・学歴） | `basic.current_role`, `basic.years_of_experience`, `basic.location`, `basic.education` | 選択式＋自由記述 | 初回は現職の役割だけ。他は深掘り |
 
 `career_history[].role` と `career_history[].responsibilities` を自由記述とするのは、どちらもその職について何も分かっていない時点で聞くためである。候補を先に作れば、聞き取り側が想像した役職名・業務名を提示することになる。`skills.technical` などは Step 2 の発話から候補を作れるため選択式でよい。
 
@@ -70,7 +74,30 @@ job-change-profile スキルの Step 1〜4 で使う、有限の構造化され�
 
 ## Step 1: 職歴の骨格（時系列）
 
-古い順または新しい順に、企業・在籍期間・役割の一覧をまず確定する。個々の実績に入る前に、時系列の枠を先に固める。
+聞き取りの前に既存書類の有無を1問で聞き、あれば読んで骨格を取り込む。無ければ対話で聞く。書類の提出を求めない（`elicitation-guide.md` の「既存書類の取込と初回の軽量化」）。そのうえで、古い順または新しい順に、企業・在籍期間・役割の一覧を確定する。個々の実績に入る前に、時系列の枠を先に固める。
+
+### 確定した文言 — 既存書類の有無
+
+| 項目 | 文言 |
+|---|---|
+| `header` | 手元の書類 |
+| `question` | 職務経歴書・履歴書・レジュメのファイルはお手元にありますか。あれば読み込んで、伺う項目を減らせます。 |
+| 選択肢1 | **ファイルがあります** — 続けて置き場所をお知らせください。Word・PDF・テキスト・Markdown のいずれでも読めます。 |
+| 選択肢2 | **対話で答えます** — ファイルは使わず、伺いながら進めます。 |
+
+「対話で答えます」を選んだ場合、書類について重ねて聞かない。用意を勧めることもしない。
+
+### 確定した文言 — 抽出結果の確認
+
+読み込んだ書類から抜き出した企業名・在籍期間・役職・担当業務を一覧で示し、次の文で確認する。選択肢を作れないため AskUserQuestion は使わず、一覧に添える文として書く。
+
+| 項目 | 文言 |
+|---|---|
+| 前置き | 読み込んだ書類から、次のように読み取りました。**違うところだけ**お知らせください。合っている項目についてのお返事は要りません。 |
+| 長文への注記 | 担当業務の記述は読み違いが起きやすいため、`（要確認）` を付けています。ここだけは目を通していただけますか。 |
+| 読み取れなかった項目 | 書類から読み取れなかった項目は `未取得` と書いています。後ほど伺います。 |
+
+全項目の是認を求めない。「この内容で合っていますか」と聞かない（同意が既定の答えになるため）。訂正のあった項目だけを、聞き取りメモへ `訂正:` の行で足す。
 
 呼び水の問い:
 
