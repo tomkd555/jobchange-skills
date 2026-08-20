@@ -113,9 +113,9 @@ topic は `philosophy`・`business`・`financials`・`compensation`・`benefits`
 
 **求人情報URLの場合（job-change-posting-parser, sonnet）。** 求人票取込担当エージェントを Agent ツールで起動し、求人URLと `{SKILL_DIR}`（`references/job-posting-format.md` の所在）を渡す。エージェントは WebFetch でページを取得し、`{company_name, aliases, job_posting}` の JSON を返す（ファイルは書かない）。**利用者の個人情報（原則5の列挙）は渡さない**（posting-parser は WebFetch を持つ）。返却された `company_name`・`aliases` を使い、Step 0 と同じ手順でスラッグを解決する（一致が無いときのみ一度だけ導出して登録する）。
 
-**求人票の本文・ファイルの場合。** 本スキルが仕様に従って `job_posting` オブジェクトを組み立てる。本文は利用者が貼り付けたものをそのまま読み、ファイルは Read で読む。`source_type` を `text` または `file` とし、`source_url` は null にする。企業名とスラッグは Step 0 で確認・解決したものを使う。
+**求人票の本文・ファイルの場合。** 本スキルが仕様に従って `job_posting` オブジェクトを組み立てる。本文は利用者が貼り付けたものをそのまま読み、ファイルは Read で読む。`source_type` を `text` または `file` とし、`source_url` は null にする。企業名とスラッグは Step 0 で確認・解決したものを使う。業務・就業場所の変更の範囲と有期契約の更新上限は `scope_of_change` へ埋める（記入基準は `references/job-posting-format.md` の同名の節にある）。
 
-**企業名しか無い場合。** 応募職種（`title`）を対話で確認し、給与・勤務地・雇用形態・要件のうち利用者が答えられる項目だけを埋める。`source_type` を `dialogue`、`source_url` を null にする。答えられなかった項目を推定で補わず、`open_questions` に「何が未確認か」を書く。求人票の記載が少ないことは差し戻しの理由にならない。未確認の項目は、この後の企業研究と面接での確認事項へ回す。
+**企業名しか無い場合。** 応募職種（`title`）を対話で確認し、給与・勤務地・雇用形態・要件のうち利用者が答えられる項目だけを埋める。`source_type` を `dialogue`、`source_url` を null にする。業務・就業場所の変更の範囲と有期契約の更新上限も、利用者が求人票を見て答えられる範囲で `scope_of_change` へ埋める（記入基準は `references/job-posting-format.md` の同名の節にある）。答えられなかった項目を推定で補わず、`open_questions` に「何が未確認か」を書く。求人票の記載が少ないことは差し戻しの理由にならない。未確認の項目は、この後の企業研究と面接での確認事項へ回す。
 
 **共通の後処理。**
 

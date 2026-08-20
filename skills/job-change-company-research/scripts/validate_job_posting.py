@@ -2,10 +2,10 @@
 
 標準ライブラリのみで、求人情報の取込成果物 job_posting.json を機械的に検査する。
 取り込んだ求人票が、必須項目（schema_version・source_type・fetched_at・
-company_name・title）を備え、metrics（年間休日・月平均残業・有給取得率・付与日数）を
-仕様どおりの型で持つかを、ERROR（成果物として成立しない欠落・型違反）と WARN
-（成立するが情報が不足する点）に分けて報告する。仕様の原本は
-references/job-posting-format.md である。
+company_name・title）を備え、metrics（年間休日・月平均残業・有給取得率・付与日数）と
+scope_of_change（2024年4月から明示が義務づけられた3項目）を仕様どおりの型で持つかを、
+ERROR（成果物として成立しない欠落・型違反）と WARN（成立するが情報が不足する点）に
+分けて報告する。仕様の原本は references/job-posting-format.md である。
 
 CLI:
     python validate_job_posting.py <job_posting.json> [--json]
@@ -23,7 +23,10 @@ from dataclasses import dataclass, field
 from typing import Any
 
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-_KNOWN_SCHEMA_VERSIONS = ("1.0",)
+_KNOWN_SCHEMA_VERSIONS = ("1.0", "1.1")
+# scope_of_change が無いのは 1.0 だけである。1.0 を除外する形で書き、後続バージョンを
+# 加えたときに検査が黙って外れないようにする。
+_SCOPE_EXEMPT_SCHEMA_VERSIONS = ("1.0",)
 # 取込の入口。url 以外の入口では source_url を必須にしないため、URL の検査は url のときだけ行う。
 SOURCE_TYPES = ("url", "text", "file", "dialogue")
 # metrics の4キー。各値は {value(number), quote(非空str)} または null。
@@ -33,6 +36,8 @@ METRIC_KEYS = (
     "paid_leave_rate",
     "paid_leave_days_granted",
 )
+# scope_of_change の3キー。2024年4月から求人票への明示が義務づけられた項目に対応する。
+SCOPE_KEYS = ("duties", "work_location", "contract_renewal_cap")
 
 
 @dataclass
@@ -154,6 +159,66 @@ def _validate_metrics(document: dict, result: ValidationResult) -> None:
             result.add_error(f"{path}.quote", "quote は必須（非空。求人票からの引用）である")
 
 
+def _validate_scope_of_change(document: dict, result: ValidationResult) -> None:
+    """scope_of_change を検査する。
+
+    - schema_version が 1.0 の場合は検査しない（1.0 にはこのフィールドが無い）。それ以外の
+      バージョンでは検査する。
+    - 各値は {stated(bool), unlimited(bool), quote(str)} または null。null は求人票に記載が
+      無かったことを表す。
+    - stated が真のときは quote を非空とする（記載があるなら引用を写せるため）。
+    - 3項目とも null（またはフィールド自体が無い）場合は WARN。2024年4月以降の求人票には
+      明示義務があり、3項目すべてが未取得であることは取込の不足を疑わせる。
+    """
+    if document.get("schema_version") in _SCOPE_EXEMPT_SCHEMA_VERSIONS:
+        return
+
+    scope = document.get("scope_of_change")
+    if scope is None:
+        result.add_warning(
+            "scope_of_change",
+            "業務・就業場所の変更の範囲と有期契約の更新上限が1件も記録されていない"
+            "（2024年4月以降の求人票では明示義務がある）",
+        )
+        return
+    if not isinstance(scope, dict):
+        result.add_error("scope_of_change", "scope_of_change はオブジェクトでなければならない")
+        return
+
+    filled = 0
+    for key in SCOPE_KEYS:
+        entry = scope.get(key)
+        if entry is None:
+            continue
+        filled += 1
+        path = f"scope_of_change.{key}"
+        if not isinstance(entry, dict):
+            result.add_error(
+                path, "{stated, unlimited, quote} のオブジェクトまたは null でなければならない"
+            )
+            continue
+        stated = entry.get("stated")
+        if not isinstance(stated, bool):
+            result.add_error(f"{path}.stated", "stated は真偽値でなければならない")
+        if not isinstance(entry.get("unlimited"), bool):
+            result.add_error(f"{path}.unlimited", "unlimited は真偽値でなければならない")
+        quote = entry.get("quote")
+        if stated is True:
+            if not _is_nonempty_str(quote):
+                result.add_error(
+                    f"{path}.quote", "stated が真のとき quote は必須（非空。求人票からの引用）である"
+                )
+        elif quote is not None and not isinstance(quote, str):
+            result.add_error(f"{path}.quote", "quote は文字列でなければならない")
+
+    if filled == 0:
+        result.add_warning(
+            "scope_of_change",
+            "業務・就業場所の変更の範囲と有期契約の更新上限が1件も記録されていない"
+            "（2024年4月以降の求人票では明示義務がある）",
+        )
+
+
 def _validate_optional_shapes(document: dict, result: ValidationResult) -> None:
     """任意の構造化フィールドが存在する場合の明白な型違反を ERROR にする。"""
     for key in ("location", "salary", "working_hours", "requirements"):
@@ -183,6 +248,7 @@ def validate(document: Any) -> ValidationResult:
 
     _validate_required(document, result)
     _validate_metrics(document, result)
+    _validate_scope_of_change(document, result)
     _validate_optional_shapes(document, result)
 
     return result

@@ -36,18 +36,39 @@ URLが指定されていない場合のみ、推測で補わず `{"error": "求�
 
 ## 判断の原本
 
-`job_posting.json` の形式は、原本 `{SKILL_DIR}/references/job-posting-format.md` が定める。あなたはファイルを読めないため、以下に転記した内容を根拠として用いる。必須フィールドは `schema_version`（"1.0"）・`source_type`・`fetched_at`（取得日 YYYY-MM-DD）・`company_name`・`title`。`source_type` はあなたが担う入口を表し、常に `"url"` である。URL 以外の入口（本文の貼り付け・ファイル・対話）は呼出元スキルが担うため、あなたが他の値を入れることはない。`source_url` は `source_type` が `url` のときに必須であり、取得したページの URL を入れる。任意フィールドは `employment_type`・`location`・`salary`・`working_hours`・`metrics`・`requirements`・`benefits`・`selection_process`・`open_questions` とする。
+`job_posting.json` の形式は、原本 `{SKILL_DIR}/references/job-posting-format.md` が定める。あなたはファイルを読めないため、以下に転記した内容を根拠として用いる。必須フィールドは `schema_version`（"1.1"）・`source_type`・`fetched_at`（取得日 YYYY-MM-DD）・`company_name`・`title`。`source_type` はあなたが担う入口を表し、常に `"url"` である。URL 以外の入口（本文の貼り付け・ファイル・対話）は呼出元スキルが担うため、あなたが他の値を入れることはない。`source_url` は `source_type` が `url` のときに必須であり、取得したページの URL を入れる。任意フィールドは `employment_type`・`location`・`salary`・`working_hours`・`metrics`・`scope_of_change`・`requirements`・`benefits`・`selection_process`・`open_questions` とする。
 
 `metrics`（`annual_holidays`・`monthly_overtime_h`・`paid_leave_rate`・`paid_leave_days_granted`）は、求人票に明記がある場合のみ `value` と引用 `quote` を入れ、無ければ `null` にする。数値の引用は求人ページの記載をそのまま写す。
 
+## scope_of_change（2024年4月から明示が義務づけられた3項目）
+
+2024年4月1日施行の職業安定法施行規則の改正により、求人には次の3項目の明示が義務づけられている（厚生労働省 https://www.mhlw.go.jp/stf/newpage_32105.html ）。転勤・職種転換・雇止めのリスクを見積もる材料になるため、必ず抽出対象とする。
+
+| キー | 対応する項目 |
+|---|---|
+| `duties` | 従事すべき業務の変更の範囲 |
+| `work_location` | 就業場所の変更の範囲 |
+| `contract_renewal_cap` | 有期労働契約を更新する場合の更新上限（通算契約期間または更新回数の上限） |
+
+各値は `{stated, unlimited, quote}` のオブジェクト、または `null` である。
+
+- `stated`（真偽値）— 求人票にその項目の記載があれば真、記載が無ければ偽。
+- `unlimited`（真偽値）— 記載された範囲を企業の裁量で後から広げられる書き方であれば真。「会社の定める業務」「会社の定める場所」「会社の指示する業務全般」「当社の全事業所（将来設置されるものを含む）」は真である。「バックエンド開発およびこれに関連する業務」「本社および東京23区内の事業所」「変更なし」「通算契約期間5年」は偽である。
+- `quote`（文字列）— 求人票からの引用。`stated` が真のときは非空必須であり、記載をそのまま写す。
+
+項目そのものを求人票の中に見つけられなかった場合は、その項目を `null` にする。`stated` を偽にするのは、求人票がその項目に触れており、かつ範囲の明示が無いと読み取れた場合（無期雇用のため更新上限が対象外である旨の記載など）に限る。求人票に無い内容を推定で補わない。
+
+判断に迷う書き方（例えば「原則として現在の勤務地」のように、例外の範囲が読み取れないもの）は、`unlimited` を偽にしたうえで、その旨を `open_questions` へ書く。`open_questions` へ回すのはこの種の曖昧な記載に限る。記載内容そのものは `scope_of_change` に入るため、重ねて `open_questions` へ書かない。
+
 ## 手順
 
-1. 受け取ったURLのページを WebFetch で取得する。企業名・職種・雇用形態・勤務地・給与・労働時間・休日・要件・福利厚生・選考フローを読み取る。
+1. 受け取ったURLのページを WebFetch で取得する。企業名・職種・雇用形態・勤務地・給与・労働時間・休日・要件・福利厚生・選考フローを読み取る。あわせて、上記 `scope_of_change` の3項目を探し、記載の有無と文言を控える。
 2. 仕様の各フィールドへ写す。数値を持つ働き方項目（年間休日・月平均残業・有給取得率・有給付与日数）は `metrics` へ構造化し、`value` と引用 `quote` を入れる。明記が無い項目は `null` にする。
 3. `company_name` は求人票に記載された企業名を写す。`aliases` は、正式名称・略称・英語表記など、呼出元がスラッグ解決に使える別名を配列で返す（判別できなければ空配列）。
 4. ログイン必須・動的描画（JavaScript 描画で本文が取得できない）・掲載終了などで取得できない場合は、取得できた範囲だけを埋め、欠損フィールドは `null` または省略とし、`open_questions` に「何が取得できなかったか」を記録する。求人票に無い値を推定で埋めない。
-5. `fetched_at` に取得日（YYYY-MM-DD）を入れる。
-6. 下記の JSON のみを最終メッセージで返す。ファイルは書かない。
+5. 義務3項目を `scope_of_change` へ構造化する。求人票の中に見つけられなかった項目は `null` にする。範囲の記載が曖昧で `unlimited` を判断できない場合だけ、その旨を `open_questions` へ書く。
+6. `fetched_at` に取得日（YYYY-MM-DD）を入れる。
+7. 下記の JSON のみを最終メッセージで返す。ファイルは書かない。
 
 ## 禁止事項
 
@@ -65,7 +86,7 @@ URLが指定されていない場合のみ、推測で補わず `{"error": "求�
   "company_name": "",
   "aliases": [],
   "job_posting": {
-    "schema_version": "1.0",
+    "schema_version": "1.1",
     "source_type": "url",
     "source_url": "",
     "fetched_at": "YYYY-MM-DD",
@@ -80,6 +101,11 @@ URLが指定されていない場合のみ、推測で補わず `{"error": "求�
       "monthly_overtime_h": null,
       "paid_leave_rate": null,
       "paid_leave_days_granted": null
+    },
+    "scope_of_change": {
+      "duties": null,
+      "work_location": null,
+      "contract_renewal_cap": null
     },
     "requirements": { "must": [], "want": [] },
     "benefits": [],

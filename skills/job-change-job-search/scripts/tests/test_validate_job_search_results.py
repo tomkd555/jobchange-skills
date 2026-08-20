@@ -69,7 +69,7 @@ def _valid_similar_better() -> dict:
                 "title": "サーバーサイドエンジニア",
                 "company_name": "架空ソフト株式会社",
                 "url": "https://example.com/jobs/9",
-                "source_site": "Green",
+                "source_site": "type",
                 "salary_range": "700万〜950万円",
                 "location": "東京都",
                 "remote_policy": "週2出社",
@@ -79,7 +79,7 @@ def _valid_similar_better() -> dict:
                 "quote": "年収700万〜950万円／年間休日128日／リモート週3",
             }
         ],
-        "coverage_notes": "Green の類似求人を対象とした。",
+        "coverage_notes": "type の類似求人を対象とした。",
     }
 
 
@@ -915,15 +915,417 @@ class V2ThresholdRefTest(unittest.TestCase):
         self.assertTrue(any("必須度" in e for e in result.errors))
 
 
+# --- schema_version 2.1（検索ログと軸別比較）の検査 ---------------------------
+
+
+def _search_log() -> list[dict]:
+    return [
+        {
+            "query": "データサイエンティスト 東京都 フルリモート",
+            "url": "https://example.com/search/1",
+            "fetched_at": "2026-07-25",
+            "hit_count": 42,
+            "adopted_count": 2,
+            "source": "求人ボックス",
+        }
+    ]
+
+
+def _comparison(overall: str = "not_better", **relations: str) -> dict:
+    """6軸の軸別比較を作る。既定は全軸 same（＝どの改善軸でも改善方向にならない）。"""
+    axes = []
+    for axis in vj.BASELINE_COMPARISON_AXES:
+        relation = relations.get(axis, "same")
+        entry = {"axis": axis, "relation": relation}
+        if relation != "unknown":
+            entry.update(
+                {
+                    "baseline_value": "基準求人の値",
+                    "candidate_value": "候補求人の値",
+                    "quote": "掲載ページからの引用",
+                }
+            )
+        axes.append(entry)
+    return {"axes": axes, "overall": overall}
+
+
+def _valid_v21(items: list[dict] | None = None, recommendation: str = "応募推奨あり") -> dict:
+    document = _valid_v2(items, recommendation)
+    document["schema_version"] = "2.1"
+    document["search_log"] = _search_log()
+    return document
+
+
+def _valid_v21_similar_better(
+    comparison: dict | None = None, improvement_axes: list[str] | None = None
+) -> dict:
+    item = _result_item()
+    item["better_points"] = ["年収レンジの下限が100万円高い"]
+    item["baseline_comparison"] = (
+        _comparison("better", salary_condition="higher") if comparison is None else comparison
+    )
+    document = _valid_v21([item])
+    document["mode"] = "similar_better"
+    document["baseline"] = {"slug": "kakuu-cloudworks"}
+    document["improvement_axes"] = (
+        ["salary_condition", "annual_holidays"] if improvement_axes is None else improvement_axes
+    )
+    return document
+
+
+class V21SearchLogTest(unittest.TestCase):
+    def test_valid_v21_passes_without_warnings(self):
+        result = vj.validate(_valid_v21(), pii_terms=[])
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_missing_search_log_is_error(self):
+        document = _valid_v21()
+        del document["search_log"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_log" in e for e in result.errors))
+
+    def test_empty_search_log_is_error(self):
+        document = _valid_v21()
+        document["search_log"] = []
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_log" in e for e in result.errors))
+
+    def test_search_log_not_a_list_is_error(self):
+        document = _valid_v21()
+        document["search_log"] = {"query": "x"}
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_log" in e for e in result.errors))
+
+    def test_v2_document_does_not_require_search_log(self):
+        result = vj.validate(_valid_v2(), pii_terms=[])
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_entry_must_be_object(self):
+        document = _valid_v21()
+        document["search_log"] = ["データサイエンティスト"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+
+    def test_query_and_source_are_required(self):
+        for key in ("query", "source"):
+            with self.subTest(key=key):
+                document = _valid_v21()
+                document["search_log"][0][key] = ""
+                result = vj.validate(document, pii_terms=[])
+                self.assertFalse(result.ok)
+                self.assertTrue(any(key in e for e in result.errors))
+
+    def test_nullable_keys_must_be_present(self):
+        for key in ("url", "fetched_at", "hit_count", "adopted_count"):
+            with self.subTest(key=key):
+                document = _valid_v21()
+                del document["search_log"][0][key]
+                result = vj.validate(document, pii_terms=[])
+                self.assertFalse(result.ok)
+                self.assertTrue(any(key in e for e in result.errors))
+
+    def test_fetched_at_must_be_a_real_date(self):
+        document = _valid_v21()
+        document["search_log"][0]["fetched_at"] = "2026-02-30"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("fetched_at" in e for e in result.errors))
+
+    def test_optional_fields_accept_null(self):
+        document = _valid_v21()
+        document["search_log"][0].update(
+            {"url": None, "fetched_at": None, "hit_count": None, "adopted_count": None}
+        )
+        result = vj.validate(document, pii_terms=[])
+        self.assertEqual(result.errors, [])
+
+    def test_url_must_be_http_or_null(self):
+        document = _valid_v21()
+        document["search_log"][0]["url"] = "example.com/search"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("url" in e for e in result.errors))
+
+    def test_fetched_at_format(self):
+        for value in ("2026/07/25", "20260725", 20260725):
+            with self.subTest(value=value):
+                document = _valid_v21()
+                document["search_log"][0]["fetched_at"] = value
+                result = vj.validate(document, pii_terms=[])
+                self.assertFalse(result.ok)
+
+    def test_fetched_at_accepts_iso8601(self):
+        document = _valid_v21()
+        document["search_log"][0]["fetched_at"] = "2026-07-25T09:30:00+09:00"
+        result = vj.validate(document, pii_terms=[])
+        self.assertEqual(result.errors, [])
+
+    def test_counts_must_be_non_negative_integers(self):
+        for key, value in (
+            ("hit_count", -1),
+            ("hit_count", "42"),
+            ("adopted_count", True),
+            ("adopted_count", 1.5),
+        ):
+            with self.subTest(key=key, value=value):
+                document = _valid_v21()
+                document["search_log"][0][key] = value
+                result = vj.validate(document, pii_terms=[])
+                self.assertFalse(result.ok)
+                self.assertTrue(any(key in e for e in result.errors))
+
+    def test_pii_in_query_is_detected(self):
+        document = _valid_v21()
+        document["search_log"][0]["query"] = "架空プロダクツ株式会社 より良い求人"
+        terms = vj.collect_pii_terms(_profile_with_pii())
+        result = vj.validate(document, pii_terms=terms)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("現勤務先名" in e for e in result.errors))
+
+
+class V21BaselineComparisonTest(unittest.TestCase):
+    def test_valid_similar_better_passes_without_warnings(self):
+        result = vj.validate(_valid_v21_similar_better(), pii_terms=[])
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_missing_comparison_in_similar_better_is_warning(self):
+        document = _valid_v21_similar_better()
+        del document["results"][0]["baseline_comparison"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("baseline_comparison" in w for w in result.warnings))
+
+    def test_comparison_in_fuzzy_is_warning(self):
+        document = _valid_v21()
+        document["results"][0]["baseline_comparison"] = _comparison(
+            "better", salary_condition="higher"
+        )
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("baseline_comparison" in w for w in result.warnings))
+
+    def test_missing_improvement_axes_in_similar_better_is_warning(self):
+        document = _valid_v21_similar_better()
+        del document["improvement_axes"]
+        del document["results"][0]["baseline_comparison"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("improvement_axes" in w for w in result.warnings))
+
+    def test_improvement_axes_in_fuzzy_is_warning(self):
+        document = _valid_v21()
+        document["improvement_axes"] = ["salary_condition"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("improvement_axes" in w for w in result.warnings))
+
+    def test_unknown_improvement_axis_is_error(self):
+        document = _valid_v21_similar_better(improvement_axes=["commute"])
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("improvement_axes" in e for e in result.errors))
+
+    def test_employment_type_cannot_be_an_improvement_axis(self):
+        document = _valid_v21_similar_better(
+            improvement_axes=["salary_condition", "employment_type"]
+        )
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("employment_type" in e for e in result.errors))
+
+    def test_improvement_axes_vocabulary_excludes_employment_type(self):
+        self.assertNotIn("employment_type", vj.IMPROVEMENT_AXES)
+        self.assertIn("employment_type", vj.BASELINE_COMPARISON_AXES)
+
+    def test_overall_without_improvement_axes_is_error(self):
+        for axes in ([], None):
+            with self.subTest(improvement_axes=axes):
+                document = _valid_v21_similar_better()
+                if axes is None:
+                    del document["improvement_axes"]
+                else:
+                    document["improvement_axes"] = axes
+                result = vj.validate(document, pii_terms=[])
+                self.assertFalse(result.ok)
+                self.assertTrue(any("overall" in e for e in result.errors))
+
+    def test_duplicated_improvement_axis_is_error(self):
+        document = _valid_v21_similar_better(
+            improvement_axes=["salary_condition", "salary_condition"]
+        )
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("重複" in e for e in result.errors))
+
+    def test_derive_overall_uses_improvement_axes_only(self):
+        def axes(**relations):
+            return [
+                {"axis": axis, "relation": relations.get(axis, "same")}
+                for axis in vj.BASELINE_COMPARISON_AXES
+            ]
+
+        # 改善軸で改善方向が1つ以上あり、改善軸に逆方向が無ければ better。
+        self.assertEqual(
+            vj.derive_baseline_overall(axes(salary_condition="higher"), ["salary_condition"]),
+            "better",
+        )
+        # 改善軸に逆方向があれば not_better。
+        self.assertEqual(
+            vj.derive_baseline_overall(
+                axes(salary_condition="higher", annual_holidays="lower"),
+                ["salary_condition", "annual_holidays"],
+            ),
+            "not_better",
+        )
+        # 改善軸に選ばれていない軸の逆方向は総合判定に効かせない。
+        self.assertEqual(
+            vj.derive_baseline_overall(
+                axes(salary_condition="higher", annual_holidays="lower"), ["salary_condition"]
+            ),
+            "better",
+        )
+        # unknown は改善にも悪化にも数えない。
+        self.assertEqual(
+            vj.derive_baseline_overall(axes(salary_condition="unknown"), ["salary_condition"]),
+            "not_better",
+        )
+        # 残業は少ない方が改善方向である。
+        self.assertEqual(
+            vj.derive_baseline_overall(axes(overtime_hours="lower"), ["overtime_hours"]),
+            "better",
+        )
+        self.assertEqual(
+            vj.derive_baseline_overall(axes(overtime_hours="higher"), ["overtime_hours"]),
+            "not_better",
+        )
+        # 変更の範囲は狭い方が改善方向である。
+        self.assertEqual(
+            vj.derive_baseline_overall(axes(scope_of_change="lower"), ["scope_of_change"]),
+            "better",
+        )
+        # 雇用形態は改善軸に取れないため、渡されても総合判定に効かない。
+        self.assertEqual(
+            vj.derive_baseline_overall(axes(employment_type="different"), ["employment_type"]),
+            "not_better",
+        )
+
+    def test_overall_better_with_a_worse_improvement_axis_is_error(self):
+        document = _valid_v21_similar_better(
+            _comparison("better", salary_condition="higher", annual_holidays="lower")
+        )
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("overall" in e for e in result.errors))
+
+    def test_overall_better_without_any_improved_axis_is_error(self):
+        document = _valid_v21_similar_better(_comparison("better"))
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("overall" in e for e in result.errors))
+
+    def test_non_improvement_axis_does_not_block_better(self):
+        document = _valid_v21_similar_better(
+            _comparison("better", salary_condition="higher", overtime_hours="higher"),
+            improvement_axes=["salary_condition"],
+        )
+        result = vj.validate(document, pii_terms=[])
+        self.assertEqual(result.errors, [])
+
+    def test_unknown_relation_needs_no_evidence(self):
+        document = _valid_v21_similar_better(
+            _comparison("better", salary_condition="higher", scope_of_change="unknown")
+        )
+        result = vj.validate(document, pii_terms=[])
+        self.assertEqual(result.errors, [])
+
+    def test_same_without_quote_is_error(self):
+        comparison = _comparison("better", salary_condition="higher")
+        comparison["axes"][1]["quote"] = ""
+        result = vj.validate(_valid_v21_similar_better(comparison), pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("quote" in e for e in result.errors))
+
+    def test_relation_without_baseline_or_candidate_value_is_error(self):
+        for key in ("baseline_value", "candidate_value"):
+            with self.subTest(key=key):
+                comparison = _comparison("better", salary_condition="higher")
+                del comparison["axes"][0][key]
+                result = vj.validate(_valid_v21_similar_better(comparison), pii_terms=[])
+                self.assertFalse(result.ok)
+                self.assertTrue(any(key in e for e in result.errors))
+
+    def test_missing_axis_is_error(self):
+        comparison = _comparison("better", salary_condition="higher")
+        comparison["axes"].pop()
+        result = vj.validate(_valid_v21_similar_better(comparison), pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("6軸" in e for e in result.errors))
+
+    def test_duplicated_axis_is_error(self):
+        comparison = _comparison("better", salary_condition="higher")
+        comparison["axes"].append(copy.deepcopy(comparison["axes"][0]))
+        result = vj.validate(_valid_v21_similar_better(comparison), pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("重複" in e for e in result.errors))
+
+    def test_unknown_relation_value_is_error(self):
+        comparison = _comparison("better", salary_condition="higher")
+        comparison["axes"][2]["relation"] = "slightly_higher"
+        result = vj.validate(_valid_v21_similar_better(comparison), pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("relation" in e for e in result.errors))
+
+    def test_employment_type_rejects_ordered_relations(self):
+        for relation in ("higher", "lower"):
+            with self.subTest(relation=relation):
+                comparison = _comparison(
+                    "better", salary_condition="higher", employment_type=relation
+                )
+                result = vj.validate(_valid_v21_similar_better(comparison), pii_terms=[])
+                self.assertFalse(result.ok)
+                self.assertTrue(any("employment_type" in e for e in result.errors))
+
+    def test_unknown_axis_id_is_error(self):
+        comparison = _comparison("better", salary_condition="higher")
+        comparison["axes"][3]["axis"] = "commute"
+        result = vj.validate(_valid_v21_similar_better(comparison), pii_terms=[])
+        self.assertFalse(result.ok)
+
+    def test_overall_value_is_constrained(self):
+        comparison = _comparison("better", salary_condition="higher")
+        comparison["overall"] = "yes"
+        result = vj.validate(_valid_v21_similar_better(comparison), pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("overall" in e for e in result.errors))
+
+    def test_comparison_not_an_object_is_error(self):
+        result = vj.validate(_valid_v21_similar_better(["better"]), pii_terms=[])
+        self.assertFalse(result.ok)
+
+
 class ExampleAssetTest(unittest.TestCase):
-    def test_bundled_example_passes(self):
+    def _validate_asset(self, name: str) -> vj.ValidationResult:
         base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        document = vj.load_json(os.path.join(base, "assets", "job_search_results_example.json"))
+        document = vj.load_json(os.path.join(base, "assets", name))
         profile_path = os.path.join(
             os.path.dirname(base), "job-change-support", "assets", "profile_example.json"
         )
         profile = vj.load_json(profile_path)
-        result = vj.validate(document, pii_terms=vj.collect_pii_terms(profile), profile=profile)
+        return vj.validate(document, pii_terms=vj.collect_pii_terms(profile), profile=profile)
+
+    def test_bundled_example_passes(self):
+        result = self._validate_asset("job_search_results_example.json")
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_bundled_similar_better_example_passes(self):
+        result = self._validate_asset("job_search_results_similar_better_example.json")
         self.assertEqual(result.errors, [])
         self.assertEqual(result.warnings, [])
 

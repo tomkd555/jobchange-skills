@@ -87,6 +87,30 @@ def _dialogue_posting() -> dict:
     }
 
 
+def _v11_posting() -> dict:
+    """schema_version 1.1 で scope_of_change を3項目とも埋めた job_posting.json を返す。"""
+    p = _valid_posting()
+    p["schema_version"] = "1.1"
+    p["scope_of_change"] = {
+        "duties": {
+            "stated": True,
+            "unlimited": False,
+            "quote": "変更の範囲: バックエンド開発およびこれに関連する業務",
+        },
+        "work_location": {
+            "stated": True,
+            "unlimited": True,
+            "quote": "変更の範囲: 会社の定める場所",
+        },
+        "contract_renewal_cap": {
+            "stated": False,
+            "unlimited": False,
+            "quote": "無期雇用のため対象外",
+        },
+    }
+    return p
+
+
 class ValidatePassTest(unittest.TestCase):
     def test_full_posting_passes_without_warnings(self):
         result = vjp.validate(_valid_posting())
@@ -224,6 +248,106 @@ class SchemaVersionWarnTest(unittest.TestCase):
         result = vjp.validate(p)
         self.assertTrue(result.ok)
         self.assertTrue(any("schema_version" in w for w in result.warnings))
+
+
+class ScopeOfChangeTest(unittest.TestCase):
+    def test_v11_full_scope_passes(self):
+        result = vjp.validate(_v11_posting())
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_v10_without_scope_is_not_checked(self):
+        result = vjp.validate(_valid_posting())
+        self.assertTrue(result.ok)
+        self.assertFalse(any("scope_of_change" in w for w in result.warnings))
+
+    def test_v10_ignores_broken_scope(self):
+        p = _valid_posting()
+        p["scope_of_change"] = "会社の定める場所"
+        result = vjp.validate(p)
+        self.assertTrue(result.ok)
+        self.assertEqual(result.warnings, [])
+
+    def test_future_version_is_still_checked(self):
+        """1.0 だけを検査対象から外すため、未知の後続バージョンでも検査が働く。"""
+        p = _valid_posting()
+        p["schema_version"] = "1.2"
+        result = vjp.validate(p)
+        self.assertTrue(any("scope_of_change" in w for w in result.warnings))
+
+    def test_v11_without_scope_warns(self):
+        p = _valid_posting()
+        p["schema_version"] = "1.1"
+        result = vjp.validate(p)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("scope_of_change" in w for w in result.warnings))
+
+    def test_v11_all_null_warns(self):
+        p = _v11_posting()
+        for key in vjp.SCOPE_KEYS:
+            p["scope_of_change"][key] = None
+        result = vjp.validate(p)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("scope_of_change" in w for w in result.warnings))
+
+    def test_v11_one_filled_does_not_warn(self):
+        p = _v11_posting()
+        p["scope_of_change"]["work_location"] = None
+        p["scope_of_change"]["contract_renewal_cap"] = None
+        result = vjp.validate(p)
+        self.assertTrue(result.ok)
+        self.assertEqual(result.warnings, [])
+
+    def test_stated_true_requires_quote(self):
+        p = _v11_posting()
+        p["scope_of_change"]["duties"]["quote"] = ""
+        result = vjp.validate(p)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("scope_of_change.duties.quote" in e for e in result.errors))
+
+    def test_stated_false_allows_empty_quote(self):
+        p = _v11_posting()
+        p["scope_of_change"]["contract_renewal_cap"]["quote"] = ""
+        result = vjp.validate(p)
+        self.assertTrue(result.ok)
+        self.assertEqual(result.warnings, [])
+
+    def test_scope_not_object_errors(self):
+        p = _v11_posting()
+        p["scope_of_change"] = ["会社の定める場所"]
+        result = vjp.validate(p)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("scope_of_change" in e for e in result.errors))
+
+    def test_entry_scalar_instead_of_object_errors(self):
+        p = _v11_posting()
+        p["scope_of_change"]["duties"] = "会社の定める業務"
+        result = vjp.validate(p)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("scope_of_change.duties" in e for e in result.errors))
+
+    def test_stated_not_bool_errors(self):
+        p = _v11_posting()
+        p["scope_of_change"]["duties"]["stated"] = "true"
+        result = vjp.validate(p)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("scope_of_change.duties.stated" in e for e in result.errors))
+
+    def test_unlimited_not_bool_errors(self):
+        p = _v11_posting()
+        p["scope_of_change"]["work_location"]["unlimited"] = 1
+        result = vjp.validate(p)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("scope_of_change.work_location.unlimited" in e for e in result.errors))
+
+    def test_quote_not_string_errors(self):
+        p = _v11_posting()
+        p["scope_of_change"]["contract_renewal_cap"]["quote"] = 3
+        result = vjp.validate(p)
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any("scope_of_change.contract_renewal_cap.quote" in e for e in result.errors)
+        )
 
 
 class MetricsTest(unittest.TestCase):

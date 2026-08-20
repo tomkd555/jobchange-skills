@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "2.1",
   "search_id": "20260725-remote-infra",
   "mode": "fuzzy",
   "executed_at": "2026-07-25",
@@ -165,7 +165,7 @@
       "title": "情報システム部 プロジェクト推進担当",
       "company_name": "架空リテール株式会社",
       "url": "https://example.com/jobs/retail-pm",
-      "source_site": "Green",
+      "source_site": "type",
       "salary_range": "700万〜1000万円",
       "location": "東京都港区（週2日出社）",
       "remote_policy": "ハイブリッド（週2日出社）",
@@ -308,6 +308,24 @@
       "slug": null
     }
   ],
+  "search_log": [
+    {
+      "query": "クラウドインフラエンジニア-フルリモートの仕事-東京都",
+      "url": "https://xn--pckua2a7gp15o89zb.com/%E3%82%AF%E3%83%A9%E3%82%A6%E3%83%89%E3%82%A4%E3%83%B3%E3%83%95%E3%83%A9%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2-%E3%83%95%E3%83%AB%E3%83%AA%E3%83%A2%E3%83%BC%E3%83%88%E3%81%AE%E4%BB%95%E4%BA%8B-%E6%9D%B1%E4%BA%AC%E9%83%BD",
+      "fetched_at": "2026-07-25",
+      "hit_count": 312,
+      "adopted_count": 1,
+      "source": "求人ボックス"
+    },
+    {
+      "query": "site:type.jp 社内SE 東京 リモート",
+      "url": null,
+      "fetched_at": "2026-07-25",
+      "hit_count": null,
+      "adopted_count": 1,
+      "source": "WebSearch"
+    }
+  ],
   "screening": {
     "screened_at": "2026-07-25",
     "profile_schema_version": "2.0",
@@ -336,7 +354,7 @@
       "method": "profile の career_history のうち period が「〜現在」のエントリの company と company_name を照合した"
     }
   },
-  "coverage_notes": "求人ボックスと Green の検索結果1ページ目を対象とした。会員登録が必要な求人は範囲外とした。",
+  "coverage_notes": "求人ボックスの検索結果1ページ目と、type の個別求人ページを対象とした。会員登録が必要な求人は範囲外とした。",
   "open_questions": [
     "架空アトラスの夜間・休日対応の有無は求人票に記載が無い。面接で確認する。",
     "架空アトラスの必須要件（AWS 実務3年以上）と本人の経験の距離は、適合性評価で判定する。"

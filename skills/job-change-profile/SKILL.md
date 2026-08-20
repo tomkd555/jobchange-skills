@@ -34,7 +34,11 @@ profile.json の中核は、職務経歴・実績・スキルの内容と、そ�
 
 6. **事実を創作・補完しない。** profile.json に載せる経歴・実績・数値は、聞き取りメモに記録のある範囲に限る。実績値・期間・役職を推測で補完しない。経歴の詐称は懲戒・内定取消につながり、社会保険等の突合で高い確率で発覚する（`references/profile-methods.md`）。
 
-7. **個人情報を外部へ送信しない。** profile.json に含まれる個人情報は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルは境界の内側にある `profile.json`・`profile_interview_notes.md` を作る側であり、writer（job-change-profile-writer）・auditor（job-change-profile-auditor）はいずれも Web 送信手段を持たないため、これらのパスを渡してよい。
+7. **初回は骨格までを確定し、深掘りは要る工程の直前へ倒す。** 初回作成の既定はライト初回とし、職歴の骨格・現職の役割・転職理由・主要な条件・作業特性8件までで profile.json を成立させる。実績の定量化・スキルの棚卸し・企業スコアの採点軸・条件の網羅は、下流の工程が要るようになった時点でセクション更新として行う。所要時間が延びるほど途中で離脱する割合が上がり、対話という形式そのものは入力を速くしないためである（`references/elicitation-guide.md`）。
+
+8. **手元の書類を読めるなら読む。ただし要求しない。** 職務経歴書・履歴書・レジュメがあれば、職歴の骨格はそこから取り込み、確認だけで済ませられる。ファイルの提出を条件にせず、無ければ従来どおり対話で聞く。ファイルから読んだ事実は本人の申告と同格であり、物証として扱わない（原則2）。
+
+9. **個人情報を外部へ送信しない。** profile.json に含まれる個人情報は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルは境界の内側にある `profile.json`・`profile_interview_notes.md` を作る側であり、writer（job-change-profile-writer）・auditor（job-change-profile-auditor）はいずれも Web 送信手段を持たないため、これらのパスを渡してよい。
 
 ## 範囲外
 
@@ -77,6 +81,28 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 - スキル本体フォルダー（`skills/job-change-profile/`）に利用者データを置かない。
 - `career-private/` が未作成の場合は、必要になった時点で本スキルが作る。
 
+## ライト初回と深掘り
+
+初回作成の既定はライト初回である。初回に確定させるのは次の5つに限る。
+
+- 職歴の骨格（`career_history[]` の `company`・`period`・`role`。書類の取込があれば確認だけで済む）
+- 現職の役割（`basic.current_role`）
+- 転職理由（`job_change_axis.reasons` を1件以上）
+- 主要な条件（`conditions[]`。希望年収の下限と、勤務地・リモートの制約があれば足りる。件数は少なくてよい）
+- 作業特性8件（`work_character_preferences`。選択式2回で埋まり、スキーマ上は省略できない）
+
+Step 2（職務ごとの深掘り）・Step 3（スキル棚卸し）・企業スコアの採点軸・条件の網羅と優先順位付け・現年収の実額は深掘り項目とし、初回は既定で飛ばす。利用者がその場で続けたいと述べた場合は、そのまま続けてよい。
+
+深掘りは「セクション更新」モードで行い、それを要する工程の直前に置く。
+
+| 深掘りする項目 | それが要る工程 |
+|---|---|
+| 企業スコアの採点軸（`company_score_axes`）・必須条件の優先順位（`conditions[].priority`・`priority_note`） | `job-change-fit-assessment` の適合性評価 |
+| 実績の定量化（`achievements[].description`・`metric`）・スキルの棚卸し（`skills`） | `job-change-documents` の応募書類作成 |
+| 強みの根拠づけ・キャリアの物語化・転職理由の建設的な言い換え | `job-change-self-analysis`（本スキルの範囲外） |
+
+ライト構成の profile.json は `validate_profile.py` を PASS する。定量的な `metric` が1件もない・`skills` が空・`targets` が空・`level=must` の条件に `priority` が付いていない、の4件の WARN はライト初回では想定内であり、Step 5 の差し戻しの理由にしない（優先順位付けも深掘り項目である）。
+
 ## パイプライン
 
 受付から納品まで Step 0〜6 を順に進める。`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は hub（`job-change-support`）の絶対パス、`{PROFILE}` は `profile.json` の絶対パス、`{NOTES}` は `profile_interview_notes.md` の絶対パスに読み替える。
@@ -88,10 +114,31 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 - `profile.json` の有無を確認する。有れば hub の `validate_profile.py` で検証し、現状を把握する。
 - モードを AskUserQuestion で確認する。選択肢は「初回作成」「セクション更新（basic / 職歴 / スキル / 軸 / 志望 / 年収 のどれか）」「全面点検」。
 - 更新モードでは、既存の profile.json を読み、対象セクションのみを聞き取り対象にする。
+- 「初回作成」を選んだ場合は、上記「ライト初回と深掘り」の範囲で進める。深掘りまで一度に済ませたいと利用者が述べた場合だけ、Step 2 以降をその場で続ける。
 
 ### Step 1 職歴の骨格（時系列）
 
-古い順または新しい順に、企業×在籍期間×役割の一覧をまず確定する。転職・異動・昇進などの転機を時系列の手がかりにする。根拠は `references/elicitation-guide.md` にある。在籍中の職は period を `〜現在` と書く。
+#### 既存書類の取込
+
+聞き取りを始める前に、職務経歴書・履歴書・レジュメなどのファイル（Word・PDF・テキスト・Markdown）が手元にあるかを1問で聞く（文言は `references/question-bank.md`）。**提出を求めない。** 無いと答えた場合は、そのまま下記の対話へ進む。あると答えた場合だけパスを受け取って読む。
+
+PDF・テキスト・Markdown は Read で読む。`.docx` は Read が扱わないため、Bash で Python の標準ライブラリを使って本文を取り出す。docx は ZIP であり、本文は `word/document.xml` にある。段落の終端 `</w:p>` を改行へ置き換えてからタグを除いて、段落の区切りを保つ。タグを除いたあとに `html.unescape` を通すのは、XML では `&`・`<`・`>` がエンティティで書かれるためである（これを戻さないと「A&amp;B株式会社」が `A&amp;amp;B株式会社` のまま profile.json へ届く）。
+
+```bash
+python -c "import zipfile,re,html,sys; xml=zipfile.ZipFile(sys.argv[1]).read('word/document.xml').decode('utf-8'); xml=re.sub(r'</w:p>','\n',xml); print(html.unescape(re.sub(r'<[^>]+>','',xml)))" {書類のパス}
+```
+
+表組みのセルも段落として出るため、表で書かれた職務経歴書でも企業名・在籍期間・役職は取り出せる。ただし行と列の対応は失われるので、表が主体の書類では読み取った並びを利用者に確かめる。`.doc`（旧形式）は ZIP ではなく、この方法では読めない。PDF かテキストでの用意を勧め、それが難しければ対話で聞く。
+
+読めたら、企業名・在籍期間・役職・担当業務を抜き出して `{NOTES}` へ転記し、抽出した一覧を利用者へ示して「違うところだけ教えてください」と聞く（訂正申告方式。全項目の是認を求めない）。訂正のあった項目だけをメモへ `訂正:` の行で足す。
+
+業務内容・実績の記述のような長文は、企業名・在籍期間・役職に比べて抽出の精度が落ちる。長文はメモへ転記する時点で `（要確認）` を付け、利用者の確認が済んだ時点で外す。
+
+ファイルから読んだ事実は、対話で述べられた申告と同格に扱う（原則8）。物証として扱わず、他の項目の裏取りに使わない。
+
+#### 骨格の確定
+
+古い順または新しい順に、企業×在籍期間×役割の一覧をまず確定する。書類から取り込んだ場合は、その一覧が骨格であり、訂正の申告を受けた時点で確定とする。取り込んだ項目を対話で聞き直さない。転職・異動・昇進などの転機を時系列の手がかりにする。根拠は `references/elicitation-guide.md` にある。在籍中の職は period を `〜現在` と書く。
 
 骨格が出そろったら、同じ時期に複数の職に就いていた期間があったかを1問で確かめる（兼務・出向・副業・自営）。あった場合は、その職も `career_history` の1件として企業・期間・役割を聞き、どの立場での在籍かを `role` に書き分ける（例「業務委託（副業）」）。在籍期間が重なることは不整合ではない。
 
@@ -99,17 +146,23 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 ### Step 2 職務ごとの深掘り（プロジェクト単位）
 
+深掘り項目である。ライト初回では飛ばし、応募書類の作成に入る前にセクション更新として行う。
+
 職歴1件ずつ、担当業務（responsibilities）→主要プロジェクト→実績（achievements）の順で聞く。実績については「何を・どの規模で・どう変えたか」を聞く。定量化は `references/quantification-guide.md` の型（前年度比・件数・頻度・規模・対応人数・工程削減率・定性成果の接続）で支援する。数値が出ない実績は無理に数値化せず、工夫や評価された点を具体化して `metric` を `null` にする。利用者が述べた数値は、その出所を問わずそのまま記録する。
 
 1つの職の中で複数の案件を並行して回していた場合は、実績1件ごとに案件の呼び名（`project`）と、その案件の期間（`period`）も聞き、どの案件のいつの成果かを区別できるようにする。担当した案件が1つだけの職では、この2つを聞かない。
 
 ### Step 3 スキル棚卸し
 
+深掘り項目である。ライト初回では飛ばし、応募書類の作成に入る前にセクション更新として行う。Step 2 の発話を材料にするため、Step 2 と同じ回で扱う。
+
 technical / business / languages / certifications を、Step 2 の発話から逆引きで確認する（候補を選択肢として提示し、選ばせる）。そのうえで、厚労省ポータブルスキルの9要素（対課題5・対人4）を選択式で確認し、`skills.portable` に入れる（category は「対課題」か「対人」）。要件との対応づけは応募時に応募書類サブスキルが行う旨を伝える。詳細は `references/profile-methods.md` のスキル分類の節にある。
 
 ### Step 4 転職の軸・志望対象・年収
 
-reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希望（`work_character_preferences`）→ 企業スコアの採点軸（`company_score_axes`）→ targets → salary の順で聞く。軸の建設的言い換え・根拠づけは `job-change-self-analysis` へ誘導する。根拠は `references/profile-methods.md` の must/want の節による。
+ライト初回で聞くのは、reasons（1件以上必須）→ 主要な条件（`conditions`。希望年収の下限と、勤務地・リモートの制約があれば足りる）→ 作業特性の希望（`work_character_preferences` の8件）までである。企業スコアの採点軸・条件の網羅と優先順位付け・targets・現年収の実額は深掘り項目とし、初回は飛ばす。現年収のように立ち入った問いを初回へ置かないためでもある（`references/elicitation-guide.md`）。
+
+深掘りまで進める場合は、reasons → 条件（`conditions`）→ 作業特性の希望（`work_character_preferences`）→ 企業スコアの採点軸（`company_score_axes`）→ targets → salary の順で聞く。軸の建設的言い換え・根拠づけは `job-change-self-analysis` へ誘導する。根拠は `references/profile-methods.md` の must/want の節による。
 
 #### 条件の構造化
 
@@ -137,6 +190,8 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 `conditions[level=must]` と `work_character_preferences[desire=must]` の合計が4件以上になったら、優先順位を付けて絞る対話を挟む。順位と再評価時期を `job_change_axis.priority_note` へ残す。
 
 #### 企業スコアの採点軸
+
+深掘り項目である。ライト初回では飛ばし、適合性評価に入る前にセクション更新として行う。飛ばした場合は `company_score_axes` をフィールドごと書かない（空配列にしない）。
 
 企業を0〜100点で採点する軸と重みを決め、`company_score_axes[]` へ入れる。定量候補軸9個・点数への換算・重みの配分の規則は `job-change-company-research` の `references/company-score-rubric.md`、フィールド仕様は hub の `references/profile-format.md` にある。次の順で決める。
 
@@ -166,9 +221,11 @@ reasons（1件以上必須）→ 条件（`conditions`）→ 作業特性の希�
 
 聞き取りの結果は、その途中で本体セッションが `{NOTES}`（`profile_interview_notes.md`）へ逐次追記し集約しておく（中断再開に対応）。`job-change-profile-writer` エージェント（model: opus）を起動し、`{NOTES}`・既存 `{PROFILE}`（更新時）・hub の `references/profile-format.md`・出力先 `{PROFILE}` を渡す。作成担当はメモにある事実だけから profile.json を作成・更新する。戻り値を受け、本体セッションが hub の `validate_profile.py` を実行して ERROR 0 を確認する。続いて `job-change-profile-auditor` エージェント（model: opus、作成担当の判断理由を渡さない新規コンテキスト）を起動して監査する。`verdict` が BLOCK、または `severity` = must_fix の finding があれば Step 5 の作成へ差し戻す（最大2回。以降は利用者判断）。
 
+ライト初回でもこの Step は従来どおり通す。ライト構成では、定量的な `metric` が1件もない・`skills` が空・`targets` が空・`level=must` の条件に `priority` が付いていない、の4件の WARN が出るが、これは飛ばした深掘り項目が空であることを示すものであり、想定内である。差し戻しの理由にせず、利用者へ伝えるときも欠落ではなく「深掘りがこれからである」ものとして扱う。
+
 ### Step 6 更新運用の案内と納品
 
-更新運用（実績が出るたびに追記し、少なくとも四半期に一度は見直す。応募書類へ書き起こすときは直近7〜10年を優先する）を案内し、`updated_at` を当日の日付へ書き換える。profile.json は下流のサブスキルの入力であって単体の読み物ではないため、整形したファイルは作らない。代わりに、何が書かれたか（職務要約・職歴の件数と在籍期間・スキル・転職の軸と必須条件・企業スコアの採点軸・年収）を利用者へ要約して示す。最後に、profile.json を入力に使える下流の作業（`job-change-self-analysis` の自己分析、`job-change-company-research` の企業研究、`job-change-documents` の応募書類作成）を案内する。最終メッセージは結論から述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
+更新運用（実績が出るたびに追記し、少なくとも四半期に一度は見直す。応募書類へ書き起こすときは直近7〜10年を優先する）を案内し、`updated_at` を当日の日付へ書き換える。profile.json は下流のサブスキルの入力であって単体の読み物ではないため、整形したファイルは作らない。代わりに、何が書かれたか（職務要約・職歴の件数と在籍期間・スキル・転職の軸と必須条件・企業スコアの採点軸・年収）を利用者へ要約して示す。最後に、profile.json を入力に使える下流の作業（`job-change-self-analysis` の自己分析、`job-change-company-research` の企業研究、`job-change-documents` の応募書類作成）を案内する。ライト初回で納品した場合は、飛ばした深掘り項目と、それを要する工程（上記「ライト初回と深掘り」の表）を1度だけ添える。深掘りを今すぐ行うよう促さない。最終メッセージは結論から述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
 
 ## 合否ゲートと差し戻し
 
@@ -215,7 +272,7 @@ python {HUB_SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/pr
 
 | ファイル | 何を | いつ読むか |
 |---|---|---|
-| `references/elicitation-guide.md` | 時系列×プロジェクト単位の想起手がかりの根拠、並行在籍と空白期間の扱い、選択式優先の運用、聞き取りメモの記載形式、更新運用、DOI/URL 付き出典 | 聞き取りの方針を定めるとき、監査の観点を確認するとき |
+| `references/elicitation-guide.md` | 時系列×プロジェクト単位の想起手がかりの根拠、並行在籍と空白期間の扱い、既存書類の取込と初回の軽量化の根拠、選択式優先の運用、聞き取りメモの記載形式、更新運用、DOI/URL 付き出典 | 聞き取りの方針を定めるとき、監査の観点を確認するとき |
 | `references/question-bank.md` | Step 1〜4 で使う有限の構造化質問と、各質問が埋めるフィールドの対応表、質問文の文体、AskUserQuestion へ渡す確定した選択肢の文言 | ヒアリングの各 Step で質問を選ぶとき、質問文を書くとき |
 | `references/quantification-guide.md` | 定量化の型と代替表現、事実と異なる数値のリスク、定量化の効果の限界、職種依存、DOI/URL 付き出典 | 実績の聞き取り・作成・監査で定量表現を判断するとき |
 | `references/profile-methods.md` | 採用側が見る情報、スキル分類、must/want の根拠と限界、ATS の実像、経歴詐称の帰結、設計の限界とエビデンスギャップ、DOI/URL 付き出典 | 設計判断の根拠を確認するとき、監査の観点を定めるとき |

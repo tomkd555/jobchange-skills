@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "source_type": "url",
   "source_url": "https://recruit.kakuu-cloudworks.example.co.jp/mid-career/backend/",
   "fetched_at": "2026-07-17",
@@ -39,6 +39,23 @@
     "paid_leave_days_granted": {
       "value": 20,
       "quote": "年次有給休暇 初年度20日付与"
+    }
+  },
+  "scope_of_change": {
+    "duties": {
+      "stated": true,
+      "unlimited": false,
+      "quote": "変更の範囲: バックエンド開発およびこれに関連する業務"
+    },
+    "work_location": {
+      "stated": true,
+      "unlimited": true,
+      "quote": "変更の範囲: 会社の定める場所"
+    },
+    "contract_renewal_cap": {
+      "stated": false,
+      "unlimited": false,
+      "quote": "無期雇用のため更新上限の定めなし"
     }
   },
   "requirements": {

@@ -67,7 +67,25 @@ profile の `work_character_preferences[]`（8つの作業特性の希望度）�
 job_posting の勤務条件（`location`・`employment_type`・`working_hours` 等）と、profile の `conditions[level=want]`・`targets` を突き合わせる。必須条件の充足は `must_condition_results` で別途判定するため、この次元では望ましい条件・志望対象との整合を扱う。
 
 - リモート可否・勤務地・雇用形態・裁量労働などの条件が、本人の希望条件とどの程度一致するかを見る。
+- job_posting の `scope_of_change` を、勤務地・職種の条件を見るときの材料に加える（後述）。
 - evidence の source は主に `job_posting`・`profile`。
+
+#### scope_of_change（変更の範囲）の扱い
+
+job_posting の `scope_of_change` は、2024年4月から求人票への明示が義務づけられた3項目（業務の変更の範囲・就業場所の変更の範囲・有期契約の更新上限）を構造化したものである。形式の原本は `job-change-company-research` の `references/job-posting-format.md` にある。
+
+| 状態 | 扱い |
+|---|---|
+| `work_location.unlimited` が真 | 転勤リスクとして `condition_fit` の evidence に含める。勤務地が入社時の1か所に留まる保証が無い旨を verdict に書く |
+| `duties.unlimited` が真 | 職種転換リスクとして同様に扱う。現在の職務内容が続く保証が無い旨を verdict に書く |
+| `contract_renewal_cap.stated` が真で上限がある | 有期契約の期間の上限として、雇用形態に関する条件の判定材料にする |
+| いずれかが `null` | unknown のままにする。**記載を見つけられなかったことを、範囲が限定されている証拠として扱わない。** 確認事項を `overall.open_questions` へ入れる |
+
+evidence は `{"source": "job_posting", "ref": "scope_of_change.work_location.unlimited", "note": "…"}` の形で書く。`ref` にはフィールドパスを、`note` には `quote`（求人票の記載の引用）を写す。
+
+`unlimited` が真であることは、それ自体では転勤・職種転換が起きる証拠ではなく、企業の裁量で起こしうるという事実である。verdict はこの区別を保った書き方にする。
+
+`job_posting.json` の `schema_version` が `1.0` の場合、この節は適用しない。1.0 には `scope_of_change` が無く、取込の時点でこの3項目を見ていないためである。判定を変えず、`overall.open_questions` へ「求人票の取込が旧形式であり、業務・就業場所の変更の範囲を確認していない」と入れる。
 
 ### culture_fit（文化適合）
 
@@ -107,6 +125,8 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 
 - 求人票・企業研究に明確な根拠がある場合のみ `yes`・`no` とし、その evidence を必ず添える。
 - 根拠が見つからない条件は `unknown` とする（憶測で yes/no にしない）。`unknown` の条件は evidence を空にしてよい。
+- **勤務地・リモートに関する必須条件は、`scope_of_change.work_location` も見て判定する。** 求人票の勤務地が条件を満たしていても、`work_location.unlimited` が真であれば、条件の充足は入社時点のものに留まる。この場合は `met` を `unknown` にせず、`yes` としたうえで evidence へ `scope_of_change.work_location.unlimited` を加え、`condition` の充足が就業場所の変更で失われうる旨を `note` に書く。求人票の勤務地が条件を満たさず、かつ `unlimited` が真の場合は `met=no` のままとする。職種・職務内容に関する必須条件と `duties.unlimited` の関係も同じ扱いとする。
+- `scope_of_change` の該当項目が `null` の場合は、その項目を根拠に使わない。記載が見つからないことを、範囲が限定されている根拠にしない。
 - `met=no` の条件が交渉・制度運用で解消しうる場合に限り `negotiable` を `true` にする。根拠（過去の交渉事例・制度の記載）を evidence へ添える。無根拠に `true` を付けない。
 - 必須条件に `no` があるのに総合判定を `推奨` にすることは認めない（ERROR）。
 
