@@ -3,7 +3,7 @@ name: job-change-documents
 description: >-
   転職の応募書類（職務経歴書・履歴書・英文レジュメ・志望動機書）を、profile.json の実績と求人要件・
   企業研究の結果に基づいて作成するサブスキル。求人要件と実績の対応表（アピールマッピング）を作り、
-  書類種別ごとの標準形式で作成し、独立した監査（日本語文法、誇張・創作の検出、要件との対応、英文レジュメの観点、分量）を通してから納品する。定量値は profile.json の metric と厳密一致させ、記載のない実績を
+  書類種別ごとの標準形式で作成し、独立した監査（日本語の文法、誇張・創作の検出、要件との対応、英文レジュメの観点、分量）を通してから納品する。定量値は profile.json の metric と厳密一致させ、記載のない実績を
   創作しない、という原則を保つ。job-change-support（hub）から振り分けられて動く。個々の作成・監査は
   専用エージェント（job-change-document-writer / job-change-document-auditor）が担う。
   Use when the user writes job application documents for a career change in Japan (including
@@ -17,7 +17,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 転職の応募書類を作成するとき、このスキル1つで受付から納品までの手順がそろう。求人要件と利用者の実績を対応づけ、書類種別ごとの標準形式で作成し、作成担当とは独立した監査を通してから納品する。日本の中途採用を中心とし、外資系選考向けの英文レジュメにも対応する。
 
-作成と監査はそれぞれ専用エージェント（`job-change-document-writer`・`job-change-document-auditor`）が担い、本スキルはその起動・差し戻し・納品を統括する。書類種別ごとの記述基準は `references/` で完結する。
+作成と監査はそれぞれ専用エージェント（`job-change-document-writer`・`job-change-document-auditor`）が担う。本スキルはその起動・差し戻し・納品を統括する。書類種別ごとの記述基準は `references/` で完結する。
 
 ## 目的と原則
 
@@ -29,7 +29,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 4. **企業固有の調整には企業研究の結果を用いる。** 志望動機・企業別カスタマイズは、対象企業の `company_research.json`（理念・求める人物像など）を根拠とする。`company_research.json` が無い場合は企業固有の調整をせず、簡易対応（企業に依存しない汎用の書式・自己PRの骨子まで）である旨を利用者へ明示する。
 
-5. **個人情報を外部へ送信しない。** 利用者の個人情報は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルの job-change-document-writer と job-change-document-auditor はいずれも Web 送信手段を持たないため、`profile.json`・`self_analysis.json`・`fit_assessment.json` をそのまま渡してよい。このルールは本スキルおよび下流のすべての手順で保つ。
+5. **個人情報を外部へ送信しない。** 利用者の個人情報は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルの job-change-document-writer と job-change-document-auditor はいずれも Web 送信手段を持たない。このため `profile.json`・`self_analysis.json`・`fit_assessment.json` をそのまま渡してよい。このルールは本スキルおよび下流のすべての手順で保つ。
 
 ## 範囲外
 
@@ -57,7 +57,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 ## データ配置
 
-利用者データは、非公開ディレクトリ `{DATA_ROOT}/career-private/`（profile.json 等の個人情報）と、その外側のプロジェクト直下 `{DATA_ROOT}/`（企業別成果物などの非個人情報）に分けて置く。本スキルが読み書きするパスは次のとおり。
+利用者データは2か所に分けて置く。非公開ディレクトリ `{DATA_ROOT}/career-private/` には profile.json 等の個人情報を置く。その外側のプロジェクト直下 `{DATA_ROOT}/` には企業別成果物などの非個人情報を置く。本スキルが読み書きするパスは次のとおり。
 
 | パス | 役割 | 入出力 |
 |---|---|---|
@@ -85,7 +85,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 ## パイプライン
 
-受付から納品まで Step 0〜4 を順に進める。`{PROFILE}` は `profile.json` の絶対パス、`{COMPANY_RESEARCH}` は対象企業の `company_research.json` の絶対パス、`{SELF_ANALYSIS}` は `career-private/self_analysis.json` の絶対パス（あれば）、`{FIT_ASSESSMENT}` は `career-private/fit/{企業スラッグ}/fit_assessment.json` の絶対パス（あれば）、`{OUT_DIR}` は書類の出力先ディレクトリに読み替える。
+受付から納品まで Step 0〜4 を順に進める。`{PROFILE}` は `profile.json` の絶対パスに、`{COMPANY_RESEARCH}` は対象企業の `company_research.json` の絶対パスに読み替える。`{SELF_ANALYSIS}` は `career-private/self_analysis.json` の絶対パス（あれば）とする。`{FIT_ASSESSMENT}` は `career-private/fit/{企業スラッグ}/fit_assessment.json` の絶対パス（あれば）とする。`{OUT_DIR}` は書類の出力先ディレクトリに読み替える。
 
 ### Step 0 受付
 
@@ -101,20 +101,20 @@ profile.json のゲートは必須である。
 
 - `profile.json` は `validate_profile.py`（hub の scripts）が PASS（ERROR 0件）であることを前提とする。hub 経由で入る場合は、hub がルーティング前に確認済みである。本スキルが単独で起動された場合は、自分で `validate_profile.py` を実行して PASS を確かめる。
 - `profile.json` が未作成の場合は先へ進まない。hub（`job-change-support`）のプロファイル整備へ戻し、作成してから再開する（プロファイルの作成は hub と `job-change-profile` の責務である）。
-- 検証が FAIL（ERROR 1件以上）の場合は、ERROR の内容を利用者へ示し、`job-change-profile` での整備を勧める。ただし、利用者が欠落を承知のうえで着手を希望する場合は、欠けた項目の値を直接引用または前提とする記述を作らないという条件で進めてよい。その場合は、どの項目が欠けたままかを納品時に明記する。hub から振り分けられ、hub が既にこの選択を利用者へ求めている場合は、再度問わずにその選択に従う。hub と本スキルが同じ選択を2回求めないためである。
+- 検証が FAIL（ERROR 1件以上）の場合は、ERROR の内容を利用者へ示し、`job-change-profile` での整備を勧める。ただし、利用者が欠落を承知のうえで着手を希望する場合は、欠けた項目の値を直接引用または前提とする記述を作らないという条件で進めてよい。その場合は、どの項目が欠けたままかを納品時に明記する。hub から振り分けられ、hub がすでにこの選択を利用者へ求めている場合は、再度問わずにその選択に従う。hub と本スキルが同じ選択を2回求めないためである。
 
-`profile.json` の `career_history[].achievements` と `skills` が空の場合は、`job-change-profile` のセクション更新（職歴と実績・スキル）で深掘りしてから戻るよう案内する。実績とスキルはここで初めて要るようになる項目であり、プロファイルのライト初回では既定で飛ばしてある。検証は PASS するため差し戻しではなく案内であり、利用者がそのまま進めることを選んだ場合は、職歴の骨格だけで書ける範囲に限って作成し、実績の記載が無いことを納品時に明記する。
+`profile.json` の `career_history[].achievements` と `skills` が空の場合は、`job-change-profile` のセクション更新（職歴と実績・スキル）で深掘りしてから戻るよう案内する。実績とスキルはここで初めて要るようになる項目であり、プロファイルのライト初回では既定で飛ばしてある。検証は PASS するため、差し戻しではなく案内である。利用者がそのまま進めることを選んだ場合は、職歴の骨格だけで書ける範囲に限って作成し、実績の記載が無いことを納品時に明記する。
 
 company_research.json の確認は任意であり、無い場合はフォールバックを明示する。
 
-- 対象企業の `company_research.json` の有無を確認する。無い場合はエラーとせず、企業固有の調整をしないフォールバック動作とすること、および企業研究（`job-change-company-research`）を先に実行すれば志望動機・企業別カスタマイズの精度が上がることを、利用者へ明示する。
+- 対象企業の `company_research.json` の有無を確認する。無い場合はエラーとしない。企業固有の調整をしないフォールバック動作とすることを利用者へ明示する。あわせて、企業研究（`job-change-company-research`）を先に実行すれば志望動機・企業別カスタマイズの精度が上がることも伝える。
 - `company_research.json` がある場合は、`check_freshness.py`（hub の scripts）で当該企業の `_manifest.json` を判定する。`stale` のトピックがあれば、その旨と対象トピック名を利用者へ示し、`job-change-company-research` での差分再調査を提案する。利用者が再調査せずに進むことを選んだ場合は、古い情報に基づく旨と対象トピック名を Step 4 の調整根拠の説明へ明記して進む。判定規則と TTL の原本は hub の `references/freshness-policy.md` にある。
 
-self_analysis.json の確認は任意である。
+self_analysis.json も任意の入力である。
 
 - `career-private/self_analysis.json` の有無を確認する。あれば志望動機書・自己PRの入力に加える。無くても進行できるが、自己分析（`job-change-self-analysis`）を先に実行すればキャリア・ナラティブと転職理由の建設的な言語化を反映できることを、利用者へ明示する。
 
-fit_assessment.json の確認は任意である。
+fit_assessment.json も同じく必須ではない。
 
 - `career-private/fit/{企業スラッグ}/fit_assessment.json` の有無を確認する。あればアピールマッピングの訴求点選定に、`dimensions` の `evidence` と `must_condition_results` を判断材料として加える。無くても進行できる（求人要件と `profile.json` の実績の突き合わせのみで進める）。fit_assessment.json は career-private 配下の成果物であり、Web ツールを持つエージェントへは渡さない。
 
@@ -124,9 +124,9 @@ fit_assessment.json の確認は任意である。
 
 - 実行するステップ（= 1）・書類種別・`{PROFILE}`・`{COMPANY_RESEARCH}`（あれば）・`{SELF_ANALYSIS}`（あれば）・`{FIT_ASSESSMENT}`（あれば）・求人票（あれば）・出力先 `{OUT_DIR}`。
 
-作成担当には次を行う責務がある。求人要件と（あれば）企業研究の理念・求める人物像を抽出し、`profile.json` の実績と突き合わせてアピールマッピングを作り、書類種別ごとの標準形式を理由とともに選定して作成する。書類は `{OUT_DIR}` の下に書き出す。`company_research.json` が無い場合は企業固有の調整をせず、その旨を成果物と出力 JSON（`company_research_used: false`・`degraded_reason`）に明記する。`fit_assessment.json` がある場合、アピールマッピングの訴求点選定に `dimensions` の `evidence` と `must_condition_results` を判断材料として加える。無い場合は求人要件と `profile.json` の実績の突き合わせのみで進める。
+作成担当には次を行う責務がある。求人要件と（あれば）企業研究の理念・求める人物像を抽出し、`profile.json` の実績と突き合わせてアピールマッピングを作る。そのうえで、書類種別ごとの標準形式を理由とともに選定して作成する。書類は `{OUT_DIR}` の下に書き出す。`company_research.json` が無い場合は企業固有の調整をしない。その旨を成果物と出力 JSON（`company_research_used: false`・`degraded_reason`）に明記する。`fit_assessment.json` がある場合、アピールマッピングの訴求点選定に `dimensions` の `evidence` と `must_condition_results` を判断材料として加える。無い場合は求人要件と `profile.json` の実績の突き合わせのみで進める。
 
-志望動機書・自己PRでは、`self_analysis.json` がある場合、`career_narrative`（ライフテーマ・一貫する動機）と根拠付きの `strengths`（episode_id・feedback_id に対応づけられた強み）、`reason_for_change.constructive_version`（発揮したい価値を軸にした転職理由の言い換え）を、profile.json の実績と併せて素材に用いる。`self_analysis.json` が無い場合は profile.json の `strengths`・`job_change_axis.reasons` のみを素材とする。この場合は、企業固有の調整のときとは異なり、フォールバックした旨を明示する必要はない。
+志望動機書・自己PRでは、`self_analysis.json` がある場合、`career_narrative`（ライフテーマ・一貫する動機）を素材に用いる。根拠付きの `strengths`（episode_id・feedback_id に対応づけられた強み）も用いる。`reason_for_change.constructive_version`（発揮したい価値を軸にした転職理由の言い換え）も同様である。いずれも profile.json の実績と併せて用いる。`self_analysis.json` が無い場合は profile.json の `strengths`・`job_change_axis.reasons` のみを素材とする。この場合は、企業固有の調整のときとは異なり、フォールバックした旨を明示する必要はない。
 
 ### Step 2 独立監査
 
@@ -152,7 +152,7 @@ fit_assessment.json の確認は任意である。
 
 ### Step 4 納品
 
-`verdict` が CLEAN になった時点、または重大な finding が解消した時点で納品する。最終納品物は次の3点。
+`verdict` が CLEAN になった時点、または重大な finding が解消した時点で納品する。最終納品物は次の3点である。
 
 1. **応募書類**（`{OUT_DIR}` 配下のファイル）。
 2. **アピールマッピング表**（求人要件・対応する実績・裏付け）。`{OUT_DIR}/appeal-mapping.md` へ書き出す。
@@ -166,7 +166,7 @@ fit_assessment.json の確認は任意である。
 
 | ゲート | 通過条件と差し戻し先 |
 |---|---|
-| Step 0 のプロファイルゲート | `profile.json` が `validate_profile.py` で PASS していなければ作成へ進まない。未作成・FAIL は hub のプロファイル整備へ戻す。ただし FAIL の場合は、ERROR の内容を示し、利用者が欠落を承知で着手を希望するなら、欠けた項目の値を直接引用または前提とする記述を作らないという条件で進めてよい。どの項目が欠けたままかを成果物に明記する。hub が既にこの選択を利用者へ求めている場合は、再度問わずにその選択に従う。 |
+| Step 0 のプロファイルゲート | `profile.json` が `validate_profile.py` で PASS していなければ作成へ進まない。未作成・FAIL は hub のプロファイル整備へ戻す。ただし FAIL の場合は、ERROR の内容を示し、利用者が欠落を承知で着手を希望するなら、欠けた項目の値を直接引用または前提とする記述を作らないという条件で進めてよい。どの項目が欠けたままかを成果物に明記する。hub がすでにこの選択を利用者へ求めている場合は、再度問わずにその選択に従う。 |
 | Step 2 の独立監査ゲート | `job-change-document-auditor` の `verdict` が BLOCK、または `severity` = 重大 の finding があれば Step 3 で作成担当へ差し戻す。差し戻しは同一書類につき最大2回まで行う。 |
 
 差し戻し時は、監査の findings（target・evidence・fix）をそのまま作成担当へ渡し、反映後に Step 2 から再度通す。2回の差し戻しで解消しない指摘は、未決事項として調整根拠の説明に明記し、利用者へ判断を委ねてから納品する。例えば「profile.json の実績だけでは求人要件を十分に満たせない」という指摘は、経歴の補強か応募判断の見直しが要るため、利用者の判断事項とする。機械的な検証の ERROR は差し戻しの上限にかかわらず解消してから納品し、未解決が監査の finding だけである場合に限り、未決事項として明記したうえで納品してよい。

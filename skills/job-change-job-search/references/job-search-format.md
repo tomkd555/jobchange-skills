@@ -1,6 +1,6 @@
 # job_search_results.json の原本仕様（job-search-format）
 
-求人検索の成果物 `job_search_results.json` のフィールド仕様・記入基準・機械的な検証の規則を定める原本である。求人検索担当エージェント（job-change-job-searcher）がこの仕様で成果物を作り、`scripts/validate_job_search_results.py` がこの仕様に照らして機械的に検査する。
+求人検索の成果物 `job_search_results.json` のフィールド仕様・記入基準・機械的な検証の規則を定める原本である。求人検索担当エージェント（job-change-job-searcher）がこの仕様で成果物を作る。`scripts/validate_job_search_results.py` は、この仕様に照らして機械的に検査する。
 
 出力先は `{DATA_ROOT}/job-search/{YYYYMMDD}-{条件の短いスラッグ}/job_search_results.json` である。企業別の成果物ツリー（`companies/{企業スラッグ}/`）とは別に、`job-search/` 配下へ検索実行ごとのディレクトリを作る。
 
@@ -63,7 +63,7 @@
 }
 ```
 
-`duty_items`・`axis_observations`・`axis_judgements`・`screening` は、上では骨格を示すために空で置いてある。`baseline`・`improvement_axes`・`baseline_comparison` も位置を示すために置いてあるだけで、`similar_better` モードでのみ用いる（上のように `fuzzy` で書くと WARN になる）。実際の中身は後述の各節が定める。記入済みの全体像は `assets/job_search_results_example.json`（fuzzy）と `assets/job_search_results_similar_better_example.json`（similar_better。`improvement_axes`・`baseline_comparison` を含む）にある。
+`duty_items`・`axis_observations`・`axis_judgements`・`screening` は、上では骨格を示すために空で置いてある。`baseline`・`improvement_axes`・`baseline_comparison` も位置を示すために置いてあるだけで、`similar_better` モードでのみ用いる。上のように `fuzzy` で書くと WARN になる。実際の中身は後述の各節が定める。fuzzy の記入済みの全体像は `assets/job_search_results_example.json` にある。similar_better の全体像は `assets/job_search_results_similar_better_example.json` にある。こちらは `improvement_axes`・`baseline_comparison` を含む。
 
 ## フィールド仕様
 
@@ -81,7 +81,7 @@
 
 ### search_id（文字列・必須）
 
-この検索実行の識別子。成果物を置くディレクトリ名と同じ値を書く（`job-search/20260725-remote-infra/` なら `"20260725-remote-infra"`）。欠落・空は ERROR。ディレクトリ名は成果物の外にあり、ファイルを読んだだけではどの検索実行のものか分からないため、同じ値を中へも書く。適合性評価の `screening_source.search_id`（原本は job-change-fit-assessment の `references/fit-format.md`）がこの値で検索実行を特定する。
+この検索実行の識別子。成果物を置くディレクトリ名と同じ値を書く（`job-search/20260725-remote-infra/` なら `"20260725-remote-infra"`）。欠落・空は ERROR。ディレクトリ名は成果物の外にあり、ファイルを読んだだけではどの検索実行のものかわからないため、同じ値を中へも書く。適合性評価の `screening_source.search_id` は、この値で検索実行を特定する。その原本は job-change-fit-assessment の `references/fit-format.md` にある。
 
 形式は次の正規表現に一致しなければならない（不一致は ERROR）。
 
@@ -102,11 +102,11 @@
 
 ### executed_at（文字列・必須）
 
-検索した日付（`YYYY-MM-DD`）。欠落・空は ERROR。求人情報の鮮度を後で判断するために記す。
+検索した日付（`YYYY-MM-DD`）。欠落・空は ERROR。検索した日がいつかを後で確かめられるように記す。
 
 ### conditions（オブジェクト・必須）
 
-検索に用いた条件。匿名化済みでなければならない。**現勤務先名・氏名・現年収を含めてはならない。** 希望年収の下限（`salary_min` 等）を条件に含めることは可とする。オブジェクトでない場合は ERROR、空オブジェクトは WARN。
+検索に用いた条件。匿名化済みでなければならず、**現勤務先名・氏名・現年収を含めてはならない**。希望年収の下限（`salary_min` 等）は条件に含めてよい。オブジェクトでない場合は ERROR、空オブジェクトは WARN。
 
 キーは自由だが、`roles`・`industries`・`salary_min`・`location`・`remote_policy`・`employment_type`・`other` を推奨する。`salary_min` は円単位の数値で書く。
 
@@ -116,7 +116,7 @@
 
 - `similar_better` で `baseline` が無い場合は WARN（基準求人の記録を推奨する）。
 - `fuzzy` で `baseline` がある場合は WARN（fuzzy では用いない）。
-- `url` も `slug` も無い場合は ERROR。`slug` は企業スラッグの形式（原本は job-change-support の `references/company-index-format.md`）に一致しなければならない（不一致は ERROR）。
+- `url` と `slug` のどちらも無い場合は ERROR。`slug` は企業スラッグの形式に一致しなければならない（不一致は ERROR）。形式の原本は job-change-support の `references/company-index-format.md` にある。
 
 ### results（配列・必須）
 
@@ -137,7 +137,7 @@
 | `better_points` | 条件付き | 基準求人より改善している点の配列。`similar_better` 専用。配列でない、または非空の文字列でない要素を含むと ERROR |
 | `baseline_comparison` | 条件付き | 基準求人との軸別比較。`similar_better` 専用。仕様は後述 |
 
-`quote` は掲載ページの文言をそのまま写す。取得できない求人を創作してはならない。給与が「応相談」「経験を考慮」等で数値が読めない場合は `salary_range` を `null` にする。
+`quote` には掲載ページの文言をそのまま転記する。取得できない求人を創作してはならない。給与が「応相談」「経験を考慮」等で数値が読めない場合は `salary_range` を `null` にする。
 
 #### better_points とモードの整合
 
@@ -146,7 +146,7 @@
 
 ### search_log（配列・2.1 で必須）
 
-実行した検索を1件ずつ記録する。**検索の網羅性についての主張は、このログを唯一の根拠とする。** ログに無い検索は実行していない検索である。「網羅的に調べた」「主要な求人サイトを一通り確認した」といった、ログで裏づけられない記述を `coverage_notes` にも報告にも書いてはならない。書けるのは「このクエリでこの件数を見た」までである。
+実行した検索を1件ずつ記録する。**検索の網羅性についての主張は、このログを唯一の根拠とする**。ログに無い検索は実行していない検索である。「網羅的に調べた」「主要な求人サイトを一通り確認した」といった、ログで裏づけられない記述を `coverage_notes` や報告に書いてはならない。書けるのは「このクエリでこの件数を見た」までである。
 
 欠落・空配列・配列でない場合は ERROR（2.1）。`"2.0"` 以前の成果物では求めない。
 
@@ -154,7 +154,7 @@
 
 | フィールド | 必須 | 記入基準 |
 |---|---|---|
-| `query` | 必須 | 実行したクエリ文字列。URL文法で組み立てた場合はそのパス、`site:` 検索の場合は検索語をそのまま写す。欠落・空は ERROR |
+| `query` | 必須 | 実行したクエリ文字列。URL文法で組み立てた場合はそのパス、`site:` 検索の場合は検索語をそのまま転記する。欠落・空は ERROR |
 | `source` | 必須 | 取得元の名前（サイト名、または `WebSearch`）。欠落・空は ERROR |
 | `url` | 必須（null 可） | 実際に叩いたURL。`site:` 検索で結果ページのURLが定まらない場合は `null`。`http` で始まらない文字列は ERROR |
 | `fetched_at` | 必須（null 可） | 取得日時（`YYYY-MM-DD` の実在日付、または日付で始まる ISO 8601）。形式外・実在しない日付は ERROR |
@@ -165,11 +165,11 @@
 
 ## 観測層（2.0）
 
-求人票から読めた事実を記録する。**求人検索担当エージェントが書く。** 本人の条件を知らないまま、求人票の記載だけで埋められる範囲に限る。軸と分類語彙の原本は job-change-support の `references/screening-axes.md` にある。
+求人票から読めた事実を記録する層であり、**書き手は求人検索担当エージェントである**。本人の条件を知らないまま、求人票の記載だけで埋められる範囲に限る。軸と分類語彙の原本は job-change-support の `references/screening-axes.md` にある。
 
 ### results[].duty_items（配列・必須）
 
-求人票の業務内容の引用文を1件ずつ写し、分類を付す。記載が無ければ空配列にする。
+求人票の業務内容の引用文を1件ずつ転記し、分類を付す。記載が無ければ空配列にする。
 
 | フィールド | 必須 | 記入基準 |
 |---|---|---|
@@ -206,17 +206,17 @@
 
 `hands_on_ratio` と `coordination_ratio` は `duty_items` の分類件数から算出する。`duty_items` が3件未満のときは母数が足りないため、`stated` を `false`、`value` を `null` にする。検証スクリプトは `duty_items` から比率を再計算し、`value` と一致しなければ ERROR とする（許容差 0.01）。
 
-`experience_distance` の観測層の構造は `screening-axes.md` が定める。検証スクリプトは、`value` が `null` でない場合を ERROR とし、`stated=true` のときに `required_experience` が非空の文字列の配列でない場合と、`job_family` が非空の文字列でない場合を ERROR とする。距離の3値は判定層（`axis_judgements`）の語彙であり、観測層には現れない。
+`experience_distance` の観測層の構造は `screening-axes.md` が定める。検証スクリプトは、`value` が `null` でない場合を ERROR とする。`stated=true` のときは、`required_experience` が非空の文字列の配列でない場合と、`job_family` が非空の文字列でない場合も ERROR とする。距離の3値は判定層（`axis_judgements`）の語彙であり、観測層には現れない。
 
 ### improvement_axes（配列・similar_better 専用・2.1）
 
 利用者が狙うと決めた改善軸の id を並べる。値は `salary_condition`・`remote_certainty`・`annual_holidays`・`overtime_hours`・`scope_of_change` の5つである。匿名化された条件であり、検索担当エージェントへ渡してよい。
 
-**`employment_type` は改善軸に取れない。** この軸は尺度上の方向を持たず、`different` が改善なのか悪化なのかが軸の側から決まらないためである（無期から有期への変更も `different` になる）。雇用形態の希望は `conditions.employment_type` の必須条件として扱う。`improvement_axes` に `employment_type` があれば ERROR とする。
+この軸は尺度上の方向を持たず、`different` が改善なのか悪化なのかが軸の側から決まらない（無期から有期への変更も `different` になる）。したがって **`employment_type` は改善軸に取れない**。雇用形態の希望は `conditions.employment_type` の必須条件として扱う。`improvement_axes` に `employment_type` があれば ERROR とする。
 
 `similar_better` で欠落・空の場合は WARN、`fuzzy` にある場合は WARN とする。配列でない、未知の軸 id、`employment_type`、重複は ERROR。
 
-この配列は `baseline_comparison.overall` の導出に使う。**どの軸で上回りたいかは本人の選好であり、軸別の観測からは決まらない。** 選好を1か所（この配列）へ集め、観測層には良し悪しを持ち込まない。
+この配列は `baseline_comparison.overall` の導出に使う。**どの軸で上回りたいかは本人の選好であり、軸別の観測からは決まらない**ため、選好はこの配列の1か所へ集め、観測層には良し悪しを持ち込まない。
 
 ### results[].baseline_comparison（オブジェクト・similar_better 専用・2.1）
 
@@ -256,7 +256,7 @@
 | `employment_type`（追加軸） | 雇用形態が基準求人と同一か否か | 順序を持たないため `higher`・`lower` を使わない |
 | `scope_of_change`（追加軸） | 就業場所・業務の変更の範囲の広さ（限定 < 無限定） | 範囲が広い |
 
-**`relation` は事実の関係だけを表す。良い・悪いは書かない。** 尺度上でどちら側かは求人票2枚から決まるが、どちら側が望ましいかは本人の選好であり、観測層では決められないからである（この分離の根拠は `search-methods.md` の「観測と判定を分ける」にある）。
+**`relation` は事実の関係だけを表す。良い・悪いは書かない**。尺度上でどちら側かは求人票2枚から決まる。どちら側が望ましいかは本人の選好であり、観測層では決められない（この分離の根拠は `search-methods.md` の「観測と判定を分ける」にある）。
 
 | フィールド | 必須 | 記入基準 |
 |---|---|---|
@@ -267,13 +267,13 @@
 | `quote` | 条件付き必須 | 候補求人の掲載ページからの引用。`relation` が `unknown` 以外のときは非空必須 |
 | `note` | 任意 | 補足 |
 
-**どちらかの求人票に記載が無い軸は `unknown` とする。記載が無いことを `same` と扱ってはならない。** 記載の欠落は「基準求人と同じ条件である」ことを意味しない（根拠は `search-methods.md` の「記載が無いことを証拠に使わない」にある）。検証スクリプトは、`unknown` 以外の関係に両側の値と引用を要求することでこれを機械的に担保する。引用できない比較は書けない。
+**どちらかの求人票に記載が無い軸は `unknown` とする。記載が無いことを `same` と扱ってはならない**。記載の欠落は「基準求人と同じ条件である」ことを意味しない（根拠は `search-methods.md` の「記載が無いことを証拠に使わない」にある）。検証スクリプトは、`unknown` 以外の関係に両側の値と引用を要求してこれを機械的に担保する。引用できない比較は書けない。
 
 基準求人の `job_posting.json` が `schema_version` `1.0` の場合、`scope_of_change` はそのファイルに存在しない。この軸は `unknown` とする（欠落を「変更の範囲が同じ」と読まない）。
 
 #### overall の導出
 
-`overall` は `better` / `not_better` の2値である。**`improvement_axes` に挙がった軸だけを見る。** 選ばれなかった軸は表示用の記録であり、総合判定に効かせない。狙っていない軸の上下は本人にとっての良し悪しが定まらないためである。
+`overall` は `better` / `not_better` の2値である。見るのは **`improvement_axes` に挙がった軸だけ**である。選ばれなかった軸は表示用の記録であり、狙っていない軸の上下は本人にとっての良し悪しが定まらないため、総合判定に効かせない。
 
 各軸の改善方向は次のとおりである。
 
@@ -292,11 +292,11 @@
 | `improvement_axes` の1つ以上が改善方向、かつ `improvement_axes` のどれも逆方向でない | `better` |
 | 上記以外 | `not_better` |
 
-検証スクリプトはこの表から再計算し、`overall` と一致しなければ ERROR とする（6軸が揃っていない場合は照合しない）。**`similar_better` で `improvement_axes` が空・欠落なのに `overall` が書かれている場合は ERROR とする。**どの軸で上回りたいかが決まらなければ、より良いかどうかは導けないためである。`unknown` は改善にも悪化にも数えない。未確認の軸を残したまま `better` になりうるため、報告では `unknown` の軸を明示する。
+検証スクリプトはこの表から再計算し、`overall` と一致しなければ ERROR とする（6軸が揃っていない場合は照合しない）。どの軸で上回りたいかが決まらなければ、より良いかどうかは導けない。このため **`similar_better` で `improvement_axes` が空・欠落なのに `overall` が書かれている場合も ERROR とする**。`unknown` は改善にも悪化にも数えない。未確認の軸を残したまま `better` になりうるため、報告では `unknown` の軸を明示する。
 
 ## 判定層（2.0）
 
-観測と本人の条件を突き合わせた結果を記録する。**スキル本体がローカルで書く。** `profile.json` を読む必要があるため、Web 送信手段を持つエージェントには書かせない。
+観測と本人の条件を突き合わせた結果を記録する。**スキル本体がローカルで書く**。`profile.json` を読む必要があるため、Web 送信手段を持つエージェントには書かせない。
 
 ### results[].axis_judgements（配列・必須）
 
@@ -310,7 +310,7 @@
 | `threshold_ref` | 条件付き必須 | 判定に用いた profile の `conditions[].id` または `work_character_preferences[].trait`。`level` が `must`・`want` のときは必須 |
 | `rationale` | 必須 | 判定の根拠。観測値としきい値の対比で書く。本人の経歴・現年収を書かない |
 
-**推測を禁じる規則。** 次はいずれも ERROR とする。
+**推測を禁じる**。次はいずれも ERROR とする。
 
 - 対応する観測が `stated=false` なのに `meets`・`not_meets` と判定する（記載の無い軸を推測で判定している）。
 - 対応する観測の `value` が `null` なのに `meets`・`not_meets` と判定する（定性表現のみからの断定）。
@@ -338,7 +338,7 @@
 
 導出結果を手で変えた場合にのみ書く。`from`（導出結果）・`to`（実際の分類）・`reason`（非空）を持つ。
 
-**変更は厳格化する方向にしか認めない。** `apply_candidate` → `needs_more_research` → `excluded` の向きだけを認め、逆向きは ERROR とする。応募候補が0件のときに、根拠なく1件を作る経路を塞ぐためである。
+**変更は厳格化する方向にしか認めない**。`apply_candidate` → `needs_more_research` → `excluded` の向きだけを認め、逆向きは ERROR とする。応募候補が0件のときに、根拠なく1件を作る経路を塞ぐためである。
 
 ### results[].slug（文字列または null・任意）
 
@@ -367,7 +367,7 @@
 | `counts.apply_candidate` が1件以上 | `応募推奨あり` |
 | `counts.apply_candidate` が0件 | `応募推奨なし` |
 
-**応募候補が0件のときに、最有力候補を選ばない。** 「応募推奨なし」と明記する。検証スクリプトは、応募候補0件で `応募推奨あり` としている場合を ERROR とする。
+**応募候補が0件のときに、最有力候補を選ばず、「応募推奨なし」と明記する**。検証スクリプトは、応募候補0件で `応募推奨あり` としている場合を ERROR とする。
 
 ### current_employer_exclusion
 
@@ -409,8 +409,10 @@ python validate_job_search_results.py <job_search_results.json> [--json] [--prof
 - result の `salary_range`・`location`・`remote_policy` が文字列でも null でもない
 - result の `annual_holidays` が数値・文字列・null のいずれでもない
 - result の `better_points` が配列でない、または非空の文字列でない要素を含む
-- `baseline` があり、`url` も `slug` も持たない、または `slug` が形式不一致
-- `search_log` が配列でない、その要素がオブジェクトでない、`query`・`source` が空、`url`・`fetched_at`・`hit_count`・`adopted_count` のキーが欠落している、`url` が `http` で始まらない、`fetched_at` が形式外または実在しない日付、`hit_count`・`adopted_count` が0以上の整数でも null でもない
+- `baseline` があり、`url` と `slug` のどちらも持たない、または `slug` が形式不一致
+- `search_log` が配列でない、またはその要素がオブジェクトでない
+- `search_log` の `query`・`source` が空、または `url`・`fetched_at`・`hit_count`・`adopted_count` のキーが欠落している
+- `search_log` の `url` が `http` で始まらない、`fetched_at` が形式外または実在しない日付、`hit_count`・`adopted_count` が0以上の整数でも null でもない
 - `improvement_axes` が配列でない、未知の軸 id を含む、`employment_type` を含む、または軸が重複している
 - `similar_better` で `improvement_axes` が空・欠落なのに `baseline_comparison.overall` が書かれている
 - `baseline_comparison` がオブジェクトでない、`axes` が配列でない、6軸を過不足なく持たない（欠落・未知 id・重複）、`relation` が軸ごとの既定値以外
@@ -430,7 +432,8 @@ python validate_job_search_results.py <job_search_results.json> [--json] [--prof
 - `stated=true` なのに `quote` が空
 - `stated=true` かつ `value` が `null` なのに `value_text` が空
 - `value` が軸ごとの型・値域（原本は `screening-axes.md`）から外れている（列挙外の値、数値でない、負値、比率の値域外）
-- `experience_distance` の観測の `value` が `null` でない、または `stated=true` なのに `required_experience`・`job_family` が形式を満たさない
+- `experience_distance` の観測の `value` が `null` でない
+- `experience_distance` で `stated=true` なのに `required_experience`・`job_family` が形式を満たさない
 - `stated=false` の軸を `meets`・`not_meets` と判定している
 - `value` が `null` の軸を `meets`・`not_meets` と判定している
 - `level` が `must`・`want` なのに `threshold_ref` が空、または `rationale` が空
@@ -474,4 +477,4 @@ python validate_job_search_results.py <job_search_results.json> [--json] [--prof
 | 氏名らしき値 | `basic` 内の `name`・`full_name`・`氏名`・`kana`・`name_kana` の5キー。 |
 | 現年収 | `salary.current`（数値）。10000 未満の値は、年収以外の数値との誤検出を避けるため抽出しない。希望年収の下限は検査対象に含めない（条件化を許容する）。 |
 
-profile.json の読み取りはローカルに閉じ、外部へ送信しない。記入例は `assets/job_search_results_example.json`・`assets/job_search_results_similar_better_example.json`（いずれも架空データ）にある。
+profile.json の読み取りはローカルに閉じ、外部へ送信しない。記入例はいずれも架空データであり、`assets/job_search_results_example.json` と `assets/job_search_results_similar_better_example.json` にある。

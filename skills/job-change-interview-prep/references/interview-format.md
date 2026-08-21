@@ -54,7 +54,7 @@
 | `interviewer_intent` | 必須 | 面接官がその質問で確認する評価観点。欠落・空は ERROR |
 | `basis` | 必須 | 根拠。company_research の claim id、または profile の該当箇所を指す。欠落・空は ERROR |
 
-`id` は `interview_answers.json` の `question_id` と `interview_evaluation.json` の `question_id` が指す先であり、3ファイルを結ぶ唯一の連結キーである。
+`id` は `interview_answers.json` の `question_id` と `interview_evaluation.json` の `question_id` が指す先である。3ファイルを結ぶ唯一の連結キーである。
 
 既知の質問類型は `転職理由`・`志望動機`・`自己PR`・`実績深掘り`・`弱み`・`逆質問`・`ビヘイビアラル`・`ケース` である。この対応の原本は `question-bank.md` の「質問類型と job-change-interview-coach のカテゴリの対応」（外資系の2類型は `foreign-interviews.md`）にある。既知の8値以外を ERROR ではなく WARN とするのは、類型が増えても成果物としては成立するためである。
 
@@ -81,7 +81,7 @@
 | フィールド | 必須 | 記入基準 |
 |---|---|---|
 | `question_id` | 必須 | `interview_questions.json` の `questions[].id` と同じ値。欠落・空・形式不一致は ERROR。重複は ERROR |
-| `answer` | 必須 | 利用者の回答をそのまま写す。要約・言い換え・添削をしない。欠落・空は ERROR |
+| `answer` | 必須 | 利用者の回答をそのまま転記する。要約・言い換え・添削をしない。欠落・空は ERROR |
 | `answered_at` | 必須 | 回答した日付（`YYYY-MM-DD`）。欠落・形式不一致は ERROR |
 
 ## interview_evaluation.json
@@ -140,6 +140,6 @@
 python validate_interview_artifacts.py <artifact.json> [--json] [--questions <interview_questions.json>]
 ```
 
-検査する成果物の種別は、トップレベルのキーで判別する。`questions`・`answers`・`evaluations` のうち1つだけを持てばその種別とし、1つも持たない場合と2つ以上を持つ場合は ERROR とする（3ファイルは互いに素なキーを持つため、種別を引数で指定させる必要が無い）。
+検査する成果物の種別は、トップレベルのキーで判別する。`questions`・`answers`・`evaluations` のうち1つだけを持てばその種別とし、1つも持たない場合と2つ以上を持つ場合は ERROR とする。3ファイルは互いに素なキーを持つため、種別を引数で指定させる必要が無い。
 
-`--questions` に `interview_questions.json` のパスを渡すと、`interview_answers.json`・`interview_evaluation.json` の `question_id` が質問側に実在するかを検査し、実在しない場合は ERROR とする。フォールバックモードでは質問ファイルを書き出さない場合があるため、`--questions` は任意とし、渡されないときは相互参照を検査しない。
+`--questions` に `interview_questions.json` のパスを渡すと、`interview_answers.json`・`interview_evaluation.json` の `question_id` が質問側に実在するかを検査する。実在しない場合は ERROR とする。フォールバックモードでは質問ファイルを書き出さない場合があるため、`--questions` は任意とし、渡されないときは相互参照を検査しない。

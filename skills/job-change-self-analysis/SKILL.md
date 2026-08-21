@@ -18,21 +18,21 @@ allowed-tools: Read, Write, Glob, Grep, Bash, AskUserQuestion, Agent, Skill
 
 # job-change-self-analysis
 
-転職の自己分析に取り組むとき、このスキル1つで棚卸しから成果物の納品までの手順がそろう。profile.json を土台に、行動エピソード（STAR素材）と他者フィードバックを内省と対等に集め、興味・価値観・career adaptability の4次元・過去の行動の4軸で構造化し、根拠づけた強み、キャリア・ナラティブ、退職理由の建設的な言い換えの3点を持つ self_analysis.json を作る。成果物は面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が入力として読む。
+転職の自己分析に取り組むとき、このスキル1つで棚卸しから成果物の納品までの手順がそろう。profile.json を土台に、行動エピソード（STAR素材）と他者フィードバックを内省と対等に集め、興味・価値観・career adaptability の4次元・過去の行動の4軸で構造化する。そのうえで、根拠づけた強み、キャリア・ナラティブ、退職理由の建設的な言い換えの3点を持つ self_analysis.json を作る。成果物は面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が入力として読む。
 
-本スキルは、行動証拠と他者視点を内省と併用する（根拠は `references/self-analysis-methods.md`）。作成と独立監査はそれぞれ専用エージェント（`job-change-self-analysis-writer`・`job-change-self-analysis-auditor`）が担い、本スキルはその起動・差し戻し・納品を統括する。
+本スキルは、行動証拠と他者視点を内省と併用する（根拠は `references/self-analysis-methods.md`）。作成と独立監査はそれぞれ専用エージェント（`job-change-self-analysis-writer`・`job-change-self-analysis-auditor`）が担う。本スキルはその起動・差し戻し・納品を統括する。
 
 ## 目的と原則
 
-1. **他者視点と行動証拠を内省と併用する。** 強み（strengths）は、行動エピソード（behavioral_episodes）または他者証言（others_feedback）への対応づけを必須とし、内省単独の強みは認めない（検証スクリプトが ERROR とする）。他者フィードバックの受け取りは課題志向で行い、人格評価としてではなく行動と結果への対応づけとして記録する。
+1. **他者視点と行動証拠を内省と併用する。** 強み（strengths）は、行動エピソード（behavioral_episodes）または他者証言（others_feedback）への対応づけを必須とする。内省単独の強みは認めない（検証スクリプトが ERROR とする）。他者フィードバックの受け取りは課題志向で行い、人格評価としてではなく行動と結果への対応づけとして記録する。
 
-2. **有限の構造化された問いに限る（反すう防止）。** 質問は `references/question-bank.md` の有限の問いに限定し、無制限の「なぜ」の反復を促さない。深掘りが感情の反すうに陥らないようにし、必ず行動・事実（エピソード）へ対応づける。感情の将来予測（「転職すれば幸せになれる」）を確信・断定の根拠にしない。
+2. **有限の構造化された問いに限る（反すう防止）。** 質問は `references/question-bank.md` の有限の問いに限定し、無制限の「なぜ」の反復を促さない。深掘りを感情の反すうへ陥らせず、必ず行動・事実（エピソード）へ対応づける。感情の将来予測（「転職すれば幸せになれる」）を確信・断定の根拠にしない。
 
-3. **診断結果を確定ラベルとして扱わない。** 妥当性の弱い枠組み（Schein のキャリア・アンカー、商用の strengths ツール、RIASEC 自己診断ツール）は、内省を促す呼び水として限定的に使い、結果を「確定した自分」として扱わない。実務手法（Will-Can-Must・モチベーショングラフ・他己分析・ジョハリの窓）は聞き取りを進めるために使い、その出力は内省・行動・他者証言で裏付けてから成果物へ取り入れる。
+3. **診断結果を確定ラベルとして扱わない。** 妥当性の弱い枠組み（Schein のキャリア・アンカー、商用の strengths ツール、RIASEC 自己診断ツール）は、内省を促す呼び水として限定的に使う。結果を「確定した自分」として扱わない。実務手法（Will-Can-Must・モチベーショングラフ・他己分析・ジョハリの窓）は聞き取りを進めるために使い、その出力は内省・行動・他者証言で裏付けてから成果物へ取り入れる。
 
 4. **事実を創作・誇張しない。** 成果物に載せる経歴・実績・数値は profile.json に記載のある範囲に限る。behavioral_episodes の `metric`（定量値）は profile.json の実績と厳密一致させ、丸め・水増しをしない。規模・範囲・主体を表す言葉（大規模・全社・主導など）は、profile.json の記述で裏付けられる範囲を超えて用いない。
 
-5. **個人情報を外部へ送信しない。** `profile.json`・`self_analysis.json` に含まれる個人情報は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルは境界の内側にある `self_analysis.json` を作る側であり、writer（job-change-self-analysis-writer）・auditor（job-change-self-analysis-auditor）はいずれも Web 送信手段を持たないため、これらのパスを渡してよい。
+5. **個人情報を外部へ送信しない。** `profile.json`・`self_analysis.json` に含まれる個人情報は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルは境界の内側にある `self_analysis.json` を作る側である。writer（job-change-self-analysis-writer）と auditor（job-change-self-analysis-auditor）はいずれも Web 送信手段を持たないため、これらのパスを渡してよい。
 
 ## 範囲外
 
@@ -68,16 +68,16 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | パス | 役割 | 入出力 |
 |---|---|---|
 | `career-private/profile.json` | 利用者プロファイルの原本（hub が管理） | 入力（初期値として読む。Step 6 で値のみ反映） |
-| `career-private/self_analysis.json` | 自己分析成果物の原本 | 出力（素材部は Step 1〜3 で逐次追記し、統合部は Step 4 で書く） |
+| `career-private/self_analysis.json` | 自己分析の成果物の原本 | 出力（素材部は Step 1〜3 で逐次追記し、統合部は Step 4 で書く） |
 
-- 素材部は `behavioral_episodes`・`others_feedback`・`interests`・`values`・`career_adaptability`、統合部は `strengths`・`career_narrative`・`reason_for_change` を指す。統合部が未作成のあいだは `validate_self_analysis.py` が FAIL するため、検証は Step 5 で行う。
+- 素材部は `behavioral_episodes`・`others_feedback`・`interests`・`values`・`career_adaptability` を指す。統合部は `strengths`・`career_narrative`・`reason_for_change` を指す。統合部が未作成のあいだは `validate_self_analysis.py` が FAIL するため、検証は Step 5 で行う。
 - `self_analysis.json` のフィールド仕様・記入基準・検証規則の原本は `references/self-analysis-format.md` にある。記入例は `assets/self_analysis_example.json`（架空の人物）にある。
 - スキル本体フォルダー（`skills/job-change-self-analysis/`）に利用者データを置かない。
 - `career-private/` が未作成の場合は、必要になった時点で本スキルが作る。
 
 ## パイプライン
 
-受付から納品まで Step 0〜6 を順に進める。`{SKILL_DIR}` は本スキルの絶対パス、`{PROFILE}` は `profile.json` の絶対パス、`{SELF}` は `self_analysis.json` の絶対パスに読み替える。
+受付から納品まで Step 0〜6 を順に進める。Step 1〜3 では、聞き取った内容を各 Step の終わりに `{SELF}` へ書き出す。中断しても、済んだ Step を聞き直さずに再開するためである。`{SKILL_DIR}` は本スキルの絶対パス、`{PROFILE}` は `profile.json` の絶対パス、`{SELF}` は `self_analysis.json` の絶対パスに読み替える。
 
 ### Step 0 前提確認
 
@@ -88,27 +88,27 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 ### Step 1 行動エピソードの棚卸し
 
-`profile.json` の `career_history`・`achievements` を素材として提示し、AskUserQuestion（選択式中心、1回最大4問・各最大4択、自由記述は具体値のみ）で STAR 形式（Situation / Task / Action / Result）へ構造化する。質問は `references/question-bank.md` の Step 1 の問いを使う。モチベーショングラフの考え方（時系列＋感情の起伏）は任意の補助とする。各エピソードに、可能なら `metric`（定量値。profile.json の実績と厳密一致）と `reproducibility`（再現性）を添える。聞き取った内容は、この Step の終わりに `{SELF}` の `behavioral_episodes` へ書き出す（形式の原本は `references/self-analysis-format.md`）。中断しても Step 1 を聞き直さずに再開するためである。
+`profile.json` の `career_history`・`achievements` を素材として提示する。AskUserQuestion は選択式中心（1回最大4問・各最大4択、自由記述は具体値のみ）で使い、STAR 形式（Situation / Task / Action / Result）へ構造化する。質問は `references/question-bank.md` の Step 1 の問いを使う。モチベーショングラフの考え方（時系列＋感情の起伏）は任意の補助とする。各エピソードに、可能なら `metric`（定量値。profile.json の実績と厳密一致）と `reproducibility`（再現性）を添える。聞き取った内容は、この Step の終わりに `{SELF}` の `behavioral_episodes` へ書き出す（形式の原本は `references/self-analysis-format.md`）。
 
 ### Step 2 他者フィードバックの取り込み
 
-過去の評価面談・他者から言われたことを、`others_feedback` として記録する（他己分析・ジョハリの窓）。question-bank.md の Step 2 の問いを使う。フィードバックは課題志向で受け取り、人格評価ではなく行動と結果への対応づけで記録し、`linked_episode_ids` でエピソードへ対応づける。この場で他者フィードバックが入手できない場合は、成果物を WARN のまま先へ進め、利用者へ収集を今後の課題として提示する（依頼文は `assets/feedback_request_template.md` を使う）。聞き取った内容は、この Step の終わりに `{SELF}` の `others_feedback` へ書き出す。中断しても Step 2 を聞き直さずに再開するためである。
+過去の評価面談・他者から言われたことを、`others_feedback` として記録する（他己分析・ジョハリの窓）。question-bank.md の Step 2 の問いを使う。フィードバックは課題志向で受け取り、人格評価ではなく行動と結果への対応づけとして記録する。`linked_episode_ids` でエピソードへ対応づける。この場で他者フィードバックが入手できない場合は、成果物を WARN のまま先へ進め、利用者へ収集を今後の課題として提示する。依頼文は `assets/feedback_request_template.md` を使う。聞き取った内容は、この Step の終わりに `{SELF}` の `others_feedback` へ書き出す。
 
 ### Step 3 興味・価値観・career adaptability の構造化質問
 
-`references/question-bank.md` の Step 3 の有限の問いだけを使い、興味（RIASEC の枠組み）・価値観（エピソードへ対応づける）・career adaptability の4次元（concern / control / curiosity / confidence）を構造化する。無制限の「なぜ」の反復を禁じ、深掘りは必ずエピソード（事実）へ対応づける。Schein の8分類・CCI 型5問は呼び水として使い、結果を確定ラベルにしない。聞き取った内容は、この Step の終わりに `{SELF}` の `interests`・`values`・`career_adaptability` へ書き出す。中断しても Step 3 を聞き直さずに再開するためである。
+`references/question-bank.md` の Step 3 の有限の問いだけを使う。興味（RIASEC の枠組み）・価値観（エピソードへ対応づける）・career adaptability の4次元（concern / control / curiosity / confidence）を構造化する。無制限の「なぜ」の反復を禁じ、深掘りは必ずエピソード（事実）へ対応づける。Schein の8分類・CCI 型5問は呼び水として使い、結果を確定ラベルにしない。聞き取った内容は、この Step の終わりに `{SELF}` の `interests`・`values`・`career_adaptability` へ書き出す。
 
 ### Step 4 統合（作成）
 
-`job-change-self-analysis-writer` エージェント（model: opus）を起動し、Step 1〜3 で素材部を書き込んだ `{SELF}` と `{PROFILE}`・出力先 `{SELF}` を渡して、素材部を読ませる。作成担当は、strengths の根拠づけ（episode / feedback への対応づけ必須）、career_narrative の作成（ライフテーマ・転機・一貫する動機）、reason_for_change.constructive_version の作成（不満の列挙でなく発揮したい価値を軸に）を行う。戻り値を利用者へ提示し、AskUserQuestion の選択式で修正点を確認する。
+`job-change-self-analysis-writer` エージェント（model: opus）を起動する。Step 1〜3 で素材部を書き込んだ `{SELF}` と `{PROFILE}`・出力先 `{SELF}` を渡して、素材部を読ませる。作成担当は、strengths の根拠づけ（episode / feedback への対応づけ必須）、career_narrative の作成（ライフテーマ・転機・一貫する動機）、reason_for_change.constructive_version の作成（不満の列挙でなく発揮したい価値を軸に）を行う。戻り値を利用者へ提示し、AskUserQuestion の選択式で修正点を確認する。
 
 ### Step 5 機械的な検証＋独立監査
 
-`validate_self_analysis.py` で `{SELF}` を検証し、PASS（ERROR 0件）を確認する。続いて `job-change-self-analysis-auditor` エージェント（model: opus、作成担当の判断理由を渡さない新規コンテキスト）を起動し、誇張・創作／一貫性／内省単独の重み／反すう・感情予測型の記述を監査する。指摘は Step 4 へ差し戻す（最大2回。以降は利用者の判断による）。
+`validate_self_analysis.py` で `{SELF}` を検証し、PASS（ERROR 0件）を確認する。続いて `job-change-self-analysis-auditor` エージェント（model: opus、作成担当の判断理由を渡さない新規コンテキスト）を起動する。誇張・創作／一貫性／内省単独の重み／反すうや感情の将来予測に頼る記述を監査する。指摘は Step 4 へ差し戻す（最大2回。以降は利用者の判断による）。
 
 ### Step 6 反映と接続案内
 
-`profile.json` へ、`strengths`（self_analysis の strengths.statement の短文）と `job_change_axis.reasons`（constructive_version に基づく文言）を値のみ反映する。profile.json のスキーマは変更しない。反映後に hub の `validate_profile.py` を再実行して PASS を確認し、profile.json の `updated_at` を当日の日付へ書き換える。`self_analysis.json` は下流のサブスキルの入力であって単体の読み物ではないため、整形したファイルは作らない。代わりに、何が書かれたか（強み・価値観・関心・キャリアの物語・転職理由の建設的な言い換え）を利用者へ要約して示す。最後に、`self_analysis.json` を入力に使える下流の作業（`job-change-documents` の志望動機の深化、`job-change-interview-prep` の一貫性ある回答）を案内する。最終メッセージは結論から述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
+`profile.json` へ、`strengths`（self_analysis の strengths.statement の短文）と `job_change_axis.reasons`（constructive_version に基づく文言）を値のみ反映する。profile.json のスキーマは変更しない。反映後に hub の `validate_profile.py` を再実行して PASS を確認する。profile.json の `updated_at` は当日の日付へ書き換える。`self_analysis.json` は下流のサブスキルの入力であって単体の読み物ではないため、整形したファイルは作らない。代わりに、何が書かれたか（強み・価値観・関心・キャリアの物語・転職理由の建設的な言い換え）を利用者へ要約して示す。最後に、`self_analysis.json` を入力に使える下流の作業（`job-change-documents` の志望動機の深化、`job-change-interview-prep` の一貫性ある回答）を案内する。最終メッセージは結論から述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
 
 ## 合否ゲートと差し戻し
 
@@ -119,7 +119,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | Step 0 のプロファイルゲート | `profile.json` が `validate_profile.py` で PASS していなければ着手しない。未作成・FAIL は hub（`job-change-support`）経由で `job-change-profile` サブスキルへ戻す。ただし FAIL の場合は、ERROR の内容を示し、利用者が欠落を承知で着手を希望するなら、欠けた項目の値を直接引用または前提とする記述を作らないという条件で進めてよい。どの項目が欠けたままかを成果物に明記する。 |
 | Step 5 の検証・監査ゲート | `validate_self_analysis.py` が FAIL（ERROR 1件以上）の場合、または `job-change-self-analysis-auditor` の `verdict` が BLOCK の場合、または `severity` = must_fix の finding がある場合は、Step 4 で作成担当へ差し戻す。差し戻しは同一成果物につき最大2回まで行う。 |
 
-差し戻し時は、監査の findings（target・evidence・fix）をそのまま作成担当へ渡し、反映後に Step 5 から再度通す。2回の差し戻しで解消しない指摘は、未決事項として利用者へ判断を委ねてから納品する（例: profile.json の実績だけでは強みの裏付けが足りない、という指摘は、他者フィードバックの追加収集か訴求の見直しが要るため利用者の判断事項とする）。機械的な検証の ERROR は差し戻しの上限にかかわらず解消してから納品し、未解決が監査の finding だけである場合に限り、未決事項として明記したうえで納品してよい。
+差し戻し時は、監査の findings（target・evidence・fix）をそのまま作成担当へ渡し、反映後に Step 5 から再度通す。2回の差し戻しで解消しない指摘は、未決事項として利用者へ判断を委ねてから納品する。例えば、profile.json の実績だけでは強みの裏付けが足りないという指摘は、他者フィードバックの追加収集か訴求の見直しが要るため、利用者の判断事項とする。機械的な検証の ERROR は、差し戻しの上限にかかわらず解消してから納品する。未解決が監査の finding だけである場合に限り、未決事項として明記したうえで納品してよい。
 
 ## 役割の実行（ハーネス別）
 
@@ -137,13 +137,13 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | エージェント | model | 責務 |
 |---|---|---|
 | `job-change-self-analysis-writer` | opus | strengths の根拠づけ・career_narrative の作成・reason_for_change の建設的言い換え（Step 4）と監査指摘の反映 |
-| `job-change-self-analysis-auditor` | opus | 独立コンテキストでの誇張・一貫性・内省単独の重み・反すう/感情予測型記述の監査、検証スクリプトの再実行（Step 5） |
+| `job-change-self-analysis-auditor` | opus | 独立コンテキストでの誇張・一貫性・内省単独の重み・反すうや感情の将来予測に頼る記述の監査、検証スクリプトの再実行（Step 5） |
 
 機械的検査は `validate_self_analysis.py` が担う。model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
 
 ## スクリプトのCLI使用例
 
-自己分析成果物の検証（終了コードは PASS で 0、FAIL で 1。WARN のみは PASS 扱い）。`{SKILL_DIR}` は本スキルの絶対パス、末尾のパスは検証対象の self_analysis.json のパスに読み替える。
+自己分析の成果物の検証（終了コードは PASS で 0、FAIL で 1。WARN のみは PASS 扱い）。`{SKILL_DIR}` は本スキルの絶対パス、末尾のパスは検証対象の self_analysis.json のパスに読み替える。
 
 ```bash
 python {SKILL_DIR}/scripts/validate_self_analysis.py {DATA_ROOT}/career-private/self_analysis.json

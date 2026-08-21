@@ -11,7 +11,7 @@
 
 対象の列挙・例外・役割ごとの可否はここにのみ置き、参照元へ複製しない。参照元の SKILL.md は、原則としての規範（個人情報を外部送信に用いない）と、そのスキルに固有の帰結だけを書く。
 
-役割プロンプト（`agents/*.md` と `skills/*/references/roles/*.md`）だけは例外で、規範の要点を原文どおりに持つ。役割プロンプトはサブエージェントへ単体で渡り、本ファイルを開けるとは限らないためである（`job-change-posting-parser` の `tools` は `WebFetch` と `WebSearch` だけで `Read` を持たず、参照先を開く手段が無い）。これは意図した複製であり、本ファイルを変えたときは13の役割プロンプトも同時に直す。
+役割プロンプト（`agents/*.md` と `skills/*/references/roles/*.md`）だけは例外で、規範の要点を原文どおりに持つ。役割プロンプトはサブエージェントへ単体で渡り、本ファイルを開けるとは限らないためである。たとえば `job-change-posting-parser` の `tools` は `WebFetch` と `WebSearch` だけで `Read` を持たず、参照先を開く手段が無い。これは意図した複製であり、本ファイルを変えたときは13の役割プロンプトも同時に直す。
 
 ## 境界の原則（広い列挙）
 
@@ -19,7 +19,7 @@
 
 ### profile.json の項目
 
-氏名・現年収（`salary.current`）・希望年収（`salary.desired`）・居住地・学歴・在籍企業名（`career_history[].company`）・実績（`career_history[].achievements` の定量値を含む）。`job_change_axis` の条件と `company_score_axes` の `weight`・`thresholds`・定性軸も、本人の判断と状況を映すため同じ扱いとする。
+対象は、氏名・現年収（`salary.current`）・希望年収（`salary.desired`）・居住地・学歴・在籍企業名（`career_history[].company`）・実績（`career_history[].achievements` の定量値を含む）である。`job_change_axis` の条件と `company_score_axes` の `weight`・`thresholds`・定性軸も、本人の判断と状況を映すため同じ扱いとする。
 
 ### career-private/ 配下のファイル
 
@@ -51,10 +51,10 @@
 | `documents/` 配下の応募書類 | 経歴・実績を `profile.json` から引いて本文に書く | `job-change-document-writer`・`job-change-document-auditor` |
 | `documents/appeal-mapping.md` | 求人要件と `profile.json` の実績の対応表 | 同上 |
 | `documents/tailoring-rationale.md` | どの実績を採用したかとその理由 | 同上 |
-| `interview_answers.json` | 利用者の回答を要約・言い換えをせずそのまま写す | `job-change-interview-coach` |
+| `interview_answers.json` | 利用者の回答を要約・言い換えをせずそのまま転記する | `job-change-interview-coach` |
 | `interview_evaluation.json` | 回答への評価と根拠参照 | 同上 |
 
-これに対し、`companies/{企業スラッグ}/company_research.json`・`companies/{企業スラッグ}/exam_assessment.json` と `job-search/{検索ID}/` 配下は、Web 送信手段を持つ役割（`job-change-company-researcher`・`job-change-research-auditor`・`job-change-exam-scout`・`job-change-job-searcher`）が読み書きする。ここへ個人情報とその派生値を書かない。適合性評価の派生値の置き場所を `career-private/fit/{企業スラッグ}/` 配下に限るのも、同じ理由による。
+これに対し、`companies/{企業スラッグ}/company_research.json`・`companies/{企業スラッグ}/exam_assessment.json` と `job-search/{検索ID}/` 配下は、Web 送信手段を持つ役割が読み書きする。該当するのは `job-change-company-researcher`・`job-change-research-auditor`・`job-change-exam-scout`・`job-change-job-searcher` である。ここへ個人情報とその派生値を書かない。適合性評価の派生値の置き場所を `career-private/fit/{企業スラッグ}/` 配下に限るのも、同じ理由による。
 
 `_manifest.json` にも個人情報とその派生値を書かない。記録する項目の仕様は `freshness-policy.md` にある。
 
@@ -64,19 +64,19 @@
 
 ### 希望年収の下限
 
-求人検索の条件として、希望年収の下限（`salary_min`）を渡してよい。求人検索は年収下限を軸として成立する手続きであり、下限の額だけでは個人を特定しない。現年収（`salary.current`）は渡さない。現年収と希望年収の両方がそろうと、在籍企業の推定に使える情報量になる。
+求人検索の条件として、希望年収の下限（`salary_min`）を渡してよい。求人検索は年収下限を軸として成立する手続きであり、下限の額だけでは個人を特定しない。現年収（`salary.current`）は渡さない。現年収と希望年収の両方がそろうと、在籍企業を推定できるだけの情報量になる。
 
 この例外を使うのは `job-change-job-search` である。渡すのは匿名化した条件シートの `salary_min` の数値のみで、`profile.json` のパスも内容も渡さない。
 
 ### company_score_axes の quantitative 軸の識別子
 
-企業研究（`job-change-company-research`）を起動するときは、`company_score_axes` のうち `kind` が `quantitative` の軸の識別子の配列（例: `["compensation_level", "monthly_overtime", "annual_holidays"]`）だけを渡してよい。この配列は氏名・在籍企業名・現年収を含まない。`weight`・`thresholds` は渡さない。重みと基準は利用者の判断であり、企業側の事実収集には要らない。`company_score_axes` が無い場合は、軸を渡さずに起動する。
+企業研究（`job-change-company-research`）を起動するときは、`company_score_axes` のうち `kind` が `quantitative` の軸の識別子の配列だけを渡してよい。たとえば `["compensation_level", "monthly_overtime", "annual_holidays"]` のような配列である。この配列は氏名・在籍企業名・現年収を含まない。`weight`・`thresholds` は渡さない。重みと基準は利用者の判断であり、企業側の事実収集には要らない。`company_score_axes` が無い場合は、軸を渡さずに起動する。
 
 定性軸（`kind` が `qualitative`）は、利用者が自分の言葉で書いた `label`・`definition`・`judgment` を持つため渡さない。定性軸の判定は、企業研究が集めた事実と求人票を材料に、Web ツールを持たない適合性評価が行う。定性軸について企業研究で追加の調査が要る場合は、利用者自身の言葉で重点観点として指示する。
 
 ## 機械検出できる3項目（狭い定義）
 
-上の広い列挙は、材料を渡す前の判断に使う規範である。これに対し、成果物へ混入した個人情報を機械で検出する検査は、文字列一致で確実に検出できる3項目（現勤務先名・氏名らしき値・現年収）だけを対象とする。抽出元と検出規則の原本は `job-change-job-search` の `references/job-search-format.md` の「PII リント」にあり、`scripts/validate_job_search_results.py` の実装（`_SALARY_MIN_FOR_LINT`・`_NAME_KEYS`）はこれと一致する。
+上の広い列挙は、材料を渡す前の判断に使う規範である。これに対し、成果物へ混入した個人情報を機械で検出する検査は、文字列一致で確実に検出できる3項目（現勤務先名・氏名らしき値・現年収）だけを対象とする。抽出元と検出規則の原本は `job-change-job-search` の `references/job-search-format.md` の「PII リント」にある。`scripts/validate_job_search_results.py` の実装（`_SALARY_MIN_FOR_LINT`・`_NAME_KEYS`）はこれと一致する。
 
 希望年収の下限は検査対象に含めない。上の例外として検索条件に使うことを認めているためである。
 

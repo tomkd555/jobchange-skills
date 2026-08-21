@@ -6,7 +6,7 @@ description: >-
   年収600万以上・SaaS系」）を構造化条件シートへ変換し、AskUserQuestion で確認してから検索する。similar_better
   （基準求人を上回る検索）は基準求人（job_posting.json または URL）から条件を抽出し、どの軸（年収・リモート・年間休日・
   固定残業・変更の範囲）の改善を狙うかを確認してから検索する。検索へ渡す条件は匿名化し、現勤務先名・氏名・現年収を含めない
-  （希望年収を下限として含めることは可）。利用者が結果から企業を選んだら、企業研究の求人票取込へ接続する。
+  （希望年収を下限として含めることは可）。利用者が結果から企業を選んだら、企業研究の求人票の取り込みへ接続する。
   job-change-support（hub）から振り分けられて動く。
   Use when the user wants to search for job openings for a job change in Japan using only free public web search —
   either from a vague wish list (fuzzy mode) or by finding roles that beat a baseline posting (similar_better mode) —
@@ -25,11 +25,11 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 ## 目的と原則
 
-1. **無償の公開Web検索だけで探す。** 有償の求人API・会員限定の非公開求人には依存しない。検索方法のカタログは `references/query-catalog.md` にある（到達手段の2系統・サイト別のURL文法と制約・対象外にしたサイトとその理由・クエリの展開規則・年収下限の再判定・重複の排除・相場の基準線）。会員登録が必要な求人を範囲外にした場合は、成果物の `coverage_notes` に記す。robots.txt が AI クローラの取得を明示的に拒んでいるサイトは、取得が技術的に通っても対象外とする。
+1. **無償の公開Web検索だけで探す。** 有償の求人API・会員限定の非公開求人には依存しない。検索方法のカタログは `references/query-catalog.md` にある。到達手段の2系統・サイト別のURL文法と制約・対象外にしたサイトとその理由・クエリの展開規則・年収下限の再判定・重複の排除・相場の基準線を載せる。会員登録が必要な求人を範囲外にした場合は、成果物の `coverage_notes` に記す。robots.txt が AI クローラーの取得を明示的に拒んでいるサイトは、取得が技術的に通っても対象外とする。
 
 2. **掲載ページの引用と出典URLを付す。** 各求人には、掲載ページからの引用（`quote`）と出典URL（`url`）・掲載サイト名（`source_site`）を必ず付す。取得できない求人を創作しない。給与が「応相談」等で数値が読めない場合は `salary_range` を `null` にする。
 
-3. **匿名化を徹底する。** 検索担当エージェントへ渡す条件には、現勤務先名・氏名・現年収を含めない。希望年収の下限を条件に含めることは可とする（本スキルに関わる個人情報の境界の例外はこれだけである。理由と規定は `{HUB_SKILL_DIR}/references/pii-boundary.md` にある）。`profile.json` のパス・内容を Web ツールを持つエージェントへ渡さない。条件はスキル本体が組み立て、匿名化した文字列としてのみ渡す。
+3. **匿名化を徹底する。** 検索担当エージェントへ渡す条件には、現勤務先名・氏名・現年収を含めない。希望年収の下限を条件に含めることは可とする。本スキルに関わる個人情報の境界の例外はこれだけであり、理由と規定は `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。`profile.json` のパス・内容を Web ツールを持つエージェントへ渡さない。条件はスキル本体が組み立て、匿名化した文字列としてのみ渡す。
 
 4. **現勤務先の求人を除外する。** 検索結果に現勤務先の求人が含まれうる。除外はスキル本体がローカルで行う（`profile.json` を Web ツールへ渡さないため、除外判定はエージェントの外で行う）。
 
@@ -38,7 +38,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 ## 範囲外
 
 - **求人への応募・エージェント登録等の外部送信。** 応募フォームの送信・スカウト返信・転職エージェントへの登録は行わない。求人の収集までを支援し、応募は本人が行う。
-- **企業研究・求人票の構造化取込。** 選んだ企業の企業研究（`company_research.json`）と求人票の構造化（`job_posting.json`）は job-change-company-research が担う。本スキルは検索結果を集め、選定後に企業研究へ接続する。
+- **企業研究と、求人票の構造化した取り込み。** 選んだ企業の企業研究と求人票の構造化は job-change-company-research が担う。成果物は `company_research.json` と `job_posting.json` である。本スキルは検索結果を集め、選定後に企業研究へ接続する。
 - **適合性評価。** 実質時給・拘束時間・7次元の適合性評価は job-change-fit-assessment が担う。本スキルは求人票の記載だけで判定できる8軸のスクリーニングにとどめ、企業研究・自己分析・通勤時間を要する評価は行わない。
 - **利用者プロファイルの作成・管理。** profile.json の作成・更新・検証は hub（job-change-support）が担う。本スキルは PII リントの入力として profile.json をローカルで読むのみで、内容を外部へ渡さない。
 
@@ -100,14 +100,14 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 基準求人から条件を抽出し、どの軸の改善を狙うかを確認してから検索する。
 
-1. 基準求人を受け取る。所在は `companies/{企業スラッグ}/job_posting.json`（取込済みの求人票）または URL のいずれかである。URL を渡された場合、本スキルは WebFetch を持たないため条件を抽出できない。先に Skill ツールで `job-change-company-research` を起動して Step 0.5 の求人票取込を実行させ、作られた `job_posting.json` を基準求人にする。
+1. 基準求人を受け取る。所在は `companies/{企業スラッグ}/job_posting.json`（取り込み済みの求人票）または URL のいずれかである。URL を渡された場合、本スキルは WebFetch を持たないため条件を抽出できない。先に Skill ツールで `job-change-company-research` を起動して Step 0.5 の求人票の取り込みを実行させる。作られた `job_posting.json` を基準求人にする。
 2. 基準求人から職種・年収・年間休日・リモート方針・残業・**雇用形態**・**就業場所と業務の変更の範囲**を抽出する。後ろの2つは軸別比較の6軸に含まれるため、欠かすと当該軸が `unknown` のままになる。`job_posting.json` の `schema_version` が `1.0` の場合、そのファイルに `scope_of_change` は無い。この場合は当該軸を `unknown` として扱い、求人票を取り込み直すかどうかを利用者に確かめる。抽出時も、現勤務先名・氏名・現年収は条件へ持ち込まない。
 3. どの軸の改善を狙うかを AskUserQuestion で確認する。選択肢は年収・リモート・年間休日・固定残業・変更の範囲の5つであり、選ばれた軸の id を `improvement_axes` として記録する。雇用形態は選択肢に入れない（尺度上の方向を持たないため改善軸に取れない。希望があれば `conditions.employment_type` の必須条件として扱う）。軸 id と改善方向の原本は `references/job-search-format.md` にある。
 4. 抽出した基準条件と `improvement_axes` を匿名化した文字列として、求人検索担当エージェントへ渡し、`mode=similar_better` で検索させる。`baseline`（基準求人の URL または企業スラッグ）を成果物へ記録するよう指示する。エージェントは、基準求人の条件を上回る点を各求人の `better_points` に列挙し、6軸の `baseline_comparison.axes` を書く。
 
 ## パイプライン
 
-`{SKILL_DIR}` は本スキルの絶対パス、`{results.json}` は成果物のパス（`job-search/{YYYYMMDD}-{スラッグ}/job_search_results.json`）に読み替える。
+`{SKILL_DIR}` は本スキルの絶対パスを指す。`{results.json}` は成果物のパス（`job-search/{YYYYMMDD}-{スラッグ}/job_search_results.json`）に読み替える。
 
 ### Step 0 受付とモード判別
 
@@ -124,30 +124,31 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 - モード（`fuzzy` または `similar_better`）。
 - 匿名化済みの検索条件（文字列。現勤務先名・氏名・現年収を含めない）。
 - 出力先ディレクトリ（`job-search/{YYYYMMDD}-{スラッグ}/`）と、成果物のトップレベルの `search_id` へ書く値。`search_id` にはディレクトリ名と同じ `{YYYYMMDD}-{スラッグ}` を入れる。
-- similar_better の場合は基準条件・`improvement_axes`（改善軸の id の配列）・`baseline`（URL または企業スラッグ）と、基準求人の求人票のパス `{DATA_ROOT}/companies/{企業スラッグ}/job_posting.json`。このファイルは企業別の非個人情報ツリーにあり、本人の情報を含まないため、Web ツールを持つエージェントへ渡してよい。基準求人が URL 由来で `job_posting.json` がまだ無い場合は、先に job-change-company-research の Step 0.5（求人票取込）を実行して作らせ、そのパスを渡す。
-- 本スキルの絶対パス `{SKILL_DIR}`（`references/query-catalog.md`・`references/job-search-format.md` の所在）と、hub の絶対パス `{HUB_SKILL_DIR}`（`references/screening-axes.md` の所在）。
-- **観測層まで**を書く指示（`duty_items` の引用文と分類、8軸の `axis_observations`、実行したクエリの `search_log`、similar_better では6軸の `baseline_comparison.axes` と `improvement_axes` の書き写し）。判定層（`baseline_comparison.overall` を含む）と `screening` は書かせない。
+- similar_better の場合は、基準条件・`improvement_axes`（改善軸の id の配列）・`baseline`（URL または企業スラッグ）を渡す。あわせて基準求人の求人票のパス `{DATA_ROOT}/companies/{企業スラッグ}/job_posting.json` を渡す。このファイルは企業別の非個人情報ツリーにあり、本人の情報を含まないため、Web ツールを持つエージェントへ渡してよい。基準求人が URL 由来で `job_posting.json` がまだ無い場合は、先に Step 0.5（求人票の取り込み）で job-change-company-research に作らせてから、そのパスを渡す。
+- 本スキルの絶対パス `{SKILL_DIR}`（`references/query-catalog.md`・`references/job-search-format.md` の所在）。
+- hub の絶対パス `{HUB_SKILL_DIR}`（`references/screening-axes.md` の所在）。
+- **観測層まで**を書く指示。観測層は、`duty_items` の引用文と分類、8軸の `axis_observations`、実行したクエリの `search_log` を指す。similar_better ではこれに、6軸の `baseline_comparison.axes` と `improvement_axes` の転記しが加わる。判定層（`baseline_comparison.overall` を含む）と `screening` は書かせない。
 
-**profile.json は渡さない**（原則5。searcher は WebSearch・WebFetch を持つ）。**しきい値も渡さない。** 残業の上限・年間休日の下限・作業特性の希望は本人の条件であり、判定はスキル本体が Step 3.5 で行う。既に匿名化条件として許容されている `salary_min` だけは例外とし、検索条件に含めてよい。
+**profile.json は渡さない**（原則5。searcher は WebSearch・WebFetch を持つ）。残業の上限・年間休日の下限・作業特性の希望といったしきい値も同じである。これらは本人の条件であり、判定はスキル本体が Step 3.5 で行う。すでに匿名化条件として許容されている `salary_min` だけは例外とし、検索条件に含めてよい。
 
-エージェントは `references/query-catalog.md` の検索方法に従って求人を集め、`references/job-search-format.md` の形式で job_search_results.json を作る。8軸と業務分類の語彙は `{HUB_SKILL_DIR}/references/screening-axes.md` を読む。
+エージェントは `references/query-catalog.md` の検索方法に従って求人を集める。job_search_results.json は `references/job-search-format.md` の形式で作る。8軸と業務分類の語彙は `{HUB_SKILL_DIR}/references/screening-axes.md` を読む。
 
 ### Step 3 現勤務先求人の除外（スキル本体）
 
-エージェントが返した job_search_results.json から、現勤務先の求人をスキル本体がローカルで除外する。`career-private/profile.json` の `career_history` のうち在職中（`period` が `〜現在`）のエントリーの `company` に一致する `company_name` を持つ result を取り除く。除外した件数と企業名は、利用者への報告に含める（成果物には残さない）。
+エージェントが返した job_search_results.json から、現勤務先の求人をスキル本体がローカルで除外する。在職中のエントリーは、`career-private/profile.json` の `career_history` のうち `period` が `〜現在` のものである。そのエントリーの `company` に一致する `company_name` を持つ result を取り除く。除外した件数と企業名は、利用者への報告に含める（成果物には残さない）。
 
 ### Step 3.5 8軸判定と3分類（スキル本体）
 
 検索担当エージェントが書くのは観測層（求人票から読めた事実）までである。本人の条件との突き合わせは、`profile.json` を読めるスキル本体がローカルで行う。この分担により、個人情報を Web ツールを持つエージェントへ渡さずに条件判定が成立する。
 
 1. `{DATA_ROOT}/career-private/profile.json` を Read で読み、`schema_version` を確認する。
-2. `job_change_axis.conditions[]` と `work_character_preferences[]` から、8軸ごとの必須度（`must` / `want` / `none`）としきい値を読み取る。同じ軸に必須条件が複数ある場合は、最も厳しいしきい値を採用する。
-3. 各 result の `axis_observations` としきい値を突き合わせ、`axis_judgements` を書く。観測が `stated=false`、または `value` が `null` の軸は `unknown` にする。**記載が無いことを、条件を満たす証拠にも満たさない証拠にも使わない。**
+2. `job_change_axis.conditions[]` と `work_character_preferences[]` から、8軸ごとの必須度としきい値を読み取る。必須度は `must` / `want` / `none` の3値である。同じ軸に必須条件が複数ある場合は、最も厳しいしきい値を採用する。
+3. 各 result の `axis_observations` としきい値を突き合わせ、`axis_judgements` を書く。観測が `stated=false`、または `value` が `null` の軸は `unknown` にする。**記載が無いことを、条件を満たす証拠にも満たさない証拠にも使わない**。
 4. `references/job-search-format.md` の決定表から `classification` を導き、`classification_reasons` を書く。導出結果を手で変える場合は、厳格化する方向にのみ `classification_override` を付ける。
 5. similar_better では、各求人の `baseline_comparison.overall` を書く。`improvement_axes` に挙げた軸だけを見て、1つ以上が改善方向であり、かつどれも逆方向でなければ `better`、それ以外は `not_better` とする。改善方向の対応表は `references/job-search-format.md` にある。エージェントが書いた `relation`（事実の関係）に良し悪しを与えるのはこの段階だけである。
 6. `screening` を導出値として書く。`counts`・`unmet_axis_summary` は実集計と一致させる。`current_employer_exclusion` には Step 3 の実施結果を記録する（未実施なら `performed: false`・`excluded_count: null`）。
 
-`profile.json` の `schema_version` が `1.0` または `1.1` の場合はフォールバック動作にする。観測層はそのまま残し、全軸を `level: none`・`judgement: unknown`、全 result を `needs_more_research`、`screening.axes_source` を `degraded`、`recommendation` を `判定不能` にする。分類結果を「応募候補」として提示せず、`job-change-profile` での条件の構造化を案内する。
+`profile.json` の `schema_version` が `1.0` または `1.1` の場合はフォールバック動作にする。観測層はそのまま残す。全軸は `level: none`・`judgement: unknown`、全 result は `needs_more_research` にする。`screening.axes_source` は `degraded`、`recommendation` は `判定不能` にする。分類結果を「応募候補」として提示せず、`job-change-profile` での条件の構造化を案内する。
 
 判定に使う語彙（8軸・8作業特性・業務分類）の原本は、hub（`job-change-support`）の `references/screening-axes.md` にある。
 
@@ -165,7 +166,7 @@ python {SKILL_DIR}/scripts/validate_job_search_results.py {results.json} --profi
 
 検証 PASS の job_search_results.json を納品する。報告は分類ごとにまとめ、`screening.recommendation` を先に述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
 
-納品に先立ち、job_search_results.json を、人が読める求人検索レポート `job-search/{search_id}/job-search-report.md` へスキル本体が整形する。`search_id` は成果物のトップレベルの値であり、ディレクトリ名と同じ `{YYYYMMDD}-{スラッグ}` である。このレポートは非個人情報ツリーに置くため、現勤務先名・氏名・現年収を書かない（境界の原本は `{HUB_SKILL_DIR}/references/pii-boundary.md`）。
+納品に先立ち、スキル本体が job_search_results.json を人が読める求人検索レポートへ整形する。出力先は `job-search/{search_id}/job-search-report.md` である。`search_id` は成果物のトップレベルの値であり、ディレクトリ名と同じ `{YYYYMMDD}-{スラッグ}` である。このレポートは非個人情報ツリーに置くため、現勤務先名・氏名・現年収を書かない（境界の原本は `{HUB_SKILL_DIR}/references/pii-boundary.md`）。
 
 - 冒頭に `screening.recommendation` と `rationale`、分類ごとの件数（`screening.counts`）を置く。
 - 分類（`apply_candidate`・`needs_more_research`・`excluded`）ごとに求人を表にする（求人名・企業名・掲載サイト・出典URL・年収レンジ・勤務地／リモート方針）。分類ごとに表を分け、`excluded` の求人を応募候補と同じ表に並べない。
@@ -175,15 +176,15 @@ python {SKILL_DIR}/scripts/validate_job_search_results.py {results.json} --profi
 
 1. 総合判定として `screening.recommendation` と `rationale` を最初に伝える。`応募推奨なし` の場合は、その旨を明記し、無理に最有力候補を選ばない。
 2. `classification` が `apply_candidate` の求人を、満たしている必須条件とともに列挙する。
-3. `needs_more_research` の求人を、判定できなかった軸（`unknown` の軸）と、それを確認する手段（企業研究か面接か）とともに列挙する。
+3. `needs_more_research` の求人を、判定できなかった軸（`unknown` の軸）と、それを確認する手段（企業研究または面接）とともに列挙する。
 4. `excluded` の求人を、満たさなかった必須条件とともに簡潔に列挙する。注意書きを付け、応募候補と同じ表には並べない。
-5. 利用者が企業を選んだら、hub（job-change-support）の Step 0 手順で `career-private/company_index.json` へ企業スラッグを登録し、`companies/{企業スラッグ}/` を作り、当該 result の `slug` へ追記する。追記後に Step 4 の検証を再実行し、PASS（ERROR 0件）を確認する。続いて job-change-company-research の Step 0.5（求人票取込）へ接続する。求人ページの URL があればそれを入口とし、無ければ、検索結果へ写し取った掲載内容を本文として渡す。
+5. 利用者が企業を選んだら、hub（job-change-support）の Step 0 手順で `career-private/company_index.json` へ企業スラッグを登録する。`companies/{企業スラッグ}/` を作り、当該 result の `slug` へ追記する。追記後に Step 4 の検証を再実行し、PASS（ERROR 0件）を確認する。続いて job-change-company-research の Step 0.5（求人票の取り込み）へ接続する。求人ページの URL があればそれを入口とし、無ければ、検索結果へ転記した掲載内容を本文として渡す。
 
-similar_better では各求人の `better_points`（基準求人より改善している点）を併記し、`baseline_comparison.axes` の6軸を表にする（軸・改善軸に選んだか・`relation`・基準求人の値・候補求人の値）。`overall` が `better` の求人と `not_better` の求人を分けて示し、`improvement_axes` に挙げた軸のどれで上回ったかを添える。`unknown` の軸は「未確認」と書き、基準求人と同じとは書かない。
+similar_better では各求人の `better_points`（基準求人より改善している点）を併記する。`baseline_comparison.axes` の6軸は、軸・改善軸に選んだか・`relation`・基準求人の値・候補求人の値の表にする。`overall` が `better` の求人と `not_better` の求人を分けて示し、`improvement_axes` に挙げた軸のどれで上回ったかを添える。`unknown` の軸は「未確認」と書き、基準求人と同じとは書かない。
 
 #### 報告のルール
 
-**検証していない事項を成果として報告しない。** 報告してよい数値は次に限る。
+**検証していない事項を成果として報告しない。**報告してよい数値は次に限る。
 
 | 報告してよい数値 | 出所 |
 |---|---|
@@ -192,7 +193,7 @@ similar_better では各求人の `better_points`（基準求人より改善し�
 | 現勤務先求人の除外件数 | `screening.current_employer_exclusion.excluded_count`（`performed` が `true` のときのみ） |
 | 実行したクエリの本数・ヒット件数・採用件数 | `search_log` |
 
-**検索の網羅性を主張しない。** 書いてよいのは `search_log` にあるクエリとその件数までである。「網羅的に調べた」「主要な求人サイトを一通り確認した」とは書かない。
+書いてよいのは `search_log` にあるクエリとその件数までであり、**検索の網羅性は主張しない**。「網羅的に調べた」「主要な求人サイトを一通り確認した」とは書かない。
 
 `current_employer_exclusion.performed` が `false` の項目は「未検証」と書く。「0件」と書かない。機械的な検証の PASS は「形式が整い、PII が混入しておらず、分類と総合判定が軸判定と整合している」ことを示すのであって、求人が本人に合っていることを示すのではない。この区別を報告に反映する。
 
@@ -232,7 +233,7 @@ python {SKILL_DIR}/scripts/validate_job_search_results.py {results.json} --json
 python {SKILL_DIR}/scripts/validate_job_search_results.py {results.json} --profile {DATA_ROOT}/career-private/profile.json
 ```
 
-`--json` は結果を JSON 形式（`status`・`error_count`・`warning_count`・`errors`・`warnings`）で出力する。`--profile` を付けると、PII リント（現勤務先名・氏名・現年収の混入検出）に加え、`threshold_ref` が profile の条件・特性に実在するか、`level` が profile の必須度と一致するかを検査する。`--profile` を付けずに実行すると、それらが未実施である旨の WARN が出る。記述例は `assets/job_search_results_example.json`（fuzzy）と `assets/job_search_results_similar_better_example.json`（similar_better）、フィールド仕様と検証規則の原本は `references/job-search-format.md` にある。単体テストは次で実行する。
+`--json` は結果を JSON 形式（`status`・`error_count`・`warning_count`・`errors`・`warnings`）で出力する。`--profile` を付けると、PII リント（現勤務先名・氏名・現年収の混入検出）が加わる。さらに `threshold_ref` が profile の条件・特性に実在するか、`level` が profile の必須度と一致するかも検査する。`--profile` を付けずに実行すると、それらが未実施である旨の WARN が出る。記述例は `assets/` にある。fuzzy は `job_search_results_example.json`、similar_better は `job_search_results_similar_better_example.json` である。フィールド仕様と検証規則の原本は `references/job-search-format.md` である。単体テストは次で実行する。
 
 ```bash
 cd {SKILL_DIR} && python -m unittest discover -s scripts/tests

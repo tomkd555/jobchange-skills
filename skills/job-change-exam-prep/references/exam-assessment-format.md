@@ -1,6 +1,6 @@
 # exam_assessment.json の原本仕様（exam-assessment-format）
 
-検査種別の調査結果 `exam_assessment.json` のフィールド仕様・記入基準・機械的な検証の規則を定める原本である。選考試験調査担当エージェント（job-change-exam-scout）がこの仕様で成果物を作り、`scripts/validate_exam_assessment.py` がこの仕様に照らして機械的に検査する。
+検査種別の調査結果 `exam_assessment.json` のフィールド仕様・記入基準・機械的な検証の規則を定める原本である。選考試験の調査担当エージェント（job-change-exam-scout）がこの仕様で成果物を作る。`scripts/validate_exam_assessment.py` は、この仕様に照らして機械的に検査する。
 
 出力先は `{DATA_ROOT}/companies/{企業スラッグ}/exam_assessment.json` である。企業が特定できない汎用の対策依頼では、企業スラッグの代わりに `_general/` を用いる。
 
@@ -47,7 +47,7 @@
 
 ### assessments[].stage（文字列・必須）
 
-選考のどの段階で実施されるか（「書類選考通過後」「一次面接前」など）。欠落・空は WARN。段階が不明でも成果物としては成立するため、ERROR にはしない。
+選考のどの段階で実施されるか（「書類選考の通過後」「一次面接前」など）。欠落・空は WARN。段階が不明でも成果物としては成立するため、ERROR にはしない。
 
 ### assessments[].evidence（配列・必須）
 
@@ -59,7 +59,7 @@
 | `grade` | 必須 | エビデンスレベル `A` / `B` / `C` / `D` のいずれか。他の値・欠落は ERROR |
 | `quote` | 必須 | 根拠ページからの引用。欠落・空は ERROR |
 
-`grade` の定義と付与ルールの原本は `job-change-company-research/references/evidence-grading.md` である。選考試験の文脈での当てはめ（採用ページ・企業公式の選考案内をレベル A、選考体験記の集計サイトをレベル C、個人ブログの単発体験記をレベル D とする）は、役割プロンプト `references/roles/exam-scout.md` に書いてある。
+`grade` の定義と付与ルールの原本は `job-change-company-research/references/evidence-grading.md` である。選考試験の文脈での当てはめは、役割プロンプト `references/roles/exam-scout.md` に書いてある。採用ページ・企業公式の選考案内をレベル A、選考体験記の集計サイトをレベル C、個人ブログの単発体験記をレベル D とする。
 
 ### assessments[].confidence（文字列・必須）
 

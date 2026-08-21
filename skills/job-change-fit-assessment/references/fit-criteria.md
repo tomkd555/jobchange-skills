@@ -4,10 +4,10 @@
 
 ## 全次元に共通するルール
 
-1. **evidence のない主張を書かない。** 各次元の verdict は evidence（1件以上）に対応づける。裏付けのない印象・憶測を score や verdict に反映しない。
+1. **evidence のない主張を書かない。** 各次元の verdict は evidence（1件以上）に対応づけ、裏付けのない印象・憶測を score や verdict に反映しない。
 2. **エビデンスレベルC・D単独で断定しない。** 口コミ・伝聞（company_research 内でレベルC・Dが付いた claim）のみを根拠に、その次元を高い、または低いと断定しない。C・D を根拠にする場合は verdict を限定表現にする（「口コミでは〜という声がある。傍証にとどめる」）。レベルの定義と限定表現の書き方は evidence-grading.md に従う。
-3. **企業自身の自己宣伝的主張に高い確度を置かない。** 採用サイトの「風通しが良い」等は、company_research 側でレベルAでも confidence を high にしていない。これを culture_fit の断定材料にしない。
-4. **材料が無いときは score を null（判断保留）にする。** 憶測で数値を埋めない。unknown を優先する方針を守る。
+3. **企業が自社を良く見せる主張に高い確度を置かない。** 採用サイトの「風通しが良い」等は、company_research 側でレベルAでも confidence を high にしていない。これを culture_fit の断定材料にしない。
+4. **材料が無いときは score を null（判断保留）にする。** 憶測で数値を埋めず、unknown を優先する方針を守る。
 5. **profile・self_analysis に無い事実を創作しない。** 本人の経歴・強み・条件は profile.json と self_analysis.json の記載を根拠にする。
 
 ## score 1〜5 の一般的な目安
@@ -48,7 +48,7 @@ job_posting の `requirements.must[]`・`requirements.want[]` と、profile の 
 - self_analysis の `career_narrative.future_direction` を一次資料とし、`interests.domains`（RIASEC の領域名）・`interests.concrete_topics` と求人の技術領域・製品領域の重なりを見る。
 - profile の `job_change_axis.reasons`（転職で次に実現したいこと）を補助資料とする。
 - **経験の近さを志向の根拠に流用しない。** 「経験があるから志向にも合う」という推論を明示的に禁じる。
-- self_analysis が無い場合（`inputs.self_analysis=false`）は score を高くしない。4以上を付けることは認めない。
+- self_analysis が無い場合（`inputs.self_analysis=false`）は score を高くせず、4以上を付けることを認めない。
 - evidence には `self_analysis` または `profile` を必ず含める。求人票だけで志向を断定しない。
 - evidence の `ref` は `interests.domains[0]`・`career_narrative.future_direction` のようなフィールドパスで書く。
 
@@ -81,18 +81,18 @@ job_posting の `scope_of_change` は、2024年4月から求人票への明示�
 | `contract_renewal_cap.stated` が真で上限がある | 有期契約の期間の上限として、雇用形態に関する条件の判定材料にする |
 | いずれかが `null` | unknown のままにする。**記載を見つけられなかったことを、範囲が限定されている証拠として扱わない。** 確認事項を `overall.open_questions` へ入れる |
 
-evidence は `{"source": "job_posting", "ref": "scope_of_change.work_location.unlimited", "note": "…"}` の形で書く。`ref` にはフィールドパスを、`note` には `quote`（求人票の記載の引用）を写す。
+evidence は `{"source": "job_posting", "ref": "scope_of_change.work_location.unlimited", "note": "…"}` の形で書き、`ref` にはフィールドパスを、`note` には `quote`（求人票の記載の引用）を転記する。
 
 `unlimited` が真であることは、それ自体では転勤・職種転換が起きる証拠ではなく、企業の裁量で起こしうるという事実である。verdict はこの区別を保った書き方にする。
 
-`job_posting.json` の `schema_version` が `1.0` の場合、この節は適用しない。1.0 には `scope_of_change` が無く、取込の時点でこの3項目を見ていないためである。判定を変えず、`overall.open_questions` へ「求人票の取込が旧形式であり、業務・就業場所の変更の範囲を確認していない」と入れる。
+`job_posting.json` の `schema_version` が `1.0` の場合、この節は適用しない。1.0 には `scope_of_change` が無く、取り込みの時点でこの3項目を見ていないためである。判定を変えず、`overall.open_questions` へ「求人票の取り込みが旧形式であり、業務・就業場所の変更の範囲を確認していない」と入れる。
 
 ### culture_fit（文化適合）
 
 company_research の philosophy・workstyle・reputation トピックと、self_analysis の行動証拠・価値観を突き合わせる。
 
 - **内省単独に重きを置かない。** self_analysis の主観的な自己申告だけで断定せず、self_analysis に記録された行動証拠（過去の具体的な行動・実績）との対応づけを優先する。
-- 企業側の材料は、自己宣伝的主張（レベルAでも confidence が high でないもの）を断定に使わず、事実（制度の有無・開示数値・認定）と分けて扱う。
+- 企業側の材料は、自社を良く見せる主張（レベルAでも confidence が high でないもの）を断定に使わず、事実（制度の有無・開示数値・認定）と分けて扱う。
 - 口コミ由来（レベルC）は限定表現にとどめる。
 - self_analysis が無い場合（inputs.self_analysis=false）は、行動証拠を欠くため score を高くせず、verdict にその旨を書くか null にする。
 - evidence の source は主に `company_research`・`self_analysis`。
@@ -121,7 +121,7 @@ time_analysis.json の年間拘束時間・実質時給と、must/want 条件（
 
 ## must_condition_results の判定
 
-profile の必須条件（`conditions[level=must]` と `work_character_preferences[desire=must]`）の各条件を、job_posting・company_research の事実と突き合わせて `yes`・`no`・`unknown` で判定する。対応は `ref`（条件 id または特性 id）で1対1にする。
+profile の必須条件（`conditions[level=must]` と `work_character_preferences[desire=must]`）の各条件を、job_posting・company_research の事実と突き合わせて `yes`・`no`・`unknown` で判定し、対応は `ref`（条件 id または特性 id）で1対1にする。
 
 - 求人票・企業研究に明確な根拠がある場合のみ `yes`・`no` とし、その evidence を必ず添える。
 - 根拠が見つからない条件は `unknown` とする（憶測で yes/no にしない）。`unknown` の条件は evidence を空にしてよい。

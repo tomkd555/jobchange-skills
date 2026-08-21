@@ -1,6 +1,6 @@
 # self_analysis.json 仕様
 
-job-change-self-analysis スキルにおける、自己分析成果物 self_analysis.json の原本である。`scripts/validate_self_analysis.py` の実装は、この仕様に厳密に従う。
+job-change-self-analysis スキルにおける、自己分析の成果物 self_analysis.json の原本である。`scripts/validate_self_analysis.py` の実装は、この仕様に厳密に従う。
 
 self_analysis.json は、profile.json（利用者データの原本。hub が管理）を土台に、強み・キャリアの軸を行動証拠と他者視点で根拠づけて深化させた成果物である。面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が入力として読む。profile.json のスキーマは変更しない。自己分析の結果は profile.json の `strengths`（短文）と `job_change_axis.reasons`（constructive_version に基づく文言）へ値のみ反映する。
 
@@ -56,7 +56,7 @@ self_analysis.json は、profile.json（利用者データの原本。hub が管
 | `result` | string | 必須 | 結果。欠落・空は ERROR |
 | `metric` | string または null | 任意 | 定量値（例「応答時間を62%短縮」）。定量化できない場合は `null` |
 | `reproducibility` | string または null | 任意 | 環境が変わっても機能する根拠（再現性）。企業は行動プロセスの再現性を見極める。このため、可能な範囲で書く |
-| `emotion_note` | string または null | 任意 | 当時のモチベーション・感情の記録。将来の感情予測ではなく、当時の記録に限る |
+| `emotion_note` | string または null | 任意 | 当時のモチベーション・感情の記録。感情の将来予測ではなく、当時の記録に限る |
 
 - `metric` は可能な限り定量値で埋める。全エピソードを通して `metric` が1件もない場合、検証スクリプトは WARN を出す。
 - `situation`・`action`・`result` の3つはエピソードの骨格であり、いずれかが欠けるとエピソードとして成立しないため ERROR とする。
@@ -122,7 +122,7 @@ career adaptability の4次元。次元名の枠組みのみを用い、尺度�
 | `feedback_ids` | array | 条件付き必須 | 裏付けとなる others_feedback の id の配列 |
 
 - `episode_ids` と `feedback_ids` が両方とも空（有効な id が1件もない）の場合は ERROR（内省単独の強み）。少なくとも一方に実在する id を1件以上持つ。
-- `episode_ids`・`feedback_ids` が参照する id は、実在する behavioral_episodes / others_feedback の id でなければならない（参照整合。実在しない id の参照は ERROR）。
+- `episode_ids`・`feedback_ids` が参照する id は、実在する behavioral_episodes / others_feedback の id でなければならない（参照整合）。実在しない id の参照は ERROR とする。
 
 ## career_narrative
 

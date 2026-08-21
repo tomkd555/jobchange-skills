@@ -41,7 +41,7 @@
 
 ## dimensions（7次元）
 
-各次元は次の構造を持つ。2.0 の id は7種で、過不足なく全て存在する。
+各次元は次の構造を持つ。2.0 の id は7種で、過不足なくすべて存在する。
 
 | id | 評価対象 | 主な入力元 |
 |---|---|---|
@@ -103,7 +103,7 @@ evidence の各要素:
 |---|---|---|
 | `requirement` | string | 求人票の必須・歓迎要件の引用文（非空） |
 | `gap_level` | string | `complementable_within_3m`・`needs_6_12m_study`・`not_applicable_now` のいずれか |
-| `basis` | string | 段階を分けた根拠（非空）。隣接技術の保有・学習量の見積りなど |
+| `basis` | string | 段階を分けた根拠（非空）。隣接技術の保有・学習量の見積もりなど |
 | `evidence` | array | 1件以上 |
 
 `skill_gap` は `skill_gap_items[].gap_level` の**最も重い段階と一致させる**（不一致は ERROR）。総合の見栄えを良くするために全体の段階だけを軽くする経路を塞ぐ。
@@ -181,17 +181,17 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 
 | フィールド | 型 | 内容 |
 |---|---|---|
-| `axis` | string | 軸の識別子（非空）。profile の `company_score_axes[].axis` をそのまま写す |
+| `axis` | string | 軸の識別子（非空）。profile の `company_score_axes[].axis` をそのまま転記する |
 | `kind` | string | `quantitative`（公表された数値を線形式で点数へ換算する軸）・`qualitative`（利用者が判定条件を決める軸）のいずれか |
-| `weight` | integer | 重み。1〜100 の整数。profile の申告をそのまま写す |
+| `weight` | integer | 重み。1〜100 の整数。profile の申告をそのまま転記する |
 | `value` | number \| null | 定量軸の実測値。`company_metrics` の当該軸の `value`。定性軸と、実測値が無い軸は `null` |
 | `unit` | string \| null | 実測値の単位。定性軸は `null` |
 | `score` | integer \| null | その軸の点数（0〜100 の整数）。実測値か基準を欠く定量軸、判定結果を得られない定性軸は `null` |
 | `threshold_source` | string \| null | 点数の基準の出所。`user`（profile の `thresholds`）・`statistic`（`DEFAULT_THRESHOLDS`）のいずれか。基準が無い軸と定性軸は `null` |
 | `thresholds` | object \| null | 適用した基準。`{zero, full}`。基準が無い軸と定性軸は `null` |
-| `grade` | string \| null | 実測値のエビデンスレベル（A〜D）。`company_metrics` の当該軸の `grade` を写す。定性軸は `null` |
-| `source_url` | string \| null | 実測値の出典 URL。`company_metrics` の当該軸の `source_url` を写す。定性軸は `null` |
-| `evidence` | string \| null | 定性軸のみ。判定条件のどれに合致したかの説明。fit-assessor の判定結果をそのまま写す |
+| `grade` | string \| null | 実測値のエビデンスレベル（A〜D）。`company_metrics` の当該軸の `grade` を転記する。定性軸は `null` |
+| `source_url` | string \| null | 実測値の出典 URL。`company_metrics` の当該軸の `source_url` を転記する。定性軸は `null` |
+| `evidence` | string \| null | 定性軸のみ。判定条件のどれに合致したかの説明。fit-assessor の判定結果をそのまま転記する |
 | `reason` | string | 判定できなかった軸のみ。実測値が無い・基準が無い・判定結果が無いのいずれであるかを書く |
 
 定量軸の基準は、profile の `thresholds`（`threshold_source` は `user`）を統計由来の既定（同 `statistic`）より優先する。どちらも無い軸は `score` を `null` にし、推測した基準で点数を作らない。実測値が無い軸も 0 点にせず `null` にする。0 点は「低い水準であることを確認した」という意味であり、材料が無いことと区別する。
@@ -229,7 +229,7 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 
 | フィールド | 型 | 内容 |
 |---|---|---|
-| `search_id` | string | 参照先の検索実行の識別子。`{DATA_ROOT}/job-search/{検索ID}/job_search_results.json` のトップレベルの `search_id` をそのまま写す。値はディレクトリ名 `{検索ID}` と同じである。形式と記入基準の原本は job-change-job-search の `references/job-search-format.md` にある |
+| `search_id` | string | 参照先の検索実行の識別子。`{DATA_ROOT}/job-search/{検索ID}/job_search_results.json` のトップレベルの `search_id` をそのまま転記する。値はディレクトリ名 `{検索ID}` と同じである。形式と記入基準の原本は job-change-job-search の `references/job-search-format.md` にある |
 | `result_index` | integer | 参照先 `results[]` のうち当該求人を指す添字（0始まり） |
 | `classification` | string | 参照先 `results[result_index].classification` の値 |
 | `screened_at` | string | 参照先 `screening.screened_at`（判定日。`YYYY-MM-DD`） |
@@ -242,7 +242,7 @@ Step 2 で fit-assessor が作る2つのファイルである。どちらも `fi
 
 ### sources.json
 
-拘束時間の算定に使った各数値の出典メタである。`calculate_time_analysis.py` の `--sources-json` へ渡し、スクリプトは各キーのメタを `time_analysis.json` の `inputs` へ写す。
+拘束時間の算定に使った各数値の出典メタである。`calculate_time_analysis.py` の `--sources-json` へ渡し、スクリプトは各キーのメタを `time_analysis.json` の `inputs` へ転記する。
 
 ```
 {DATA_ROOT}/career-private/fit/{企業スラッグ}/sources.json
@@ -267,7 +267,7 @@ Step 2 で fit-assessor が作る2つのファイルである。どちらも `fi
 
 ### qualitative_judgment.json
 
-profile の `company_score_axes` のうち `kind` が `qualitative` の軸について、判定条件（`judgment`）へ事実を当てはめた結果である。`calculate_company_score.py` の `--qualitative-json` へ渡し、スクリプトは `matched_score` をそのまま `company_score.axes[].score` へ、`evidence` を同 `evidence` へ写す。
+profile の `company_score_axes` のうち `kind` が `qualitative` の軸について、判定条件（`judgment`）へ事実を当てはめた結果である。`calculate_company_score.py` の `--qualitative-json` へ渡し、スクリプトは `matched_score` をそのまま `company_score.axes[].score` へ、`evidence` を同 `evidence` へ転記する。
 
 ```
 {DATA_ROOT}/career-private/fit/{企業スラッグ}/qualitative_judgment.json
@@ -332,7 +332,7 @@ profile の `company_score_axes` のうち `kind` が `qualitative` の軸につ
 - `inputs.self_analysis` が `false`（志向の根拠が弱い）。
 - `company_score.total` が `null`（判定できた軸が無く、総合点を算出できていない）。
 - `company_score.provisional` が `true`（判定できた軸の重みの合計が足りず、少数の軸に引きずられる点数である）。
-- `--screening` 指定時: 求人検索で必須条件を満たすと判定した求人が、求人票の取込後に `met=no` になっている。
+- `--screening` 指定時: 求人検索で必須条件を満たすと判定した求人が、求人票の取り込み後に `met=no` になっている。
 
 ## バージョンと移行
 

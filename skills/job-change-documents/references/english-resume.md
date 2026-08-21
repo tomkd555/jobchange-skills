@@ -2,7 +2,7 @@
 <!-- textlint-disable @textlint-ja/no-synonyms -->
 <!-- 出典に社名「エンワールド・ジャパン」を含むため、「ジャパン」と「日本」を表記揺れと判定させない。 -->
 
-外資系・グローバル企業に応募するときの英文レジュメ（English resume）について、記述基準を定めた原本である。作成担当（`job-change-document-writer`）が構成・表現・ATS対応に用い、監査担当（`job-change-document-auditor`）が英語の文法と時制の正しさ・アクション動詞（action verb）の適否・定量性・ATS適合・分量の検査に用いる。英文レジュメは和文の履歴書と別物であり、日本語の文法・表記の検査の対象外とする。
+外資系・グローバル企業に応募するときの英文レジュメ（English resume）について、記述基準を定めた原本である。作成担当（`job-change-document-writer`）は構成・表現・ATS対応に用いる。監査担当（`job-change-document-auditor`）は、英語の文法と時制の正しさ・アクション動詞（action verb）の適否・定量性・ATS適合・分量の検査に用いる。英文レジュメは和文の履歴書と別物であり、日本語の文法・表記の検査の対象外とする。
 
 ## 基本の書式
 
@@ -66,10 +66,10 @@ ATS は候補を誤りなく選別する仕組みではない。ATS対応は「�
 
 | ベンダー | 確認できた事実 |
 |---|---|
-| Workday | 米系多国籍企業 NCR が、日本向けの外部採用サイトを Workday 上で運用している（URL が `ncr.wd1.myworkdayjobs.com/ext_jp`。日本語ロケール `ja-JP` の求人を含む。`subdomain.wdN.myworkdayjobs.com` は Workday Recruiting の確定的な URL 構造。出典: NCR 採用ページ URL、レベルB）。 |
+| Workday | 米系の多国籍企業 NCR が、日本向けの外部採用サイトを Workday 上で運用している（URL が `ncr.wd1.myworkdayjobs.com/ext_jp`。日本語ロケール `ja-JP` の求人を含む。`subdomain.wdN.myworkdayjobs.com` は Workday Recruiting の確定的な URL 構造。出典: NCR 採用ページ URL、レベルB）。 |
 | Greenhouse | 外資系テック企業（Anthropic・Databricks 等）が、日本拠点のポジションを Greenhouse の求人ボード（`job-boards.greenhouse.io`）上で公開・応募受付している（Anthropic の日本勤務職、Databricks の東京勤務職を確認。`job-boards.greenhouse.io` は Greenhouse の確定的な URL 構造。出典: 各社の Greenhouse 求人ボード URL、レベルB）。 |
 
-Greenhouse は、日本語を含む言語でレジュメの「完全なパース機能（full parsing capabilities）」を公式サポート文書に明記している（出典: Greenhouse Support「Resume parsing with non-English languages」 https://support.greenhouse.io/hc/en-us/articles/205019689-Resume-parsing-with-non-English-languages レベルA）。ただしこれはベンダー自身の自称であり第三者検証ではない。対応言語リストに日本語は含まれるが、それは仕様上パースの対象だというだけで、日本語（CJK・分かち書きなし・全角）の実際の抽出精度を示す数値は同文書にない。
+Greenhouse は、日本語を含む言語でレジュメの「完全なパース機能（full parsing capabilities）」を公式サポート文書に明記している（出典: Greenhouse Support「Resume parsing with non-English languages」 https://support.greenhouse.io/hc/en-us/articles/205019689-Resume-parsing-with-non-English-languages レベルA）。ただしこれはベンダー自身の自称であり第三者検証ではない。対応言語リストに日本語は含まれるが、それは仕様上パースの対象だというだけである。日本語（CJK・分かち書きなし・全角）の実際の抽出精度を示す数値は同文書にない。
 
 日本国内の人材紹介会社も、外資系向けに ATS対応の助言を実務で提示している。Morgan McKinley（外資系に強い人材紹介会社）は、企業側が ATS で応募情報を管理しているとする。そのうえで、求人票にあるキーワードを含める形でレジュメを編集すれば、ATS のスクリーニングを通過できる可能性が高まると助言している。あわせて、ファイル形式は PDF が望ましく、複雑な書式は ATS が処理しきれないことがあるとしている（出典: Morgan McKinley「英文レジュメの書き方：DX対応編」2023-10-05 https://www.morganmckinley.com/jp-ja/article/%E8%8B%B1%E6%96%87%E3%83%AC%E3%82%B8%E3%83%A5%E3%83%A1%E3%81%AE%E6%9B%B8%E3%81%8D%E6%96%B9%EF%BC%9ADX%E5%AF%BE%E5%BF%9C%E7%B7%A8 レベルB）。ただし発信者はレジュメ添削・紹介サービスを持つ人材紹介会社であり、ATS 対応の重要性を強調する利害を持つ（単一ソース）。
 

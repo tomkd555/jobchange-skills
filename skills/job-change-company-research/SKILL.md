@@ -20,7 +20,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 転職の企業研究に取り組むとき、本スキル1つで収集から納品までの手順がそろう。すべての企業情報に出典URLとエビデンスレベルを付し、機械的な検証と独立監査で妥当性を担保したうえで、トピック別の企業研究レポートを納品する。
 
-本スキルは hub（job-change-support）から振り分けられて動く。収集・作成は企業研究担当エージェント（job-change-company-researcher）が、独立監査は企業研究監査担当エージェント（job-change-research-auditor）が担う。判断基準は `references/` で自己完結する。
+本スキルは hub（job-change-support）から振り分けられて動く。収集・作成は企業研究担当エージェント（job-change-company-researcher）が、独立監査は企業研究の監査担当エージェント（job-change-research-auditor）が担う。判断基準は `references/` で自己完結する。
 
 ## 目的と原則
 
@@ -28,7 +28,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 2. **C・D単独で事実を断定しない。** 口コミ・伝聞（C・D）のみを根拠に事実を断定しない。C・D を根拠とする記述は限定表現で書く（「口コミでは〜という声がある。選択バイアスがあり傍証にとどめる」）。口コミは、集約された総合スコアであること・十分な件数があること・複数の情報源で照合できることの3つを条件に、傍証として用いる。個票、件数の少ない集計、評価項目ごとの個別スコアは、事実の断定に使わない。
 
-3. **企業自身の主張にConfidence highを与えない。** 企業が発信する評価的・自己宣伝的な主張（採用サイトの「風通しが良い」等）は、出典がレベルAでも内容の真偽は担保されない。当該企業が所有するページ由来である旨を出典に明示し、confidence を high にしない（B 相当扱い）。事実（掲げていること、開示された数値、認定の有無）と評価（社風の良し悪し）を分けて claim にする。
+3. **企業自身の主張にConfidence highを与えない。** 企業が自社を良く見せるための主張（採用サイトの「風通しが良い」等）は、出典がレベルAでも内容の真偽は担保されない。当該企業が所有するページ由来である旨を出典に明示し、confidence を high にしない（B 相当扱い）。事実（掲げていること、開示された数値、認定の有無）と評価（社風の良し悪し）を分けて claim にする。
 
 4. **一次情報も万能ではない。** レベルAの一次情報にも代表性・比較可能性の限界がある（有報の平均年間給与は全従業員平均で職種別内訳を欠く等）。限界を statement または open_questions に明示する。
 
@@ -98,9 +98,9 @@ topic は `philosophy`・`business`・`financials`・`compensation`・`benefits`
 
 企業スラッグは `career-private/company_index.json` で解決する。企業名が index の `name` または `aliases` に一致すればそのスラッグを使い、一致が無いときのみ一度だけ導出して index へ登録し、`companies/{企業スラッグ}/` を作る（詳細は job-change-support の `references/company-index-format.md` を参照）。
 
-### Step 0.5 求人票の取込（必須）
+### Step 0.5 求人票の取り込み（必須）
 
-企業ごとの工程の最初である。ここで作る `job_posting.json` は、この後の企業研究と適合性評価が入力として読む。取込を飛ばして先へ進まない。
+企業ごとの工程の最初である。ここで作る `job_posting.json` は、この後の企業研究と適合性評価が入力として読む。取り込みを飛ばして先へ進まない。
 
 入口は4通りある。利用者が用意できる材料に応じて選び、いずれの場合も同じ `job_posting.json` を作る。仕様は `references/job-posting-format.md` にある。
 
@@ -111,7 +111,7 @@ topic は `philosophy`・`business`・`financials`・`compensation`・`benefits`
 | 求人票の PDF・画像 | `file` | 本スキル |
 | 企業名のみ（求人が特定できない） | `dialogue` | 本スキル |
 
-**求人情報URLの場合（job-change-posting-parser, sonnet）。** 求人票取込担当エージェントを Agent ツールで起動し、求人URLと `{SKILL_DIR}`（`references/job-posting-format.md` の所在）を渡す。エージェントは WebFetch でページを取得し、`{company_name, aliases, job_posting}` の JSON を返す（ファイルは書かない）。**利用者の個人情報（原則5の列挙）は渡さない**（posting-parser は WebFetch を持つ）。返却された `company_name`・`aliases` を使い、Step 0 と同じ手順でスラッグを解決する（一致が無いときのみ一度だけ導出して登録する）。
+**求人情報URLの場合（job-change-posting-parser, sonnet）。** 求人票の取り込み担当エージェントを Agent ツールで起動し、求人URLと `{SKILL_DIR}`（`references/job-posting-format.md` の所在）を渡す。エージェントは WebFetch でページを取得し、`{company_name, aliases, job_posting}` の JSON を返す（ファイルは書かない）。**利用者の個人情報（原則5の列挙）は渡さない**（posting-parser は WebFetch を持つ）。返却された `company_name`・`aliases` を使い、Step 0 と同じ手順でスラッグを解決する（一致が無いときのみ一度だけ導出して登録する）。
 
 **求人票の本文・ファイルの場合。** 本スキルが仕様に従って `job_posting` オブジェクトを組み立てる。本文は利用者が貼り付けたものをそのまま読み、ファイルは Read で読む。`source_type` を `text` または `file` とし、`source_url` は null にする。企業名とスラッグは Step 0 で確認・解決したものを使う。業務・就業場所の変更の範囲と有期契約の更新上限は `scope_of_change` へ埋める（記入基準は `references/job-posting-format.md` の同名の節にある）。
 
@@ -135,12 +135,12 @@ topic は `philosophy`・`business`・`financials`・`compensation`・`benefits`
 企業研究担当エージェント（job-change-company-researcher）を Agent ツールで起動し、company_research.json を作らせる。指示書には次を渡す。
 
 - 企業名（正式名称）・重点観点（あれば）・出力先ディレクトリ・求人票の所在（あれば）。
-- 実測値を集める軸の識別子の配列（例 `["compensation_level", "annual_holidays"]`）。呼出元から軸の指定が無い場合は `["compensation_level"]` を渡す。利用者が定義した定性軸の記述は渡さない（本人の状況を映すため。判定は適合性評価が行う）。定性軸に関わる事柄を調べる必要がある場合、利用者が自分の言葉で重点観点として指示する。
+- 実測値を集める軸の識別子の配列（例 `["compensation_level", "annual_holidays"]`）。呼び出し元から軸の指定が無い場合は `["compensation_level"]` を渡す。利用者が定義した定性軸の記述は渡さない（本人の状況を映すため。判定は適合性評価が行う）。定性軸に関わる事柄を調べる必要がある場合、利用者が自分の言葉で重点観点として指示する。
 - 本スキルの絶対パス `{SKILL_DIR}`（references と scripts の所在）。
 
 重点観点は、8トピック（理念・事業・財務・給与・福利厚生・働き方・評判・選考）の強弱指定へ正規化して渡す。利用者の自由記述に含まれる個人情報（原則5、原本は `{HUB_SKILL_DIR}/references/pii-boundary.md`）は指示書に含めず、該当トピックの強弱指定へ言い換える。
 
-**profile.json は渡さない**（原則5。researcher は WebSearch・WebFetch を持つため）。Step 0.5 で job_posting.json を作った場合は、その所在を指示書に渡し、選考プロセス・求める人物像の照合に使わせる。エージェントは `references/evidence-grading.md`・`references/company-research-format.md`・`references/source-catalog.md`・`references/philosophy-analysis.md`・`references/compensation-benefits.md`・`references/company-score-rubric.md` を原本とする。これらに従い、収集した主張を claims 配列へ集約する。平均年間給与・年間休日・月平均残業・有給取得率・離職率などの数値は、文章の claim に埋めるだけでなく `company_metrics` へ構造化して格納する（単位・出典URL・レベル併記。確認できなければ value を null）。
+**profile.json は渡さない**（原則5。researcher は WebSearch・WebFetch を持つため）。Step 0.5 で job_posting.json を作った場合は、その所在を指示書に渡し、選考プロセス・求める人物像の照合に使わせる。エージェントは `references/evidence-grading.md`・`references/company-research-format.md`・`references/source-catalog.md`・`references/philosophy-analysis.md`・`references/compensation-benefits.md`・`references/company-score-rubric.md` を原本とする。これらに従い、収集した主張を claims 配列へ集約する。平均年間給与・年間休日・月平均の残業時間・有給取得率・離職率などの数値は、文章の claim に埋めるだけでなく `company_metrics` へ構造化して格納する（単位・出典URL・レベル併記。確認できなければ value を null）。
 
 指示書で渡された軸の指標を優先して集め、`company_metrics` の各項目へ実測値と出典を書く（原則6。profile を要しない、企業側の事実の収集）。点数も格付けも付けない。重点観点として渡された事柄は、確認できた事実と出典を claims へ書く。自分で `validate_company_research.py` を PASS させてから返す（`company_metrics` の欠落・構造不正は ERROR になる）。これが本エージェントの責務である。
 
@@ -156,14 +156,14 @@ ERROR が1件でもあれば Step 1 へ差し戻す。PASS（ERROR 0件）にな
 
 ### Step 3 独立監査（job-change-research-auditor, opus）
 
-企業研究監査担当エージェント（job-change-research-auditor）を、収集担当の判断理由を渡さない新規コンテキストで起動する。指示書には company_research.json の絶対パス、Step 1 で収集を指示した軸の識別子の配列、`{SKILL_DIR}` を渡す。
+企業研究の監査担当エージェント（job-change-research-auditor）を、収集担当の判断理由を渡さない新規コンテキストで起動する。指示書には company_research.json の絶対パス、Step 1 で収集を指示した軸の識別子の配列、`{SKILL_DIR}` を渡す。
 
 監査は次を行う。判定は `BLOCK` / `CONCERNS` / `CLEAN` で返る。
 
 - `validate_company_research.py` の再実行（結果を `validation_rerun`＝ERROR 0件なら PASS、そうでなければ FAIL として記録）。`validation_rerun` が FAIL の場合、verdict は無条件で BLOCK である。
 - claims を層化抽出し、出典URLが実在するか、引用が原文と一致するかを確認する（レベルAの財務系 claim と confidence=high の claim を必ず標本に含める）。
 - レベル付与の妥当性（口コミをA・Bへ格上げしていないか、一次情報をCへ格下げしていないか）。
-- レベルC・D単独の断定、企業自身の自己宣伝的主張への confidence high 付与の有無。
+- レベルC・D単独の断定、企業が自社を良く見せる主張への confidence high 付与の有無。
 - 必須7トピック（`philosophy`・`business`・`financials`・`compensation`・`benefits`・`workstyle`・`reputation`）の網羅状況と、`selection_process` の充足状況（0件は WARN 相当で、収集を推奨）。`selection_process` の欠落は重大扱いにしない。
 - `company_metrics` の妥当性（`references/company-score-rubric.md` 基準）。実測値が出典の記載と一致するか、エビデンスレベルの付与が妥当か、指示された軸の指標を過不足なく集めているかを検査する。
 
@@ -186,7 +186,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 
 ## _manifest.json の更新
 
-`companies/{企業スラッグ}/_manifest.json` は、企業別成果物の最終更新日と、company_research のトピック別の最終調査日を持つ記録である。本スキルはこの記録の書き手であり、鮮度の判定そのものは hub の責務である（本スキルは判定しない）。
+`companies/{企業スラッグ}/_manifest.json` は、企業別成果物の最終更新日と、company_research のトピック別の最終調査日を持つ記録である。本スキルはこの記録の書き手であり、再調査が必要かどうかの判定は hub の責務である（本スキルは判定しない）。
 
 構造は次のとおり。トピック名は company_research の既存トピック名（`philosophy`・`business`・`financials`・`compensation`・`benefits`・`workstyle`・`reputation`・`selection_process`）を使う。
 
@@ -211,7 +211,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 
 ### トピック限定の差分再調査
 
-呼出元（hub）から対象トピックの指定を受けた場合、そのトピックだけを再調査する。
+呼び出し元（hub）から対象トピックの指定を受けた場合、そのトピックだけを再調査する。
 
 1. 指定トピックのみを重点観点として Step 1 の researcher を起動し、当該トピックの claims を得る。
 2. 既存の company_research.json を読み、指定トピックの claims だけを差し替え（マージ）、他トピックの claims はそのまま残す。
@@ -219,7 +219,7 @@ company_research.json を、人が読める企業研究レポート `companies/{
 4. Step 2 の機械的な検証を再度通す（PASS を確認する）。
 5. `_manifest.json` の `artifacts.company_research.topics.<指定トピック>.last_researched` のみを更新する（他トピックの `last_researched` は変えない）。`updated_at` は今回の調査日にする。
 
-鮮度が切れたトピックの判定・再調査の指示は hub が行い、本スキルは指定されたトピックの再調査と記録の更新を担う。
+どのトピックに再調査が必要かの判定と再調査の指示は hub が行い、本スキルは指定されたトピックの再調査と記録の更新を担う。
 
 ## 合否ゲートと差し戻し
 
@@ -265,7 +265,7 @@ python {SKILL_DIR}/scripts/validate_job_posting.py {job_posting.json}
 python {SKILL_DIR}/scripts/validate_job_posting.py {job_posting.json} --json
 ```
 
-`--json` は結果を JSON 形式（`status`・`error_count`・`warning_count`・`errors`・`warnings`）で出力する。記述例は `assets/company_research_example.json`、フィールド仕様と検証規則の原本は `references/company-research-format.md`（企業研究）と `references/job-posting-format.md`（求人票取込）にある。単体テストは次で実行する。
+`--json` は結果を JSON 形式（`status`・`error_count`・`warning_count`・`errors`・`warnings`）で出力する。記述例は `assets/company_research_example.json`、フィールド仕様と検証規則の原本は `references/company-research-format.md`（企業研究）と `references/job-posting-format.md`（求人票の取り込み）にある。単体テストは次で実行する。
 
 ```bash
 cd {SKILL_DIR} && python -m unittest discover -s scripts/tests
@@ -275,10 +275,10 @@ cd {SKILL_DIR} && python -m unittest discover -s scripts/tests
 
 | ファイル | 何を | いつ読むか |
 |---|---|---|
-| `references/evidence-grading.md` | エビデンスレベルA〜Dの定義・判定基準・C/D断定禁止・自己宣伝的主張の確度制限・出所の突き合わせ・裏取り知見（口コミの選択バイアス・集約スコアの妥当性・有報の限界） | レベルと確度を付ける/検査する全段階 |
+| `references/evidence-grading.md` | エビデンスレベルA〜Dの定義・判定基準・C/D断定禁止・自社を良く見せる主張の確度制限・出所の突き合わせ・裏取り知見（口コミの選択バイアス・集約スコアの妥当性・有報の限界） | レベルと確度を付ける/検査する全段階 |
 | `references/company-research-format.md` | company_research.json のフィールド仕様・記入基準・機械的な検証の規則 | company_research.json を書く/読む/検証する全段階 |
 | `references/source-catalog.md` | 情報源カタログ（EDINET有報・IR開示・就職四季報・しょくばらぼ・認定制度・口コミサイト）と各情報源の記載内容・限界・出典URL | Step 1 の収集、Step 3 の監査 |
-| `references/philosophy-analysis.md` | 理念・社是・パーパス分析の収集源と分析手順（明文→行動指針→人事制度→開示との一貫性検証）、自己宣伝的主張の確度制限との関係 | topic=philosophy の収集・分析 |
+| `references/philosophy-analysis.md` | 理念・社是・パーパス分析の収集源と分析手順（明文→行動指針→人事制度→開示との一貫性検証）、自社を良く見せる主張の確度制限との関係 | topic=philosophy の収集・分析 |
 | `references/compensation-benefits.md` | 給与・福利厚生・働き方の調査観点と情報源カタログ（有報・しょくばらぼ・認定制度・就職四季報・OpenWork・公的統計）、company_metrics への格納ルール | topic=compensation/benefits/workstyle の収集 |
 | `references/company-score-rubric.md` | 定量候補軸9個（軸キー・指標・単位・方向・出所）の定義と `company_metrics` の記入形式、点数化・重み・総合点を適合性評価が担う分業 | Step 1 の実測値の収集、Step 3 の company_metrics 監査 |
 | `references/job-posting-format.md` | job_posting.json のフィールド仕様・記入基準・機械的な検証の規則（4通りの入口と `source_type` を含む） | Step 0.5 で求人票を取り込む/検証する段階 |

@@ -1,6 +1,6 @@
 # 企業スコアの原本仕様（company-score-rubric）
 
-応募先企業を 0〜100 点で採点する仕組みの原本である。点数化に使う軸の定義・点数への換算・重みの与え方・総合点の算出規則を定める。軸ごとの実測値は企業研究担当エージェント（job-change-company-researcher）が `company_research.json` の `company_metrics` へ出典付きで書き、総合点は適合性評価スキル（job-change-fit-assessment）が `scripts/calculate_company_score.py` で機械的に算出する。
+応募先企業を 0〜100 点で採点する仕組みの原本である。点数化に使う軸の定義・点数への換算・重みの与え方・総合点の算出規則を定める。軸ごとの実測値は企業研究担当エージェント（job-change-company-researcher）が `company_research.json` の `company_metrics` へ出典付きで書く。総合点は適合性評価スキル（job-change-fit-assessment）が `scripts/calculate_company_score.py` で機械的に算出する。
 
 ## 採点を利用者ごとに組み立てる理由
 
@@ -33,7 +33,7 @@
 |---|---|---|---|---|
 | `compensation_level` | 平均年間給与 | 円 | 大きいほど高い | 有価証券報告書「従業員の状況」 |
 | `annual_holidays` | 年間休日総数 | 日 | 大きいほど高い | 求人票・しょくばらぼ・就職四季報 |
-| `monthly_overtime` | 月平均残業時間 | 時間 | 小さいほど高い | しょくばらぼ・就職四季報・求人票 |
+| `monthly_overtime` | 月平均の残業時間 | 時間 | 小さいほど高い | しょくばらぼ・就職四季報・求人票 |
 | `paid_leave_rate` | 年次有給休暇の取得率 | % | 大きいほど高い | しょくばらぼ・就職四季報 |
 | `turnover_rate` | 離職率 | % | 小さいほど高い | しょくばらぼ・就職四季報 |
 | `male_childcare_leave_rate` | 男性の育児休業取得率 | % | 大きいほど高い | 有価証券報告書・しょくばらぼ |

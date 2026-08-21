@@ -2,7 +2,7 @@
 
 給与（topic=compensation）・福利厚生（topic=benefits）・働き方（topic=workstyle）を調査するときの観点と情報源カタログを定める原本である。エビデンスレベル（A〜D）の定義・判定基準・運用ルールは `references/evidence-grading.md` に従い、本ファイルでは重複定義しない。各情報源には、そのレベルの目安を付す。
 
-収集した数値（年間休日・月平均残業・有給取得率・平均有給取得日数・平均年間給与）は、文章の claim に埋めるだけでなく、必ず `company_research.json` の `company_metrics` へ構造化して格納する（形式は `references/company-research-format.md`。単位・出典URL・レベル併記。確認できなければ value を null）。
+収集した数値（年間休日・月平均の残業時間・有給取得率・有給休暇の平均取得日数・平均年間給与）は、文章の claim に埋めるだけでなく、必ず `company_research.json` の `company_metrics` へ構造化して格納する（形式は `references/company-research-format.md`。単位・出典URL・レベル併記。確認できなければ value を null）。
 
 ## 調査観点
 
@@ -27,8 +27,8 @@
 
 | 観点 | 内容 |
 |---|---|
-| 労働時間・残業 | 所定労働時間、月平均所定外労働時間、裁量労働・フレックス・リモートの方針。しょくばらぼの自主開示（レベルA）、求人票、就職四季報（レベルB）。 |
-| 休暇 | 年間休日数、有給取得率、平均有給取得日数。しょくばらぼ・就職四季報・求人票。 |
+| 労働時間・残業 | 所定労働時間、月平均の所定外労働時間、裁量労働・フレックス・リモートの方針。しょくばらぼの自主開示（レベルA）、求人票、就職四季報（レベルB）。 |
+| 休暇 | 年間休日数、有給取得率、有給休暇の平均取得日数。しょくばらぼ・就職四季報・求人票。 |
 | 定着率 | 3年後定着率・平均勤続年数。就職四季報（レベルB）・有報の平均勤続年数（レベルA）。 |
 | 口コミの働き方評価 | 残業実態・休暇取得のしやすさの口コミ（レベルC）は、集約総合スコアに限って条件付きの傍証に用いる。個票は選択バイアスで極端化するため断定に使わない。 |
 
@@ -39,7 +39,7 @@
 | 情報源 | 主に分かること | topic | 出典URL |
 |---|---|---|---|
 | EDINET 有価証券報告書「従業員の状況」 | 平均年間給与・平均勤続年数・平均年齢・従業員数 | compensation/financials/workstyle | 閲覧サイト https://disclosure2.edinet-fsa.go.jp/WEEK0010.aspx （EDINETについて https://www.fsa.go.jp/search/20130917.html ） |
-| 厚生労働省「しょくばらぼ」 | 中途採用比率・定着率・月平均所定外労働時間・有給取得率（企業の自主開示） | workstyle/benefits | https://shokuba.mhlw.go.jp/ |
+| 厚生労働省「しょくばらぼ」 | 中途採用比率・定着率・月平均の所定外労働時間・有給取得率（企業の自主開示） | workstyle/benefits | https://shokuba.mhlw.go.jp/ |
 | 採用サイト 報酬制度・福利厚生ページ | 等級・給与レンジ・賞与算定式・手当・福利厚生制度 | compensation/benefits | 各企業ドメイン（当該企業が所有するページ。評価的表現は confidence を high にしない） |
 | くるみん／プラチナくるみん／トライくるみん | 次世代育成支援（子育て支援）の認定 | benefits | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kodomo/shokuba_kosodate/kurumin/index.html |
 | えるぼし／プラチナえるぼし | 女性活躍推進（5基準）の認定 | benefits/workstyle | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000091025_00002.html |
@@ -77,6 +77,6 @@
 
 ## claim・company_metrics への反映
 
-- 数値（年間休日・残業・有給取得率・平均有給取得日数・平均年間給与）を収集したら、対応する claim を作り、加えて `company_metrics` へ構造化して格納する（value・unit・source_url・grade・as_of）。
+- 数値（年間休日・残業・有給取得率・有給休暇の平均取得日数・平均年間給与）を収集したら、対応する claim を作り、加えて `company_metrics` へ構造化して格納する（value・unit・source_url・grade・as_of）。
 - 制度の「有無」は事実の claim にする（例:「健康経営優良法人2026に認定されている」grade=A。認定制度の公表データは認定機関が出す一次情報である）。制度の「良し悪し」は評価であり、断定しない。
-- 求人票レンジと有報平均・公的統計の食い違いは open_questions に残す。
+- 求人票レンジと、有報の平均年間給与・公的統計との食い違いは open_questions に残す。

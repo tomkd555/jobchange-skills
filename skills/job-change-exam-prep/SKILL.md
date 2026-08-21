@@ -29,7 +29,7 @@ allowed-tools: Read, Write, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
 
 3. **実在の検査問題を複製しない。** 演習は `references/assessment-catalog.md` の出題形式知識に基づき、形式を模した自作問題で行う。実在の検査問題・著作物の複製、受検代行、替え玉受検は行わない。
 
-4. **個人情報を外部へ送信しない。** 利用者の個人情報を、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。`job-change-exam-scout` は WebSearch・WebFetch を持つため、`profile.json` と `career-private/` 配下のパス・内容をこのエージェントへ渡さない。Step 1 の指示書には企業名・応募職種・求人票のみを渡す。本スキルは `profile.json` を必須の前提とせず、職種などを背景として参照する場合も、その内容を Web 送信手段を持つ手順へ回さない。
+4. **個人情報を外部へ送信しない。** 利用者の個人情報を、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。`job-change-exam-scout` は WebSearch・WebFetch を持つ。このため `profile.json` と `career-private/` 配下のパス・内容をこのエージェントへ渡さない。Step 1 の指示書には企業名・応募職種・求人票のみを渡す。本スキルは `profile.json` を必須の前提とせず、職種などを背景として参照する場合も、その内容を Web 送信手段を持つ手順へ回さない。
 
 5. **ベンダー公表値は自己報告として扱う。** 検査提供元や対策媒体が公表する完了率・データ件数などの数値は、独立検証を経ていない自己報告値として扱い、断定の根拠にしない。
 
@@ -85,7 +85,7 @@ Step 0 から Step 3 を順に進める。
 
 受検案内 URL がある場合は、`references/domain-detection.md` のドメイン判別表に照らして系統を即時に判別し、確度を明示する。判別は URL 文字列の照合のみで行い、URL への外部アクセスやプロファイルの外部送信は伴わない。判別結果は暫定であり、確度は「推定」とする。日本 SHL 系（`e-exam`・`nsvs`・`tsvs`）は玉手箱・GAB・CAB のいずれかまでしか絞れないこと、ペーパー形式は URL 判別ができないこと、ドメインは変更されうることを併せて伝える。確定は Step 1 の調査で行う。
 
-特定企業向けの場合は、スラッグの解決に入る前に `validate_company_index.py` で一覧を検証し、FAIL（ERROR 1件以上）なら指摘内容を利用者へ示し、修復されるまで解決へ進まない。そのうえで企業スラッグを `career-private/company_index.json` で解決する（企業名が index に一致すればそのスラッグを使い、無ければ一度だけ導出して登録する。詳細は job-change-support の `references/company-index-format.md` を参照）。
+特定企業向けの場合は、スラッグを解決する前に `validate_company_index.py` で一覧を検証する。FAIL（ERROR 1件以上）なら指摘内容を利用者へ示し、修復されるまで解決へ進まない。そのうえで企業スラッグを `career-private/company_index.json` で解決する。企業名が index に一致すればそのスラッグを使い、無ければ一度だけ導出して登録する。詳細は job-change-support の `references/company-index-format.md` にある。
 
 スラッグを解決したら、`companies/{企業スラッグ}/company_research.json` の有無を確認する。ある場合は `check_freshness.py` で当該企業の `_manifest.json` を判定する。`stale` のトピックがあれば、その旨と対象トピック名を利用者へ示し、`job-change-company-research` での差分再調査を提案する。利用者が再調査せずに進むことを選んだ場合は、古い情報に基づく旨と対象トピック名を Step 2 の `exam-prep-plan.md` へ明記して進む。判定規則と TTL の原本は job-change-support の `references/freshness-policy.md` にある。
 
@@ -102,7 +102,7 @@ python {HUB_SKILL_DIR}/scripts/check_freshness.py {DATA_ROOT}/companies/{企業�
 
 `job-change-exam-scout` エージェント（model: sonnet）を Agent ツールで起動し、対象企業の中途採用で使われる検査種別を調査させる。
 
-- 指示書に渡すもの: 企業名（正式名称）・応募職種（あれば）・求人票（あれば）。`companies/{企業スラッグ}/company_research.json` があれば、topic=selection_process の claims の要約（主張・出典URL・エビデンスレベル）も渡す。既に集めた証拠を捨てて調査をやり直させないためである。この要約は企業についての公開情報であり個人情報を含まないため、Web ツールを持つ調査担当へ渡してよい。`profile.json` は渡さない（原則 4）。
+- 指示書に渡すもの: 企業名（正式名称）・応募職種（あれば）・求人票（あれば）。`companies/{企業スラッグ}/company_research.json` があれば、topic=selection_process の claims の要約も渡す。要約は主張・出典URL・エビデンスレベルの3点を持つ。すでに集めた証拠を捨てて調査をやり直させないためである。この要約は企業についての公開情報であり個人情報を含まないため、Web ツールを持つ調査担当へ渡してよい。`profile.json` は渡さない（原則 4）。
 - 調査結果が、渡した claims と食い違う場合は、エビデンスレベルの高いほうを採用する。同じレベルなら調査日の新しいほうを採用し、`exam_assessment.json` の備考に双方の主張と採否の理由を残す。
 - 出力先: エージェントは `{DATA_ROOT}/companies/{企業スラッグ}/exam_assessment.json` へ結果を書き出し、同一の JSON を返す。
 - 出力 JSON の形式（フィールド仕様・記入基準・機械的な検証の規則）の原本は `references/exam-assessment-format.md` にある。記入例は `assets/exam_assessment_example.json`（架空データ）にある。
@@ -115,7 +115,7 @@ python {SKILL_DIR}/scripts/validate_exam_assessment.py {DATA_ROOT}/companies/{�
 
 終了コードは PASS で 0、FAIL で 1（WARN のみは PASS 扱い）である。WARN は差し戻しの理由にしないが、Step 2 で対策計画へ反映する（根拠1件のみの種別、`assessment-catalog.md` が扱わない検査名など）。
 
-企業が特定できず汎用対策とする場合は、本 Step を省略し、`references/domain-detection.md` の暫定判別（URL があれば）と、頻出検査（SPI3・玉手箱）を想定した基礎対策で Step 2 へ進む。
+企業が特定できず汎用対策とする場合は、本 Step を省略する。`references/domain-detection.md` の暫定判別（URL があれば）と、頻出検査（SPI3・玉手箱）を想定した基礎対策で Step 2 へ進む。
 
 ### Step 2 対策計画の作成
 
@@ -140,7 +140,7 @@ python {SKILL_DIR}/scripts/validate_exam_assessment.py {DATA_ROOT}/companies/{�
 
 - 対象は反復練習が有効な能力検査系（SPI3・玉手箱・TG-WEB・GAB・CAB）を中心とする。出題→利用者の解答→採点→解説→弱点科目の再出題、を繰り返す。
 - 性格検査は演習の対象とせず、回答方針（一貫性・正直さ）の助言にとどめる。
-- ケース面接・フェルミ推定は、思考の型（前提確認 → 要素への分解 → 仮説 → 結論から述べる）に沿った練習とし、評価は数値の正確性でなく思考プロセスに重点を置く（`references/prep-methods.md`）。
+- ケース面接・フェルミ推定は、思考の型（前提確認 → 要素への分解 → 仮説 → 結論から述べる）に沿った練習とする。評価は数値の正確性でなく思考プロセスに重点を置く（`references/prep-methods.md`）。
 - 実在の検査問題・著作物を複製しない（原則 3）。自作問題は形式のみを模す。
 
 ## 合否ゲートと差し戻し
@@ -150,10 +150,10 @@ python {SKILL_DIR}/scripts/validate_exam_assessment.py {DATA_ROOT}/companies/{�
 - 形式ゲート（Step 1）は `validate_exam_assessment.py` の PASS で定義する。ERROR が1件でもあれば Step 2 へ進まない。この検証スクリプトは、出典 URL のない断定、値域外の `grade`・`confidence`、レベル A の根拠を持たない「確定」を機械的に落とす。判定規則の原本は `references/exam-assessment-format.md` にある。
 - 種別特定ゲート（Step 1）では、`job-change-exam-scout` が有効な種別を返すことを求める。
   - エージェントが `{"error": "企業名が指定されていない"}` を返した場合は、Step 0 へ戻り企業名を確認する。
-  - `assessments` が空で `open_questions` のみの場合は、検索範囲を広げる指示（別の選考体験記媒体・採用ページの確認）を付してエージェントへ再依頼する。再依頼は最大2回までとする。
+  - `assessments` が空で `open_questions` のみの場合は、検索範囲を広げる指示（別の選考体験記の媒体・採用ページの確認）を付してエージェントへ再依頼する。再依頼は最大2回までとする。
   - 2回で種別が特定できない場合は、「種別不明」を未決事項として利用者へ伝える。そのうえで、頻出検査（SPI3・玉手箱）を想定した基礎対策に絞るか、受検案内の到着後に再調査するかを、利用者に委ねる。
 - 確度ゲート（Step 2）では、`confidence` が「推定」の種別について、対策計画に推定である旨・根拠件数・確度を明記する。確定種別と同等に断定しない。
-  - 機械的な検査が担保する部分。「確定」がレベル A の根拠を持つこと（持たなければ Step 1 の形式ゲートで FAIL）と、根拠1件のみの「推定」が WARN として名指しされることは、`validate_exam_assessment.py` が機械的に判定する。
+  - 機械的な検査が担保する部分。「確定」がレベル A の根拠を持つこと（持たなければ Step 1 の形式ゲートで FAIL）は、`validate_exam_assessment.py` が機械的に判定する。根拠1件のみの「推定」が WARN として指摘されることも同様である。
   - 人の判断が要る部分。引用が本当にその検査種別を述べているか、エビデンスレベルの付与そのものが妥当か、複数の出典が食い違う場合にどちらに従うか、「推定」の種別を対策計画でどこまで前提にしてよいかは、機械では判定できない。とりわけ単一の体験記のみが根拠の種別は、その限界を対策計画へ明示する。
 
 ## 役割の実行（ハーネス別）

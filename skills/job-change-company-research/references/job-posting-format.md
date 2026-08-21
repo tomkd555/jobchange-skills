@@ -1,14 +1,14 @@
 # job_posting.json の原本仕様（job-posting-format）
 
-取り込んだ求人情報の構造化データ `job_posting.json` のフィールド仕様・記入基準・機械的な検証の規則を定める原本である。求人票取込担当エージェント（job-change-posting-parser）がこの仕様に適合するオブジェクトを組み立て、`scripts/validate_job_posting.py` がこの仕様に照らして機械的に検査する。
+取り込んだ求人情報の構造化データ `job_posting.json` のフィールド仕様・記入基準・機械的な検証の規則を定める原本である。求人票の取り込み担当エージェント（job-change-posting-parser）がこの仕様に適合するオブジェクトを組み立て、`scripts/validate_job_posting.py` がこの仕様に照らして機械的に検査する。
 
-出力先は `{DATA_ROOT}/companies/{企業スラッグ}/job_posting.json` である。ファイルを書くのは呼出元スキル（job-change-company-research 本体）であり、スラッグ解決後にのみ書く。posting-parser エージェントはファイルを書かず、`{company_name, aliases, job_posting}` を最終メッセージの JSON で返す。
+出力先は `{DATA_ROOT}/companies/{企業スラッグ}/job_posting.json` である。ファイルを書くのは呼び出し元スキル（job-change-company-research 本体）であり、スラッグ解決後にのみ書く。posting-parser エージェントはファイルを書かず、`{company_name, aliases, job_posting}` を最終メッセージの JSON で返す。
 
-## 取込の入口
+## 取り込みの入口
 
 求人票は、企業ごとの工程の最初で必ず作る。入口は4通りあり、`source_type` で区別する。
 
-| `source_type` | 入口 | 取込のしかた | `source_url` |
+| `source_type` | 入口 | 取り込みのしかた | `source_url` |
 |---|---|---|---|
 | `url` | 求人ページの URL | ページを取得して構造化する | URL（必須） |
 | `text` | 求人票の本文 | 貼り付けられた本文を構造化する | null または省略 |
@@ -56,7 +56,7 @@
 | フィールド | 型 | 記入基準 |
 |---|---|---|
 | `schema_version` | 文字列 | 現行は `"1.1"`。`"1.0"` も既知バージョンとして受け入れる。それ以外は WARN |
-| `source_type` | 文字列 | 取込の入口。`url` / `text` / `file` / `dialogue` のいずれか |
+| `source_type` | 文字列 | 取り込みの入口。`url` / `text` / `file` / `dialogue` のいずれか |
 | `fetched_at` | 文字列 | 取得日（`YYYY-MM-DD` の実在日付）。対話で埋めた場合は聞き取った日 |
 | `company_name` | 文字列 | 求人票に記載された企業名 |
 | `title` | 文字列 | 求人の職種・ポジション名 |
@@ -89,16 +89,16 @@
 | キー | 内容 | 単位の目安 |
 |---|---|---|
 | `annual_holidays` | 年間休日数 | 日 |
-| `monthly_overtime_h` | 月平均残業時間 | 時間 |
+| `monthly_overtime_h` | 月平均の残業時間 | 時間 |
 | `paid_leave_rate` | 有給取得率 | %（求人票の表記に合わせる） |
 | `paid_leave_days_granted` | 有給付与日数（見込） | 日 |
 
-各メトリックのフィールド:
+各メトリックは次のフィールドを持つ。
 
 | フィールド | 必須 | 記入基準 |
 |---|---|---|
 | `value` | 必須 | 数値。文字列や真偽値は不可 |
-| `quote` | 必須 | 求人票からの引用（非空）。数値の根拠箇所を写す |
+| `quote` | 必須 | 求人票からの引用（非空）。数値の根拠箇所をそのまま転記する |
 
 **ルール**: 求人票に明記がある場合のみ `value` と引用 `quote` を入れる。明記が無ければ `null` にする（推定・創作は禁止）。metrics 全体の欠落、および個別メトリックの `null` は正常であり、ERROR も WARN も出さない。metrics が存在してオブジェクトでない、または各メトリックが `null` でも `{value, quote}` でもない・`value` が非数値・`quote` が空の場合は ERROR となる。
 
@@ -112,7 +112,7 @@
 | `work_location` | 就業場所の変更の範囲 |
 | `contract_renewal_cap` | 有期労働契約を更新する場合の更新上限（通算契約期間または更新回数の上限） |
 
-各項目のフィールド:
+各項目は次のフィールドを持つ。
 
 | フィールド | 型 | 記入基準 |
 |---|---|---|
@@ -142,7 +142,7 @@
 
 判断に迷う書き方（例えば「原則として現在の勤務地」のように、例外の範囲が読み取れないもの）は、`unlimited` を偽にしたうえで、その旨を `open_questions` へ書く。`open_questions` へ回すのは、この種の曖昧な記載に限る。記載内容そのものは `scope_of_change` に入るため、重ねて `open_questions` へ書かない。
 
-3項目とも `null`（および `scope_of_change` 自体の欠落）は WARN となる。2024年4月以降に掲載された求人票には明示義務があり、3項目すべてを取得できていないことは取込の不足を疑わせるためである。
+3項目とも `null`（および `scope_of_change` 自体の欠落）は WARN となる。2024年4月以降に掲載された求人票には明示義務があり、3項目すべてを取得できていないことは取り込みの不足を疑わせるためである。
 
 `schema_version` が `1.0` の場合、`scope_of_change` は検査しない。1.0 にはこのフィールドが無く、既存の成果物をそのまま読めるようにするためである。検査から外すのは 1.0 だけであり、以降のバージョンでは検査する。
 

@@ -8,7 +8,7 @@ company_index.json は「企業名からスラッグを解決するための単�
 
 - 原本の配置先: `{DATA_ROOT}/career-private/company_index.json`
 - 企業別ディレクトリの配置先: `{DATA_ROOT}/companies/{企業スラッグ}/`
-- スキル本体フォルダー（`skills/job-change-support/`）に一覧を置かない。`assets/company_index_example.json` は記入例であり、実データではない。
+- スキル本体フォルダ（`skills/job-change-support/`）に一覧を置かない。`assets/company_index_example.json` は記入例であり、実データではない。
 
 ## ルート構造
 
@@ -38,11 +38,11 @@ company_index.json は「企業名からスラッグを解決するための単�
 | 部位 | 規則 |
 |---|---|
 | 接頭辞（任意） | 「大文字1文字＋アンダースコア」。優先度や評価の区分でまとめるために用いる（例: `S_`）。 |
-| 本体（必須） | 英数字・ハイフン、および日本語文字（ひらがな・カタカナ・漢字・全角英数記号）。先頭はハイフン不可。空白やパス区切り等の記号は不可。 |
+| 本体（必須） | 英数字・ハイフン、および日本語文字（ひらがな・カタカナ・漢字・全角英数記号）。先頭はハイフン不可。空白やパス区切りなどの記号は不可。 |
 
 本体は読みやすさを優先し、日本語会社名でよい（例: `S_アクメクラウド`）。英字のローマ字表記でもよい（例: `S_acme-cloud`）。企業別ディレクトリ名はスラッグと同一なので、接頭辞や日本語を付ければ、ディレクトリ名にもそのまま反映される。
 
-`_general` は予約名である。企業を特定しない一般的な試験対策の成果物を `{DATA_ROOT}/companies/_general/` へ置くために使う（用途の原本は `job-change-exam-prep` の SKILL.md にある）。上の形式は先頭のアンダースコアを許さないため、`_general` を企業スラッグとして `companies` へ登録すると `validate_company_index.py` が ERROR とする。予約名を企業へ割り当てない。
+`_general` は予約名である。企業を特定しない一般的な試験対策の成果物を `{DATA_ROOT}/companies/_general/` へ置くために使う（用途の原本は `job-change-exam-prep` の SKILL.md にある）。上の形式は先頭のアンダースコアを許さない。そのため `_general` を企業スラッグとして `companies` へ登録すると、`validate_company_index.py` が ERROR とする。予約名を企業へ割り当てない。
 
 | フィールド | 型 | 必須/任意 | 意味・記入基準 |
 |---|---|---|---|
@@ -50,7 +50,7 @@ company_index.json は「企業名からスラッグを解決するための単�
 | `aliases` | array | 必須 | 別表記の文字列の配列。別表記が無ければ空配列 `[]` にする。配列でない・文字列以外を含むと ERROR |
 | `created` | string | 任意 | `YYYY-MM-DD` 形式の登録日。欠落は WARN |
 | `status` | string | 任意 | 選考状況。`"active"`（選考中）または `"closed"`（選考終了・見送り）のいずれか。欠落時は `active` 扱いとする。`closed` になっても成果物は保持し続け、削除・アーカイブ移動は行わない。値の型不正・許容値外は ERROR |
-| `score` | integer | 任意 | 企業スコア。0以上100以下の整数。`fit_assessment.json` の `company_score.total` を写した機械可読な値で、原本は `fit_assessment.json` 側にある（一覧・並べ替え用のコピー）。適合性評価スキル（job-change-fit-assessment）が転記・更新する。`company_score.total` が `null`（採点する軸の未申告、または判定できた軸が無い）のときは転記しない。欠落は許容（未調査・未採点の企業）。値の型不正・範囲外は ERROR。スラッグ接頭辞（例 `A_`）とは独立で、点数が変わってもスラッグ（ディレクトリ名）はリネームしない |
+| `score` | integer | 任意 | 企業スコア。0以上100以下の整数。`fit_assessment.json` の `company_score.total` を転記した機械可読な値で、原本は `fit_assessment.json` 側にある（一覧・並べ替え用のコピー）。適合性評価スキル（job-change-fit-assessment）が転記・更新する。`company_score.total` が `null`（採点する軸の未申告、または判定できた軸が無い）のときは転記しない。欠落は許容（未調査・未採点の企業）。値の型不正・範囲外は ERROR。スラッグ接頭辞（例 `A_`）とは独立で、点数が変わってもスラッグ（ディレクトリ名）はリネームしない |
 
 `name` と全エントリーの `aliases` は、一覧全体で企業を一意に指す識別子として働く。同一の文字列が複数のスラッグに現れると、各スキルが同じ名前から別々のスラッグを引きうるため ERROR とする。
 
@@ -58,7 +58,7 @@ company_index.json は「企業名からスラッグを解決するための単�
 
 各サブスキルは、企業を扱う前に次の手順でスラッグを確定する。
 
-1. 一覧が存在する場合は、まず `validate_company_index.py` で一覧を検証する。FAIL（ERROR 1件以上）の場合は、次節「壊れた一覧の修復」に従って修復してから解決へ進む。壊れた一覧のまま解決しない。hub（job-change-support）から振り分けられた場合は hub が振り分け前に検証済みであり、サブスキルが単独で起動された場合はそのサブスキル自身が `validate_company_index.py` を実行する。
+1. 一覧が存在する場合は、まず `validate_company_index.py` で一覧を検証する。FAIL（ERROR 1件以上）の場合は、次節「壊れた一覧の修復」に従って修復してから解決へ進む。壊れた一覧のまま解決しない。hub（job-change-support）から振り分けられた場合は、hub が振り分け前に検証を済ませている。サブスキルが単独で起動された場合は、そのサブスキル自身が `validate_company_index.py` を実行する。
 2. `company_index.json` を読む。一覧が無ければ `{"schema_version":1,"companies":{}}` を作ってから進める。
 3. 依頼中の企業名が、いずれかのエントリーの `name` または `aliases` に一致すれば、そのスラッグを使う。
 4. 一致が無ければ、スラッグを一度だけ導出して一覧に登録し、`companies/{スラッグ}/` を作る。
@@ -77,7 +77,7 @@ ERROR の種別ごとの対応は次のとおり。
 | 同一の `name` または alias が複数のスラッグに割り当てられている | 衝突している識別子と該当スラッグを示し、統合先のスラッグを `AskUserQuestion` で選ばせる。hub がエントリーを統合し、統合元の `name`・`aliases` を統合先の `aliases` へ移す。`companies/{企業スラッグ}/` の成果物が両方にある場合は、統合先へ移すか残すかも同時に問う |
 | スラッグの形式違反、`schema_version`・`companies`・`name`・`aliases` の欠落や型不正、`status`・`score` の値不正、エントリーが非オブジェクト | hub が該当箇所と修復案を示し、利用者の承認を得てから直す。スラッグを変える場合は `companies/{企業スラッグ}/` のディレクトリ名も同時に変える |
 
-WARN のみ（`created` の欠落など）は FAIL ではないので、修復せずに解決へ進んでよい。
+WARN のみ（`created` の欠落など）なら FAIL にならないため、修復せずに解決へ進んでよい。
 
 ## 検証規則の要約
 

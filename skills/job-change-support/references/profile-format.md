@@ -7,7 +7,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 ## 配置
 
 - 原本の配置先: `{DATA_ROOT}/career-private/profile.json`
-- スキル本体フォルダー（`skills/job-change-support/`）に利用者データを置かない。`assets/profile_example.json` は記入例であり、実データではない。
+- スキル本体フォルダ（`skills/job-change-support/`）に利用者データを置かない。`assets/profile_example.json` は記入例であり、実データではない。
 
 ## ルート構造
 
@@ -95,7 +95,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 | `explanation` | string | 必須 | 空白期間の理由。欠落・空は WARN |
 | `activities` | array | 任意 | 期間中に行った活動の文字列の配列 |
 
-どの職歴の在籍期間にも覆われない期間が6か月以上あり、対応する `career_gaps` の記載がない場合、`validate_profile.py` は WARN を出す（`career_history[].period` が全件解析可能な場合に限る）。判定は全職歴の在籍期間の和集合に対して行うため、在籍期間が重なる職歴があっても空白を誤検出しない。
+どの職歴の在籍期間にも覆われない6か月以上の期間があり、対応する `career_gaps` の記載がないと、`validate_profile.py` は WARN を出す。この検査は `career_history[].period` を全件解析できる場合に限って行う。判定は全職歴の在籍期間の和集合に対して行うため、在籍期間の重なる職歴があっても空白を誤検出しない。
 
 ## skills
 
@@ -103,8 +103,8 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 
 | フィールド | 型 | 意味・記入基準 |
 |---|---|---|
-| `technical` | array | 技術スキルの文字列の配列（言語・フレームワーク・クラウド等） |
-| `business` | array | 業務スキルの文字列の配列（マネジメント・要件定義等） |
+| `technical` | array | 技術スキルの文字列の配列（言語・フレームワーク・クラウドなど） |
+| `business` | array | 業務スキルの文字列の配列（マネジメント・要件定義など） |
 | `languages` | array | 語学の配列。各要素は `{"language": "英語", "level": "TOEIC 850"}` の形。形式不一致は WARN |
 | `certifications` | array | 保有資格の文字列の配列 |
 | `portable` | array | ポータブルスキルの配列。各要素は `{"skill": string, "category": "対課題" または "対人", "note": string（任意）}` の形。厚生労働省のポータブルスキル9要素（仕事のし方5・人との関わり方4）を補助分類として使う。`category` が「対課題」「対人」以外だと WARN |
@@ -234,7 +234,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 
 重みを配分したあとは、架空2社の比較で検算する。配分した重みで2社を採点し、「実際にどちらを選ぶか」という問いへの答えと点数の高い側が一致するかを確かめる（手順は company-score-rubric.md にある）。
 
-申告した軸が、`job_change_axis` の必須条件（`conditions[level=must]`）・作業特性の希望度（`work_character_preferences`）と食い違う場合は、どちらが本当かをこの文書の側で決めない。両方を利用者へ提示し、本人に選ばせる。
+申告した軸が、`job_change_axis` の必須条件（`conditions[level=must]`）や作業特性の希望度（`work_character_preferences`）と食い違うことがある。その場合、どちらが本当かをこの文書の側で決めない。両方を利用者へ提示し、本人に選ばせる。
 
 配列が無い場合は、採点する軸の申告が無いものとして扱う。企業スコアは算出せず、軸と重みを仮定して採点しない。
 

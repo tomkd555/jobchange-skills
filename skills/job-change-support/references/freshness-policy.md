@@ -1,12 +1,12 @@
-# 鮮度ポリシー（freshness-policy）
+# 再調査期限のポリシー（freshness-policy）
 
-`companies/{企業スラッグ}/_manifest.json` を根拠に、企業別成果物の鮮度（fresh・stale・missing）を判定する方針と、`_manifest.json` の仕様・TTL 対応表の原本である。判定するツールは `scripts/check_freshness.py` である。
+企業別の成果物に再調査が必要かどうか（fresh・stale・missing）を判定する方針の原本である。判定の根拠は `companies/{企業スラッグ}/_manifest.json` であり、その仕様と TTL 対応表もここに置く。判定するツールは `scripts/check_freshness.py` である。
 
 ## 方針
 
-- `companies/{企業スラッグ}/` は恒久アーカイブである。TTL を超過しても、成果物ファイルの削除・移動は行わない。
-- TTL 超過は、hub（job-change-support）が `job-change-company-research` へ「stale と判定されたトピック限定の差分再調査」を指示する根拠になる。stale でないトピック・fresh な成果物は再調査せず、既存の成果物をそのまま再利用する。
-- `_manifest.json` の書き手は、各成果物を作るスキル自身である（`job_posting` は `job-change-company-research` が求人票取得時に、`company_research` は同スキルがトピック調査完了時に、それぞれ自分の担当箇所を更新する）。`check_freshness.py` は判定のみを担い、`_manifest.json` を書き換えない。
+- `companies/{企業スラッグ}/` は恒久アーカイブであり、TTL を超過しても成果物ファイルの削除・移動は行わない。
+- TTL 超過は、hub（job-change-support）が `job-change-company-research` へ「stale と判定されたトピック限定の差分再調査」を指示する根拠になる。stale でないトピック・fresh な成果物は再調査しない。既存の成果物をそのまま再利用する。
+- `_manifest.json` の書き手は、各成果物を作るスキル自身である。`job_posting` の欄は `job-change-company-research` が求人票の取得時に、`company_research` の欄は同スキルがトピック調査の完了時に、それぞれ更新する。`check_freshness.py` は判定のみを担い、`_manifest.json` を書き換えない。
 
 ## `_manifest.json` の仕様
 
@@ -40,11 +40,11 @@
 | `artifacts.company_research.audit_verdict` | string | 独立監査の判定。`CLEAN`・`CONCERNS`・`BLOCK` のいずれか。書き手は `job-change-company-research` である |
 | `artifacts.company_research.audited_at` | string | 監査を行った日付（`YYYY-MM-DD`） |
 
-`artifacts` には、上記2件のほかに、`fit_assessment` 等の成果物を `{updated_at: "YYYY-MM-DD"}` の形で自由に追加してよい。`check_freshness.py` は `job_posting`・`company_research` の2件のみを既知成果物として判定対象にし、それ以外のキーは判定せず読み飛ばす。
+`artifacts` には、上記2件のほかに、`fit_assessment` などの成果物を `{updated_at: "YYYY-MM-DD"}` の形で自由に追加してよい。`check_freshness.py` は `job_posting`・`company_research` の2件のみを既知成果物として判定対象にし、それ以外のキーは判定せず読み飛ばす。
 
 ## トピック名と TTL 対応表
 
-`company_research.topics` のキーは、`job-change-company-research` スキルの `references/company-research-format.md` が定める8種のトピック名と一致させる。TTL（日数）はトピックの性質（報道・ニュース系／給与・福利厚生・働き方などの数値系／理念・事業などの恒常系）に応じて次のとおり分類する。
+`company_research.topics` のキーは、`job-change-company-research` スキルの `references/company-research-format.md` が定める8種のトピック名と一致させる。TTL（日数）はトピックの性質で決める。性質は、報道・ニュース系、給与・福利厚生・働き方といった数値系、理念・事業のような恒常系の3つに分け、対応は次のとおりとする。
 
 | topic | 分類 | TTL（日） |
 |---|---|---|
@@ -61,8 +61,8 @@
 
 ## 判定規則
 
-`check_freshness.py` は、`--today` に指定した日付（未指定時は実行時点の日付）を基準に、各成果物の最終日付との差分日数（経過日数）を求める。経過日数が TTL 以下であれば `fresh`、TTL を超えていれば `stale` とする（TTL ちょうどの経過日数は `fresh` 側に含める）。
+判定の基準日は `--today` に指定した日付で、未指定なら実行時点の日付である。`check_freshness.py` はこの基準日と各成果物の最終日付との差分日数（経過日数）を求め、経過日数が TTL 以下であれば `fresh`、TTL を超えていれば `stale` とする。TTL ちょうどは `fresh` 側に含める。
 
 - `job_posting`: `artifacts.job_posting` が無い・`null`、または `updated_at` が欠落・不正な日付形式の場合は `missing` とする。それ以外は `updated_at` と TTL=30日で判定する。
-- `company_research`: `artifacts.company_research` が無い・`null` の場合、トピック単位の判定は行わず `company_research` 全体を `missing` とする。存在する場合は、`topics` 配下の各トピックについて、`last_researched` の有無・形式を確認し、欠落・不正な場合はそのトピックを `missing` とする。それ以外は対応表の TTL で `fresh`/`stale` を判定する。`topics` が無い・`null`・オブジェクト以外の場合は、トピック単位の判定は行わず `company_research` 全体を `missing` とする。`topics` が空のオブジェクトの場合は、トピックが1件も無いものとして扱い、判定対象にしない。
-- `_manifest.json` が存在しない、または JSON として読み込めない場合、`job_posting`・`company_research` の両方を `missing` として報告する（終了コードは 0 のままとする。鮮度情報の提供が本ツールの役割であり、manifest 未整備を FAIL 扱いにしない）。
+- `company_research`: `artifacts.company_research` が無い・`null` の場合、トピック単位の判定は行わず `company_research` 全体を `missing` とする。存在する場合は、`topics` 配下の各トピックについて `last_researched` の有無・形式を確認する。欠落・不正な場合はそのトピックを `missing` とし、それ以外は対応表の TTL で `fresh`/`stale` を判定する。`topics` が無い・`null`・オブジェクト以外の場合は、トピック単位の判定は行わず `company_research` 全体を `missing` とする。`topics` が空のオブジェクトの場合は、トピックが1件も無いものとして扱い、判定対象にしない。
+- `_manifest.json` が存在しない、または JSON として読み込めない場合、`job_posting`・`company_research` の両方を `missing` として報告する。終了コードは 0 のままとする。再調査の要否を伝えるのが本ツールの役割であり、manifest 未整備を FAIL 扱いにしない。
