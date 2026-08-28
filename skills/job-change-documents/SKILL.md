@@ -81,7 +81,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | 中間成果物 | 内容 |
 |---|---|
 | アピールマッピング | 求人要件・対応する実績・裏付けの3列の対応表。作成担当が Step 1 で作り、出力 JSON（`appeal_mapping`）と成果物に載せる。誇張のない訴求の根拠であり、監査担当が求人要件との対応を検査するときに用いる。 |
-| 形式選定の記録 | 職務経歴書で編年体式・逆編年体式・キャリア式のどれを選んだか、その理由（作成担当の出力 JSON の `format`）。 |
+| 形式選定の記録 | 書類種別ごとに `references/templates.md` のどのテンプレートを選んだか、その理由（作成担当の出力 JSON の `format`）。 |
 
 ## パイプライン
 
@@ -124,19 +124,19 @@ fit_assessment.json も同じく必須ではない。
 
 - 実行するステップ（= 1）・書類種別・`{PROFILE}`・`{COMPANY_RESEARCH}`（あれば）・`{SELF_ANALYSIS}`（あれば）・`{FIT_ASSESSMENT}`（あれば）・求人票（あれば）・出力先 `{OUT_DIR}`。
 
-作成担当には次を行う責務がある。求人要件と（あれば）企業研究の理念・求める人物像を抽出し、`profile.json` の実績と突き合わせてアピールマッピングを作る。そのうえで、書類種別ごとの標準形式を理由とともに選定して作成する。書類は `{OUT_DIR}` の下に書き出す。`company_research.json` が無い場合は企業固有の調整をしない。その旨を成果物と出力 JSON（`company_research_used: false`・`degraded_reason`）に明記する。`fit_assessment.json` がある場合、アピールマッピングの訴求点選定に `dimensions` の `evidence` と `must_condition_results` を判断材料として加える。無い場合は求人要件と `profile.json` の実績の突き合わせのみで進める。
+作成担当には次を行う責務がある。求人要件と（あれば）企業研究の理念・求める人物像を抽出し、`profile.json` の実績と突き合わせてアピールマッピングを作る。そのうえで、`references/templates.md` の一覧からテンプレートを理由とともに選定し、その構成で作成する。書類は `{OUT_DIR}` の下に書き出す。`company_research.json` が無い場合は企業固有の調整をしない。その旨を成果物と出力 JSON（`company_research_used: false`・`degraded_reason`）に明記する。`fit_assessment.json` がある場合、アピールマッピングの訴求点選定に `dimensions` の `evidence` と `must_condition_results` を判断材料として加える。無い場合は求人要件と `profile.json` の実績の突き合わせのみで進める。
 
 志望動機書・自己PRでは、`self_analysis.json` がある場合、`career_narrative`（ライフテーマ・一貫する動機）を素材に用いる。根拠付きの `strengths`（episode_id・feedback_id に対応づけられた強み）も用いる。`reason_for_change.constructive_version`（発揮したい価値を軸にした転職理由の言い換え）も同様である。いずれも profile.json の実績と併せて用いる。`self_analysis.json` が無い場合は profile.json の `strengths`・`job_change_axis.reasons` のみを素材とする。この場合は、企業固有の調整のときとは異なり、フォールバックした旨を明示する必要はない。
 
 ### Step 2 独立監査
 
-`job-change-document-auditor` エージェント（model: sonnet）を、作成担当の判断理由を渡さない新規コンテキストで起動し、Step 2（監査）を指示する。指示書には監査対象の書類ファイルの絶対パス・書類種別・`{PROFILE}`・求人票（あれば）を渡す。
+`job-change-document-auditor` エージェント（model: sonnet）を、作成担当の判断理由を渡さない新規コンテキストで起動し、Step 2（監査）を指示する。指示書には監査対象の書類ファイルの絶対パス・書類種別・作成担当が選定したテンプレートのファイル名・`{PROFILE}`・求人票（あれば）を渡す。
 
 監査担当が検査するのは次の4点である。
 
 - **和文の文法と表記。** 職務経歴書・履歴書・志望動機書を対象に、役割プロンプトの「判断の原本」に挙げた観点（助詞・主述の対応・係り受け・並列・冗長表現・表記揺れ・誤字脱字）で見る。
 - **誇張・創作。** `profile.json` と突き合わせ、記載のない実績・数値、metric との不一致、裏付けを超えた規模・範囲・主体の言葉を検出する。
-- **求人要件との対応・定量性・分量。**
+- **求人要件との対応・定量性・分量・テンプレートの構成との一致。**
 - **英文レジュメ。** 英語の文法・時制、アクション動詞（action verb）の適否（動詞始まり・主語省略）、定量性、ATS適合（表・画像・グラフィックの回避、求人票キーワードとの文脈整合）、分量（1〜2枚）を見る。和文の文法・表記の検査は対象外とする。
 
 判定は `verdict`（BLOCK / CONCERNS / CLEAN）と `findings`（各 finding に `severity` = 重大 / 警告 / 軽微）で返る。
@@ -212,3 +212,6 @@ python {HUB_SKILL_DIR}/scripts/check_freshness.py {DATA_ROOT}/companies/{企業�
 | `references/rirekisho.md` | 履歴書様式の現行事情（厚労省様式例）・手書き/パソコン・使い回しの回避 | 履歴書を作成/監査するとき |
 | `references/english-resume.md` | 英文レジュメの標準構成・記載しない個人情報・定量化・ATS対応 | 英文レジュメを作成/監査するとき |
 | `references/tailoring.md` | 企業別カスタマイズ・志望動機の構成・アピールマッピング・誇張禁止基準 | 志望動機/企業別調整を行うとき、全書類の誇張検査の基準として |
+| `references/templates.md` | 書類種別ごとの複数スタイルのテンプレート一覧・選び方・分量・出典で食い違う点の決定 | 形式を選定するとき、構成の一致を監査するとき |
+
+テンプレート本体は `assets/templates/` にある（職務経歴書4種・履歴書2種・英文レジュメ3種・志望動機2種・自己PR1種）。作成担当は `references/templates.md` の一覧から1つを選び、その構成で作成する。

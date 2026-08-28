@@ -28,6 +28,8 @@
 | QUALIFICATIONS（SPECIAL SKILLS） | 資格・スキル |
 | ADDITIONAL INFORMATION | 補足情報 |
 
+上の表はエンワールド1社の構成である。本スキルが用いる構成（SUMMARY を必須、OBJECTIVE を任意とし、Reverse-chronological・Combination・Functional の3スタイルを持つ）と、その根拠は `references/templates.md` にある。
+
 ## 記載しない個人情報
 
 英文レジュメには、性別・年齢・生年月日・顔写真を記載しない（出典: 同 エンワールド・ジャパン 信頼できる二次）。これは欧米諸国で採用時の差別を防止する法律が厳格に定められているためであり、和文履歴書との最大の違いである。和文履歴書の感覚でこれらを載せない。
