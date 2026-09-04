@@ -14,13 +14,14 @@ self_analysis.json は、profile.json（利用者データの原本。hub が管
 
 ```json
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "updated_at": "2026-07-16",
   "behavioral_episodes": [ ],
   "others_feedback": [ ],
   "interests": { },
   "values": [ ],
   "career_adaptability": { },
+  "personality": { },
   "strengths": [ ],
   "career_narrative": { },
   "reason_for_change": { },
@@ -30,13 +31,14 @@ self_analysis.json は、profile.json（利用者データの原本。hub が管
 
 | フィールド | 型 | 必須/任意 | 意味・記入基準 |
 |---|---|---|---|
-| `schema_version` | string | 必須 | 仕様のバージョン。現行は `"1.0"`。欠落・空は ERROR |
+| `schema_version` | string | 必須 | 仕様のバージョン。現行は `"1.1"`。`"1.0"` も読める。欠落・空は ERROR。既知の2値以外は WARN |
 | `updated_at` | string | 任意 | `YYYY-MM-DD` 形式の最終更新日。欠落は WARN |
 | `behavioral_episodes` | array | 必須 | 行動エピソード（STAR素材）の配列。1件以上必須。後述 |
 | `others_feedback` | array | 任意 | 他者から受け取ったフィードバックの配列。0件は WARN。後述 |
 | `interests` | object | 任意 | 興味。空は WARN。後述 |
 | `values` | array | 任意 | 価値観の配列。空は WARN。後述 |
 | `career_adaptability` | object | 任意 | career adaptability の4次元。後述 |
+| `personality` | object または null | 任意（1.1） | 性格・行動傾向の自己申告と、その描写。`null` は未記入として扱う。後述。原本は `references/personality-guide.md` |
 | `strengths` | array | 任意 | 根拠づけた強みの配列。後述 |
 | `career_narrative` | object | 必須 | キャリア・ナラティブ。後述 |
 | `reason_for_change` | object | 必須 | 退職・転職理由。後述 |
@@ -111,6 +113,49 @@ career adaptability の4次元。次元名の枠組みのみを用い、尺度�
 | `self_note` | string | その次元についての自己記述 |
 | `evidence_episode_ids` | array | 裏付けとなる behavioral_episodes の id の配列 |
 
+## personality（1.1）
+
+性格・行動傾向の自己申告と、その描写を持つ。任意であり、無くても成果物は成立する。自己申告は本人の自己像の記録であって特性の証拠ではないため、`strengths` の根拠には数えない。聞き方・語彙・書き方の原本は `references/personality-guide.md` にある。
+
+```json
+"personality": {
+  "markers": [
+    {
+      "id": "pm-1",
+      "construct": "planning_style",
+      "options": ["事前に段取りを固めてから着手する", "着手してから状況に合わせて組み替える", "場面による", "どちらも当てはまらない"],
+      "response": "事前に段取りを固めてから着手する",
+      "linked_episode_ids": ["ep-1"],
+      "feedback_ids": ["fb-1"],
+      "note": null
+    }
+  ],
+  "presentation": "計測してから手を打ち、段取りを先に固める行動が ep-1 と ep-2 で繰り返し見られる。"
+}
+```
+
+| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+|---|---|---|---|
+| `markers` | array | 必須 | 自己申告の配列。0件でもよい。後述 |
+| `presentation` | string または null | 任意 | 自己申告と証拠を突き合わせた描写文。型やタイプの名称で分類しない。過去形・エピソード対応づけで書く |
+
+### markers
+
+各要素は自己申告1件を表す。
+
+| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+|---|---|---|---|
+| `id` | string | 必須 | 識別子（例 `pm-1`）。欠落・空は ERROR。重複は WARN |
+| `construct` | string | 必須 | 構成概念の識別子。`references/personality-guide.md` の「構成概念の語彙」の表にある識別子のいずれか。他の値は ERROR |
+| `options` | array | 任意 | 提示した選択肢をそのまま記録した文字列の配列（2〜4件。二者択一の質問では4件、提示した選択肢の全文言を含む）。あれば `response` はこの中のいずれかでなければならない（不一致は ERROR）。Other 等で自由記述に置き換えた場合は `options` を省く |
+| `response` | string | 必須 | 本人が選んだ選択肢の文。欠落・空は ERROR |
+| `linked_episode_ids` | array | 任意 | その傾向が表れた behavioral_episodes の id の配列。実在しない id は ERROR |
+| `feedback_ids` | array | 任意 | 同じ傾向についての others_feedback の id の配列。実在しない id は ERROR |
+| `note` | string または null | 任意 | 自己申告と他者証言の食い違いなど、補足 |
+
+- `linked_episode_ids` と `feedback_ids` が両方とも空の自己申告は、自己申告だけの記録として WARN を出す。成果物としては成立する。
+- `presentation` に型やタイプの名称（「〜型です」「〜タイプです」「〜型である」など）が含まれる場合は WARN とする。
+
 ## strengths
 
 根拠づけた強みの配列。**内省単独の強みは認めない。** 各要素は、行動証拠（episode_ids）または他者証言（feedback_ids）の少なくとも一方へ対応づける。
@@ -120,9 +165,11 @@ career adaptability の4次元。次元名の枠組みのみを用い、尺度�
 | `statement` | string | 必須 | 強みの短文。欠落・空は ERROR。profile.json の strengths へ反映する短文の素材になる |
 | `episode_ids` | array | 条件付き必須 | 裏付けとなる behavioral_episodes の id の配列 |
 | `feedback_ids` | array | 条件付き必須 | 裏付けとなる others_feedback の id の配列 |
+| `constructs` | array | 任意（1.1） | その強みに関わる構成概念の識別子の配列。語彙は `personality.markers[].construct` と同じ。表に無い識別子は ERROR |
 
 - `episode_ids` と `feedback_ids` が両方とも空（有効な id が1件もない）の場合は ERROR（内省単独の強み）。少なくとも一方に実在する id を1件以上持つ。
 - `episode_ids`・`feedback_ids` が参照する id は、実在する behavioral_episodes / others_feedback の id でなければならない（参照整合）。実在しない id の参照は ERROR とする。
+- `constructs` に挙げた構成概念について、`personality.markers` の該当する自己申告がエピソードにも他者証言にも対応づいていない場合は WARN とする（自己申告が強みの根拠に紛れ込んでいないかを確かめる）。
 
 ## career_narrative
 
@@ -159,17 +206,26 @@ career adaptability の4次元。次元名の枠組みのみを用い、尺度�
 - `others_feedback` の要素で `id` が欠落・空
 - `strengths` の要素で `statement` が欠落・空
 - `strengths` の要素で `episode_ids` と `feedback_ids` が両方とも空（内省単独の強み）
-- `strengths`・`values`・`career_adaptability` が参照する `episode_id` / `feedback_id` が実在しない（参照整合エラー）
+- `strengths`・`values`・`career_adaptability`・`personality.markers` が参照する `episode_id` / `feedback_id` が実在しない（参照整合エラー）
+- `personality` がオブジェクトでない、`personality.markers` が配列でない、または各要素がオブジェクトでない
+- `personality.markers` の要素で `id`・`response` が欠落・空、`construct` が語彙表にない、`options` があるのに `response` がその中にない
+- `personality.markers` の要素で `options` があるのに2〜4件の非空文字列の配列でない
+- `personality.presentation` が文字列でも null でもない
+- `strengths[].constructs` が配列でない、または語彙表にない識別子を含む
 - `career_narrative.life_theme` または `consistent_motivation` の欠落・空
 - `reason_for_change.raw_reasons` が空、または `constructive_version` の欠落・空
 
 ### WARN（成立するが情報不足で成果物の質を下げる）
 
 - `others_feedback` が0件（他者視点の欠落）
-- `behavioral_episodes` または `others_feedback` の中で `id` が重複している
+- `behavioral_episodes`・`others_feedback`・`personality.markers` の中で `id` が重複している
 - `others_feedback` の要素の `source_type` が上表の値域にない
 - 全エピソードを通して `metric` が1件もない
 - `updated_at` の欠落
+- `schema_version` が既知の2値（`1.0`・`1.1`）以外
 - `interests` が空（domains・concrete_topics がともに空）
 - `values` が空
+- `personality.markers` の要素で `linked_episode_ids` と `feedback_ids` が両方とも空（自己申告だけの記録）
+- `personality.presentation` に型やタイプの名称が含まれる
+- `strengths[].constructs` に挙げた構成概念の自己申告が、エピソードにも他者証言にも対応づいていない
 - `constructive_version` が `raw_reasons` と同一文字列のまま

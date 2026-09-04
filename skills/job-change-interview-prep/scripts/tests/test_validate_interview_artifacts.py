@@ -10,13 +10,43 @@ from __future__ import annotations
 import copy
 import json
 import os
+import re
 import sys
 import tempfile
 import unittest
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_SCRIPTS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_SKILL_DIR = os.path.dirname(_SCRIPTS_DIR)
+_INTERVIEW_FORMAT_MD = os.path.join(_SKILL_DIR, "references", "interview-format.md")
+
+sys.path.insert(0, _SCRIPTS_DIR)
 
 import validate_interview_artifacts as via  # noqa: E402
+
+_CODE_RE = re.compile(r"`([^`]+)`")
+
+
+def _known_category_terms(md_path: str) -> list[str]:
+    """「既知の質問類型は…である。」の文からバックティック囲みの語彙を順に取り出す。
+
+    後続の `question-bank.md` 等の参照を巻き込まないよう、最初の「である。」までで区切る。
+    """
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    start = text.index("既知の質問類型は")
+    end = text.index("である。", start) + len("である。")
+    return _CODE_RE.findall(text[start:end])
+
+
+def _field_enum_terms(md_path: str, field_name: str) -> list[str]:
+    """`| \\`field_name\\` |` で始まる表行から、フィールド名自身を除く語彙を順に取り出す。"""
+    with open(md_path, encoding="utf-8") as f:
+        lines = f.read().splitlines()
+    marker = f"| `{field_name}` |"
+    for line in lines:
+        if line.startswith(marker):
+            return _CODE_RE.findall(line)[1:]
+    raise AssertionError(f"{md_path} に `{field_name}` の表行が無い")
 
 
 def _valid_questions() -> dict:
@@ -31,6 +61,8 @@ def _valid_questions() -> dict:
                 "question": "現職を離れようと考えた理由を聞かせてください。",
                 "interviewer_intent": "定着性と転職理由の一貫性を確認する。",
                 "basis": "profile.job_change_axis.reasons[0]",
+                "provenance": "general",
+                "stage": "一次面接",
             },
             {
                 "id": "Q002",
@@ -38,6 +70,8 @@ def _valid_questions() -> dict:
                 "question": "理念のどこに共感しましたか。",
                 "interviewer_intent": "共感が経験に裏付けられているかを確認する。",
                 "basis": "company_research claim C001",
+                "provenance": "inferred",
+                "stage": "二次面接",
             },
         ],
     }
@@ -266,6 +300,100 @@ class QuestionsTest(unittest.TestCase):
         result = via.validate(document)
         self.assertFalse(result.ok)
         self.assertTrue(any("question は必須" in e for e in result.errors))
+
+    def test_known_provenance_passes(self):
+        document = _valid_questions()
+        document["questions"][0]["provenance"] = "reported"
+        result = via.validate(document)
+        self.assertEqual(result.warnings, [])
+
+    def test_unknown_provenance_is_a_warning(self):
+        document = _valid_questions()
+        document["questions"][0]["provenance"] = "guessed"
+        result = via.validate(document)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("既知の出所" in w for w in result.warnings))
+
+    def test_non_string_provenance_is_a_warning(self):
+        document = _valid_questions()
+        document["questions"][0]["provenance"] = 1
+        result = via.validate(document)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("既知の出所" in w for w in result.warnings))
+
+    def test_missing_provenance_is_a_warning(self):
+        document = _valid_questions()
+        del document["questions"][0]["provenance"]
+        result = via.validate(document)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("questions[0].provenance" in w and "欠落" in w for w in result.warnings))
+
+    def test_missing_stage_is_a_warning(self):
+        document = _valid_questions()
+        del document["questions"][0]["stage"]
+        result = via.validate(document)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("questions[0].stage" in w and "欠落" in w for w in result.warnings))
+
+    def test_known_stage_passes(self):
+        document = _valid_questions()
+        document["questions"][0]["stage"] = "一次面接"
+        result = via.validate(document)
+        self.assertEqual(result.warnings, [])
+
+    def test_unknown_stage_is_a_warning(self):
+        document = _valid_questions()
+        document["questions"][0]["stage"] = "三次面接"
+        result = via.validate(document)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("既知の選考段階" in w for w in result.warnings))
+
+    def test_non_string_stage_is_a_warning(self):
+        document = _valid_questions()
+        document["questions"][0]["stage"] = 3
+        result = via.validate(document)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("既知の選考段階" in w for w in result.warnings))
+
+
+class NotesTest(unittest.TestCase):
+    def test_notes_on_answers_kind_is_not_checked(self):
+        """notes は questions 種別だけで検査される。answers 種別に不正な notes があっても無視する。"""
+        document = _valid_answers()
+        document["notes"] = "配列でない不正な notes"
+        result = via.validate(document)
+        self.assertFalse(any("notes" in e for e in result.errors))
+
+    def test_valid_notes_passes(self):
+        document = _valid_questions()
+        document["notes"] = ["配慮事項に該当する質問は聞かれても答えなくてよい。"]
+        result = via.validate(document)
+        self.assertEqual(result.errors, [])
+
+    def test_empty_notes_array_passes(self):
+        document = _valid_questions()
+        document["notes"] = []
+        result = via.validate(document)
+        self.assertEqual(result.errors, [])
+
+    def test_non_array_notes_is_an_error(self):
+        document = _valid_questions()
+        document["notes"] = "配慮事項に該当する質問は聞かれても答えなくてよい。"
+        result = via.validate(document)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("notes は配列でなければならない" in e for e in result.errors))
+
+    def test_notes_with_empty_string_is_an_error(self):
+        document = _valid_questions()
+        document["notes"] = ["面接は二段階である。", ""]
+        result = via.validate(document)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("notes[1]" in e for e in result.errors))
+
+    def test_questions_with_notes_is_still_detected_as_questions(self):
+        document = _valid_questions()
+        document["notes"] = ["面接は二段階である。"]
+        self.assertEqual(via.detect_kind(document), "questions")
 
 
 class AnswersTest(unittest.TestCase):
@@ -509,6 +637,26 @@ class ExampleAssetTest(unittest.TestCase):
                 result = via.validate(via.load_json(self._assets(name)), questions=questions)
                 self.assertEqual(result.errors, [])
                 self.assertEqual(result.warnings, [])
+
+
+class VocabularySyncTest(unittest.TestCase):
+    """検証スクリプトの語彙定数と references/interview-format.md の原本との一致を確かめる。
+
+    片方だけを直したときに、このテストが落ちる。
+    """
+
+    def test_categories_match_interview_format(self):
+        terms = _known_category_terms(_INTERVIEW_FORMAT_MD)
+        self.assertEqual(len(terms), 18, terms)
+        self.assertEqual(tuple(terms), via._CATEGORIES)
+
+    def test_provenance_values_match_interview_format(self):
+        terms = _field_enum_terms(_INTERVIEW_FORMAT_MD, "provenance")
+        self.assertEqual(tuple(terms), via._PROVENANCE_VALUES)
+
+    def test_stage_values_match_interview_format(self):
+        terms = _field_enum_terms(_INTERVIEW_FORMAT_MD, "stage")
+        self.assertEqual(tuple(terms), via._STAGE_VALUES)
 
 
 if __name__ == "__main__":

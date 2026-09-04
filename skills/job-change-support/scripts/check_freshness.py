@@ -3,7 +3,8 @@
 
 標準ライブラリのみで、_manifest.json に記録された各成果物の最終更新日と、
 トピックごとの TTL（有効期限日数）を突き合わせ、fresh（TTL 内）・stale（TTL 超過）・
-missing（manifest に無い既知成果物）に分類する。companies/{slug}/ は
+missing（manifest に無い既知成果物）に分類する。任意成果物（interview_intel 等）は
+manifest に記録がある場合のみ判定し、無い場合は missing に含めない。companies/{slug}/ は
 恒久アーカイブであり、本ツールは削除・移動を行わず判定のみを提供する。仕様の原本は
 references/freshness-policy.md である。
 
@@ -33,6 +34,11 @@ TOPIC_TTL_DAYS: dict[str, int] = {
 }
 DEFAULT_TOPIC_TTL_DAYS = 180
 KNOWN_ARTIFACTS = ("job_posting", "company_research")
+# 任意成果物: manifest に記録がある場合のみ判定する。後続工程の成果物であり、
+# 全企業が到達するとは限らないため、未記録を missing として報告しない。
+OPTIONAL_ARTIFACT_TTL_DAYS: dict[str, int] = {
+    "interview_intel": 180,
+}
 
 
 def _parse_date(value: Any) -> date | None:
@@ -96,6 +102,15 @@ def check_freshness(manifest: Any, today: date) -> dict[str, list[dict]]:
             # topics が欠落・null・オブジェクト以外なら company_research 全体を missing とする
             # （空のオブジェクトはトピック0件として判定対象にしない）
             result["missing"].append({"artifact": "company_research"})
+
+    for name, ttl_days in OPTIONAL_ARTIFACT_TTL_DAYS.items():
+        info = artifacts.get(name)
+        if info is not None:
+            # 記録はあるがオブジェクトでない場合、updated_at 欠落として missing にする
+            # （job_posting の非dict判定と同じ扱い）
+            updated_at = info.get("updated_at") if isinstance(info, dict) else None
+            bucket, entry = _classify(name, updated_at, ttl_days, today)
+            result[bucket].append(entry)
 
     return result
 

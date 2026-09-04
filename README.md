@@ -14,14 +14,14 @@
 | スキル | 役割 | 主な成果物 |
 |---|---|---|
 | `job-change-support` | 入口の hub。依頼を判別し、設定とプロファイルを確認してから各スキルへ渡します | `config.json`・`company_index.json` |
-| `job-change-profile` | 職務経歴・スキル・転職の軸を聞き取ります | `profile.json` |
-| `job-change-self-analysis` | 行動の記録と他者からの評価をもとに自己分析を進めます | `self_analysis.json` |
-| `job-change-job-search` | Web 検索で求人を集め、掲載ページの引用と出典 URL を付けます | `job_search_results.json` |
+| `job-change-profile` | 職務経歴・スキル・転職の軸を聞き取ります。本人の申告を事実として記録し、表現の具体化と数値化だけを手伝います | `profile.json` |
+| `job-change-self-analysis` | 行動の記録・他者からの評価・行動傾向の聞き取りをもとに自己分析を進めます | `self_analysis.json` |
+| `job-change-job-search` | Web 検索で求人を集め、掲載ページの引用と出典 URL と企業の関連情報を付けます。本人が選んだわけではない絞り込みを外した探索検索も 1 回だけ行います | `job_search_results.json` |
 | `job-change-company-research` | 求人票を起点に企業を調べます | `job_posting.json`・`company_research.json` |
 | `job-change-fit-assessment` | 求人と本人を 7 つの観点で照合し、拘束時間と実質時給を算定します | `fit_assessment.json`・`time_analysis.json` |
 | `job-change-documents` | 職務経歴書・履歴書・志望動機などを作成します | `documents/` 配下の各書類 |
 | `job-change-exam-prep` | 筆記試験・適性検査の種別を調べ、対策を立てます | `exam_assessment.json`・`exam-prep-plan.md` |
-| `job-change-interview-prep` | 企業ごとの想定質問を作り、回答に評価を返します | `interview_questions.json`・`interview_evaluation.json`・`interview-prep-report.md` |
+| `job-change-interview-prep` | 企業の面接について口コミ・採用ページを調べ、企業ごとの想定質問を作り、回答に評価を返します | `interview_intel.json`・`interview_questions.json`・`interview_evaluation.json`・`interview-prep-report.md` |
 
 ## エビデンスレベル
 
@@ -60,7 +60,7 @@
 
 ## 検証と監査
 
-9 本の検証スクリプトが、成果物の形式と内容の規則を検査します。終了コード 0 が PASS、1 が FAIL です。この終了コードが工程の通過条件で、エージェントの自己申告は判定に使いません。企業ごとの工程は、求人票の取り込み、企業研究、適合性評価の順に進み、前の段階が PASS しないうちは次へ入りません。
+10 本の検証スクリプトが、成果物の形式と内容の規則を検査します。終了コード 0 が PASS、1 が FAIL です。この終了コードが工程の通過条件で、エージェントの自己申告は判定に使いません。企業ごとの工程は、求人票の取り込み、企業研究、適合性評価の順に進み、前の段階が PASS しないうちは次へ入りません。
 
 ```bash
 python skills/job-change-support/scripts/jc_config.py --show
@@ -69,9 +69,9 @@ python skills/job-change-support/scripts/validate_profile.py <profile.json> --js
 
 作る側と監査する側も分けています。プロファイル・自己分析・企業研究・応募書類の 4 スキルでは、成果物を作る担当と監査する担当が別のエージェントです。監査担当には作成時の判断理由を渡さず、成果物と仕様だけを見て判定させます。書いた本人に点検させると、自分の判断をなぞるだけになりがちだからです。企業研究の監査は CLEAN・CONCERNS・BLOCK のいずれかを返し、BLOCK が付いた成果物は差し戻しになります。
 
-中断した作業の再開位置は、成果物が存在するかと、いつ調べたものかの 2 点だけで決めます。会話の記憶には頼りません。再調査までの期限を過ぎたトピックだけが調べ直しの対象になります。期限は成果物ごとに違い、求人票は 30 日、評判は 90 日、理念・事業は 365 日、財務・報酬・働き方・選考プロセスは 180 日です。
+中断した作業の再開位置は、成果物が存在するかと、いつ調べたものかの 2 点だけで決めます。会話の記憶には頼りません。再調査までの期限を過ぎたトピックだけが調べ直しの対象になります。期限は成果物ごとに違い、求人票は 30 日、評判は 90 日、理念・事業は 365 日、財務・報酬・福利厚生・働き方・選考プロセスは 180 日です。企業の面接についての調査結果も 180 日です。
 
-検証スクリプトには 14 ファイルの単体テストがあり、CI が Python 3.9 と 3.13 の両方で実行します。
+検証スクリプトには 16 ファイルの単体テストがあり、CI が Python 3.9 と 3.13 の両方で実行します。
 
 ## 個人情報の分離
 
@@ -89,7 +89,9 @@ python skills/job-change-support/scripts/validate_profile.py <profile.json> --js
 └─ job-search/{検索ID}/        求人検索の結果
 ```
 
-企業研究・求人検索・求人票の取り込みを担う 3 体のエージェントは WebSearch と WebFetch を持つため、`career-private/` 配下のパスも内容も受け取りません。企業研究の起動時に hub が渡すのは、企業を数値で採点する観点の名前だけです。逆に、適合性評価を担当するエージェントは Web ツールを一切持たず、個人情報を読める唯一の担当になっています。
+`companies/{企業スラッグ}/` には、応募書類や面接の回答のように個人情報を含む成果物も置きます。境界はディレクトリ名ではなく、Web を使える役割へ個人情報を渡さないことで引いています。
+
+Web 検索と Web 取得を持つ 6 体のエージェント（企業研究とその監査・求人票の取り込み・求人検索・試験情報の調査・面接情報の調査）は、`career-private/` 配下のパスも内容も受け取らず、`companies/` にある個人情報のファイルも読みません。企業研究の起動時に hub が渡すのは、企業を数値で採点する観点の名前だけです。個人情報を読めるのは、Web ツールを持たない残りの 8 体だけです（一覧は `skills/job-change-support/references/pii-boundary.md` の「役割ごとの可否」）。
 
 ただし、この分離はエージェントへの指示と権限設計によるものです。LLM の仕様上、個人情報が外部へ出ないことの保証まではできません。
 
@@ -108,13 +110,13 @@ clone 済みなら、URL の代わりにそのパスを指定します。プラ�
 
 ### Codex
 
-`skills/job-change-*` の 9 ディレクトリを、Codex のスキル探索先へ置きます。手順書は [docs/install-codex.md](docs/install-codex.md) で、AI エージェントに読ませてそのまま実行させる想定で書いてあります。Codex 版は、知人に Codex ユーザーがいたので作ったものの、まだテストしていません。
+`skills/job-change-*` の 9 ディレクトリを、Codex のスキル探索先へ置きます。手順書は [docs/install-codex.md](docs/install-codex.md) で、AI エージェントに読ませてそのまま実行させる想定で書いてあります。Codex 版は未テストです。
 
 ## 使い方
 
 Claude Code では `/job-change-support` を実行します。Codex では「転職の準備をしたい」と伝えると hub が起動します。
 
-初回の起動時に、hub が利用者データの置き場所を尋ねます。置き場所には既定値が無く、設定ファイルだけが決めるためです。ここには現年収・居住地・在籍企業名が記録されるので、クラウド同期フォルダや git の管理下は避けてください。設定ファイルの仕様は [docs/configuration.md](docs/configuration.md) にあります。
+初回の起動時に、hub が利用者データの置き場所を尋ねます。置き場所には既定値が無く、設定ファイルの記述だけで決まるためです。ここには現年収・居住地・在籍企業名が記録されるので、クラウド同期フォルダや git の管理下は避けてください。設定ファイルの仕様は [docs/configuration.md](docs/configuration.md) にあります。
 
 工程は次の順に進みます。飛ばしたい工程があれば、該当するスキルを直接呼び出してください。
 
@@ -139,7 +141,7 @@ Claude Code では `/job-change-support` を実行します。Codex では「転
 
 求人への応募や転職エージェントサービスへの登録といった外部への送信をともなう操作、年収交渉、法律に関する相談、新卒の就職活動は範囲外です。
 
-新卒の就職活動への対応はそのうちやろうと思っています。
+新卒の就職活動への対応は今後の課題です。
 
 ### 免責
 

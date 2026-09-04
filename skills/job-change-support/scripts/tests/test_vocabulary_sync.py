@@ -33,6 +33,9 @@ _SCREENING_AXES_MD = os.path.join(_SKILL_DIR, "references", "screening-axes.md")
 _SCORE_RUBRIC_MD = os.path.join(
     _SKILLS_DIR, "job-change-company-research", "references", "company-score-rubric.md"
 )
+_JOB_SEARCH_FORMAT_MD = os.path.join(
+    _SKILLS_DIR, "job-change-job-search", "references", "job-search-format.md"
+)
 
 _CODE_RE = re.compile(r"`([^`]+)`")
 
@@ -151,6 +154,28 @@ class CompanySlugPatternTest(unittest.TestCase):
             for slug in self._REJECTED:
                 with self.subTest(script=name, slug=slug):
                     self.assertIsNone(compiled.match(slug))
+
+
+class JobSearchSchema22Test(unittest.TestCase):
+    """求人検索 2.2 の語彙（探索集合・関連情報）。原本は job-change-job-search の job-search-format.md にある。"""
+
+    def test_matches_search_sets(self):
+        terms = _table_terms(
+            _JOB_SEARCH_FORMAT_MD, "### results[].search_set（文字列・2.2 で必須）"
+        )
+        self.assertEqual(tuple(terms), vjs.SEARCH_SETS)
+
+    def test_matches_role_matches(self):
+        terms = _table_terms(
+            _JOB_SEARCH_FORMAT_MD, "### results[].role_match（文字列・2.2 で必須）"
+        )
+        self.assertEqual(tuple(terms), vjs.ROLE_MATCHES)
+
+    def test_matches_related_info_keys(self):
+        terms = _table_terms(
+            _JOB_SEARCH_FORMAT_MD, "### results[].related_info（オブジェクト・任意）"
+        )
+        self.assertEqual(tuple(terms), vjs.RELATED_INFO_KEYS)
 
 
 if __name__ == "__main__":

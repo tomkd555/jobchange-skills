@@ -19,6 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: エージェント定義の同期確認
         run: |
+          [ "$(ls agents/job-change-*.md | wc -l)" -eq "$(ls skills/*/references/roles/*.md | wc -l)" ] || { echo "agents/ と references/roles/ の数が違う"; exit 1; }
           for f in skills/*/references/roles/*.md; do
             a="agents/job-change-$(basename "$f")"
             cmp "$a" "$f" || { echo "不一致: $a と $f"; exit 1; }

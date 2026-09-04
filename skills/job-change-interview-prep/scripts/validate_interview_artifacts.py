@@ -3,7 +3,8 @@
 標準ライブラリのみで、interview_questions.json・interview_answers.json・
 interview_evaluation.json を機械的に検査する。検査する種別はトップレベルのキー
 （questions / answers / evaluations）で判別する。degraded と degraded_reason の整合、
-question_id の形式と重複、および質問ファイルとの相互参照を、ERROR（成果物として
+question_id の形式と重複、質問ファイルとの相互参照、questions[].category・
+provenance・stage の語彙判定、questions の notes（任意）の型を、ERROR（成果物として
 成立しない欠落・矛盾）と WARN（成立するが情報が不足する点）に分けて報告する。
 仕様の原本は references/interview-format.md である。
 
@@ -24,18 +25,34 @@ from typing import Any
 QUESTION_ID_PATTERN = re.compile(r"^Q[0-9]{3,}$")
 DATE_PATTERN = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 
-# 質問類型の語彙の原本は references/question-bank.md（外資系の2類型は
+# 質問類型の語彙の原本は references/interview-format.md・references/question-bank.md
+# の「質問類型と job-change-interview-coach のカテゴリの対応」（外資系の2類型は
 # references/foreign-interviews.md）にある。
 _CATEGORIES = (
+    "自己紹介",
     "転職理由",
     "志望動機",
     "自己PR",
     "実績深掘り",
     "弱み",
+    "失敗・挫折",
+    "マネジメント",
+    "協働・対立",
+    "キャリアプラン",
+    "入社後の貢献",
+    "カルチャーフィット",
+    "条件確認",
+    "空白期間・短期離職",
     "逆質問",
+    "カジュアル面談",
     "ビヘイビアラル",
     "ケース",
 )
+
+# questions[].provenance・questions[].stage の語彙の原本は
+# references/interview-format.md の questions 節にある。
+_PROVENANCE_VALUES = ("general", "reported", "inferred")
+_STAGE_VALUES = ("カジュアル面談", "一次面接", "二次面接", "最終面接", "不明")
 
 # 3段階のアンカーの原本は references/evaluation-rubric.md にある。
 _SCORE_LEVELS = ("充足", "一部", "不足")
@@ -120,6 +137,22 @@ def _validate_degraded(document: dict, result: ValidationResult) -> bool | None:
     return degraded
 
 
+def _validate_notes(document: dict, result: ValidationResult) -> None:
+    """interview_questions.json の notes（任意）を検査する。
+
+    配列でない場合と、非空文字列でない要素を含む場合は ERROR とする。
+    """
+    if "notes" not in document:
+        return
+    notes = document["notes"]
+    if not isinstance(notes, list):
+        result.add_error("notes", "notes は配列でなければならない")
+        return
+    for i, note in enumerate(notes):
+        if not _is_nonempty_str(note):
+            result.add_error(f"notes[{i}]", "notes の要素は非空の文字列でなければならない")
+
+
 def _validate_question_id(
     value: Any, path: str, seen: set[str], known_ids: set[str] | None, result: ValidationResult
 ) -> None:
@@ -135,6 +168,22 @@ def _validate_question_id(
     seen.add(value)
     if known_ids is not None and value not in known_ids:
         result.add_error(path, f"「{value}」に対応する質問が interview_questions.json に存在しない")
+
+
+def _validate_optional_enum(
+    entry: dict, key: str, path: str, allowed: tuple[str, ...], label: str, result: ValidationResult
+) -> None:
+    """任意フィールドの語彙判定。欠落は WARN、値があって語彙外（非文字列を含む）も WARN とする。"""
+    field_path = f"{path}.{key}"
+    if key not in entry:
+        result.add_warning(field_path, f"{key} が欠落している")
+        return
+    value = entry[key]
+    if not isinstance(value, str) or value not in allowed:
+        result.add_warning(
+            field_path,
+            f"既知の{label}（{'/'.join(allowed)}）ではない（実値: {value!r}）",
+        )
 
 
 def _validate_question(entry: Any, path: str, seen: set[str], result: ValidationResult) -> None:
@@ -156,6 +205,9 @@ def _validate_question(entry: Any, path: str, seen: set[str], result: Validation
     for key in ("question", "interviewer_intent", "basis"):
         if not _is_nonempty_str(entry.get(key)):
             result.add_error(f"{path}.{key}", f"{key} は必須（非空）である")
+
+    _validate_optional_enum(entry, "provenance", path, _PROVENANCE_VALUES, "出所", result)
+    _validate_optional_enum(entry, "stage", path, _STAGE_VALUES, "選考段階", result)
 
 
 def _validate_answer(
@@ -259,6 +311,7 @@ def validate(document: Any, questions: Any = None) -> ValidationResult:
         if entries is not None:
             for i, entry in enumerate(entries):
                 _validate_question(entry, f"questions[{i}]", seen, result)
+        _validate_notes(document, result)
         return result
 
     if kind == "answers":

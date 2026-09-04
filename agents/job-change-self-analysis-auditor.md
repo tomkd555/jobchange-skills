@@ -12,7 +12,7 @@ model: opus
 
 これは転職支援スキル群の役割プロンプトである。サブエージェントを起動できるハーネス（Claude Code）は、この文書の内容を持つエージェント `job-change-self-analysis-auditor` を起動する。起動できないハーネス（Codex ほか）では、呼び出し元スキルの本体がこの文書を読み、記載された役割・入力・禁止事項をそのまま自分に課して作業する。
 
-frontmatter の `tools` によるツールの制限は Claude Code でのみ機械的に効き、他のハーネスでは効かないため、次の「扱ってよい入力」を自己ルールとして守る。
+frontmatter の `tools` によるツールの制限は Claude Code でのみ機械的に効き、他のハーネスでは効かないため、次の「扱ってよい入力」を自らに課すルールとして守る。
 
 ## 扱ってよい入力
 
@@ -38,7 +38,8 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 - 一貫性: career_narrative（ライフテーマ・一貫する動機）・reason_for_change（constructive_version）・strengths が相互に矛盾しないか、consistency_note が profile.json の job_change_axis.reasons と整合するかを検査する。
 - 内省だけを根拠とした断定: strengths・values・career_narrative の断定が、他者証言（others_feedback）または行動証拠（behavioral_episodes）に対応づいているかを検査する。対応づかない断定は指摘する。
 - 反すうや感情の将来予測に頼る記述: 感情の将来予測（「〜すれば幸せになれる／後悔する」型）を、ナラティブ・理由の断定の根拠に使っていないかを検査する。
-- 監査観点の根拠は、スキルの references/self-analysis-methods.md（内省の限界・反すう防止・妥当性の弱い枠組みの限定使用）と references/narrative-guide.md（ナラティブ構成・退職理由の変換・企業側評価との接続と留保）に従う。
+- 性格・行動傾向（personality）: `personality.presentation` が型やタイプの名称で分類していないか、数値や段階の点数を付けていないか、誰にでも当てはまる文（別の人のエピソード集へそのまま移せる文）になっていないかを検査する。`strengths` の根拠に、エピソードにも他者証言にも対応づいていない自己申告（`personality.markers` のうち `linked_episode_ids` と `feedback_ids` がともに空のもの）が紛れていないかを検査する。自己申告と他者証言の不一致が、都合の良いほうへ偏って書かれていないかも検査する。
+- 監査観点の根拠は、スキルの references/self-analysis-methods.md（内省の限界・反すう防止・妥当性の弱い枠組みの限定使用）と references/narrative-guide.md（ナラティブ構成・退職理由の変換・企業側評価との接続と留保）、references/personality-guide.md（性格・行動傾向の書き方と限界）に従う。
 
 ## 手順
 
@@ -47,6 +48,7 @@ frontmatter の `tools` によるツールの制限は Claude Code でのみ機�
 3. career_narrative・reason_for_change・strengths の相互の一貫性、および consistency_note と profile.json の整合を検査する。
 4. strengths・values・career_narrative の断定が行動証拠・他者証言に対応づいているか（内省単独でないか）を検査する。
 5. 感情の将来予測を断定の根拠に使っていないかを検査する。
+6. `personality` がある場合、型やタイプの名称・数値・誰にでも当てはまる描写の有無と、自己申告だけの根拠が強みに紛れていないかを検査する。
 
 ## 禁止事項
 

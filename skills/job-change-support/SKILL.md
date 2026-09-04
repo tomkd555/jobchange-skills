@@ -29,7 +29,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, Skill
 
 1. **企業情報は出典とエビデンスレベルを付けて扱う。** すべての企業情報には、出典 URL とエビデンスレベル（A=一次・公式、B=信頼できる二次、C=口コミ・集計、D=個人ブログ・伝聞・未確認）を添える。C・D 単独での事実の断定は禁じる。各レベルの定義・判定基準・運用ルールの原本は `job-change-company-research` スキルの `references/evidence-grading.md` にある。企業研究の成果物では、各主張にレベルを併記する。
 
-   レベル A のうち、企業が自社を良く見せるための主張（採用サイトの「風通しが良い」「働きやすい」など）は、出所が一次・公式であっても事実性が保証されるわけではない。この種の主張については、企業自身が所有するページ由来である旨を出典に明示し、確度（confidence）を「高」にしない（B 相当として扱う）。
+   企業が自社を良く見せるための主張の扱い（出所が A でも `confidence` を高にしない）も、同じ原本が定める。hub はこの規則を再定義せず、企業研究の成果物を読むときにその規則に従って読む。
 
 2. **プロファイルの原本は1か所のみ。** 利用者の経歴・スキル・転職の軸は `profile.json` の1か所に集約する。同じ情報を複数の場所に持たない。全サブスキルはこの profile.json を参照する。仕様の原本は `references/profile-format.md` にある。
 
@@ -39,7 +39,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, Skill
 
 4. **個人情報を外部へ送信しない。** 利用者の個人情報は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。個人情報として扱う項目の列挙・例外・役割ごとの可否の原本は `references/pii-boundary.md` にある。
 
-   hub は振り分けの段階で、渡す材料が境界の内側にあるかを判断する。`profile.json` と `career-private/` 配下のパス・内容を渡してよいのは、Web 送信手段（WebSearch・WebFetch）を持たないエージェントに限る。企業研究（`job-change-company-research`）を起動するときは、`profile.json` そのものを渡さない。渡すのは `company_score_axes` のうち `kind` が `quantitative` の軸の識別子の配列だけである（例外の規定は原本にある）。`company_score_axes` が無い（採点する軸の申告が無い）場合は、軸を渡さずに起動する。定性軸について企業研究で追加の調査が要る場合は、利用者自身の言葉で重点観点として指示する（`job-change-company-research` の Step 1 の重点観点）。
+   hub は振り分けの段階で、渡す材料が境界の内側にあるかを判断する。`profile.json` と `career-private/` 配下のパス・内容を渡してよいのは、Web 送信手段（WebSearch・WebFetch）を持たないエージェントに限る。企業研究（`job-change-company-research`）を起動するときは、`profile.json` そのものを渡さない。渡すのは `company_score_axes` のうち `kind` が `quantitative` の軸の識別子の配列だけである（例外の規定は原本にある）。`company_score_axes` が無い（採点する軸の申告が無い）場合は、軸を渡さずに起動する。定性軸について企業研究で追加の調査が必要な場合は、利用者自身の言葉で重点観点として指示する（`job-change-company-research` の Step 1 の重点観点）。
 
 ## 範囲外
 
@@ -48,11 +48,12 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, Skill
 - **求人への応募・エージェントサービスへの登録等の外部送信。** 応募フォームの送信、転職エージェントへの登録、スカウトへの返信など、利用者に代わって外部へ送信する操作は行わない。書類や返信文の作成までを支援し、送信は本人が行う。
 - **年収交渉の代行。** 交渉の準備・想定問答の作成は支援するが、企業との交渉そのものは代行しない。
 - **法律・ビザ相談。** 労働法の解釈、ビザ・在留資格の可否判断は扱わない。専門家（弁護士・行政書士・社会保険労務士など）への相談を促す。
-- **新卒就活。** 新卒の就職活動は、選考構造（インターン・エントリーシート・複数回の面接・同時大量応募）が中途採用と異なるため、限定対応とする。プロファイル管理と面接対策の一部は流用できるが、本スキル群は中途採用での転職を前提に設計している。
+- **給付金・職業訓練の手続き。** 離職中で収入の見込みが無い利用者には、国の求職者支援制度（無償の職業訓練と、要件を満たす場合の生活支援の給付金）の存在を伝え、厚生労働省のページ（ https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/koyou/kyushokusha_shien/index.html ）とハローワークの窓口を案内する。雇用保険の受給資格や収入の上限などの要件があるため、金額や受給の可否を本スキル群の側で断定しない。キャリアの方向そのものの相談は、国家資格のキャリアコンサルタント（ハローワーク・地域若者サポートステーション・ジョブカフェでは無償または低額）を案内する。
+- **新卒就活。** 新卒の就職活動は、選考の進み方（インターン・エントリーシート・複数回の面接・多数の企業への同時応募）が中途採用と異なるため、一部だけを対象とする。プロファイル管理と面接対策の一部は流用できるが、本スキル群は中途採用での転職を前提に設計している。
 
 ## パスの解決
 
-利用者データの置き場所は設定ファイルだけが決める。既定の置き場所を持たない。本スキルおよび全サブスキルの本文で `{DATA_ROOT}` と書いた箇所は、次のコマンドが返す `data_root` に読み替える。
+利用者データの置き場所は設定ファイルの記述だけで決まる。既定の置き場所は無い。本スキルおよび全サブスキルの本文で `{DATA_ROOT}` と書いた箇所は、次のコマンドが返す `data_root` に読み替える。
 
 ```bash
 python {SKILL_DIR}/scripts/jc_config.py --show
@@ -64,7 +65,7 @@ python {SKILL_DIR}/scripts/jc_config.py --show
 
 ## データ配置
 
-利用者データは、非公開ディレクトリ `{DATA_ROOT}/career-private/`（個人情報）と、その外側の `{DATA_ROOT}/`（企業別成果物・求人検索結果などの非個人情報）に分けて置く。`profile.json` と応募先一覧（`company_index.json`）は career-private に置く。Web 送信手段（WebSearch・WebFetch）を持つエージェントが作業するツリーの外へ隔離するためである。企業別の成果物は `companies/` に置き、Web ツールを持つエージェントの入出力はこの配下に限る。
+利用者データは、非公開ディレクトリ `{DATA_ROOT}/career-private/`（個人情報）と、その外側の `{DATA_ROOT}/`（企業別成果物・求人検索結果）に分けて置く。`profile.json` と応募先一覧（`company_index.json`）は career-private に置く。Web 送信手段（WebSearch・WebFetch）を持つエージェントが作業するツリーの外へ隔離するためである。`companies/` と `job-search/` は原則として非個人情報だが、`companies/{企業スラッグ}/` には応募書類・面接の回答のように個人情報を含む成果物も置く（原本は `references/pii-boundary.md`）。Web ツールを持つエージェントの入出力は `companies/{企業スラッグ}/` と `job-search/{検索ID}/` に限り、同じ配下でも個人情報のファイルは読ませない。
 
 | パス | 内容 |
 |---|---|
@@ -76,8 +77,8 @@ python {SKILL_DIR}/scripts/jc_config.py --show
 | `career-private/fit/{企業スラッグ}/time_analysis.json` | 拘束時間・実質時給の算定結果。通勤時間からの派生値。作成は `job-change-fit-assessment` が担う。Web ツールを持つエージェントへ渡さない |
 | `companies/{企業スラッグ}/` | 企業別の成果物を置くディレクトリ |
 | `companies/{企業スラッグ}/company_research.json` | 企業研究の構造化データ |
-| `companies/{企業スラッグ}/job_posting.json` | 求人票の構造化データ。書き手は `job-change-company-research`。仕様は同スキルの `references/job-posting-format.md` |
-| `companies/{企業スラッグ}/_manifest.json` | 成果物をいつ調べたかの記録（`job_posting`・`company_research` の更新日・トピック調査日）。仕様と TTL は `references/freshness-policy.md` |
+| `companies/{企業スラッグ}/job_posting.json` | 求人票の構造化データ。書くのは `job-change-company-research`。仕様は同スキルの `references/job-posting-format.md` |
+| `companies/{企業スラッグ}/_manifest.json` | 成果物をいつ調べたかの記録（`job_posting`・`company_research` の更新日・トピック調査日と、`interview_intel` などの任意成果物の更新日）。仕様と TTL は `references/freshness-policy.md` |
 | `companies/{企業スラッグ}/` 配下 | 企業別のレポート・応募書類など |
 | `companies/_general/` | 企業を特定しない一般的な試験対策の成果物。`_general` は予約名であり、企業スラッグとしては使えない（`references/company-index-format.md`） |
 | `job-search/{検索ID}/job_search_results.json` | 求人検索の結果。匿名化済み条件で作る。作成は `job-change-job-search` が担う。`{検索ID}` は `{YYYYMMDD}-{条件の短いスラッグ}` の形式であり、同じ値が成果物の `search_id` にも入る。その原本は `job-change-job-search` にある |
@@ -122,7 +123,7 @@ python {SKILL_DIR}/scripts/jc_config.py --init --data-root <利用者が選ん�
 
 ### 有無確認とゲート
 
-`career-private/profile.json` の有無を確認する。未作成の場合、または存在していても内容の作成・全面点検・セクション更新が要る依頼の場合は、`job-change-profile` を起動する（聞き取り手順の原本は同サブスキルにある）。既存ファイルがある場合は次のコマンドで検証する。
+`career-private/profile.json` の有無を確認する。未作成の場合、または存在していても内容の作成・全面点検・セクション更新が必要な依頼の場合は、`job-change-profile` を起動する（聞き取り手順の原本は同サブスキルにある）。既存ファイルがある場合は次のコマンドで検証する。
 
 ```bash
 python {SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/profile.json
@@ -130,7 +131,7 @@ python {SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/profil
 
 ERROR が出ている場合、整備を先行させるか条件付きで先へ進めるかは、振り分け先によって変わる。判断の原本は「ゲート」にある。WARN のみは PASS 扱いだが、内容を利用者に伝え、`job-change-profile` での補充を促してよい。
 
-`job-change-profile` の初回作成は、ライト初回（職歴の骨格・現職の役割・転職理由・主要な条件・作業特性8件）を既定とする。そのため、実績・スキル・採点軸が空のままの profile.json も有効である。この構成で出る WARN を欠落として扱わず、hub の側から深掘りを促さない。深掘りが要る時点で、それを要する下流のサブスキルが案内する（対応の原本は `job-change-profile` の「ライト初回と深掘り」）。
+`job-change-profile` の初回作成は、初回の範囲（職歴の骨格・現職の役割・転職理由・主要な条件・作業特性8件）を既定とする。そのため、実績・スキル・採点軸が空のままの profile.json も有効である。この構成で出る WARN を欠落として扱わず、hub の側から深掘りを促さない。深掘りが必要になった時点で、それを要する下流のサブスキルが案内する（対応の原本は `job-change-profile` の「初回と深掘りの分担」）。
 
 ### スキーマのバージョンとフォールバック
 
@@ -160,12 +161,12 @@ ERROR が出ている場合、整備を先行させるか条件付きで先へ�
 | 適合性評価・拘束時間 | `job-change-fit-assessment` | 「この求人が自分に合うか評価して」「適合性を評価したい」「拘束時間を知りたい」「実質時給を出して」 |
 | 応募書類作成 | `job-change-documents` | 「職務経歴書を書きたい」「履歴書」「志望動機を作りたい」「レジュメ」 |
 | 筆記試験・適性検査対策 | `job-change-exam-prep` | 「SPI 対策」「適性検査」「筆記試験の準備」「玉手箱」 |
-| 面接対策 | `job-change-interview-prep` | 「面接対策」「想定問答」「逆質問」「行動面接」 |
+| 面接対策 | `job-change-interview-prep` | 「面接対策」「想定問答」「逆質問」「行動面接」「カジュアル面談」「この会社の面接で聞かれること」 |
 
 複数の作業が絡む依頼（例: 「応募先が決まった」直後）では、次の推奨順序を提示してから振り分ける。
 
 1. **プロファイル作成**（`job-change-profile`）: `profile.json` が未作成であれば、先に起動して作成する。
-2. **自己分析**（`job-change-self-analysis`）: 行動証拠・他者フィードバックに基づいて強み・転職の軸を深化させ、キャリア・ナラティブと転職理由の建設的な言語化を作る。志望動機・面接の一貫性の土台になる。任意のステップであり、実施しない場合は次へ進んでよい。
+2. **自己分析**（`job-change-self-analysis`）: 行動証拠・他者フィードバックに基づいて強み・転職の軸を深化させ、キャリア・ナラティブを整理し、転職理由を建設的な言葉で言い直す。志望動機・面接の一貫性の土台になる。任意のステップであり、実施しない場合は次へ進んでよい。
 3. **求人検索**（`job-change-job-search`）: 応募先が未確定で、条件に合う求人や現状より良い待遇の求人を探す入口である。任意のステップであり、応募先がすでに決まっている場合は省略する。選定した求人は求人票の取り込みへ引き継ぐ。
 4. **求人票の取り込み**（`job-change-company-research` の Step 0.5）: 企業ごとの工程の最初に当たる。求人情報URL・求人票の本文・求人票の PDF や画像・企業名（求人が特定できない場合）の4通りの入口から `job_posting.json` を作る。この段階で企業スラッグを解決し、`companies/{企業スラッグ}/` を作る。
 5. **企業研究**（`job-change-company-research`）: 志望動機・面接の一貫性の土台になる。まず企業を理解する。
@@ -210,7 +211,7 @@ profile.json は応募書類作成・面接対策の前提である。企業別�
 - 設定の解決は、すべてのゲートに先行する。`jc_config.py --show` が終了コード 0 を返すまで、どのサブスキルへも振り分けない。手順は「設定ゲート」にある。
 - 企業別の作業に入る前に、対象企業のスラッグを `career-private/company_index.json` で解決する。解決に入る前に `scripts/validate_company_index.py` で一覧を検証し、FAIL（ERROR 1件以上）なら指摘内容を利用者へ示し、修復してから進む。企業名が `name` または `aliases` に一致すればそのスラッグを使い、一致が無いときのみ一度だけ導出して index へ登録し `companies/{スラッグ}/` を作る。スラッグの再導出はしない。手順の原本は `references/company-index-format.md` にある。
 - profile.json が未作成の場合、`job-change-documents`・`job-change-interview-prep` へ進む前に、選択を求めず `job-change-profile` を起動して初回作成を先行させる。作成して `validate_profile.py` の PASS を確認してからサブスキルへ振り分ける。プロファイルそのものが無ければ、後述の条件付き通過が課す条件（欠けた項目を直接引用または前提としない）を満たしたまま成果物を作ることができないためである。
-- profile.json はあるが `validate_profile.py` が FAIL（ERROR 1件以上）の場合、`job-change-documents`・`job-change-interview-prep` へ進む前に、ERROR の内容を利用者へ示し、`AskUserQuestion` で次の2つから選ばせる。(a) `job-change-profile` を起動してプロファイルの整備を先行させる。(b) 欠けた項目の値を直接引用または前提とする記述を作らないという条件で、整備せずに先へ進める。(a) を選んだ場合は `job-change-profile` を起動し、PASS を確認してからサブスキルへ振り分ける。(b) を選んだ場合はそのまま振り分け、利用者が (b) を選んだことと、どの項目が欠けたままかをサブスキルへ伝える。この2択は、FAIL の場合に限り両サブスキルが単独起動のときに設ける通過条件と同じものであり、hub 経由かどうかでゲートの強度が変わらないようにするためである。
+- profile.json はあるが `validate_profile.py` が FAIL（ERROR 1件以上）の場合、`job-change-documents`・`job-change-interview-prep` へ進む前に、ERROR の内容を利用者へ示し、`AskUserQuestion` で次の2つから選ばせる。(a) `job-change-profile` を起動してプロファイルの整備を先行させる。(b) 欠けた項目の値を直接引用または前提とする記述を作らないという条件で、整備せずに先へ進める。(a) を選んだ場合は `job-change-profile` を起動し、PASS を確認してからサブスキルへ振り分ける。(b) を選んだ場合はそのまま振り分け、利用者が (b) を選んだことと、どの項目が欠けたままかをサブスキルへ伝える。この2択は、FAIL の場合に限り両サブスキルが単独起動のときに設ける通過条件と同じものであり、hub 経由かどうかでゲートの厳しさが変わらないようにするためである。
 - 応募書類作成（`job-change-documents`）・面接対策（`job-change-interview-prep`）は、対象企業の `company_research.json`（`companies/{企業スラッグ}/company_research.json`）を前提とする。これらへ進む前に、対象企業の company_research.json の有無を確認する。無ければ、先に企業研究（`job-change-company-research`）を実行することを提案する。利用者が企業研究を望まない場合、フォールバックして進めてよいかどうかの確認はサブスキル側が行う。hub はここで選択を求めず、そのままサブスキルへ振り分ける。hub とサブスキルが同じ選択を2回求めないためである。
 - 企業研究（`job-change-company-research`）と試験対策（`job-change-exam-prep`）は、プロファイルが無くても着手できる。ただし企業研究の結果は応募書類・面接対策で使うため、着手時に `job-change-profile` でのプロファイル作成を促す。
 - 応募書類作成（`job-change-documents`）の志望動機書と面接対策（`job-change-interview-prep`）は、`career-private/self_analysis.json` があれば入力に加える。無くても進行できるが、着手時に自己分析（`job-change-self-analysis`）の実施を促す。
@@ -225,7 +226,7 @@ python {SKILL_DIR}/scripts/check_freshness.py {DATA_ROOT}/companies/{企業ス�
 
 - 出力 `fresh` の成果物・トピックは再調査せず、既存の成果物をそのまま再利用する。
 - 出力 `stale` のトピックは、`job-change-company-research` へ「そのトピックに限定した差分再調査」を指示する。fresh なトピックまで再調査しない。
-- 出力 `missing`（`_manifest.json` 未整備・当該成果物が未取得）の場合は、新規調査として `job-change-company-research`（求人票なら Step 0.5 の取り込み）を実行する。
+- 出力 `missing`（`_manifest.json` 未整備・当該成果物が未取得）の場合は、新規調査として `job-change-company-research`（求人票なら Step 0.5 の取り込み）を実行する。ただし `interview_intel` のような任意成果物が `stale`・`missing` の場合は、その成果物を書いたスキル（`interview_intel` なら `job-change-interview-prep`）へ渡す。任意成果物の一覧とそれを書くスキルは `references/freshness-policy.md` にある。
 - `check_freshness.py` は判定のみを担い、`_manifest.json` を書き換えない。記録の更新は各成果物を作るスキル自身が行う。
 - `companies/{企業スラッグ}/` は恒久アーカイブである。TTL 超過でも成果物ファイルを削除・移動しない。
 - `company_index.json` の `status` が `closed`（募集終了・選考終了）の企業については、既存の成果物を保持したまま、新規の調査・書類作成などの作業提案だけを控える。利用者が明示的に依頼した場合は実行してよい。
@@ -263,6 +264,6 @@ python {SKILL_DIR}/scripts/check_freshness.py {DATA_ROOT}/companies/{企業ス�
 | `references/screening-axes.md` | 8スクリーニング軸・8作業特性・業務分類の語彙と境界例 | 条件を構造化するとき、求人検索の判定、適合性評価の作業特性の次元 |
 | `references/company-index-format.md` | company_index.json のスキーマ・企業スラッグ形式・名前→スラッグの解決手順 | 企業別の作業で企業スラッグを解決する Step 0 |
 | `references/freshness-policy.md` | `_manifest.json` の仕様・トピック別 TTL 対応表・fresh/stale/missing の判定規則 | 再調査ゲートで `check_freshness.py` を使う全段階、`_manifest.json` を読み書きするとき |
-| `references/pii-boundary.md` | 個人情報として扱う項目の列挙・例外・役割ごとの可否・機械検出できる3項目 | 材料をエージェントへ渡す前、役割の `tools` を変えるとき |
+| `references/pii-boundary.md` | 個人情報として扱う項目の列挙・例外・役割ごとの可否・機械で検出できる3項目 | 材料をエージェントへ渡す前、役割の `tools` を変えるとき |
 | `references/role-execution.md` | ハーネス別の役割の実行手順・起動する数の判断・作成と監査を分ける理由 | サブスキルがエージェントを起動するとき、起動できないハーネスで読み替えるとき |
 | `references/market-data-sources.md` | 転職市場の需給・賃金・転職者動向の公開データの一覧と使い分け | 求人倍率・年収の相場・転職者の動向を根拠に語るとき |
