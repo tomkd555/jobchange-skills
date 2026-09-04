@@ -160,6 +160,60 @@ class CompanyResearchWholeMissingTest(unittest.TestCase):
         self.assertNotIn("company_research", all_labels)
 
 
+class OptionalArtifactFreshnessTest(unittest.TestCase):
+    def test_interview_intel_ttl_is_180(self):
+        self.assertEqual(cf.OPTIONAL_ARTIFACT_TTL_DAYS["interview_intel"], 180)
+
+    def test_only_dated_interview_intel_present_reports_others_missing(self):
+        manifest = {"schema_version": 1, "artifacts": {"interview_intel": {"updated_at": _date_str(0)}}}
+        result = cf.check_freshness(manifest, TODAY)
+        self.assertEqual(sorted(_labels(result["missing"])), ["company_research", "job_posting"])
+        self.assertIn("interview_intel", _labels(result["fresh"]))
+
+    def test_interview_intel_ttl_180_exact_boundary_is_fresh(self):
+        manifest = _manifest(topics={})
+        manifest["artifacts"]["interview_intel"] = {"updated_at": _date_str(180)}
+        result = cf.check_freshness(manifest, TODAY)
+        self.assertIn("interview_intel", _labels(result["fresh"]))
+
+    def test_interview_intel_ttl_180_plus_one_is_stale(self):
+        manifest = _manifest(topics={})
+        manifest["artifacts"]["interview_intel"] = {"updated_at": _date_str(181)}
+        result = cf.check_freshness(manifest, TODAY)
+        self.assertIn("interview_intel", _labels(result["stale"]))
+
+    def test_absent_interview_intel_produces_no_entry(self):
+        manifest = _manifest(topics={})
+        result = cf.check_freshness(manifest, TODAY)
+        all_labels = _labels(result["fresh"]) + _labels(result["stale"]) + _labels(result["missing"])
+        self.assertNotIn("interview_intel", all_labels)
+
+    def test_null_interview_intel_produces_no_entry(self):
+        manifest = _manifest(topics={})
+        manifest["artifacts"]["interview_intel"] = None
+        result = cf.check_freshness(manifest, TODAY)
+        all_labels = _labels(result["fresh"]) + _labels(result["stale"]) + _labels(result["missing"])
+        self.assertNotIn("interview_intel", all_labels)
+
+    def test_non_dict_interview_intel_produces_missing(self):
+        manifest = _manifest(topics={})
+        manifest["artifacts"]["interview_intel"] = "2026-01-18"
+        result = cf.check_freshness(manifest, TODAY)
+        self.assertIn("interview_intel", _labels(result["missing"]))
+
+    def test_interview_intel_without_updated_at_is_missing(self):
+        manifest = _manifest(topics={})
+        manifest["artifacts"]["interview_intel"] = {"note": "recorded but undated"}
+        result = cf.check_freshness(manifest, TODAY)
+        self.assertIn("interview_intel", _labels(result["missing"]))
+
+    def test_interview_intel_malformed_date_is_missing(self):
+        manifest = _manifest(topics={})
+        manifest["artifacts"]["interview_intel"] = {"updated_at": "2026/07/01"}
+        result = cf.check_freshness(manifest, TODAY)
+        self.assertIn("interview_intel", _labels(result["missing"]))
+
+
 class ArtifactsMissingTest(unittest.TestCase):
     def test_no_artifacts_key_reports_both_known_as_missing(self):
         result = cf.check_freshness({"schema_version": 1}, TODAY)

@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.0",
+  "company": "架空クラウドワークス株式会社",
+  "role_title": "バックエンドエンジニア",
+  "researched_at": "2026-09-04",
+  "reported_questions": [
+    {
+      "id": "RQ001",
+      "question": "現職を離れようと考えた理由を教えてください",
+      "kind": "reported",
+      "category": "転職理由",
+      "stage": "一次面接",
+      "source_url": "https://example.com/reviews/kuraudo-works/interview/1",
+      "source_name": "転職会議",
+      "grade": "C",
+      "quote": "「現職を離れようと考えた理由を教えてください」と一次面接で聞かれた",
+      "posted_at": "2025-11",
+      "accessed": "2026-09-04"
+    },
+    {
+      "id": "RQ002",
+      "question": "直近のプロジェクトで最も難しかった技術的判断を1つ挙げてください",
+      "kind": "reported",
+      "category": "実績深掘り",
+      "stage": "二次面接",
+      "source_url": "https://example.com/reviews/kuraudo-works/interview/2",
+      "source_name": "OpenWork風クチコミサイト",
+      "grade": "C",
+      "quote": "「直近のプロジェクトで最も難しかった技術的判断を1つ挙げてください」という深掘りがあった",
+      "posted_at": "2026-01",
+      "accessed": "2026-09-04"
+    },
+    {
+      "id": "RQ003",
+      "question": "チーム内で意見が割れたとき、どのように合意形成しますか",
+      "kind": "inferred",
+      "category": "ビヘイビアラル",
+      "stage": "不明",
+      "source_url": "https://example.com/reviews/kuraudo-works/culture",
+      "source_name": "転職会議の集計ページ",
+      "grade": "C",
+      "quote": "合議を重んじる文化で、意見が割れたときの進め方をよく話題にすると答えた回答が複数あった",
+      "accessed": "2026-09-04"
+    }
+  ],
+  "format_facts": [
+    {
+      "id": "FF001",
+      "statement": "選考は書類選考、一次面接（現場エンジニア）、二次面接（マネージャー）、最終面接（役員）の4段階である。",
+      "source_url": "https://example.com/careers/kuraudo-works/process",
+      "source_name": "採用ページ",
+      "grade": "A",
+      "quote": "選考は書類選考、一次面接、二次面接、最終面接の4段階で進みます",
+      "accessed": "2026-09-04"
+    },
+    {
+      "id": "FF002",
+      "statement": "一次面接はオンライン、二次面接以降は原則オフィスでの対面で実施される。",
+      "source_url": "https://example.com/reviews/kuraudo-works/format",
+      "source_name": "転職会議",
+      "grade": "C",
+      "quote": "一次はオンラインで、二次からはオフィスに呼ばれて対面だった",
+      "accessed": "2026-09-04"
+    }
+  ],
+  "themes": [
+    {
+      "id": "TH001",
+      "theme": "現職での役割と成果を、組織の成果と切り分けて語れるかを重視する傾向がある。",
+      "likely_probe": "「あなた自身が担った部分」を繰り返し掘り下げて確認してくると考えられる。",
+      "source_url": "https://example.com/reviews/kuraudo-works/summary",
+      "source_name": "転職会議の集計ページ",
+      "grade": "C",
+      "quote": "個人の貢献と組織の成果を分けて話せるかをしつこく聞かれたという回答が複数あった",
+      "accessed": "2026-09-04",
+      "count_note": "回答12件中5件"
+    },
+    {
+      "id": "TH002",
+      "theme": "パーパスへの共感を、抽象論ではなく具体的な行動歴で確認しようとする傾向がある。",
+      "likely_probe": "志望動機に対して「その考えに基づいて実際に取った行動」を追加で求めてくると考えられる。",
+      "source_url": "https://example.com/reviews/kuraudo-works/summary",
+      "source_name": "転職会議の集計ページ",
+      "grade": "C",
+      "quote": "共感していると答えると、それに基づいて何をしたかまで聞かれたという回答が目立った",
+      "accessed": "2026-09-04",
+      "count_note": "回答12件中4件"
+    }
+  ],
+  "search_log": [
+    {
+      "query": "架空クラウドワークス 面接 質問",
+      "source": "転職会議",
+      "url": "https://example.com/reviews/kuraudo-works/interview",
+      "fetched_at": "2026-09-04",
+      "hit_count": 12,
+      "adopted_count": 0
+    },
+    {
+      "query": "/reviews/kuraudo-works/interview/1",
+      "source": "転職会議",
+      "url": "https://example.com/reviews/kuraudo-works/interview/1",
+      "fetched_at": "2026-09-04",
+      "hit_count": 1,
+      "adopted_count": 1
+    },
+    {
+      "query": "/reviews/kuraudo-works/interview/2",
+      "source": "転職会議",
+      "url": "https://example.com/reviews/kuraudo-works/interview/2",
+      "fetched_at": "2026-09-04",
+      "hit_count": 1,
+      "adopted_count": 1
+    },
+    {
+      "query": "架空クラウドワークス 中途採用 選考フロー",
+      "source": "採用ページ",
+      "url": "https://example.com/careers/kuraudo-works/process",
+      "fetched_at": "2026-09-04",
+      "hit_count": 1,
+      "adopted_count": 1
+    },
+    {
+      "query": "架空クラウドワークス 面接 形式",
+      "source": "転職会議",
+      "url": "https://example.com/reviews/kuraudo-works/format",
+      "fetched_at": "2026-09-04",
+      "hit_count": 8,
+      "adopted_count": 1
+    },
+    {
+      "query": "架空クラウドワークス 社風 まとめ",
+      "source": "転職会議の集計ページ",
+      "url": "https://example.com/reviews/kuraudo-works/summary",
+      "fetched_at": "2026-09-04",
+      "hit_count": 20,
+      "adopted_count": 2
+    },
+    {
+      "query": "架空クラウドワークス 合意形成 文化",
+      "source": "転職会議の集計ページ",
+      "url": "https://example.com/reviews/kuraudo-works/culture",
+      "fetched_at": "2026-09-04",
+      "hit_count": 6,
+      "adopted_count": 1
+    }
+  ],
+  "coverage_notes": "口コミサイトでは一次・二次の質問例が多く見つかったが、最終面接（役員面接）の具体的な質問は見つからず、社風のまとめページの記述から推測（inferred）で1件を補った。",
+  "open_questions": [
+    "最終面接（役員面接）で実際に聞かれた質問の実例が見つかっていない。"
+  ]
+}

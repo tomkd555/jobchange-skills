@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.1",
+  "schema_version": "2.2",
   "search_id": "20260725-remote-infra",
   "mode": "fuzzy",
   "executed_at": "2026-07-25",
@@ -11,9 +11,25 @@
     "remote_policy": "フルリモート",
     "employment_type": "正社員"
   },
+  "search_sets": {
+    "primary": {
+      "roles": ["インフラエンジニア", "社内SE"],
+      "industries": ["SaaS", "情報システム"],
+      "salary_min": 6000000,
+      "location": "全国（フルリモート）",
+      "remote_policy": "フルリモート",
+      "employment_type": "正社員"
+    },
+    "exploration": {
+      "roles": ["SRE", "IT企画"],
+      "industries": null,
+      "dropped_conditions": ["industries"],
+      "rationale": "業界の指定は選好であり必須条件ではないため探索集合では外した"
+    }
+  },
   "results": [
     {
-      "title": "クラウドインフラエンジニア（フルリモート）",
+      "title": "クラウドエンジニア（フルリモート）",
       "company_name": "架空アトラス株式会社",
       "url": "https://example.com/jobs/atlas-infra",
       "source_site": "求人ボックス",
@@ -133,9 +149,9 @@
         },
         {
           "axis": "coordination_ratio",
-          "level": "want",
+          "level": "none",
           "judgement": "meets",
-          "threshold_ref": "low_coordination",
+          "threshold_ref": null,
           "rationale": "観測は0.2であり、調整業務の比率は低い"
         },
         {
@@ -159,10 +175,28 @@
         {"axis": "overtime_hours", "reason": "月平均8時間で必須条件の上限を下回る"}
       ],
       "classification_override": null,
-      "slug": null
+      "slug": null,
+      "search_set": "primary",
+      "role_match": "same",
+      "related_info": {
+        "employee_count": {
+          "value": 320,
+          "source_url": "https://example.com/company/atlas",
+          "grade": "A",
+          "as_of": "2026-03",
+          "note": null
+        },
+        "listed": {
+          "value": false,
+          "source_url": "https://example.com/company/atlas",
+          "grade": "A",
+          "as_of": "2026-03",
+          "note": null
+        }
+      }
     },
     {
-      "title": "情報システム部 プロジェクト推進担当",
+      "title": "情報システム部 IT企画担当",
       "company_name": "架空リテール株式会社",
       "url": "https://example.com/jobs/retail-pm",
       "source_site": "type",
@@ -170,7 +204,7 @@
       "location": "東京都港区（週2日出社）",
       "remote_policy": "ハイブリッド（週2日出社）",
       "annual_holidays": 120,
-      "match_notes": "年収は高いが、リモート確度と年間休日が条件を下回る。業務は調整・管理が中心である。",
+      "match_notes": "隣接職種: 社内SE の指定に対し IT企画 で検索。年収は高いが、リモート確度と年間休日が条件を下回る。業務は調整・管理が中心である。",
       "better_points": [],
       "quote": "週2日出社のハイブリッド勤務／年間休日120日／年収700万〜1000万円／月平均残業25時間",
       "duty_items": [
@@ -278,9 +312,9 @@
         },
         {
           "axis": "coordination_ratio",
-          "level": "want",
+          "level": "none",
           "judgement": "not_meets",
-          "threshold_ref": "low_coordination",
+          "threshold_ref": null,
           "rationale": "観測は0.8であり、調整・管理が業務の中心である"
         },
         {
@@ -305,25 +339,47 @@
         {"axis": "coordination_ratio", "reason": "調整・管理が業務の中心であり、希望する作業特性と逆である"}
       ],
       "classification_override": null,
-      "slug": null
+      "slug": null,
+      "search_set": "exploration",
+      "role_match": "adjacent"
     }
   ],
   "search_log": [
     {
-      "query": "クラウドインフラエンジニア-フルリモートの仕事-東京都",
-      "url": "https://xn--pckua2a7gp15o89zb.com/%E3%82%AF%E3%83%A9%E3%82%A6%E3%83%89%E3%82%A4%E3%83%B3%E3%83%95%E3%83%A9%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2-%E3%83%95%E3%83%AB%E3%83%AA%E3%83%A2%E3%83%BC%E3%83%88%E3%81%AE%E4%BB%95%E4%BA%8B-%E6%9D%B1%E4%BA%AC%E9%83%BD",
+      "query": "クラウドエンジニア-フルリモートの仕事-東京都",
+      "url": "https://xn--pckua2a7gp15o89zb.com/%E3%82%AF%E3%83%A9%E3%82%A6%E3%83%89%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2-%E3%83%95%E3%83%AB%E3%83%AA%E3%83%A2%E3%83%BC%E3%83%88%E3%81%AE%E4%BB%95%E4%BA%8B-%E6%9D%B1%E4%BA%AC%E9%83%BD",
       "fetched_at": "2026-07-25",
       "hit_count": 312,
       "adopted_count": 1,
-      "source": "求人ボックス"
+      "source": "求人ボックス",
+      "search_set": "primary"
     },
     {
       "query": "site:type.jp 社内SE 東京 リモート",
       "url": null,
       "fetched_at": "2026-07-25",
       "hit_count": null,
+      "adopted_count": 0,
+      "source": "WebSearch",
+      "search_set": "primary"
+    },
+    {
+      "query": "site:type.jp IT企画 東京 リモート",
+      "url": null,
+      "fetched_at": "2026-07-25",
+      "hit_count": null,
       "adopted_count": 1,
-      "source": "WebSearch"
+      "source": "WebSearch",
+      "search_set": "exploration"
+    },
+    {
+      "query": "site:type.jp SRE 東京 リモート",
+      "url": null,
+      "fetched_at": "2026-07-25",
+      "hit_count": null,
+      "adopted_count": 0,
+      "source": "WebSearch",
+      "search_set": "exploration"
     }
   ],
   "screening": {
@@ -352,9 +408,14 @@
       "performed": true,
       "excluded_count": 0,
       "method": "profile の career_history のうち period が「〜現在」のエントリの company と company_name を照合した"
+    },
+    "exploration": {
+      "performed": true,
+      "result_count": 1,
+      "apply_candidate_count": 0
     }
   },
-  "coverage_notes": "求人ボックスの検索結果1ページ目と、type の個別求人ページを対象とした。会員登録が必要な求人は範囲外とした。",
+  "coverage_notes": "求人ボックスの検索結果1ページ目、type.jp の個別求人ページを対象とした。探索集合は type.jp で IT企画・SRE の site: 検索を行った。会員登録が必要な求人は範囲外とした。",
   "open_questions": [
     "架空アトラスの夜間・休日対応の有無は求人票に記載が無い。面接で確認する。",
     "架空アトラスの必須要件（AWS 実務3年以上）と本人の経験の距離は、適合性評価で判定する。"

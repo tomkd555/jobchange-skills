@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "updated_at": "2026-07-16",
   "behavioral_episodes": [
     {
@@ -73,9 +73,50 @@
     "curiosity": {"self_note": "原因の内訳を計測で確かめ、未知の箇所を分解して調べる過程に関心が向く。", "evidence_episode_ids": ["ep-1"]},
     "confidence": {"self_note": "難所でも計測と分類の手順があれば進められる、という自信を経験から得ている。", "evidence_episode_ids": ["ep-2", "ep-3"]}
   },
+  "personality": {
+    "markers": [
+      {
+        "id": "pm-1",
+        "construct": "planning_style",
+        "options": ["着手前に段取りを固めてから動く", "着手してから状況に合わせて組み替える", "場面による", "どちらも当てはまらない"],
+        "response": "着手前に段取りを固めてから動く",
+        "linked_episode_ids": ["ep-1", "ep-2"],
+        "feedback_ids": ["fb-1"],
+        "note": null
+      },
+      {
+        "id": "pm-2",
+        "construct": "decision_style",
+        "options": ["数字と計測を先に置いて判断する", "仮説と直感を先に置いて動きながら確かめる", "場面による", "どちらも当てはまらない"],
+        "response": "数字と計測を先に置いて判断する",
+        "linked_episode_ids": ["ep-1"],
+        "feedback_ids": [],
+        "note": null
+      },
+      {
+        "id": "pm-3",
+        "construct": "stress_trigger",
+        "options": ["締切が迫る場面が最も消耗する", "対人の摩擦が最も消耗する", "場面による", "どちらも当てはまらない"],
+        "response": "締切が迫る場面が最も消耗する",
+        "linked_episode_ids": ["ep-2"],
+        "feedback_ids": [],
+        "note": null
+      },
+      {
+        "id": "pm-4",
+        "construct": "collaboration_style",
+        "options": ["同僚に相談しながら進める", "まず自分ひとりで整理してから共有する", "場面による", "どちらも当てはまらない"],
+        "response": "同僚に相談しながら進める",
+        "linked_episode_ids": ["ep-2"],
+        "feedback_ids": ["fb-2"],
+        "note": null
+      }
+    ],
+    "presentation": "数字と計測を先に置いて判断し、着手前に段取りを固める行動が、ep-1 と ep-2 で繰り返し見られる。締切が迫る場面での負荷の高さも、ep-2 の記録に表れている。"
+  },
   "strengths": [
-    {"statement": "遅延や障害の原因を計測と分類で切り分け、増強に頼らず構造で解く", "episode_ids": ["ep-1", "ep-2"], "feedback_ids": ["fb-1"]},
-    {"statement": "個人の対応を監視・手順の仕組みへ残し、チームの再現性を上げる", "episode_ids": ["ep-2", "ep-3"], "feedback_ids": ["fb-2", "fb-3"]}
+    {"statement": "遅延や障害の原因を計測と分類で切り分け、増強に頼らず構造で解く", "episode_ids": ["ep-1", "ep-2"], "feedback_ids": ["fb-1"], "constructs": ["decision_style", "planning_style"]},
+    {"statement": "個人の対応を監視・手順の仕組みへ残し、チームの再現性を上げる", "episode_ids": ["ep-2", "ep-3"], "feedback_ids": ["fb-2", "fb-3"], "constructs": ["collaboration_style"]}
   ],
   "career_narrative": {
     "life_theme": "場当たりの対応を、計測と仕組みで再現できる形へ変える",

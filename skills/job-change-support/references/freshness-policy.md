@@ -4,9 +4,9 @@
 
 ## 方針
 
-- `companies/{企業スラッグ}/` は恒久アーカイブであり、TTL を超過しても成果物ファイルの削除・移動は行わない。
-- TTL 超過は、hub（job-change-support）が `job-change-company-research` へ「stale と判定されたトピック限定の差分再調査」を指示する根拠になる。stale でないトピック・fresh な成果物は再調査しない。既存の成果物をそのまま再利用する。
-- `_manifest.json` の書き手は、各成果物を作るスキル自身である。`job_posting` の欄は `job-change-company-research` が求人票の取得時に、`company_research` の欄は同スキルがトピック調査の完了時に、それぞれ更新する。`check_freshness.py` は判定のみを担い、`_manifest.json` を書き換えない。
+- `companies/{企業スラッグ}/` は消さずに残す保管場所であり、TTL を超過しても成果物ファイルの削除・移動は行わない。
+- TTL 超過は、hub（job-change-support）が `job-change-company-research` へ「stale と判定されたトピックだけを調べ直すこと」を指示する根拠になる。stale でないトピック・fresh な成果物は再調査しない。既存の成果物をそのまま再利用する。
+- `_manifest.json` を書くのは、各成果物を作るスキル自身である。`job_posting` の欄は `job-change-company-research` が求人票の取得時に、`company_research` の欄は同スキルがトピック調査の完了時に、それぞれ更新する。`check_freshness.py` は判定のみを担い、`_manifest.json` を書き換えない。
 
 ## `_manifest.json` の仕様
 
@@ -37,14 +37,22 @@
 | `artifacts` | object | 成果物名をキーとするオブジェクト |
 | `artifacts.job_posting` | object \| null | 求人票の取得状況。`updated_at`（`YYYY-MM-DD`）・`source_url` を持つ。`source_url` は URL から取り込んだ場合のみ値を持ち、本文・ファイル・対話から作った場合は `null` である。未取得は `null` |
 | `artifacts.company_research` | object \| null | 企業研究の実施状況。`updated_at`（最終更新日）と、トピック名をキーとし `last_researched`（`YYYY-MM-DD`）を値に持つ `topics` オブジェクト、および `audit_verdict`・`audited_at` を持つ。未実施は `null` |
-| `artifacts.company_research.audit_verdict` | string | 独立監査の判定。`CLEAN`・`CONCERNS`・`BLOCK` のいずれか。書き手は `job-change-company-research` である |
+| `artifacts.company_research.audit_verdict` | string | 独立監査の判定。`CLEAN`・`CONCERNS`・`BLOCK` のいずれか。書くのは `job-change-company-research` である |
 | `artifacts.company_research.audited_at` | string | 監査を行った日付（`YYYY-MM-DD`） |
 
-`artifacts` には、上記2件のほかに、`fit_assessment` などの成果物を `{updated_at: "YYYY-MM-DD"}` の形で自由に追加してよい。`check_freshness.py` は `job_posting`・`company_research` の2件のみを既知成果物として判定対象にし、それ以外のキーは判定せず読み飛ばす。
+`artifacts` には、上記2件のほかに、`exam_assessment` などの成果物を `{updated_at: "YYYY-MM-DD"}` の形で自由に追加してよい。記録してよいのは成果物名と日付だけであり、個人情報とその派生値は書かない（原本は `pii-boundary.md`）。`check_freshness.py` は `job_posting`・`company_research` の2件は常に判定の対象とする。
+
+これに加えて、次の任意成果物は、`artifacts` に記録がある場合に限り判定する。記録が無い場合と、値が `null` の場合（未取得の明示）は `missing` にせず、判定結果に現れない。記録があって `updated_at` が欠落・不正な場合、またはオブジェクトでない場合は `missing` とする。上記以外のキーは判定せず読み飛ばす。
+
+| 任意成果物 | 書き手 | TTL（日） |
+|---|---|---|
+| `interview_intel` | `job-change-interview-prep`（Step 0.9 の面接情報の調査の完了時に `{updated_at: "YYYY-MM-DD"}` を書く） | 180 |
+
+任意成果物が `stale` または `missing` と判定された場合、hub は `job-change-company-research` ではなく、その成果物を書いたスキルへ再調査を渡す。
 
 ## トピック名と TTL 対応表
 
-`company_research.topics` のキーは、`job-change-company-research` スキルの `references/company-research-format.md` が定める8種のトピック名と一致させる。TTL（日数）はトピックの性質で決める。性質は、報道・ニュース系、給与・福利厚生・働き方といった数値系、理念・事業のような恒常系の3つに分け、対応は次のとおりとする。
+`company_research.topics` のキーは、`job-change-company-research` スキルの `references/company-research-format.md` が定める8種のトピック名と一致させる。TTL（日数）はトピックの性質で決める。性質は、報道・ニュース、給与・福利厚生・働き方、理念・事業の3つに分け、対応は次のとおりとする。
 
 | topic | 分類 | TTL（日） |
 |---|---|---|
@@ -61,7 +69,7 @@
 
 ## 判定規則
 
-判定の基準日は `--today` に指定した日付で、未指定なら実行時点の日付である。`check_freshness.py` はこの基準日と各成果物の最終日付との差分日数（経過日数）を求め、経過日数が TTL 以下であれば `fresh`、TTL を超えていれば `stale` とする。TTL ちょうどは `fresh` 側に含める。
+判定の基準日は `--today` に指定した日付で、未指定なら実行時点の日付である。`check_freshness.py` はこの基準日と各成果物の最終日付との経過日数を求め、経過日数が TTL 以下であれば `fresh`、TTL を超えていれば `stale` とする。TTL ちょうどは `fresh` 側に含める。
 
 - `job_posting`: `artifacts.job_posting` が無い・`null`、または `updated_at` が欠落・不正な日付形式の場合は `missing` とする。それ以外は `updated_at` と TTL=30日で判定する。
 - `company_research`: `artifacts.company_research` が無い・`null` の場合、トピック単位の判定は行わず `company_research` 全体を `missing` とする。存在する場合は、`topics` 配下の各トピックについて `last_researched` の有無・形式を確認する。欠落・不正な場合はそのトピックを `missing` とし、それ以外は対応表の TTL で `fresh`/`stale` を判定する。`topics` が無い・`null`・オブジェクト以外の場合は、トピック単位の判定は行わず `company_research` 全体を `missing` とする。`topics` が空のオブジェクトの場合は、トピックが1件も無いものとして扱い、判定対象にしない。

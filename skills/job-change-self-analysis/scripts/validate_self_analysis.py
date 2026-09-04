@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from dataclasses import dataclass, field
 from typing import Any
@@ -23,6 +24,35 @@ from typing import Any
 # others_feedback[].source_type の値域。
 # 語彙の原本は references/self-analysis-format.md の others_feedback 節にある。
 SOURCE_TYPES = ("上司", "同僚", "部下", "顧客", "友人・家族", "評価面談")
+
+# schema_version の既知の値。これ以外は WARN。
+_KNOWN_SCHEMA_VERSIONS = ("1.0", "1.1")
+
+# personality.markers[].construct の値域。原本は references/personality-guide.md の
+# 「構成概念の語彙」表（表の順序どおり）。
+PERSONALITY_CONSTRUCTS = (
+    "conscientiousness",
+    "emotional_stability",
+    "extraversion",
+    "agreeableness",
+    "openness",
+    "honesty_humility",
+    "grit",
+    "self_efficacy",
+    "planning_style",
+    "collaboration_style",
+    "change_orientation",
+    "decision_style",
+    "feedback_timing",
+    "stress_trigger",
+    "recovery_style",
+)
+
+# personality.presentation の型ラベル検出用パターン（「〜型です」「〜タイプである」等）。
+# 「判断の型である」のように直前が「の」の場合は、構成概念の名称の一部であって分類ラベルではないため除外する。
+# 除外は「型」だけに掛け、「タイプ」には掛けない。「計画重視のタイプです」のような分類ラベルは
+# 「の」が前にあっても WARN の対象のままにする。
+_TYPE_LABEL_RE = re.compile(r"((?<!の)型|タイプ)(です|である|だ|と言え|に当た|に分類)")
 
 
 @dataclass
@@ -129,11 +159,112 @@ def _check_ref_ids(
             )
 
 
+def _validate_personality(
+    document: dict,
+    result: ValidationResult,
+    episode_ids: set[str],
+    feedback_ids: set[str],
+) -> tuple[set[str], set[str]]:
+    """personality を検証する。
+
+    strengths[].constructs の裏付け判定に使う
+    (自己申告のある構成概念の集合, うちエピソードか他者証言に対応づいている構成概念の集合)
+    を返す。personality が無い（1.0 文書）場合は両方とも空集合になる。
+    """
+    constructs_present: set[str] = set()
+    constructs_evidenced: set[str] = set()
+
+    personality = document.get("personality")
+    if personality is None:
+        return constructs_present, constructs_evidenced
+    if not isinstance(personality, dict):
+        result.add_error("personality", "personality はオブジェクトでなければならない")
+        return constructs_present, constructs_evidenced
+
+    markers = personality.get("markers")
+    if not isinstance(markers, list):
+        result.add_error("personality.markers", "markers は配列（0件可）でなければならない")
+    else:
+        marker_ids: set[str] = set()
+        for i, entry in enumerate(markers):
+            path = f"personality.markers[{i}]"
+            if not isinstance(entry, dict):
+                result.add_error(path, "markers の各要素はオブジェクトでなければならない")
+                continue
+            _check_id(entry, path, marker_ids, result)
+
+            construct = entry.get("construct")
+            if not _is_nonempty_str(construct):
+                result.add_error(f"{path}.construct", "construct は必須（非空）である")
+                construct_valid = False
+            elif construct not in PERSONALITY_CONSTRUCTS:
+                result.add_error(
+                    f"{path}.construct", f"construct '{construct}' が構成概念の語彙にない"
+                )
+                construct_valid = False
+            else:
+                construct_valid = True
+                constructs_present.add(construct)
+
+            if not _is_nonempty_str(entry.get("response")):
+                result.add_error(f"{path}.response", "response は必須（非空）である")
+
+            options = entry.get("options")
+            response = entry.get("response")
+            if options is not None:
+                if (
+                    not isinstance(options, list)
+                    or not (2 <= len(options) <= 4)
+                    or not all(_is_nonempty_str(o) for o in options)
+                ):
+                    result.add_error(
+                        f"{path}.options",
+                        "options は2〜4件の非空文字列の配列でなければならない",
+                    )
+                elif _is_nonempty_str(response) and response not in options:
+                    result.add_error(
+                        f"{path}.response", "response が options のいずれとも一致しない"
+                    )
+
+            linked_episode_ids = entry.get("linked_episode_ids")
+            fb_refs = entry.get("feedback_ids")
+            _check_ref_ids(
+                linked_episode_ids,
+                episode_ids,
+                f"{path}.linked_episode_ids",
+                "episode_id",
+                result,
+            )
+            _check_ref_ids(fb_refs, feedback_ids, f"{path}.feedback_ids", "feedback_id", result)
+
+            has_evidence = _has_any_nonempty_str(linked_episode_ids) or _has_any_nonempty_str(
+                fb_refs
+            )
+            if not has_evidence:
+                result.add_warning(
+                    path,
+                    "自己申告だけの記録である（エピソードにも他者証言にも対応づいていない）",
+                )
+            elif construct_valid:
+                constructs_evidenced.add(construct)
+
+    presentation = personality.get("presentation")
+    if presentation is not None:
+        if not isinstance(presentation, str):
+            result.add_error("personality.presentation", "presentation は文字列でなければならない")
+        elif _TYPE_LABEL_RE.search(presentation):
+            result.add_warning("personality.presentation", "型やタイプの名称で分類している")
+
+    return constructs_present, constructs_evidenced
+
+
 def _validate_strengths(
     document: dict,
     result: ValidationResult,
     episode_ids: set[str],
     feedback_ids: set[str],
+    constructs_present: set[str],
+    constructs_evidenced: set[str],
 ) -> None:
     strengths = document.get("strengths")
     if not isinstance(strengths, list):
@@ -154,6 +285,27 @@ def _validate_strengths(
             )
         _check_ref_ids(ep_refs, episode_ids, f"{path}.episode_ids", "episode_id", result)
         _check_ref_ids(fb_refs, feedback_ids, f"{path}.feedback_ids", "feedback_id", result)
+
+        constructs = entry.get("constructs")
+        if constructs is not None:
+            if not isinstance(constructs, list) or not all(
+                isinstance(c, str) for c in constructs
+            ):
+                result.add_error(
+                    f"{path}.constructs", "constructs は文字列の配列でなければならない"
+                )
+            else:
+                for construct in constructs:
+                    if construct not in PERSONALITY_CONSTRUCTS:
+                        result.add_error(
+                            f"{path}.constructs",
+                            f"construct '{construct}' が構成概念の語彙にない",
+                        )
+                    elif construct in constructs_present and construct not in constructs_evidenced:
+                        result.add_warning(
+                            f"{path}.constructs",
+                            f"構成概念 '{construct}' の自己申告が強みの根拠に紛れ込んでいないかを確かめる",
+                        )
 
 
 def _validate_values(
@@ -251,6 +403,15 @@ def _warn_updated_at(document: dict, result: ValidationResult) -> None:
         result.add_warning("updated_at", "updated_at が未設定である")
 
 
+def _warn_schema_version(document: dict, result: ValidationResult) -> None:
+    version = document.get("schema_version")
+    if _is_nonempty_str(version) and version not in _KNOWN_SCHEMA_VERSIONS:
+        result.add_warning(
+            "schema_version",
+            f"schema_version '{version}' が既知の値（{'・'.join(_KNOWN_SCHEMA_VERSIONS)}）にない",
+        )
+
+
 def _warn_interests(document: dict, result: ValidationResult) -> None:
     interests = document.get("interests")
     if not isinstance(interests, dict):
@@ -298,8 +459,13 @@ def validate(document: Any) -> ValidationResult:
 
     episode_ids = _validate_behavioral_episodes(document, result)
     feedback_ids = _validate_others_feedback(document, result)
+    constructs_present, constructs_evidenced = _validate_personality(
+        document, result, episode_ids, feedback_ids
+    )
 
-    _validate_strengths(document, result, episode_ids, feedback_ids)
+    _validate_strengths(
+        document, result, episode_ids, feedback_ids, constructs_present, constructs_evidenced
+    )
     _validate_values(document, result, episode_ids)
     _validate_career_adaptability(document, result, episode_ids)
     _validate_career_narrative(document, result)
@@ -311,6 +477,7 @@ def validate(document: Any) -> ValidationResult:
     _warn_interests(document, result)
     _warn_values(document, result)
     _warn_constructive_version(document, result)
+    _warn_schema_version(document, result)
 
     return result
 

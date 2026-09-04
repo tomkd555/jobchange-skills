@@ -77,9 +77,68 @@ def _valid_self_analysis() -> dict:
     }
 
 
+def _valid_personality_marker(
+    marker_id: str, construct: str, linked_episode_ids=None, feedback_ids=None
+) -> dict:
+    return {
+        "id": marker_id,
+        "construct": construct,
+        "options": ["段取りを先に固めてから動く", "状況に合わせて組み替えながら動く"],
+        "response": "段取りを先に固めてから動く",
+        "linked_episode_ids": linked_episode_ids if linked_episode_ids is not None else ["ep-1"],
+        "feedback_ids": feedback_ids if feedback_ids is not None else [],
+        "note": None,
+    }
+
+
+def _valid_self_analysis_v11() -> dict:
+    """ERROR 0件・WARN 0件になる、personality（1.1）付きの完全な self_analysis.json を返す。"""
+    d = _valid_self_analysis()
+    d["schema_version"] = "1.1"
+    d["personality"] = {
+        "markers": [
+            _valid_personality_marker("pm-1", "planning_style", ["ep-1"], ["fb-1"]),
+            _valid_personality_marker("pm-2", "decision_style", ["ep-1"], []),
+        ],
+        "presentation": "段取りを先に固めてから動く行動が、ep-1 で繰り返し見られる。",
+    }
+    d["strengths"][0]["constructs"] = ["planning_style", "decision_style"]
+    return d
+
+
 class ValidatePassTest(unittest.TestCase):
     def test_full_self_analysis_passes_without_warnings(self):
         result = vsa.validate(_valid_self_analysis())
+        self.assertTrue(result.ok)
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_full_v11_self_analysis_passes_without_warnings(self):
+        result = vsa.validate(_valid_self_analysis_v11())
+        self.assertTrue(result.ok)
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_personality_null_is_treated_as_absent(self):
+        d = _valid_self_analysis_v11()
+        d["personality"] = None
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_markers_empty_list_passes(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["markers"] = []
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_marker_without_options_passes(self):
+        d = _valid_self_analysis_v11()
+        del d["personality"]["markers"][0]["options"]
+        result = vsa.validate(d)
         self.assertTrue(result.ok)
         self.assertEqual(result.errors, [])
         self.assertEqual(result.warnings, [])
@@ -359,6 +418,229 @@ class WarnCaseTest(unittest.TestCase):
         )
 
 
+class PersonalityErrorCaseTest(unittest.TestCase):
+    def test_personality_not_object(self):
+        d = _valid_self_analysis_v11()
+        d["personality"] = "文字列"
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("personality" in e for e in result.errors))
+
+    def test_markers_not_list(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["markers"] = "文字列"
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("personality.markers" in e for e in result.errors))
+
+    def test_markers_key_missing(self):
+        d = _valid_self_analysis_v11()
+        del d["personality"]["markers"]
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("personality.markers" in e for e in result.errors))
+
+    def test_marker_not_object(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["markers"] = ["文字列"]
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("personality.markers[0]" in e for e in result.errors))
+
+    def test_marker_missing_id(self):
+        d = _valid_self_analysis_v11()
+        del d["personality"]["markers"][0]["id"]
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("personality.markers[0].id" in e for e in result.errors))
+
+    def test_marker_duplicate_id_warns_but_passes(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["markers"][1]["id"] = d["personality"]["markers"][0]["id"]
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("personality.markers[1].id" in w for w in result.warnings))
+
+    def test_marker_unknown_construct(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["markers"][0]["construct"] = "unknown_construct"
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("personality.markers[0].construct" in e for e in result.errors))
+
+    def test_marker_missing_construct(self):
+        d = _valid_self_analysis_v11()
+        del d["personality"]["markers"][0]["construct"]
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any(
+                "personality.markers[0].construct" in e and "必須" in e
+                for e in result.errors
+            )
+        )
+
+    def test_marker_empty_response(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["markers"][0]["response"] = ""
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("personality.markers[0].response" in e for e in result.errors))
+
+    def test_marker_options_wrong_length(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["markers"][0]["options"] = ["1件だけ"]
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("personality.markers[0].options" in e for e in result.errors))
+
+    def test_marker_options_element_empty(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["markers"][0]["options"] = ["段取りを先に固めてから動く", "  "]
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("personality.markers[0].options" in e for e in result.errors))
+
+    def test_marker_response_not_in_options(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["markers"][0]["response"] = "選択肢にない回答"
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("personality.markers[0].response" in e for e in result.errors))
+
+    def test_marker_unknown_episode_ref(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["markers"][0]["linked_episode_ids"] = ["ep-999"]
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any("personality.markers[0].linked_episode_ids" in e and "参照整合" in e for e in result.errors)
+        )
+
+    def test_marker_unknown_feedback_ref(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["markers"][0]["feedback_ids"] = ["fb-999"]
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any("personality.markers[0].feedback_ids" in e and "参照整合" in e for e in result.errors)
+        )
+
+    def test_presentation_not_string(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["presentation"] = 123
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("personality.presentation" in e for e in result.errors))
+
+
+class PersonalityWarnCaseTest(unittest.TestCase):
+    def test_marker_without_evidence_warns_but_passes(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["markers"][0]["linked_episode_ids"] = []
+        d["personality"]["markers"][0]["feedback_ids"] = []
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertTrue(
+            any(
+                "personality.markers[0]" in w and "自己申告だけの記録" in w
+                for w in result.warnings
+            )
+        )
+
+    def test_presentation_with_desu_type_label_warns(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["presentation"] = "計測してから動く慎重型です。"
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("personality.presentation" in w for w in result.warnings))
+
+    def test_presentation_with_dearu_type_label_warns(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["presentation"] = "計測してから動く慎重タイプである。"
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("personality.presentation" in w for w in result.warnings))
+
+    def test_presentation_with_possessive_type_does_not_warn(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["presentation"] = (
+            "判断の型である decision_style の申告と、ep-1 の計測を先に置く行動が一致している。"
+        )
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertEqual(result.warnings, [])
+
+    def test_presentation_with_non_possessive_type_still_warns(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["presentation"] = "本人は慎重型である。"
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("personality.presentation" in w for w in result.warnings))
+
+    def test_presentation_with_possessive_before_taipu_still_warns(self):
+        """「〜のタイプです」は「の」の直後でも分類ラベルとして WARN する（「型」だけを除外対象にする）。"""
+        d = _valid_self_analysis_v11()
+        d["personality"]["presentation"] = "計画重視のタイプです。"
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("personality.presentation" in w for w in result.warnings))
+
+
+class StrengthsConstructsTest(unittest.TestCase):
+    def test_constructs_not_list(self):
+        d = _valid_self_analysis_v11()
+        d["strengths"][0]["constructs"] = "planning_style"
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("strengths[0].constructs" in e for e in result.errors))
+
+    def test_unknown_construct_in_strengths(self):
+        d = _valid_self_analysis_v11()
+        d["strengths"][0]["constructs"] = ["unknown_construct"]
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("strengths[0].constructs" in e for e in result.errors))
+
+    def test_constructs_with_non_string_element_errors(self):
+        d = _valid_self_analysis_v11()
+        d["strengths"][0]["constructs"] = ["planning_style", 123]
+        result = vsa.validate(d)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("strengths[0].constructs" in e for e in result.errors))
+
+    def test_construct_with_unlinked_marker_warns(self):
+        d = _valid_self_analysis_v11()
+        d["personality"]["markers"][1]["linked_episode_ids"] = []
+        d["personality"]["markers"][1]["feedback_ids"] = []
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertTrue(
+            any("strengths[0].constructs" in w and "decision_style" in w for w in result.warnings)
+        )
+
+    def test_construct_with_no_marker_does_not_warn(self):
+        d = _valid_self_analysis_v11()
+        d["strengths"][0]["constructs"] = ["planning_style", "collaboration_style"]
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertEqual(result.warnings, [])
+
+
+class SchemaVersionCompatibilityTest(unittest.TestCase):
+    def test_v10_document_without_personality_still_passes_without_new_warnings(self):
+        result = vsa.validate(_valid_self_analysis())
+        self.assertTrue(result.ok)
+        self.assertEqual(result.warnings, [])
+
+    def test_unknown_schema_version_warns_but_passes(self):
+        d = _valid_self_analysis()
+        d["schema_version"] = "9.9"
+        result = vsa.validate(d)
+        self.assertTrue(result.ok)
+        self.assertTrue(any("schema_version" in w for w in result.warnings))
+
+
 class CliTest(unittest.TestCase):
     def _write_tmp(self, obj) -> str:
         fd, path = tempfile.mkstemp(suffix=".json")
@@ -405,10 +687,12 @@ class ResultShapeTest(unittest.TestCase):
         self.assertIn("warnings", d)
 
     def test_immutability_of_input(self):
-        d = _valid_self_analysis()
-        snapshot = copy.deepcopy(d)
-        vsa.validate(d)
-        self.assertEqual(d, snapshot)
+        for label, factory in (("1.0", _valid_self_analysis), ("1.1", _valid_self_analysis_v11)):
+            with self.subTest(schema_version=label):
+                d = factory()
+                snapshot = copy.deepcopy(d)
+                vsa.validate(d)
+                self.assertEqual(d, snapshot)
 
 
 class ExampleAssetTest(unittest.TestCase):

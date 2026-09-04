@@ -914,6 +914,84 @@ class V2ThresholdRefTest(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("必須度" in e for e in result.errors))
 
+    def test_desire_important_maps_to_want(self):
+        profile = self._profile()
+        profile["job_change_axis"]["work_character_preferences"] = [
+            {"trait": "hands_on", "desire": "important"}
+        ]
+        document = _valid_v2()
+        for judgement in document["results"][0]["axis_judgements"]:
+            if judgement["axis"] == "hands_on_ratio":
+                judgement["level"] = "want"
+                judgement["threshold_ref"] = "hands_on"
+        result = vj.validate(document, pii_terms=[], profile=profile)
+        self.assertEqual(result.errors, [])
+
+    def test_desire_neutral_maps_to_none(self):
+        profile = self._profile()
+        profile["job_change_axis"]["work_character_preferences"] = [
+            {"trait": "low_coordination", "desire": "neutral"}
+        ]
+        document = _valid_v2()
+        for judgement in document["results"][0]["axis_judgements"]:
+            if judgement["axis"] == "coordination_ratio":
+                judgement["level"] = "none"
+                judgement["threshold_ref"] = None
+        result = vj.validate(document, pii_terms=[], profile=profile)
+        self.assertEqual(result.errors, [])
+
+    def test_desire_neutral_kept_as_want_is_an_error(self):
+        """neutral は none に写る。want のまま残すと必須度の不一致として検出される。"""
+        profile = self._profile()
+        profile["job_change_axis"]["work_character_preferences"] = [
+            {"trait": "low_coordination", "desire": "neutral"}
+        ]
+        document = _valid_v2()
+        for judgement in document["results"][0]["axis_judgements"]:
+            if judgement["axis"] == "coordination_ratio":
+                judgement["level"] = "want"
+                judgement["threshold_ref"] = "low_coordination"
+        result = vj.validate(document, pii_terms=[], profile=profile)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("必須度" in e for e in result.errors))
+
+    def test_none_level_downgrading_a_must_condition_axis_is_an_error(self):
+        """conditions[].axis が must の軸を level: none に緩めると検出される。"""
+        profile = {
+            "job_change_axis": {
+                "conditions": [{"id": "cond-remote", "axis": "remote_certainty", "level": "must"}],
+                "work_character_preferences": [],
+            }
+        }
+        document = _valid_v2()
+        for judgement in document["results"][0]["axis_judgements"]:
+            if judgement["axis"] == "remote_certainty":
+                judgement["level"] = "none"
+                judgement["threshold_ref"] = None
+        result = vj.validate(document, pii_terms=[], profile=profile)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("必須度" in e for e in result.errors))
+
+    def test_none_level_downgrading_a_want_trait_axis_is_an_error(self):
+        """work_character_preferences 由来の want な軸を level: none に緩めると検出される。"""
+        profile = self._profile()
+        profile["job_change_axis"]["work_character_preferences"] = [
+            {"trait": "no_oncall", "desire": "important"}
+        ]
+        document = _valid_v2()
+        for judgement in document["results"][0]["axis_judgements"]:
+            if judgement["axis"] == "oncall_load":
+                judgement["level"] = "none"
+                judgement["threshold_ref"] = None
+        result = vj.validate(document, pii_terms=[], profile=profile)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("必須度" in e for e in result.errors))
+
+    def test_none_level_for_axis_absent_from_profile_passes(self):
+        """profile に対応する条件・特性が無い軸は、level: none のままでよい。"""
+        result = vj.validate(_valid_v2(), pii_terms=[], profile=self._profile())
+        self.assertEqual(result.errors, [])
+
 
 # --- schema_version 2.1（検索ログと軸別比較）の検査 ---------------------------
 
@@ -927,6 +1005,7 @@ def _search_log() -> list[dict]:
             "hit_count": 42,
             "adopted_count": 2,
             "source": "求人ボックス",
+            "search_set": "primary",
         }
     ]
 
@@ -1307,6 +1386,470 @@ class V21BaselineComparisonTest(unittest.TestCase):
     def test_comparison_not_an_object_is_error(self):
         result = vj.validate(_valid_v21_similar_better(["better"]), pii_terms=[])
         self.assertFalse(result.ok)
+
+
+# --- schema_version 2.2（探索集合と関連情報）の検査 ---------------------------
+
+
+def _valid_search_sets() -> dict:
+    return {
+        "primary": {"roles": ["インフラエンジニア"], "salary_min": 6000000},
+        "exploration": {
+            "roles": ["SRE", "DevOpsエンジニア"],
+            "industries": None,
+            "dropped_conditions": ["industries"],
+            "rationale": "業界の指定は選好であり必須条件ではないため探索集合では外した",
+        },
+    }
+
+
+def _v22_result_item(search_set: str = "primary", role_match: str = "same", **overrides) -> dict:
+    item = _result_item(**overrides)
+    item["search_set"] = search_set
+    item["role_match"] = role_match
+    return item
+
+
+def _valid_v22(items: list[dict] | None = None, recommendation: str = "応募推奨あり") -> dict:
+    """ERROR 0件・WARN 0件になる 2.2 の結果を返す。探索集合は0件で実施済みとする。"""
+    items = [_v22_result_item()] if items is None else items
+    document = _valid_v21(items, recommendation)
+    document["schema_version"] = "2.2"
+    document["search_sets"] = _valid_search_sets()
+    document["screening"]["exploration"] = {
+        "performed": True,
+        "result_count": 0,
+        "apply_candidate_count": 0,
+    }
+    if any(isinstance(item, dict) and item.get("search_set") == "exploration" for item in items):
+        document["search_log"].append(
+            {
+                "query": "site:herp.careers SRE 東京都",
+                "url": None,
+                "fetched_at": "2026-07-25",
+                "hit_count": None,
+                "adopted_count": 1,
+                "source": "WebSearch",
+                "search_set": "exploration",
+            }
+        )
+    return document
+
+
+class V22BackwardCompatTest(unittest.TestCase):
+    def test_v21_document_without_new_fields_still_passes(self):
+        result = vj.validate(_valid_v21(), pii_terms=[])
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_v21_document_ignores_invalid_search_set(self):
+        document = _valid_v21()
+        document["results"][0]["search_set"] = "not-a-real-value"
+        result = vj.validate(document, pii_terms=[])
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_v21_search_log_without_search_set_passes(self):
+        document = _valid_v21()
+        del document["search_log"][0]["search_set"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+
+class V22SearchLogTest(unittest.TestCase):
+    def test_missing_search_set_on_log_entry_is_error(self):
+        document = _valid_v22()
+        del document["search_log"][0]["search_set"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_log[0].search_set" in e for e in result.errors))
+
+    def test_invalid_search_set_value_on_log_entry_is_error(self):
+        document = _valid_v22()
+        document["search_log"][0]["search_set"] = "tertiary"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_log[0].search_set" in e for e in result.errors))
+
+    def test_exploration_result_without_exploration_log_entry_is_error(self):
+        item = _v22_result_item(search_set="exploration", role_match="adjacent")
+        document = _valid_v22([item])
+        # _valid_v22 は exploration の result があると自動で exploration の search_log を足すため、
+        # その要素を取り除いて欠落状態を作る。
+        document["search_log"] = [
+            entry for entry in document["search_log"] if entry.get("search_set") != "exploration"
+        ]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any(e.startswith("[ERROR] search_log:") for e in result.errors))
+
+    def test_exploration_result_without_exploration_log_entry_reports_once(self):
+        items = [
+            _v22_result_item(search_set="exploration", role_match="adjacent"),
+            _v22_result_item(search_set="exploration", role_match="adjacent"),
+        ]
+        document = _valid_v22(items)
+        document["screening"]["exploration"] = {
+            "performed": True,
+            "result_count": 2,
+            "apply_candidate_count": 2,
+        }
+        document["search_log"] = [
+            entry for entry in document["search_log"] if entry.get("search_set") != "exploration"
+        ]
+        result = vj.validate(document, pii_terms=[])
+        matches = [e for e in result.errors if e.startswith("[ERROR] search_log:")]
+        self.assertEqual(len(matches), 1)
+
+    def test_exploration_log_entry_satisfies_the_link(self):
+        item = _v22_result_item(search_set="exploration", role_match="adjacent")
+        document = _valid_v22([item])
+        document["screening"]["exploration"] = {
+            "performed": True,
+            "result_count": 1,
+            "apply_candidate_count": 1,
+        }
+        result = vj.validate(document, pii_terms=[])
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+
+class V22SearchSetsTest(unittest.TestCase):
+    def test_valid_v22_passes_without_warnings(self):
+        result = vj.validate(_valid_v22(), pii_terms=[])
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_missing_search_sets_is_error(self):
+        document = _valid_v22()
+        del document["search_sets"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_sets" in e for e in result.errors))
+
+    def test_search_sets_not_object_is_error(self):
+        document = _valid_v22()
+        document["search_sets"] = ["primary"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_sets" in e for e in result.errors))
+
+    def test_missing_primary_is_error(self):
+        document = _valid_v22()
+        del document["search_sets"]["primary"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_sets.primary" in e for e in result.errors))
+
+    def test_primary_not_object_is_error(self):
+        document = _valid_v22()
+        document["search_sets"]["primary"] = "roles: infra"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_sets.primary" in e for e in result.errors))
+
+    def test_exploration_not_object_or_null_is_error(self):
+        document = _valid_v22()
+        document["search_sets"]["exploration"] = "SRE"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_sets.exploration" in e for e in result.errors))
+
+    def test_exploration_roles_not_list_is_error(self):
+        document = _valid_v22()
+        document["search_sets"]["exploration"]["roles"] = "SRE"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("roles" in e for e in result.errors))
+
+    def test_exploration_industries_invalid_is_error(self):
+        document = _valid_v22()
+        document["search_sets"]["exploration"]["industries"] = ["", "SaaS"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("industries" in e for e in result.errors))
+
+    def test_exploration_dropped_conditions_not_list_is_error(self):
+        document = _valid_v22()
+        document["search_sets"]["exploration"]["dropped_conditions"] = "industries"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("dropped_conditions" in e for e in result.errors))
+
+    def test_exploration_empty_rationale_is_error(self):
+        document = _valid_v22()
+        document["search_sets"]["exploration"]["rationale"] = "  "
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("rationale" in e for e in result.errors))
+
+    def test_fuzzy_without_exploration_warns(self):
+        document = _valid_v22()
+        document["search_sets"]["exploration"] = None
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("偏りの点検を省いている" in w for w in result.warnings))
+
+    def test_similar_better_with_exploration_warns(self):
+        document = _valid_v22()
+        document["mode"] = "similar_better"
+        document["baseline"] = {"slug": "kakuu-cloudworks"}
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("search_sets.exploration" in w for w in result.warnings))
+
+
+class V22ResultFieldTest(unittest.TestCase):
+    def test_missing_search_set_is_error(self):
+        document = _valid_v22()
+        del document["results"][0]["search_set"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_set" in e for e in result.errors))
+
+    def test_invalid_search_set_value_is_error(self):
+        document = _valid_v22()
+        document["results"][0]["search_set"] = "tertiary"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_set" in e for e in result.errors))
+
+    def test_exploration_search_set_without_top_level_exploration_is_error(self):
+        document = _valid_v22()
+        document["search_sets"]["exploration"] = None
+        document["results"][0]["search_set"] = "exploration"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_sets.exploration が null" in e for e in result.errors))
+
+    def test_missing_role_match_is_error(self):
+        document = _valid_v22()
+        del document["results"][0]["role_match"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("role_match" in e for e in result.errors))
+
+    def test_invalid_role_match_value_is_error(self):
+        document = _valid_v22()
+        document["results"][0]["role_match"] = "opposite"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("role_match" in e for e in result.errors))
+
+    def test_primary_with_different_role_match_warns(self):
+        document = _valid_v22()
+        document["results"][0]["role_match"] = "different"
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("role_match" in w for w in result.warnings))
+
+
+class V22RelatedInfoTest(unittest.TestCase):
+    def _validate(self, related_info) -> vj.ValidationResult:
+        document = _valid_v22()
+        document["results"][0]["related_info"] = related_info
+        return vj.validate(document, pii_terms=[])
+
+    def test_valid_related_info_passes(self):
+        result = self._validate(
+            {
+                "employee_count": {
+                    "value": 320,
+                    "source_url": "https://example.com/company",
+                    "grade": "A",
+                    "as_of": "2026-03",
+                    "note": None,
+                },
+                "listed": {
+                    "value": False,
+                    "source_url": "https://example.com/company",
+                    "grade": "A",
+                    "as_of": None,
+                },
+            }
+        )
+        self.assertEqual(result.errors, [])
+
+    def test_not_an_object_is_error(self):
+        document = _valid_v22()
+        document["results"][0]["related_info"] = ["employee_count"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("related_info" in e for e in result.errors))
+
+    def test_unknown_key_is_error(self):
+        result = self._validate(
+            {"headcount": {"value": 1, "source_url": "https://example.com", "grade": "A", "as_of": None}}
+        )
+        self.assertFalse(result.ok)
+        self.assertTrue(any("related_info" in e for e in result.errors))
+
+    def test_missing_source_url_when_value_present_is_error(self):
+        result = self._validate(
+            {"employee_count": {"value": 100, "source_url": None, "grade": "A", "as_of": None}}
+        )
+        self.assertFalse(result.ok)
+        self.assertTrue(any("source_url" in e for e in result.errors))
+
+    def test_invalid_grade_is_error(self):
+        result = self._validate(
+            {"employee_count": {"value": 100, "source_url": "https://example.com", "grade": "S", "as_of": None}}
+        )
+        self.assertFalse(result.ok)
+        self.assertTrue(any("grade" in e for e in result.errors))
+
+    def test_null_value_skips_source_and_grade_checks(self):
+        result = self._validate(
+            {"employee_count": {"value": None, "source_url": None, "grade": None, "as_of": None}}
+        )
+        self.assertEqual(result.errors, [])
+
+    def test_bool_value_for_non_listed_key_is_error(self):
+        result = self._validate(
+            {"employee_count": {"value": True, "source_url": "https://example.com", "grade": "A", "as_of": None}}
+        )
+        self.assertFalse(result.ok)
+        self.assertTrue(any("value" in e for e in result.errors))
+
+    def test_bool_value_for_listed_is_allowed(self):
+        result = self._validate(
+            {"listed": {"value": True, "source_url": "https://example.com", "grade": "A", "as_of": None}}
+        )
+        self.assertEqual(result.errors, [])
+
+    def test_invalid_as_of_format_is_error(self):
+        result = self._validate(
+            {"employee_count": {"value": 100, "source_url": "https://example.com", "grade": "A", "as_of": "2026/03"}}
+        )
+        self.assertFalse(result.ok)
+        self.assertTrue(any("as_of" in e for e in result.errors))
+
+    def test_as_of_year_only_is_allowed(self):
+        result = self._validate(
+            {"employee_count": {"value": 100, "source_url": "https://example.com", "grade": "A", "as_of": "2026"}}
+        )
+        self.assertEqual(result.errors, [])
+
+    def test_value_entry_not_an_object_is_error(self):
+        result = self._validate({"employee_count": 320})
+        self.assertFalse(result.ok)
+        self.assertTrue(any("related_info の各値はオブジェクトでなければならない" in e for e in result.errors))
+
+    def test_value_entry_missing_required_key_is_error(self):
+        result = self._validate(
+            {"employee_count": {"value": 100, "source_url": "https://example.com", "grade": "A"}}
+        )
+        self.assertFalse(result.ok)
+        self.assertTrue(any("as_of" in e for e in result.errors))
+
+
+class V22ScreeningExplorationTest(unittest.TestCase):
+    def test_missing_exploration_object_is_error(self):
+        document = _valid_v22()
+        del document["screening"]["exploration"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("screening.exploration" in e for e in result.errors))
+
+    def test_performed_not_bool_is_error(self):
+        document = _valid_v22()
+        document["screening"]["exploration"]["performed"] = "yes"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("performed" in e for e in result.errors))
+
+    def test_performed_true_with_matching_counts_passes(self):
+        item = _v22_result_item(search_set="exploration", role_match="adjacent")
+        document = _valid_v22([item])
+        document["screening"]["exploration"] = {
+            "performed": True,
+            "result_count": 1,
+            "apply_candidate_count": 1,
+        }
+        result = vj.validate(document, pii_terms=[])
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_performed_true_with_mismatched_result_count_is_error(self):
+        item = _v22_result_item(search_set="exploration", role_match="adjacent")
+        document = _valid_v22([item])
+        document["screening"]["exploration"] = {
+            "performed": True,
+            "result_count": 0,
+            "apply_candidate_count": 1,
+        }
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("result_count" in e for e in result.errors))
+
+    def test_performed_true_with_mismatched_apply_count_is_error(self):
+        item = _v22_result_item(search_set="exploration", role_match="adjacent")
+        document = _valid_v22([item])
+        document["screening"]["exploration"] = {
+            "performed": True,
+            "result_count": 1,
+            "apply_candidate_count": 0,
+        }
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("apply_candidate_count" in e for e in result.errors))
+
+    def test_performed_false_with_non_null_count_is_error(self):
+        document = _valid_v22()
+        document["search_sets"]["exploration"] = None
+        document["screening"]["exploration"] = {
+            "performed": False,
+            "result_count": 0,
+            "apply_candidate_count": None,
+        }
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("result_count" in e for e in result.errors))
+
+    def test_result_count_bool_is_error(self):
+        item = _v22_result_item(search_set="exploration", role_match="adjacent")
+        document = _valid_v22([item])
+        document["screening"]["exploration"] = {
+            "performed": True,
+            "result_count": True,
+            "apply_candidate_count": 1,
+        }
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("result_count は整数でなければならない" in e for e in result.errors))
+
+    def test_missing_count_keys_when_not_performed_is_error(self):
+        document = _valid_v22()
+        document["search_sets"]["exploration"] = None
+        document["screening"]["exploration"] = {"performed": False}
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("result_count" in e and "必須である" in e for e in result.errors))
+        self.assertTrue(any("apply_candidate_count" in e and "必須である" in e for e in result.errors))
+
+    def test_performed_false_with_non_null_apply_count_is_error(self):
+        document = _valid_v22()
+        document["search_sets"]["exploration"] = None
+        document["screening"]["exploration"] = {
+            "performed": False,
+            "result_count": None,
+            "apply_candidate_count": 0,
+        }
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("apply_candidate_count" in e for e in result.errors))
+
+    def test_performed_false_but_exploration_defined_is_error(self):
+        document = _valid_v22()
+        document["screening"]["exploration"] = {
+            "performed": False,
+            "result_count": None,
+            "apply_candidate_count": None,
+        }
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("探索集合があるのに未実施と記録している" in e for e in result.errors))
 
 
 class ExampleAssetTest(unittest.TestCase):

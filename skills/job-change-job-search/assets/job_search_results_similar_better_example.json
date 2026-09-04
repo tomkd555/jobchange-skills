@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.1",
+  "schema_version": "2.2",
   "search_id": "20260725-better-than-cloudworks",
   "mode": "similar_better",
   "executed_at": "2026-07-25",
@@ -13,6 +13,19 @@
     "remote_policy": "フルリモート",
     "employment_type": "正社員"
   },
+  "search_sets": {
+    "primary": {
+      "roles": [
+        "インフラエンジニア",
+        "SRE"
+      ],
+      "salary_min": 6000000,
+      "location": "全国（フルリモート）",
+      "remote_policy": "フルリモート",
+      "employment_type": "正社員"
+    },
+    "exploration": null
+  },
   "baseline": {
     "slug": "kakuu-cloudworks"
   },
@@ -22,7 +35,7 @@
   ],
   "results": [
     {
-      "title": "クラウドインフラエンジニア（フルリモート）",
+      "title": "クラウドエンジニア（フルリモート）",
       "company_name": "架空アトラス株式会社",
       "url": "https://example.com/jobs/atlas-infra",
       "source_site": "求人ボックス",
@@ -160,9 +173,9 @@
         },
         {
           "axis": "coordination_ratio",
-          "level": "want",
+          "level": "none",
           "judgement": "meets",
-          "threshold_ref": "low_coordination",
+          "threshold_ref": null,
           "rationale": "観測は0.2であり、調整業務の比率は低い"
         },
         {
@@ -193,6 +206,8 @@
       ],
       "classification_override": null,
       "slug": null,
+      "search_set": "primary",
+      "role_match": "same",
       "baseline_comparison": {
         "axes": [
           {
@@ -250,12 +265,13 @@
   ],
   "search_log": [
     {
-      "query": "クラウドインフラエンジニア-年収600万円の仕事-東京都",
-      "url": "https://xn--pckua2a7gp15o89zb.com/%E3%82%AF%E3%83%A9%E3%82%A6%E3%83%89%E3%82%A4%E3%83%B3%E3%83%95%E3%83%A9%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2-%E5%B9%B4%E5%8F%8E600%E4%B8%87%E5%86%86%E3%81%AE%E4%BB%95%E4%BA%8B-%E6%9D%B1%E4%BA%AC%E9%83%BD",
+      "query": "クラウドエンジニア-年収600万円の仕事-東京都",
+      "url": "https://xn--pckua2a7gp15o89zb.com/%E3%82%AF%E3%83%A9%E3%82%A6%E3%83%89%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2-%E5%B9%B4%E5%8F%8E600%E4%B8%87%E5%86%86%E3%81%AE%E4%BB%95%E4%BA%8B-%E6%9D%B1%E4%BA%AC%E9%83%BD",
       "fetched_at": "2026-07-25",
       "hit_count": 214,
       "adopted_count": 1,
-      "source": "求人ボックス"
+      "source": "求人ボックス",
+      "search_set": "primary"
     },
     {
       "query": "https://tenshoku.mynavi.jp/engineer/list/p13/e01/min0600/f618/o16/",
@@ -263,7 +279,8 @@
       "fetched_at": "2026-07-25",
       "hit_count": 37,
       "adopted_count": 0,
-      "source": "マイナビ転職エンジニア"
+      "source": "マイナビ転職エンジニア",
+      "search_set": "primary"
     }
   ],
   "screening": {
@@ -324,9 +341,14 @@
       "performed": true,
       "excluded_count": 0,
       "method": "profile の career_history のうち period が「〜現在」のエントリの company と company_name を照合した"
+    },
+    "exploration": {
+      "performed": false,
+      "result_count": null,
+      "apply_candidate_count": null
     }
   },
-  "coverage_notes": "求人ボックスとマイナビ転職エンジニアを対象とした。会員登録が必要な求人は範囲外とした。重複の排除で2件を除いた。相場の基準線は求人ボックス給料ナビ「クラウドインフラエンジニア」の中央値595万円（https://xn--pckua2a7gp15o89zb.com/クラウドインフラエンジニアの年収・時給 2026年7月取得。エビデンスレベルC。同サイトの独自試算による参考値である）。",
+  "coverage_notes": "求人ボックスとマイナビ転職エンジニアを対象とした。会員登録が必要な求人は範囲外とした。重複の排除で2件を除いた。相場の基準線は求人ボックス給料ナビ「クラウドエンジニア」の中央値595万円（https://xn--pckua2a7gp15o89zb.com/クラウドエンジニアの年収・時給 2026年7月取得。エビデンスレベルC。同サイトの独自試算による参考値である）。",
   "open_questions": [
     "固定残業の有無が基準求人・候補求人のいずれにも記載が無い。応募前に確認する",
     "基準求人の求人票が schema_version 1.0 のため、就業場所・業務の変更の範囲を比較できていない"

@@ -35,9 +35,12 @@ _SEARCH_ID_RE = re.compile(r"^[0-9]{8}-[0-9a-z][0-9a-z-]*$")
 _V1_SCHEMA_VERSION = "1.0"
 _V2_SCHEMA_VERSION = "2.0"
 _V21_SCHEMA_VERSION = "2.1"
-_KNOWN_SCHEMA_VERSIONS = (_V1_SCHEMA_VERSION, _V2_SCHEMA_VERSION, _V21_SCHEMA_VERSION)
+_V22_SCHEMA_VERSION = "2.2"
+_KNOWN_SCHEMA_VERSIONS = (_V1_SCHEMA_VERSION, _V2_SCHEMA_VERSION, _V21_SCHEMA_VERSION, _V22_SCHEMA_VERSION)
 # 観測層・判定層・総括を持つバージョン。
-_SCREENING_SCHEMA_VERSIONS = (_V2_SCHEMA_VERSION, _V21_SCHEMA_VERSION)
+_SCREENING_SCHEMA_VERSIONS = (_V2_SCHEMA_VERSION, _V21_SCHEMA_VERSION, _V22_SCHEMA_VERSION)
+# search_log・improvement_axes・baseline_comparison が有効なバージョン。
+_V21_AND_LATER_SCHEMA_VERSIONS = (_V21_SCHEMA_VERSION, _V22_SCHEMA_VERSION)
 
 # 取得日時。YYYY-MM-DD、または ISO 8601（日付に時刻が続く形）を受ける。
 _FETCHED_AT_RE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}([T ][0-9:.+\-Z]+)?$")
@@ -116,6 +119,24 @@ _RATIO_TOLERANCE = 0.01
 JUDGEMENTS = ("meets", "not_meets", "unknown")
 DECIDED_JUDGEMENTS = ("meets", "not_meets")
 LEVELS = ("must", "want", "none")
+# work_character_preferences[].desire → axis_judgements[].level の対応表。原本は job-search-format.md にある。
+_DESIRE_TO_LEVEL = {
+    "must": "must",
+    "important": "want",
+    "neutral": "none",
+    "not_required": "none",
+}
+# work_character_preferences[].trait → 8軸 id の対応表。求人票から観測できる5特性だけが軸を持つ
+# （残る3特性は screening-axes.md の「観測できない3特性」であり、判定に関与しない）。原本は同ファイル。
+_TRAIT_TO_AXIS = {
+    "hands_on": "hands_on_ratio",
+    "build_ops_ratio": "hands_on_ratio",
+    "low_coordination": "coordination_ratio",
+    "full_remote_guaranteed": "remote_certainty",
+    "no_oncall": "oncall_load",
+}
+# level の厳しさの順。同じ軸に複数の条件・特性が対応する場合、最も厳しい方を採る。
+_LEVEL_STRICTNESS = {"none": 0, "want": 1, "must": 2}
 
 CLASSIFICATIONS = ("apply_candidate", "needs_more_research", "excluded")
 # 厳しい順。override は厳格化方向のみ許す。
@@ -124,6 +145,27 @@ _MAX_UNKNOWN_FOR_APPLY = 4
 
 RECOMMENDATIONS = ("応募推奨あり", "応募推奨なし", "判定不能")
 AXES_SOURCES = ("job_change_axis.conditions", "degraded")
+
+# 探索集合（2.2）。primary は利用者の指定条件、exploration は選好フィルタを外し隣接職種へ広げた集合。
+SEARCH_SETS = ("primary", "exploration")
+# 求人の職種と検索条件の職種との関係（2.2）。
+ROLE_MATCHES = ("same", "adjacent", "different")
+# related_info の許容キー（2.2）。ログイン不要で取得できる企業関連事実に限る。
+RELATED_INFO_KEYS = (
+    "employee_count",
+    "founded_year",
+    "listed",
+    "capital_yen",
+    "edinet_code",
+    "certifications",
+    "review_aggregate",
+    "posting_age",
+    "salary_benchmark",
+)
+_RELATED_INFO_GRADES = ("A", "B", "C", "D")
+# related_info.as_of の形式。YYYY または YYYY-MM。
+_RELATED_INFO_AS_OF_RE = re.compile(r"^[0-9]{4}(-[0-9]{2})?$")
+
 # 現年収の混入検出に用いる下限。これ未満の数値は誤検出を避けるため PII 項目に含めない。
 _SALARY_MIN_FOR_LINT = 10000
 # basic 配下で氏名を保持しうるキー。
@@ -209,7 +251,7 @@ def _is_valid_fetched_at(value: Any) -> bool:
 def _validate_search_log(document: dict, version: Any, result: ValidationResult) -> None:
     """検索の実行ログを検査する。2.1 では必須である。"""
     log = document.get("search_log")
-    required = version == _V21_SCHEMA_VERSION
+    required = version in _V21_AND_LATER_SCHEMA_VERSIONS
     if log is None:
         if required:
             result.add_error(
@@ -259,6 +301,17 @@ def _validate_search_log(document: dict, version: Any, result: ValidationResult)
                     f"{path}.{key}",
                     f"{key} は0以上の整数または null でなければならない（実値: {count!r}）",
                 )
+        if version == _V22_SCHEMA_VERSION:
+            if "search_set" not in entry:
+                result.add_error(
+                    f"{path}.search_set",
+                    f"search_set は必須である（{'/'.join(SEARCH_SETS)} のいずれか）",
+                )
+            elif entry.get("search_set") not in SEARCH_SETS:
+                result.add_error(
+                    f"{path}.search_set",
+                    f"search_set は {'/'.join(SEARCH_SETS)} のいずれかである（実値: {entry.get('search_set')!r}）",
+                )
 
 
 def derive_baseline_overall(axes: list[dict], improvement_axes: list[str]) -> str:
@@ -286,7 +339,7 @@ def _validate_improvement_axes(
     """トップレベルの improvement_axes を検査し、有効な軸 id の一覧を返す。"""
     axes = document.get("improvement_axes")
     if axes is None:
-        if mode == "similar_better" and version == _V21_SCHEMA_VERSION:
+        if mode == "similar_better" and version in _V21_AND_LATER_SCHEMA_VERSIONS:
             result.add_warning(
                 "improvement_axes",
                 "similar_better では利用者が選んだ改善軸（improvement_axes）の記録を推奨する",
@@ -297,7 +350,7 @@ def _validate_improvement_axes(
         return []
     if mode == "fuzzy" and axes:
         result.add_warning("improvement_axes", "fuzzy では improvement_axes は用いない（similar_better 専用）")
-    if not axes and mode == "similar_better" and version == _V21_SCHEMA_VERSION:
+    if not axes and mode == "similar_better" and version in _V21_AND_LATER_SCHEMA_VERSIONS:
         result.add_warning("improvement_axes", "improvement_axes が空である。狙う改善軸を1つ以上記録する")
 
     valid: list[str] = []
@@ -333,7 +386,7 @@ def _validate_baseline_comparison(
     comparison = item.get("baseline_comparison")
     bc_path = f"{path}.baseline_comparison"
     if comparison is None:
-        if mode == "similar_better" and version == _V21_SCHEMA_VERSION:
+        if mode == "similar_better" and version in _V21_AND_LATER_SCHEMA_VERSIONS:
             result.add_warning(
                 bc_path,
                 "similar_better では基準求人との軸別比較（baseline_comparison）の記載を推奨する",
@@ -941,8 +994,246 @@ def _validate_v2_result_item(item: Any, index: int, result: ValidationResult) ->
     _validate_classification(item, path, judgements, result)
 
 
+def _validate_search_log_exploration_link(document: dict, results: Any, result: ValidationResult) -> None:
+    """探索集合の求人があるのに search_log に探索集合のクエリが無い場合を検査する（2.2）。
+
+    探索集合の求人は探索集合のクエリからしか採用できない。result 側の件数に関わらず
+    ERROR は1件だけ報告し、result ごとに重複報告しない。
+    """
+    if not isinstance(results, list):
+        return
+    has_exploration_result = any(
+        isinstance(item, dict) and item.get("search_set") == "exploration" for item in results
+    )
+    if not has_exploration_result:
+        return
+    log = document.get("search_log")
+    has_exploration_log = isinstance(log, list) and any(
+        isinstance(entry, dict) and entry.get("search_set") == "exploration" for entry in log
+    )
+    if not has_exploration_log:
+        result.add_error(
+            "search_log",
+            "search_set が exploration の result があるが、search_log に search_set が exploration の"
+            "要素が無い。探索集合の求人は探索集合のクエリからしか採用できない",
+        )
+
+
+def _validate_search_sets(document: dict, mode: str | None, result: ValidationResult) -> None:
+    """search_sets（探索集合の記録、2.2 専用）を検査する。"""
+    search_sets = document.get("search_sets")
+    if not isinstance(search_sets, dict):
+        result.add_error("search_sets", "search_sets はオブジェクトが必須である")
+        return
+
+    if not isinstance(search_sets.get("primary"), dict):
+        result.add_error("search_sets.primary", "primary はオブジェクトが必須である")
+
+    exploration = search_sets.get("exploration")
+    if exploration is not None:
+        if not isinstance(exploration, dict):
+            result.add_error(
+                "search_sets.exploration",
+                "exploration はオブジェクトまたは null でなければならない",
+            )
+        else:
+            path = "search_sets.exploration"
+            roles = exploration.get("roles")
+            if not isinstance(roles, list) or not all(_is_nonempty_str(r) for r in roles):
+                result.add_error(
+                    f"{path}.roles", "roles は非空の文字列の配列でなければならない（該当が無ければ空配列）"
+                )
+            industries = exploration.get("industries")
+            if industries is not None and (
+                not isinstance(industries, list) or not all(_is_nonempty_str(i) for i in industries)
+            ):
+                result.add_error(
+                    f"{path}.industries",
+                    "industries は非空の文字列の配列、または任意を表す null でなければならない",
+                )
+            dropped = exploration.get("dropped_conditions")
+            if not isinstance(dropped, list) or not all(_is_nonempty_str(d) for d in dropped):
+                result.add_error(
+                    f"{path}.dropped_conditions",
+                    "dropped_conditions は非空の文字列の配列でなければならない（該当が無ければ空配列）",
+                )
+            if not _is_nonempty_str(exploration.get("rationale")):
+                result.add_error(f"{path}.rationale", "rationale は必須（非空）である")
+
+    if mode == "fuzzy" and exploration is None:
+        result.add_warning(
+            "search_sets.exploration", "探索集合を作っていない（偏りの点検を省いている）"
+        )
+    if mode == "similar_better" and exploration is not None:
+        result.add_warning(
+            "search_sets.exploration", "similar_better では exploration は用いない（fuzzy 専用）"
+        )
+
+
+def _validate_related_info(item: dict, path: str, result: ValidationResult) -> None:
+    """results[].related_info（2.2 専用）を検査する。"""
+    if "related_info" not in item:
+        return
+    related = item["related_info"]
+    if not isinstance(related, dict):
+        result.add_error(f"{path}.related_info", "related_info はオブジェクトでなければならない")
+        return
+
+    for key, entry in related.items():
+        entry_path = f"{path}.related_info.{key}"
+        if key not in RELATED_INFO_KEYS:
+            result.add_error(
+                entry_path,
+                f"related_info のキーは {'/'.join(RELATED_INFO_KEYS)} のいずれかである（実値: {key!r}）",
+            )
+            continue
+        if not isinstance(entry, dict):
+            result.add_error(entry_path, "related_info の各値はオブジェクトでなければならない")
+            continue
+        for required_key in ("value", "source_url", "grade", "as_of"):
+            if required_key not in entry:
+                result.add_error(f"{entry_path}.{required_key}", f"{required_key} は必須である")
+
+        value = entry.get("value")
+        if value is not None:
+            if isinstance(value, bool) and key != "listed":
+                result.add_error(
+                    f"{entry_path}.value",
+                    f"真偽値は listed 以外のキーでは使えない（{key} の実値: {value!r}）",
+                )
+            source_url = entry.get("source_url")
+            if not (isinstance(source_url, str) and source_url.startswith("http")):
+                result.add_error(
+                    f"{entry_path}.source_url",
+                    f"source_url は http で始まる文字列でなければならない（実値: {source_url!r}）",
+                )
+            grade = entry.get("grade")
+            if grade not in _RELATED_INFO_GRADES:
+                result.add_error(
+                    f"{entry_path}.grade",
+                    f"grade は {'/'.join(_RELATED_INFO_GRADES)} のいずれかである（実値: {grade!r}）",
+                )
+
+        as_of = entry.get("as_of")
+        if as_of is not None and not (isinstance(as_of, str) and _RELATED_INFO_AS_OF_RE.match(as_of)):
+            result.add_error(
+                f"{entry_path}.as_of",
+                f"as_of は YYYY または YYYY-MM 形式、または null でなければならない（実値: {as_of!r}）",
+            )
+
+
+def _validate_v22_result_item(
+    item: Any, index: int, exploration_defined: bool, result: ValidationResult
+) -> None:
+    """result 1件の 2.2 専用フィールド（search_set・role_match・related_info）を検査する。"""
+    if not isinstance(item, dict):
+        return
+    path = f"results[{index}]"
+
+    search_set = item.get("search_set")
+    if search_set not in SEARCH_SETS:
+        result.add_error(
+            f"{path}.search_set",
+            f"search_set は {'/'.join(SEARCH_SETS)} のいずれかである（実値: {search_set!r}）",
+        )
+    elif search_set == "exploration" and not exploration_defined:
+        result.add_error(
+            f"{path}.search_set",
+            "search_set が exploration だが、search_sets.exploration が null である",
+        )
+
+    role_match = item.get("role_match")
+    if role_match not in ROLE_MATCHES:
+        result.add_error(
+            f"{path}.role_match",
+            f"role_match は {'/'.join(ROLE_MATCHES)} のいずれかである（実値: {role_match!r}）",
+        )
+    elif search_set == "primary" and role_match == "different":
+        result.add_warning(
+            f"{path}.role_match",
+            "primary は利用者の指定条件による検索である。role_match が different の結果はノイズの可能性がある",
+        )
+
+    _validate_related_info(item, path, result)
+
+
+def _validate_screening_exploration(document: dict, results: Any, result: ValidationResult) -> None:
+    """screening.exploration（2.2 専用）を検査する。"""
+    screening = document.get("screening")
+    if not isinstance(screening, dict):
+        return  # screening 自体の欠落・型不一致は _validate_screening が既に報告している。
+
+    exploration = screening.get("exploration")
+    path = "screening.exploration"
+    if not isinstance(exploration, dict):
+        result.add_error(path, "exploration はオブジェクトが必須である")
+        return
+
+    for required_key in ("performed", "result_count", "apply_candidate_count"):
+        if required_key not in exploration:
+            result.add_error(
+                f"{path}.{required_key}", f"{required_key} は必須である。未実施なら null を書く"
+            )
+    if "performed" not in exploration:
+        return
+
+    performed = exploration.get("performed")
+    if not isinstance(performed, bool):
+        result.add_error(f"{path}.performed", "performed は真偽値が必須である")
+        return
+
+    items = results if isinstance(results, list) else []
+    actual_results = sum(1 for r in items if isinstance(r, dict) and r.get("search_set") == "exploration")
+    actual_apply = sum(
+        1
+        for r in items
+        if isinstance(r, dict)
+        and r.get("search_set") == "exploration"
+        and r.get("classification") == "apply_candidate"
+    )
+
+    result_count = exploration.get("result_count")
+    apply_count = exploration.get("apply_candidate_count")
+
+    if performed:
+        if isinstance(result_count, bool) or not isinstance(result_count, int):
+            result.add_error(
+                f"{path}.result_count", f"result_count は整数でなければならない（実値: {result_count!r}）"
+            )
+        elif result_count != actual_results:
+            result.add_error(
+                f"{path}.result_count",
+                f"実際の件数（search_set=exploration の results、{actual_results}件）と一致しない"
+                f"（記載: {result_count!r}）",
+            )
+        if isinstance(apply_count, bool) or not isinstance(apply_count, int):
+            result.add_error(
+                f"{path}.apply_candidate_count",
+                f"apply_candidate_count は整数でなければならない（実値: {apply_count!r}）",
+            )
+        elif apply_count != actual_apply:
+            result.add_error(
+                f"{path}.apply_candidate_count",
+                f"実際の件数（search_set=exploration かつ apply_candidate、{actual_apply}件）と一致しない"
+                f"（記載: {apply_count!r}）",
+            )
+    else:
+        if result_count is not None:
+            result.add_error(
+                f"{path}.result_count", "performed が false の場合、result_count は null でなければならない"
+            )
+        if apply_count is not None:
+            result.add_error(
+                f"{path}.apply_candidate_count",
+                "performed が false の場合、apply_candidate_count は null でなければならない",
+            )
+        search_sets = document.get("search_sets")
+        if isinstance(search_sets, dict) and search_sets.get("exploration") is not None:
+            result.add_error(path, "探索集合があるのに未実施と記録している")
+
+
 def _validate_threshold_refs(document: dict, profile: Any, result: ValidationResult) -> None:
-    """--profile 指定時: threshold_ref の実在と level の一致を検査する。"""
+    """--profile 指定時: threshold_ref の実在と level の一致、および軸ごとの必須度との整合を検査する。"""
     if not isinstance(profile, dict):
         return
     axis_block = profile.get("job_change_axis")
@@ -950,17 +1241,33 @@ def _validate_threshold_refs(document: dict, profile: Any, result: ValidationRes
         return
 
     levels: dict[str, str] = {}
+    # 軸 id → profile 側でその軸に対応する条件・特性のうち最も厳しい level。
+    # 同じ軸に複数の条件・特性が対応しうる（例: hands_on と build_ops_ratio はどちらも
+    # hands_on_ratio）ため、最も厳しい方を採る。
+    axis_levels: dict[str, str] = {}
+
+    def _tighten_axis(axis: Any, level: str) -> None:
+        if axis not in SCREENING_AXES:
+            return
+        current = axis_levels.get(axis, "none")
+        if _LEVEL_STRICTNESS.get(level, 0) > _LEVEL_STRICTNESS.get(current, 0):
+            axis_levels[axis] = level
+
     conditions = axis_block.get("conditions")
     if isinstance(conditions, list):
         for condition in conditions:
             if isinstance(condition, dict) and _is_nonempty_str(condition.get("id")):
-                levels[condition["id"]] = condition.get("level", "")
+                level = condition.get("level", "")
+                levels[condition["id"]] = level
+                _tighten_axis(condition.get("axis"), level)
     preferences = axis_block.get("work_character_preferences")
     if isinstance(preferences, list):
         for preference in preferences:
             if isinstance(preference, dict) and _is_nonempty_str(preference.get("trait")):
                 desire = preference.get("desire")
-                levels[preference["trait"]] = "must" if desire == "must" else "want"
+                level = _DESIRE_TO_LEVEL.get(desire, "none")
+                levels[preference["trait"]] = level
+                _tighten_axis(_TRAIT_TO_AXIS.get(preference["trait"]), level)
     if not levels:
         return
 
@@ -972,19 +1279,31 @@ def _validate_threshold_refs(document: dict, profile: Any, result: ValidationRes
         if not isinstance(judgements, list):
             continue
         for j, judgement in enumerate(judgements):
-            if not isinstance(judgement, dict) or judgement.get("level") not in ("must", "want"):
+            if not isinstance(judgement, dict):
                 continue
-            ref = judgement.get("threshold_ref")
-            path = f"results[{i}].axis_judgements[{j}].threshold_ref"
-            if not _is_nonempty_str(ref):
-                continue
-            if ref not in levels:
-                result.add_error(path, f"profile に存在しない条件・特性を参照している: {ref}")
-            elif levels[ref] != judgement.get("level"):
-                result.add_error(
-                    path,
-                    f"profile での必須度（{levels[ref]}）と level（{judgement.get('level')}）が一致しない",
-                )
+            level = judgement.get("level")
+            path = f"results[{i}].axis_judgements[{j}]"
+            if level in ("must", "want"):
+                ref = judgement.get("threshold_ref")
+                if not _is_nonempty_str(ref):
+                    continue
+                if ref not in levels:
+                    result.add_error(f"{path}.threshold_ref", f"profile に存在しない条件・特性を参照している: {ref}")
+                elif levels[ref] != level:
+                    result.add_error(
+                        f"{path}.threshold_ref",
+                        f"profile での必須度（{levels[ref]}）と level（{level}）が一致しない",
+                    )
+            elif level == "none":
+                # level を none にすると、profile 側にその軸への条件・特性が無いことになる。
+                # 軸に must・want の必須度が実在するのに none へ緩めていれば、下流の分類が甘くなる。
+                required = axis_levels.get(judgement.get("axis"))
+                if required in ("must", "want"):
+                    result.add_error(
+                        f"{path}.level",
+                        f"profile での必須度は{required}だが、level が none になっている。"
+                        "対応する条件・特性のしきい値を threshold_ref に書く",
+                    )
 
 
 def validate(
@@ -1055,6 +1374,16 @@ def validate(
         _validate_screening(document, result)
         if profile is not None:
             _validate_threshold_refs(document, profile, result)
+
+    if version == _V22_SCHEMA_VERSION:
+        _validate_search_sets(document, valid_mode, result)
+        search_sets = document.get("search_sets")
+        exploration_defined = isinstance(search_sets, dict) and search_sets.get("exploration") is not None
+        if isinstance(results, list):
+            for i, item in enumerate(results):
+                _validate_v22_result_item(item, i, exploration_defined, result)
+        _validate_screening_exploration(document, results, result)
+        _validate_search_log_exploration_link(document, results, result)
 
     if pii_terms is None:
         result.add_warning(
