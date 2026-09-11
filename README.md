@@ -16,7 +16,7 @@
 | `job-change-self-analysis` | 行動の記録・他者からの評価・行動傾向の聞き取りをもとに自己分析を進めます | `self_analysis.json` |
 | `job-change-job-search` | Web 検索で求人を集め、掲載ページの引用と出典 URL を付けます | `job_search_results.json` |
 | `job-change-company-research` | 求人を起点に企業を調べます | `job_posting.json`・`company_research.json` |
-| `job-change-fit-assessment` | 条件と本人評価基準を紐づけます | `fit_assessment.json`・`time_analysis.json` |
+| `job-change-fit-assessment` | 条件と本人が決めた評価基準を紐づけます | `fit_assessment.json`・`time_analysis.json` |
 | `job-change-documents` | 職務経歴書・履歴書・志望動機などを作成します | `documents/` 配下の各書類 |
 | `job-change-exam-prep` | 筆記試験・適性検査の種別を調べ、対策を立てます | `exam_assessment.json`・`exam-prep-plan.md` |
 | `job-change-interview-prep` | 企業の面接について口コミ・採用ページを調べ、企業ごとの想定質問を作り、回答に評価を返します | `interview_intel.json`・`interview_questions.json`・`interview_evaluation.json`・`interview-prep-report.md` |
@@ -50,13 +50,13 @@
 
 Web 検索と Web 取得を持つ 6 体のエージェント（企業研究とその監査・求人票の取り込み・求人検索・試験情報の調査・面接情報の調査）は、`career-private/` 配下をコンテキストに加えないようにしています。
 
-この分離はエージェントへの指示と権限設計によるもので、個人情報が外部へ出ないということは保証できません。各人のハーネス設計に依存します。
+この分離はエージェントへの指示と権限設計によるものです。個人情報が外部へ出ないことは、このスキル群では保証できません。各人のハーネス設計に依存します。
 
 ## 導入
 
 Python 3.9 以上が必要です。
 
-Web searchと Web fetchの権限が必要です。
+Web 検索と Web 取得の権限が必要です。
 
 ### Claude Code
 
@@ -69,7 +69,7 @@ Web searchと Web fetchの権限が必要です。
 
 ### Codex
 
-`skills/job-change-*` の 9 ディレクトリを配置してください。手順書は [docs/install-codex.md](docs/install-codex.md) にあります。Codex 版は未テストです。
+`skills/job-change-*` の 9 ディレクトリを配置してください。手順書は [docs/install-codex.md](docs/install-codex.md) にあります。Codex 版は動作を確認していません。
 
 ## 使い方
 

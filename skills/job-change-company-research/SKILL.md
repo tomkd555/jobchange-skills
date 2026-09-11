@@ -24,7 +24,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 ## 目的と原則
 
-1. **すべての主張に出典とエビデンスレベルを付与する。** 企業情報の各主張（claim）には、出典URL・引用・エビデンスレベル（A=一次公式／B=信頼できる二次／C=口コミ集計／D=個人ブログ・伝聞・未確認）・確度（confidence）を付す。レベルの定義・判定基準・運用ルールの原本は `references/evidence-grading.md` にある。このファイルは hub と各エージェントも参照する原本である。
+1. **すべての主張に出典とエビデンスレベルを付与する。** 企業情報の各主張（claim）には、出典URL・引用・エビデンスレベル（A=一次公式／B=信頼できる二次／C=口コミ集計／D=個人ブログ・伝聞・未確認）・確度（confidence）を付す。レベルの定義・判定基準・運用ルールの原本は `references/evidence-grading.md` にある。hub と各エージェントも、このファイルを原本として参照する。
 
 2. **C・D単独で事実を断定しない。** 口コミ・伝聞（C・D）のみを根拠に事実を断定しない。C・D を根拠とする記述は限定表現で書く（「口コミでは〜という声がある。選択バイアスがあり傍証にとどめる」）。口コミは、集約された総合スコアであること・十分な件数があること・複数の情報源で照合できることの3つを条件に、傍証として用いる。個票、件数の少ない集計、評価項目ごとの個別スコアは、事実の断定に使わない。
 
@@ -63,7 +63,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 ## 中間成果物: company_research.json
 
-企業研究の判断はすべて `company_research.json` に集約する。出力先は `{DATA_ROOT}/companies/{企業スラッグ}/company_research.json` である（企業スラッグは企業別ディレクトリ名に使う識別子であり、形式の原本は job-change-support の `references/company-index-format.md` にある。Step 0 で `career-private/company_index.json` を引いて解決し、以後は再導出しない。例: 架空クラウドワークス株式会社 → `kakuu-cloudworks`、`S_アクメクラウド`）。
+企業研究の判断はすべて `company_research.json` に集約する。出力先は `{DATA_ROOT}/companies/{企業スラッグ}/company_research.json` である。企業スラッグは企業別ディレクトリ名に使う識別子であり、形式の原本は job-change-support の `references/company-index-format.md` にある。Step 0 で `career-private/company_index.json` を引いて解決し、以後は再導出しない（例: 架空クラウドワークス株式会社 → `kakuu-cloudworks`、`S_アクメクラウド`）。
 
 ```json
 {
@@ -100,9 +100,9 @@ topic は `philosophy`・`business`・`financials`・`compensation`・`benefits`
 
 ### Step 0.5 求人票の取り込み（必須）
 
-企業ごとの工程の最初である。ここで作る `job_posting.json` は、この後の企業研究と適合性評価が入力として読む。取り込みを飛ばして先へ進まない。
+求人票の取り込みは、企業ごとの工程の最初である。ここで作る `job_posting.json` は、この後の企業研究と適合性評価が入力として読む。取り込みを飛ばして先へ進まない。
 
-入口は4通りある。利用者が用意できる材料に応じて選び、いずれの場合も同じ `job_posting.json` を作る。仕様は `references/job-posting-format.md` にある。
+入口は4通りある。本スキルは、利用者が用意できる材料に応じて入口を選び、いずれの場合も同じ `job_posting.json` を作る。仕様は `references/job-posting-format.md` にある。
 
 | 入口 | `source_type` | 担い手 |
 |---|---|---|
@@ -128,7 +128,7 @@ topic は `philosophy`・`business`・`financials`・`compensation`・`benefits`
 
 3. `companies/{企業スラッグ}/_manifest.json` の `artifacts.job_posting` を `{updated_at: 取得日, source_url: 取り込んだ求人URL}` に更新する（後述「_manifest.json の更新」）。URL 以外の入口では `source_url` を null にする。
 
-取り込んだ求人票は、Step 1 の収集で選考プロセス・求める人物像の照合に使い、`job_posting.metrics`（年間休日・残業・有給取得率・付与日数）は company_research の `company_metrics` を補強する材料になる。
+取り込んだ求人票は、Step 1 の収集で選考プロセス・求める人物像の照合に使う。`job_posting.metrics`（年間休日・残業・有給取得率・付与日数）は、company_research の `company_metrics` を補強する材料になる。
 
 ### Step 1 収集・作成（job-change-company-researcher, opus）
 
@@ -142,7 +142,7 @@ topic は `philosophy`・`business`・`financials`・`compensation`・`benefits`
 
 **profile.json は渡さない**（原則5。researcher は WebSearch・WebFetch を持つため）。Step 0.5 で job_posting.json を作った場合は、その所在を指示書に渡し、選考プロセス・求める人物像の照合に使わせる。エージェントは `references/evidence-grading.md`・`references/company-research-format.md`・`references/source-catalog.md`・`references/philosophy-analysis.md`・`references/compensation-benefits.md`・`references/company-score-rubric.md` を原本とする。これらに従い、収集した主張を claims 配列へ集約する。平均年間給与・年間休日・月平均の残業時間・有給取得率・離職率などの数値は、文章の claim に埋めるだけでなく `company_metrics` へ構造化して格納する（単位・出典URL・レベル併記。確認できなければ value を null）。
 
-指示書で渡された軸の指標を優先して集め、`company_metrics` の各項目へ実測値と出典を書く（原則6。profile を要しない、企業側の事実の収集）。点数も格付けも付けない。重点観点として渡された事柄は、確認できた事実と出典を claims へ書く。自分で `validate_company_research.py` を PASS させてから返す（`company_metrics` の欠落・構造不正は ERROR になる）。これが本エージェントの責務である。
+指示書で渡された軸の指標を優先して集め、`company_metrics` の各項目へ実測値と出典を書く（原則6。profile を要しない、企業側の事実の収集）。点数も格付けも付けない。重点観点として渡された事柄は、確認できた事実と出典を claims へ書く。自分で `validate_company_research.py` を PASS させてから返す（`company_metrics` の欠落・構造不正は ERROR になる）。ここまでが本エージェントの責務である。
 
 ### Step 2 機械的な検証
 
@@ -173,7 +173,7 @@ verdict が `BLOCK` の場合、または severity=重大の finding があれ�
 
 company_research.json を、人が読める企業研究レポート `companies/{企業スラッグ}/company-research-report.md` へ整形して納品する。
 
-- 冒頭に、軸ごとの実測値と単位・出典・エビデンスレベル・時点を示す。確認できなかった軸は「確認できず」と書く。企業側の事実であり利用者との適合ではない旨と、点数化と総合点は適合性評価が算出する旨を1文ずつ添える。
+- 冒頭に、軸ごとの実測値と単位・出典・エビデンスレベル・時点を示す。確認できなかった軸は「確認できず」と書く。企業側の事実であって利用者との適合ではない旨と、点数化と総合点の算出は適合性評価が担う旨を、1文ずつ添える。
 - トピック別（理念・事業・財務・給与・福利厚生・働き方・評判・選考プロセス）に、主張＋出典＋レベル＋確度を読める形で並べる。
 - open_questions（裏取りできなかった論点・出所の食い違い・一次情報の代表性の限界）を明記する。
 - C・D を根拠とする記述は、レポート上でも限定表現を保つ（「口コミでは〜という声がある。傍証にとどめる」）。

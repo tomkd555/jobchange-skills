@@ -175,11 +175,11 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 
 ### 必須条件の件数
 
-「必須条件は3件程度まで」のルールは、`conditions[level=must]` と `work_character_preferences[desire=must]` の**合計**で数える。合計が4件以上なら WARN とする。
+「必須条件は3件程度まで」というルールでは、`conditions[level=must]` と `work_character_preferences[desire=must]` の**合計**で数える。合計が4件以上なら WARN とする。
 
 ### 年収の扱い
 
-譲れない年収下限は `conditions`（`axis=salary_condition`）に、希望額は `salary.desired` に置く。前者は求人検索のしきい値として使い、後者は適合性評価の報酬次元が使う。下限が希望額を上回る場合は WARN とする。
+譲れない年収下限は `conditions`（`axis=salary_condition`）に、希望額は `salary.desired` に置く。前者は求人検索がしきい値として使い、後者は適合性評価の報酬次元が使う。下限が希望額を上回る場合は WARN とする。
 
 ## company_score_axes（2.0）
 
@@ -239,7 +239,7 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 
 重みを配分したあとは、架空2社の比較で検算する。配分した重みで2社を採点し、「実際にどちらを選ぶか」という問いへの答えと点数の高い側が一致するかを確かめる（手順は company-score-rubric.md にある）。
 
-申告した軸が、`job_change_axis` の必須条件（`conditions[level=must]`）や作業特性の希望度（`work_character_preferences`）と食い違うことがある。その場合、どちらが本当かをこの文書の側で決めない。両方を利用者へ提示し、本人に選ばせる。
+申告した軸が、`job_change_axis` の必須条件（`conditions[level=must]`）や作業特性の希望度（`work_character_preferences`）と食い違うことがある。その場合、どちらが本当かをスキルの側で決めない。両方を利用者へ提示し、本人に選ばせる。
 
 配列が無い場合は、採点する軸の申告が無いものとして扱う。企業スコアは算出せず、軸と重みを仮定して採点しない。
 

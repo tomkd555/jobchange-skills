@@ -1,6 +1,6 @@
 # Codex への導入
 
-この文書は、AI エージェント（Codex）に読ませて実行させることを想定して書いてある。利用者は「`docs/install-codex.md` のとおりに導入して」と伝えるだけでよい。各手順には、成功したかどうかを機械的に判定できる完了条件を付けてある。
+この文書は、利用者が AI エージェント（Codex）に読ませて実行させることを想定して書いてある。利用者は「`docs/install-codex.md` のとおりに導入して」と伝えるだけでよい。各手順には、成功したかどうかを機械的に判定できる完了条件を付けてある。
 
 ## 前提
 
@@ -61,7 +61,7 @@ ls "$HOME"/.agents/skills/job-change-*/references/roles/*.md | wc -l
 python "$HOME/.agents/skills/job-change-support/scripts/jc_config.py" --init --data-root /absolute/path/to/job-change-data
 ```
 
-`~/.job-change/config.json` が作られる。既に設定がある場合は上書きせず終了コード 1 を返すので、その場合は既存の設定をそのまま使う。
+`jc_config.py` が `~/.job-change/config.json` を作る。既に設定がある場合は上書きせず終了コード 1 を返すので、その場合は既存の設定をそのまま使う。
 
 **完了条件。** 次のコマンドが終了コード 0 を返し、`"status": "ok"` と `data_root` を含む JSON を出力する。
 

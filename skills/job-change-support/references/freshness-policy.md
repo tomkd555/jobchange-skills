@@ -42,7 +42,7 @@
 
 `artifacts` には、上記2件のほかに、`exam_assessment` などの成果物を `{updated_at: "YYYY-MM-DD"}` の形で自由に追加してよい。記録してよいのは成果物名と日付だけであり、個人情報とその派生値は書かない（原本は `pii-boundary.md`）。`check_freshness.py` は `job_posting`・`company_research` の2件は常に判定の対象とする。
 
-これに加えて、次の任意成果物は、`artifacts` に記録がある場合に限り判定する。記録が無い場合と、値が `null` の場合（未取得の明示）は `missing` にせず、判定結果に現れない。記録があって `updated_at` が欠落・不正な場合、またはオブジェクトでない場合は `missing` とする。上記以外のキーは判定せず読み飛ばす。
+これに加えて、次の任意成果物は、`artifacts` に記録がある場合に限り判定する。記録が無い場合と、値が `null` の場合（未取得の明示）は `missing` とせず、判定結果にも出さない。記録があって `updated_at` が欠落・不正な場合、またはオブジェクトでない場合は `missing` とする。上記以外のキーは判定せず読み飛ばす。
 
 | 任意成果物 | 書き手 | TTL（日） |
 |---|---|---|
@@ -52,12 +52,12 @@
 
 ## トピック名と TTL 対応表
 
-`company_research.topics` のキーは、`job-change-company-research` スキルの `references/company-research-format.md` が定める8種のトピック名と一致させる。TTL（日数）はトピックの性質で決める。性質は、報道・ニュース、給与・福利厚生・働き方、理念・事業の3つに分け、対応は次のとおりとする。
+`company_research.topics` のキーは、`job-change-company-research` スキルの `references/company-research-format.md` が定める8種のトピック名と一致させる。TTL（日数）はトピックの性質で決める。性質を、報道・ニュース、給与・福利厚生・働き方、理念・事業の3つに分ける。トピックごとの対応は次のとおりである。
 
 | topic | 分類 | TTL（日） |
 |---|---|---|
-| `philosophy` | 恒常系 | 365 |
-| `business` | 恒常系 | 365 |
+| `philosophy` | 理念・事業系 | 365 |
+| `business` | 理念・事業系 | 365 |
 | `financials` | 給与・福利厚生・働き方系 | 180 |
 | `compensation` | 給与・福利厚生・働き方系 | 180 |
 | `benefits` | 給与・福利厚生・働き方系 | 180 |
@@ -69,7 +69,7 @@
 
 ## 判定規則
 
-判定の基準日は `--today` に指定した日付で、未指定なら実行時点の日付である。`check_freshness.py` はこの基準日と各成果物の最終日付との経過日数を求め、経過日数が TTL 以下であれば `fresh`、TTL を超えていれば `stale` とする。TTL ちょうどは `fresh` 側に含める。
+判定の基準日は `--today` に指定した日付で、未指定なら実行時点の日付である。`check_freshness.py` はこの基準日と各成果物の最終更新日との経過日数を求め、経過日数が TTL 以下であれば `fresh`、TTL を超えていれば `stale` とする。TTL ちょうどは `fresh` 側に含める。
 
 - `job_posting`: `artifacts.job_posting` が無い・`null`、または `updated_at` が欠落・不正な日付形式の場合は `missing` とする。それ以外は `updated_at` と TTL=30日で判定する。
 - `company_research`: `artifacts.company_research` が無い・`null` の場合、トピック単位の判定は行わず `company_research` 全体を `missing` とする。存在する場合は、`topics` 配下の各トピックについて `last_researched` の有無・形式を確認する。欠落・不正な場合はそのトピックを `missing` とし、それ以外は対応表の TTL で `fresh`/`stale` を判定する。`topics` が無い・`null`・オブジェクト以外の場合は、トピック単位の判定は行わず `company_research` 全体を `missing` とする。`topics` が空のオブジェクトの場合は、トピックが1件も無いものとして扱い、判定対象にしない。

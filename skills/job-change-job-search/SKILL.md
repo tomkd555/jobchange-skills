@@ -25,7 +25,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 ## 目的と原則
 
-1. **無償の公開Web検索だけで探す。** 有償の求人API・会員限定の非公開求人には依存しない。検索方法のカタログは `references/query-catalog.md` にある。求人ページの開き方の3系統・サイト別のURL文法と制約・対象外にしたサイトとその理由・取得の可否を決める規則・クエリの展開規則・年収下限の再判定・重複の排除・相場の基準線・関連情報の取得先・掲載終了の確認を載せる。会員登録が必要な求人を範囲外にした場合は、成果物の `coverage_notes` に記す。robots.txt が AI クローラーの取得を明示的に拒んでいるサイトは、取得が技術的に通っても対象外とする。
+1. **無償の公開Web検索だけで探す。** 有償の求人API・会員限定の非公開求人には依存しない。検索方法のカタログは `references/query-catalog.md` にある。求人ページの開き方の3系統・サイト別のURL文法と制約・対象外にしたサイトとその理由・取得の可否を決める規則・クエリの展開規則・年収下限の再判定・重複の排除・相場の基準線・関連情報の取得先・掲載終了の確認を載せる。会員登録が必要な求人を範囲外にした場合は、成果物の `coverage_notes` に記す。robots.txt が AI クローラーの取得を明示的に拒んでいるサイトは、技術的に取得できても対象外とする。
 
 2. **掲載ページの引用と出典URLを付す。** 各求人には、掲載ページからの引用（`quote`）と出典URL（`url`）・掲載サイト名（`source_site`）を必ず付す。取得できない求人を創作しない。給与が「応相談」等で数値が読めない場合は `salary_range` を `null` にする。
 
@@ -133,7 +133,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 - hub の絶対パス `{HUB_SKILL_DIR}`（`references/screening-axes.md`・`references/market-data-sources.md` の所在）。
 - **観測層まで**を書く指示。観測層は、`duty_items` の引用文と分類、8軸の `axis_observations`、実行したクエリの `search_log`、求人ごとの `search_set`・`role_match`・`related_info`、トップレベルの `search_sets` を指す。similar_better ではこれに、6軸の `baseline_comparison.axes` と `improvement_axes` の転記が加わる。判定層（`baseline_comparison.overall` を含む）と `screening` は書かせない。
 
-**profile.json は渡さない**（原則5。searcher は WebSearch・WebFetch を持つ）。残業の上限・年間休日の下限・作業特性の希望といったしきい値も同じである。これらは本人の条件であり、判定はスキル本体が Step 3.5 で行う。すでに匿名化条件として許容されている `salary_min` だけは例外とし、検索条件に含めてよい。
+**profile.json は渡さない**（原則5。searcher は WebSearch・WebFetch を持つ）。残業の上限・年間休日の下限・作業特性の希望といったしきい値も渡さない。これらは本人の条件であり、判定はスキル本体が Step 3.5 で行う。すでに匿名化条件として許容されている `salary_min` だけは例外とし、検索条件に含めてよい。
 
 エージェントは `references/query-catalog.md` の検索方法に従って求人を集める。job_search_results.json は `references/job-search-format.md` の形式で作る。8軸と業務分類の語彙は `{HUB_SKILL_DIR}/references/screening-axes.md` を読む。
 
@@ -164,7 +164,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 python {SKILL_DIR}/scripts/validate_job_search_results.py {results.json} --profile {DATA_ROOT}/career-private/profile.json
 ```
 
-`--profile` により、スキーマ検査に加えて PII リント（現勤務先名・氏名・現年収の混入検出）が働く。ERROR が1件でもあれば FAIL である。PII 混入の ERROR が出た場合は、混入箇所を成果物から除去してから再検証する（匿名化の漏れであり、そのまま納品しない）。PASS（ERROR 0件）を確認してから納品する。profile.json の読み取りはこの検証のためのローカル処理に閉じ、外部へ送信しない。
+`--profile` を付けると、スキーマ検査に加えて PII リント（現勤務先名・氏名・現年収の混入検出）も実行する。ERROR が1件でもあれば FAIL である。PII 混入の ERROR が出た場合は、混入箇所を成果物から除去してから再検証する（匿名化の漏れであり、そのまま納品しない）。PASS（ERROR 0件）を確認してから納品する。profile.json の読み取りはこの検証のためのローカル処理に閉じ、外部へ送信しない。
 
 ### Step 5 納品と接続
 
@@ -212,7 +212,7 @@ similar_better では各求人の `better_points`（基準求人より改善し�
 | ゲート | 通過条件と差し戻し先 |
 |---|---|
 | Step 4 の機械的な検証・PII リント | `validate_job_search_results.py --profile` が PASS（ERROR 0件）でなければ納品しない。PII 混入の ERROR は匿名化の漏れであり、成果物から除去してから再検証する。 |
-| 応募推奨 | `screening.recommendation` が `応募推奨なし` の場合、既定では企業研究・適合性評価へ接続しない。必須条件の見直し（`job-change-profile` の条件更新）、または検索条件・検索経路の見直しへ戻す。応募候補が0件のときに、除外候補や追加調査候補から最有力候補を仕立てない。**例外**: 満たさない必須条件を求人ごとにすべて列挙したうえで、利用者が特定の求人について先へ進むことを明示的に希望した場合は、その求人を企業研究へ接続してよい。この判定の材料は求人票の記載だけであり、判定そのものが企業研究や面接で覆りうるためである。接続する場合は、どの必須条件が未充足のままかを引き継ぎに明記する。利用者が希望していないのに、本スキルから接続を提案しない。 |
+| 応募推奨 | `screening.recommendation` が `応募推奨なし` の場合、既定では企業研究・適合性評価へ接続しない。必須条件の見直し（`job-change-profile` の条件更新）、または検索条件・検索経路の見直しへ戻す。応募候補が0件のときに、除外候補や追加調査候補から最有力候補を仕立てない。**例外**: 満たさない必須条件を求人ごとにすべて列挙したうえで、利用者が特定の求人について先へ進むことを明示的に希望した場合は、その求人を企業研究へ接続してよい。この判定の材料は求人票の記載だけであり、判定そのものが企業研究や面接で覆りうるためである。接続する場合は、どの必須条件が未充足のままかを引き継ぎに明記する。利用者が希望を示していない場合は、本スキルから接続を提案しない。 |
 | フォールバックの明示 | `screening.recommendation` が `判定不能`（profile が 1.x）の場合、判定できていない旨を明示する。分類結果を「応募候補」として提示せず、`job-change-profile` での条件の構造化を案内する。 |
 
 ## 役割の実行（ハーネス別）
@@ -243,7 +243,7 @@ python {SKILL_DIR}/scripts/validate_job_search_results.py {results.json} --json
 python {SKILL_DIR}/scripts/validate_job_search_results.py {results.json} --profile {DATA_ROOT}/career-private/profile.json
 ```
 
-`--json` は結果を JSON 形式（`status`・`error_count`・`warning_count`・`errors`・`warnings`）で出力する。`--profile` を付けると、PII リント（現勤務先名・氏名・現年収の混入検出）が加わる。さらに `threshold_ref` が profile の条件・特性に実在するか、`level` が profile の必須度と一致するかも検査する。`--profile` を付けずに実行すると、それらが未実施である旨の WARN が出る。記述例は `assets/` にある。fuzzy は `job_search_results_example.json`、similar_better は `job_search_results_similar_better_example.json` である。フィールド仕様と検証規則の原本は `references/job-search-format.md` である。単体テストは次で実行する。
+`--json` は結果を JSON 形式（`status`・`error_count`・`warning_count`・`errors`・`warnings`）で出力する。`--profile` を付けると、PII リント（現勤務先名・氏名・現年収の混入検出）が加わる。さらに `threshold_ref` が profile の条件・特性に実在するか、`level` が profile の必須度と一致するかも検査する。`--profile` を付けずに実行すると、PII リントとしきい値の突き合わせが未実施である旨の WARN が出る。記述例は `assets/` にある。fuzzy は `job_search_results_example.json`、similar_better は `job_search_results_similar_better_example.json` である。フィールド仕様と検証規則の原本は `references/job-search-format.md` である。単体テストは次で実行する。
 
 ```bash
 cd {SKILL_DIR} && python -m unittest discover -s scripts/tests

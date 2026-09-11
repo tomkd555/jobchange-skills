@@ -58,7 +58,7 @@ self_analysis.json は、profile.json（利用者データの原本。hub が管
 | `result` | string | 必須 | 結果。欠落・空は ERROR |
 | `metric` | string または null | 任意 | 定量値（例「応答時間を62%短縮」）。定量化できない場合は `null` |
 | `reproducibility` | string または null | 任意 | 環境が変わっても機能する根拠（再現性）。企業は行動プロセスの再現性を見極める。このため、可能な範囲で書く |
-| `emotion_note` | string または null | 任意 | 当時のモチベーション・感情の記録。感情の将来予測ではなく、当時の記録に限る |
+| `emotion_note` | string または null | 任意 | 当時のモチベーション・感情の記録。将来の感情の予測は書かない |
 
 - `metric` は可能な限り定量値で埋める。全エピソードを通して `metric` が1件もない場合、検証スクリプトは WARN を出す。
 - `situation`・`action`・`result` の3つはエピソードの骨格であり、いずれかが欠けるとエピソードとして成立しないため ERROR とする。
@@ -75,7 +75,7 @@ self_analysis.json は、profile.json（利用者データの原本。hub が管
 | `context` | string | 任意 | いつ・どの場面で受け取ったか |
 | `linked_episode_ids` | array | 任意 | 関連する behavioral_episodes の id の配列 |
 
-- フィードバックの受け取りは課題志向で行う。「どの行動が、どの結果につながったか」の形で記録し、「あなたはこういう人だ」という人格評価をそのまま記録しない。
+- フィードバックの受け取りは課題志向で行う。
 
 ## interests
 
@@ -83,7 +83,7 @@ self_analysis.json は、profile.json（利用者データの原本。hub が管
 
 | フィールド | 型 | 意味・記入基準 |
 |---|---|---|
-| `domains` | array | 興味領域の文字列の配列。RIASEC の6領域名（Realistic・Investigative・Artistic・Social・Enterprising・Conventional）等を軸名として使う |
+| `domains` | array | 興味領域の文字列の配列。RIASEC の6領域名（Realistic・Investigative・Artistic・Social・Enterprising・Conventional）を軸名として使う |
 | `concrete_topics` | array | 具体的な関心事の文字列の配列 |
 
 ## values
@@ -93,7 +93,7 @@ self_analysis.json は、profile.json（利用者データの原本。hub が管
 | フィールド | 型 | 意味・記入基準 |
 |---|---|---|
 | `value` | string | 価値観の記述 |
-| `evidence_episode_ids` | array | 裏付けとなる behavioral_episodes の id の配列。内省単独に高い重みを与えないため、可能な限りエピソードへ対応づける |
+| `evidence_episode_ids` | array | 裏付けとなる behavioral_episodes の id の配列。内省だけに重きを置かないため、可能な限りエピソードへ対応づける |
 
 ## career_adaptability
 
@@ -137,7 +137,7 @@ career adaptability の4次元。次元名の枠組みのみを用い、尺度�
 | フィールド | 型 | 必須/任意 | 意味・記入基準 |
 |---|---|---|---|
 | `markers` | array | 必須 | 自己申告の配列。0件でもよい。後述 |
-| `presentation` | string または null | 任意 | 自己申告と証拠を突き合わせた描写文。型やタイプの名称で分類しない。過去形・エピソード対応づけで書く |
+| `presentation` | string または null | 任意 | 自己申告と証拠を突き合わせた描写文。型やタイプの名称で分類しない。過去形でエピソードへ対応づけて書く |
 
 ### markers
 
@@ -147,13 +147,13 @@ career adaptability の4次元。次元名の枠組みのみを用い、尺度�
 |---|---|---|---|
 | `id` | string | 必須 | 識別子（例 `pm-1`）。欠落・空は ERROR。重複は WARN |
 | `construct` | string | 必須 | 構成概念の識別子。`references/personality-guide.md` の「構成概念の語彙」の表にある識別子のいずれか。他の値は ERROR |
-| `options` | array | 任意 | 提示した選択肢をそのまま記録した文字列の配列（2〜4件。二者択一の質問では4件、提示した選択肢の全文言を含む）。あれば `response` はこの中のいずれかでなければならない（不一致は ERROR）。Other 等で自由記述に置き換えた場合は `options` を省く |
+| `options` | array | 任意 | 提示した選択肢をそのまま記録した文字列の配列（2〜4件。二者択一の質問では4件、提示した選択肢の全文言を含む）。あれば `response` はこの中のいずれかでなければならない（不一致は ERROR）。Other を選んで自由記述に置き換えた場合は `options` を省く |
 | `response` | string | 必須 | 本人が選んだ選択肢の文。欠落・空は ERROR |
 | `linked_episode_ids` | array | 任意 | その傾向が表れた behavioral_episodes の id の配列。実在しない id は ERROR |
 | `feedback_ids` | array | 任意 | 同じ傾向についての others_feedback の id の配列。実在しない id は ERROR |
 | `note` | string または null | 任意 | 自己申告と他者証言の食い違いなど、補足 |
 
-- `linked_episode_ids` と `feedback_ids` が両方とも空の自己申告は、自己申告だけの記録として WARN を出す。成果物としては成立する。
+- `linked_episode_ids` と `feedback_ids` が両方とも空の自己申告には、検証スクリプトが WARN を出す（自己申告だけの記録）。成果物としては成立する。
 - `presentation` に型やタイプの名称（「〜型です」「〜タイプです」「〜型である」など）が含まれる場合は WARN とする。
 
 ## strengths
@@ -184,11 +184,11 @@ career adaptability の4次元。次元名の枠組みのみを用い、尺度�
 
 ## reason_for_change
 
-退職・転職理由。不満の列挙ではなく、発揮したい価値を軸にした建設的な言い換えへ変換する。narrative-guide.md を参照する。
+退職・転職理由。不満の列挙を、発揮したい価値を軸にした建設的な言い換えへ変換する。narrative-guide.md を参照する。
 
 | フィールド | 型 | 必須/任意 | 意味・記入基準 |
 |---|---|---|---|
-| `raw_reasons` | array | 必須 | 元の理由（不満を含む素の理由）の配列。1件以上必須（空は ERROR） |
+| `raw_reasons` | array | 必須 | 元の理由（不満を含む、加工していない理由）の配列。1件以上必須（空は ERROR） |
 | `constructive_version` | string | 必須 | 発揮したい価値を軸にした説明。欠落・空は ERROR |
 | `consistency_note` | string | 任意 | profile.json の `job_change_axis.reasons` との整合の説明 |
 

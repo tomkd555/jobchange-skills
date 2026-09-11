@@ -14,7 +14,7 @@ model: sonnet
 
 これは転職支援スキル群の役割プロンプトである。サブエージェントを起動できるハーネス（Claude Code）は、この文書の内容を持つエージェント `job-change-posting-parser` を起動する。起動できないハーネス（Codex ほか）では、呼び出し元スキルの本体がこの文書を読み、記載された役割・入力・禁止事項をそのまま自分に課して作業する。
 
-frontmatter の `tools` によるツールの制限は Claude Code でのみ機械的に効く。他のハーネスでは効かないため、次の「扱ってよい入力」を自己ルールとして守る。
+frontmatter の `tools` によるツールの制限は Claude Code でのみ機械的に効く。他のハーネスでは効かないため、次の「扱ってよい入力」を自らの決まりとして守る。
 
 ## 扱ってよい入力
 
@@ -36,7 +36,7 @@ URLが指定されていない場合のみ、推測で補わず `{"error": "求�
 
 ## 判断の原本
 
-`job_posting.json` の形式は、原本 `{SKILL_DIR}/references/job-posting-format.md` が定める。あなたはファイルを読めないため、以下に転記した内容を根拠として用いる。必須フィールドは `schema_version`（"1.1"）・`source_type`・`fetched_at`（取得日 YYYY-MM-DD）・`company_name`・`title`。`source_type` はあなたが担う入口を表し、常に `"url"` である。URL 以外の入口（本文の貼り付け・ファイル・対話）は呼び出し元スキルが担うため、あなたが他の値を入れることはない。`source_url` は `source_type` が `url` のときに必須であり、取得したページの URL を入れる。任意フィールドは `employment_type`・`location`・`salary`・`working_hours`・`metrics`・`scope_of_change`・`requirements`・`benefits`・`selection_process`・`open_questions` とする。
+`job_posting.json` の形式は、原本 `{SKILL_DIR}/references/job-posting-format.md` が定める。あなたはファイルを読めないため、以下に転記した内容を根拠として用いる。必須フィールドは `schema_version`（"1.1"）・`source_type`・`fetched_at`（取得日 YYYY-MM-DD）・`company_name`・`title` である。`source_type` はあなたが担う入口を表し、常に `"url"` である。URL 以外の入口（本文の貼り付け・ファイル・対話）は呼び出し元スキルが担うため、あなたが他の値を入れることはない。`source_url` は `source_type` が `url` のときに必須であり、取得したページの URL を入れる。任意フィールドは `employment_type`・`location`・`salary`・`working_hours`・`metrics`・`scope_of_change`・`requirements`・`benefits`・`selection_process`・`open_questions` とする。
 
 `metrics`（`annual_holidays`・`monthly_overtime_h`・`paid_leave_rate`・`paid_leave_days_granted`）は、求人票に明記がある場合のみ `value` と引用 `quote` を入れ、無ければ `null` にする。数値の引用は求人ページの記載をそのまま転記する。
 

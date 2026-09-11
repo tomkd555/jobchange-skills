@@ -17,13 +17,13 @@ allowed-tools: Read, Write, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
 
 # job-change-interview-prep
 
-転職の面接対策を行うとき、本スキルが想定質問の生成・模擬面接・回答評価・総括までの手順を定める。転職支援 hub（job-change-support）の面接対策として振り分けられて起動される。対象は日本の中途採用面接を中心とし、外資系のビヘイビアラル面接・ケース面接へ対応する。
+転職の面接対策を行うとき、本スキルが想定質問の生成・模擬面接・回答評価・総括までの手順を定める。本スキルは、転職支援 hub（job-change-support）が面接対策として振り分けたときに起動する。対象は日本の中途採用面接を中心とし、外資系のビヘイビアラル面接・ケース面接へ対応する。
 
-対象企業の面接についての調査（Step 0.9）は専用エージェント job-change-interview-scout（sonnet）が、想定質問の生成（Step 1）と回答の評価（Step 3）は専用エージェント job-change-interview-coach（opus）が担う。本スキルはその起動、模擬面接の進行、総括を担う。
+対象企業の面接についての調査（Step 0.9）は専用エージェント job-change-interview-scout（sonnet）が、想定質問の生成（Step 1）と回答の評価（Step 3）は専用エージェント job-change-interview-coach（opus）が担う。本スキルは、両エージェントの起動、模擬面接の進行、総括を担う。
 
 ## 目的と原則
 
-1. **企業固有の質問は company_research.json の claim と interview_intel.json を根拠とする。** 企業固有の想定質問は、対象企業の企業研究結果（company_research.json）の claims と、面接情報の調査結果（interview_intel.json）を根拠とする。前者では特に topic=selection_process（選考プロセス・面接体験記）と topic=philosophy（理念）の claims を、後者では報告された質問（`reported_questions`）・面接の形式（`format_facts`）・口コミの傾向（`themes`）を用いる。想定質問には出所（`provenance`: `general`=一般・`reported`=報告・`inferred`=推測）を付け、報告された質問はその言い回しのまま、推測した質問は推測である旨を添えて示す。出所と根拠の信頼度は別のものであり、1つの確度にまとめない（原本は `references/question-bank.md` の「想定質問の出所と示し方」）。company_research.json も interview_intel.json も無い場合は企業固有の質問を生成せず、企業非依存の一般対策へフォールバックする（フォールバックモード）。company_research.json があっても topic=selection_process の claims が0件で、interview_intel.json の `format_facts` も無い場合は、選考プロセスを前提とする質問を生成しない。面接の回数・形式・各段階の評価観点を既知として扱う質問がこれにあたる。この場合は topic=philosophy の claims だけを根拠に企業固有の質問を作る。そのうえで、選考プロセスの根拠が無い旨を利用者へ伝える（部分的なフォールバック）。claims が0件であることを、選考が単純であることの根拠にしない。就職差別につながるおそれのある事項に当たる質問は、どの出所からも想定質問として生成しない（一覧の原本は `references/question-bank.md` の「聞かれても答えなくてよい事項」）。`career-private/self_analysis.json` がある場合は、想定質問の生成と回答評価の入力に加える。`career-private/fit/{企業スラッグ}/fit_assessment.json` がある場合は、想定質問の生成の入力に加える。その `condition_fit` の `met: "unknown"` の項目と `overall.open_questions` は、逆質問・確認事項の質問素材として用いる。`companies/{企業スラッグ}/exam_assessment.json` がある場合は、特定された検査種別と選考の段取りを読む。面接が選考のどの段階にあたるかを判断する前提として用いる（任意入力。無くても進める）。
+1. **企業固有の質問は company_research.json の claim と interview_intel.json を根拠とする。** 企業固有の想定質問は、対象企業の企業研究結果（company_research.json）の claims と、面接情報の調査結果（interview_intel.json）を根拠とする。前者では特に topic=selection_process（選考プロセス・面接体験記）と topic=philosophy（理念）の claims を、後者では報告された質問（`reported_questions`）・面接の形式（`format_facts`）・口コミの傾向（`themes`）を用いる。想定質問には出所（`provenance`: `general`=一般・`reported`=報告・`inferred`=推測）を付け、報告された質問はその言い回しのまま、推測した質問は推測である旨を添えて示す。出所と根拠の信頼度は別のものであり、1つの確度にまとめない（原本は `references/question-bank.md` の「想定質問の出所と示し方」）。company_research.json も interview_intel.json も無い場合は企業固有の質問を生成せず、企業に依存しない一般対策へフォールバックする（フォールバックモード）。company_research.json があっても topic=selection_process の claims が0件で、interview_intel.json の `format_facts` も無い場合は、選考プロセスを前提とする質問を生成しない。面接の回数・形式・各段階の評価観点を既知として扱う質問がこれにあたる。この場合は topic=philosophy の claims だけを根拠に企業固有の質問を作る。そのうえで、選考プロセスの根拠が無い旨を利用者へ伝える（部分的なフォールバック）。claims が0件であることを、選考が単純であることの根拠にしない。就職差別につながるおそれのある事項に当たる質問は、どの出所からも想定質問として生成しない（一覧の原本は `references/question-bank.md` の「聞かれても答えなくてよい事項」）。`career-private/self_analysis.json` がある場合は、想定質問の生成と回答評価の入力に加える。`career-private/fit/{企業スラッグ}/fit_assessment.json` がある場合は、想定質問の生成の入力に加える。その `condition_fit` の `met: "unknown"` の項目と `overall.open_questions` は、逆質問・確認事項の質問素材として用いる。`companies/{企業スラッグ}/exam_assessment.json` がある場合は、特定された検査種別と選考の段取りを読む。面接が選考のどの段階にあたるかを判断する前提として用いる（任意入力。無くても進める）。
 
 2. **回答評価はアンカーで固定する。** 回答評価は STAR・具体性・一貫性・企業理解の4観点で行い、各観点を3段階（充足・一部・不足）で判定する。判定基準（アンカー）の原本は `references/evaluation-rubric.md` にある。job-change-interview-coach は Step 3 でこのファイルを読んで判定する。評価は原本のアンカーに従い、甘くも辛くもしない。一貫性の観点で根拠として参照する先には、profile.json の `job_change_axis` を含める。self_analysis.json がある場合は、その `career_narrative`（一貫する動機）と `reason_for_change`（建設的な言い換えと `job_change_axis.reasons` との整合の説明）も参照先へ加える。
 
@@ -45,7 +45,7 @@ allowed-tools: Read, Write, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
 
 利用者データの置き場所は設定ファイルの記述だけで決まる。既定の置き場所は無い。本文で `{DATA_ROOT}` と書いた箇所は、次のコマンドが返す `data_root` に読み替える。
 
-hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、作業のどの段階よりも先に次を実行する。
+hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、本スキルが作業のどの段階よりも先に次を実行する。
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/jc_config.py --show
@@ -61,7 +61,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 ## 中間成果物
 
-パイプラインの各段階で次を生成する。企業を特定して進める場合（company モード。企業スラッグが解決済み）は `{DATA_ROOT}/companies/{企業スラッグ}/` 配下へ保存する。対象企業を特定せずに起動された場合は企業スラッグが無いため、成果物は会話上で提示し、利用者が保存先を指定した場合のみ書き出す。フォールバックモード（企業固有の根拠が無い）は企業スラッグの有無とは別の区別であり、企業スラッグがあればフォールバックモードでも同じ配置先へ保存する。`interview_notes_user.md`・`interview_answers.json`・`interview_evaluation.json` は利用者の情報と回答をそのまま含み、`interview_questions.json`・`interview-prep-report.md` は profile と回答から導いた内容を含むため、いずれも個人情報である。ただし本スキルと job-change-interview-coach はいずれも Web 送信手段を持たない。これらを読む役割も本スキルの外には無く、Web 送信手段を持つ役割の役割プロンプトはこれらのファイルを読まないよう定めているため、他の成果物と同じ配置先に置く（境界の原本は `{HUB_SKILL_DIR}/references/pii-boundary.md`）。
+パイプラインの各段階で次を生成する。企業を特定して進める場合（company モード。企業スラッグが解決済み）は `{DATA_ROOT}/companies/{企業スラッグ}/` 配下へ保存する。対象企業を特定せずに起動された場合は企業スラッグが無いため、成果物は会話上で提示し、利用者が保存先を指定した場合のみ書き出す。フォールバックモード（企業固有の根拠が無い）は企業スラッグの有無とは別の区別であり、企業スラッグがあればフォールバックモードでも同じ配置先へ保存する。`interview_notes_user.md`・`interview_answers.json`・`interview_evaluation.json` は利用者の情報と回答をそのまま含み、`interview_questions.json`・`interview-prep-report.md` は profile と回答から導いた内容を含むため、いずれも個人情報である。ただし本スキルと job-change-interview-coach はいずれも Web 送信手段を持たない。これらを読む役割は本スキルの外に無い。Web 送信手段を持つ役割にも、これらのファイルを読まないよう役割プロンプトで定めている。そのため、他の成果物と同じ配置先に置く（境界の原本は `{HUB_SKILL_DIR}/references/pii-boundary.md`）。
 
 | ファイル | 内容 | 生成する Step |
 |---|---|---|
@@ -72,7 +72,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | `interview_evaluation.json` | 4観点の評価（job-change-interview-coach の Step 3 出力 JSON をトップレベルごと保存する） | Step 3 |
 | `interview-prep-report.md` | 観点別の強み・優先改善点・再演習の提案 | Step 4 |
 
-`interview_questions.json`・`interview_answers.json`・`interview_evaluation.json` の形式の原本は `references/interview-format.md` に、`interview_intel.json` の形式の原本は `references/interview-intel-format.md` にある。`interview_questions.json` と `interview_evaluation.json` は job-change-interview-coach の出力 JSON（Step 1・Step 3）にそのまま従う。`degraded`・`degraded_reason` を含むトップレベルごと保存する。`questions`・`evaluations` の配列だけを抽出して保存しない。`degraded` が落ちると、その質問群が企業固有のものか企業非依存のフォールバックかをファイルから判別できず、中断からの再開時に合否ゲートを再確認できないためである。
+`interview_questions.json`・`interview_answers.json`・`interview_evaluation.json` の形式の原本は `references/interview-format.md` に、`interview_intel.json` の形式の原本は `references/interview-intel-format.md` にある。`interview_questions.json` と `interview_evaluation.json` は job-change-interview-coach の出力 JSON（Step 1・Step 3）にそのまま従う。`degraded`・`degraded_reason` を含むトップレベルごと保存する。`questions`・`evaluations` の配列だけを抽出して保存しない。`degraded` が落ちると、その質問群が企業固有のものか、企業に依存しないフォールバックかをファイルから判別できず、中断からの再開時に合否ゲートを再確認できないためである。
 
 ## パイプライン
 
@@ -99,7 +99,7 @@ Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-chan
 企業スラッグが解決済みの場合に、対象企業の面接についての情報を Web から集める。対象企業を特定せずに起動された場合は行わない。
 
 1. `companies/{企業スラッグ}/interview_intel.json` の有無と鮮度を確かめる。`_manifest.json` に `artifacts.interview_intel` の記録があれば `check_freshness.py` が判定する（TTL と判定規則の原本は `{HUB_SKILL_DIR}/references/freshness-policy.md`）。`fresh` なら再調査せず既存の成果物を使う。`stale` または未取得なら次へ進む。
-2. 調査するかどうかを利用者へ確かめる。所要時間は Web 取得を伴う調査1回分であり、口コミサイトはログインなしで読める範囲に限られることを添える。利用者が要らないと言えば行わず、その旨を Step 4 の報告に書く。
+2. 調査するかどうかを利用者へ確かめる。所要時間が Web 取得を伴う調査1回分であることと、口コミサイトはログインなしで読める範囲に限られることを添える。利用者が不要と答えた場合は行わず、その旨を Step 4 の報告に書く。
 3. job-change-interview-scout（sonnet）を Agent ツールで起動する。指示書に次を渡す。
    - 企業名（`company_index.json` の正式名称と別名）と職種名（`job_posting.json` の職種名。無ければ利用者が指定した職種名）。
    - 出力先パス `{DATA_ROOT}/companies/{企業スラッグ}/interview_intel.json`。
@@ -122,7 +122,7 @@ Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-chan
 
 ### Step 2 模擬面接
 
-1. 本スキル（オーケストレーター）が、生成した想定質問を1問ずつ提示する。利用者の回答をテキストで収集し、回答ごとに次の質問へ進む。`provenance` が `reported` の質問を先に出し、`inferred` の質問は推測である旨を添えて出す。`配慮事項` は `notes` にのみ現れ、模擬面接では扱わない。`stage` が対象の選考段階と異なる質問は、利用者が求めない限り後回しにする。
+1. 本スキル（オーケストレーター）が、生成した想定質問を1問ずつ提示する。利用者の回答をテキストで収集し、回答ごとに次の質問へ進む。`provenance` が `reported` の質問を先に出し、`inferred` の質問は推測である旨を添えて出す。`配慮事項` は `notes` にだけ書く。模擬面接では扱わない。`stage` が対象の選考段階と異なる質問は、利用者が求めない限り後回しにする。
 2. 全問を課す必要はない。利用者が指定した範囲（質問類型・問数）で実施してよい。回答を受け取るごとに、`{"question_id": …, "answer": …, "answered_at": …}` の1件を `companies/{企業スラッグ}/interview_answers.json` の `answers` 配列へ追記保存する。企業スラッグが無い場合は会話上に保持する。`question_id` には、提示した質問の `interview_questions.json` での `id` をそのまま書く。`answer` には利用者の回答をそのまま転記し、要約・言い換えをしない。形式の原本は `references/interview-format.md` にある。
 3. この段階では評価・添削・言い換えをしない（評価は Step 3）。回答を誘導しない。
 4. Step 3 へ進む前に、`interview_answers.json` を `validate_interview_artifacts.py` で検証する（company モード時。ゲート）。`--questions` に `interview_questions.json` を渡し、`question_id` が質問側に実在することを確かめる。FAIL なら ERROR を解消してから Step 3 へ進む。
@@ -142,7 +142,7 @@ Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-chan
 
 1. 全評価を観点別に集計し、強み（充足の多い観点）と優先改善点（不足の観点と、その具体的な補い方）を整理する。改善案は `references/evaluation-rubric.md` のアンカーに沿い、STAR の欠落要素の補い方や、企業理解の反映方法を含める。
 2. 再演習の提案（評価の弱い観点・質問類型に絞った再度の模擬面接）を添える。
-3. 観点別の強み・優先改善点・再演習の提案を `interview-prep-report.md` にまとめる（company モード時は company フォルダーへ保存する）。総括の判断・改善案は評価アンカーと根拠参照に基づき、profile.json・company_research.json・interview_intel.json に無い事実を前提に置かない。報告書には、想定質問の出所の内訳（`general`・`reported`・`inferred` の件数）、`interview_questions.json` の `notes`（聞かれても答えなくてよい事項・選考段階の前提・古い出典の注記）、面接情報を調査しなかった場合はその旨を書く。
+3. 観点別の強み・優先改善点・再演習の提案を `interview-prep-report.md` にまとめる（company モード時は company フォルダーへ保存する）。総括の判断・改善案は評価アンカーと根拠参照に基づき、profile.json・company_research.json・interview_intel.json に無い事実を前提に置かない。報告書には、想定質問の出所の内訳（`general`・`reported`・`inferred` の件数）と、`interview_questions.json` の `notes`（聞かれても答えなくてよい事項・選考段階の前提・古い出典の注記）を書く。面接情報を調査しなかった場合は、その旨も書く。
 4. 報告書と最終メッセージはいずれも結論から述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
 
 ## 合否ゲートと差し戻し
@@ -183,7 +183,7 @@ model はエージェントの frontmatter に固定済みであり、起動時�
 
 ## スクリプトのCLI使用例
 
-本スキルの検証スクリプトは `validate_interview_intel.py` と `validate_interview_artifacts.py` の2本である。前者は Step 0.9 で保存した `interview_intel.json` を検証する。後者は Step 1・Step 2・Step 3 で保存した成果物を、それぞれ次のように検証する。検証対象の種別はトップレベルのキーから判別されるため、引数で指定しない。
+本スキルの検証スクリプトは `validate_interview_intel.py` と `validate_interview_artifacts.py` の2本である。前者は Step 0.9 で保存した `interview_intel.json` を検証する。後者は Step 1・Step 2・Step 3 で保存した成果物を、それぞれ次のように検証する。検証対象の種別は、スクリプトがトップレベルのキーから判別する。そのため引数では指定しない。
 
 ```bash
 python {SKILL_DIR}/scripts/validate_interview_intel.py {DATA_ROOT}/companies/{企業スラッグ}/interview_intel.json --json

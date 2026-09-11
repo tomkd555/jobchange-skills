@@ -10,7 +10,7 @@
 {DATA_ROOT}/career-private/fit/{企業スラッグ}/fit_assessment.json
 ```
 
-利用者プロファイル・自己分析に由来する派生値を含むため、非公開ディレクトリ `career-private/` 配下に置く。Web 送信手段（WebSearch・WebFetch）を持つエージェントへ渡してはならない。企業スラッグは `career-private/company_index.json` で解決済みの値をそのまま使う。形式の原本は job-change-support の `references/company-index-format.md` にある。
+利用者プロファイル・自己分析に由来する派生値を含むため、非公開ディレクトリ `career-private/` 配下に置く。Web 送信手段（WebSearch・WebFetch）を持つエージェントへ渡さない。企業スラッグは `career-private/company_index.json` で解決済みの値をそのまま使う。形式の原本は job-change-support の `references/company-index-format.md` にある。
 
 ## トップレベルの構造
 
@@ -106,7 +106,7 @@ evidence の各要素:
 | `basis` | string | 段階を分けた根拠（非空）。隣接技術の保有・学習量の見積もりなど |
 | `evidence` | array | 1件以上 |
 
-`skill_gap` は `skill_gap_items[].gap_level` の**最も重い段階と一致させる**（不一致は ERROR）。総合の見栄えを良くするために全体の段階だけを軽くする経路を塞ぐ。
+`skill_gap` は `skill_gap_items[].gap_level` の**最も重い段階と一致させる**（不一致は ERROR）。総合の見栄えを良くするために全体の段階だけを軽くすることを許さない。
 
 ## must_condition_results
 
@@ -132,7 +132,7 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 
 ## company_score
 
-応募先企業を 0〜100 点で採点した結果である。軸ごとの実測値は、企業研究が `company_research.json` の `company_metrics` へ書く。その実測値を、利用者が `profile.json` の `company_score_axes` で申告した軸と重みで採点した結果は、`profile.json` を読める適合性評価が `company_score` へ書く。
+応募先企業を 0〜100 点で採点した結果である。軸ごとの実測値は、企業研究の担当が `company_research.json` の `company_metrics` へ書く。その実測値を、利用者が `profile.json` の `company_score_axes` で申告した軸と重みで採点した結果は、`profile.json` を読める適合性評価の担当（fit-assessor）が `company_score` へ書く。
 
 算出は `scripts/calculate_company_score.py` が機械的に行う。定量候補軸9個・点数への換算・基準の決め方・重みの配分・総合点の規則の原本は、job-change-company-research の `references/company-score-rubric.md` にある。統計由来の既定基準の原本は `scripts/calculate_company_score.py` の定数 `DEFAULT_THRESHOLDS` である。
 
@@ -341,7 +341,7 @@ profile の `company_score_axes` のうち `kind` が `qualitative` の軸につ
 | `1.0` | 5次元（`skill_fit`・`condition_fit`・`culture_fit`・`compensation_fit`・`time_fit`）。`inputs` は4キー。`must_condition_results` に `ref` を要求しない。従来の規則のみを適用する |
 | `2.0` | 7次元。`inputs` は5キー。上記の 2.0 規則を追加で適用する |
 
-1.0 の成果物はそのまま検証を通る。企業別ディレクトリを恒久アーカイブとして扱う方針と整合させ、過去の評価を読めない状態にしない。1.0 で7次元の id を使う、2.0 で `skill_fit` を使う、といった混在は ERROR とする。
+1.0 の成果物はそのまま検証を通る。企業別ディレクトリを恒久的に保存する方針と整合させ、過去の評価を読めない状態にしない。1.0 で7次元の id を使う、2.0 で `skill_fit` を使う、といった混在は ERROR とする。
 
 ## 記入例
 

@@ -29,7 +29,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 4. **企業固有の調整には企業研究の結果を用いる。** 志望動機・企業別カスタマイズは、対象企業の `company_research.json`（理念・求める人物像など）を根拠とする。`company_research.json` が無い場合は企業固有の調整をせず、簡易対応（企業に依存しない汎用の書式・自己PRの骨子まで）である旨を利用者へ明示する。
 
-5. **個人情報を外部へ送信しない。** 利用者の個人情報は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルの job-change-document-writer と job-change-document-auditor はいずれも Web 送信手段を持たない。このため `profile.json`・`self_analysis.json`・`fit_assessment.json` をそのまま渡してよい。このルールは本スキルおよび下流のすべての手順で保つ。
+5. **個人情報を外部へ送信しない。** 利用者の個人情報は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルの job-change-document-writer と job-change-document-auditor はいずれも Web 送信手段を持たない。このため `profile.json`・`self_analysis.json`・`fit_assessment.json` をそのまま渡してよい。この規則は、本スキルと下流のすべての手順で守る。
 
 ## 範囲外
 
@@ -41,7 +41,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 利用者データの置き場所は設定ファイルの記述だけで決まる。既定の置き場所は無い。本文で `{DATA_ROOT}` と書いた箇所は、次のコマンドが返す `data_root` に読み替える。
 
-hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、作業のどの段階よりも先に次を実行する。
+hub（job-change-support）から振り分けられた場合、本スキルは hub が解決済みの `{DATA_ROOT}` を受け取る。単独で起動された場合は、作業のどの段階よりも先に次を実行する。
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/jc_config.py --show
@@ -50,7 +50,7 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 | 終了コード | 状態 | 対応 |
 |---|---|---|
 | 0 | 設定済み | 出力の `paths` に各データの絶対パスが入る。そのまま作業へ進む |
-| 1 | 設定はあるが内容が不正 | 出力の `errors` を利用者へ示し、修復されるまで作業へ進まない |
+| 1 | 設定はあるが内容が不正 | 出力の `errors` を利用者へ示し、利用者が修復するまで作業へ進まない |
 | 2 | 未設定 | Skill ツールで `job-change-support` を起動して設定を作らせ、`{DATA_ROOT}` を解決してから戻る |
 
 `{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。探索順序を含む設定ファイルの仕様は `docs/configuration.md` にある。
@@ -95,11 +95,11 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 |---|---|
 | 書類種別 | 職務経歴書／履歴書／英文レジュメ／志望動機書のいずれか（複数可）。 |
 | 求人票 | 対象求人の要件。テキストまたはファイルで受け取る。無い場合は汎用の書式作成に範囲を限定する。 |
-| 対象企業 | 企業別カスタマイズの対象。スラッグの解決に入る前に `validate_company_index.py`（hub の scripts）で一覧を検証し、FAIL（ERROR 1件以上）なら指摘内容を利用者へ示し、修復されるまで解決へ進まない。そのうえで企業スラッグを `career-private/company_index.json` で解決し（詳細は hub の `references/company-index-format.md`）、`{OUT_DIR}` を定める。 |
+| 対象企業 | 企業別カスタマイズの対象。スラッグの解決に入る前に `validate_company_index.py`（hub の scripts）で一覧を検証し、FAIL（ERROR 1件以上）なら指摘内容を利用者へ示し、利用者が修復するまで解決へ進まない。そのうえで企業スラッグを `career-private/company_index.json` で解決し（詳細は hub の `references/company-index-format.md`）、`{OUT_DIR}` を定める。 |
 
 profile.json のゲートは必須である。
 
-- `profile.json` は `validate_profile.py`（hub の scripts）が PASS（ERROR 0件）であることを前提とする。hub 経由で入る場合は、hub がルーティング前に確認済みである。本スキルが単独で起動された場合は、自分で `validate_profile.py` を実行して PASS を確かめる。
+- 本スキルは、`profile.json` が `validate_profile.py`（hub の scripts）で PASS（ERROR 0件）になることを前提とする。hub 経由で入る場合は、hub がルーティング前に確認済みである。本スキルが単独で起動された場合は、自分で `validate_profile.py` を実行して PASS を確かめる。
 - `profile.json` が未作成の場合は先へ進まない。hub（`job-change-support`）のプロファイル整備へ戻し、作成してから再開する（プロファイルの作成は hub と `job-change-profile` の責務である）。
 - 検証が FAIL（ERROR 1件以上）の場合は、ERROR の内容を利用者へ示し、`job-change-profile` での整備を勧める。ただし、利用者が欠落を承知のうえで着手を希望する場合は、欠けた項目の値を直接引用または前提とする記述を作らないという条件で進めてよい。その場合は、どの項目が欠けたままかを納品時に明記する。hub から振り分けられ、hub がすでにこの選択を利用者へ求めている場合は、再度問わずにその選択に従う。hub と本スキルが同じ選択を2回求めないためである。
 
@@ -126,7 +126,7 @@ fit_assessment.json も同じく必須ではない。
 
 作成担当には次を行う責務がある。求人要件と（あれば）企業研究の理念・求める人物像を抽出し、`profile.json` の実績と突き合わせてアピールマッピングを作る。そのうえで、`references/templates.md` の一覧からテンプレートを理由とともに選定し、その構成で作成する。書類は `{OUT_DIR}` の下に書き出す。`company_research.json` が無い場合は企業固有の調整をしない。その旨を成果物と出力 JSON（`company_research_used: false`・`degraded_reason`）に明記する。`fit_assessment.json` がある場合、アピールマッピングの訴求点選定に `dimensions` の `evidence` と `must_condition_results` を判断材料として加える。無い場合は求人要件と `profile.json` の実績の突き合わせのみで進める。
 
-志望動機書・自己PRでは、`self_analysis.json` がある場合、`career_narrative`（ライフテーマ・一貫する動機）を素材に用いる。根拠付きの `strengths`（episode_id・feedback_id に対応づけられた強み）も用いる。`reason_for_change.constructive_version`（発揮したい価値を軸にした転職理由の言い換え）も同様である。いずれも profile.json の実績と併せて用いる。`self_analysis.json` が無い場合は profile.json の `strengths`・`job_change_axis.reasons` のみを素材とする。この場合は、企業固有の調整のときとは異なり、フォールバックした旨を明示する必要はない。
+志望動機書・自己PRでは、`self_analysis.json` がある場合、`career_narrative`（ライフテーマ・一貫する動機）を素材に用いる。素材には、根拠付きの `strengths`（episode_id・feedback_id に対応づけられた強み）と `reason_for_change.constructive_version`（発揮したい価値を軸にした転職理由の言い換え）も加える。いずれも profile.json の実績と併せて用いる。`self_analysis.json` が無い場合は profile.json の `strengths`・`job_change_axis.reasons` のみを素材とする。この場合は、企業固有の調整のときとは異なり、フォールバックした旨を明示する必要はない。
 
 ### Step 2 独立監査
 
@@ -134,10 +134,10 @@ fit_assessment.json も同じく必須ではない。
 
 監査担当が検査するのは次の4点である。
 
-- **和文の文法と表記。** 職務経歴書・履歴書・志望動機書を対象に、役割プロンプトの「判断の原本」に挙げた観点（助詞・主述の対応・係り受け・並列・冗長表現・表記揺れ・誤字脱字）で見る。
+- **和文の文法と表記。** 職務経歴書・履歴書・志望動機書を対象に、役割プロンプトの「判断の原本」に挙げた観点（助詞・主述の対応・係り受け・並列・冗長表現・表記揺れ・誤字脱字）で検査する。
 - **誇張・創作。** `profile.json` と突き合わせ、記載のない実績・数値、metric との不一致、裏付けを超えた規模・範囲・主体の言葉を検出する。
 - **求人要件との対応・定量性・分量・テンプレートの構成との一致。**
-- **英文レジュメ。** 英語の文法・時制、アクション動詞（action verb）の適否（動詞始まり・主語省略）、定量性、ATS適合（表・画像・グラフィックの回避、求人票キーワードとの文脈整合）、分量（1〜2枚）を見る。和文の文法・表記の検査は対象外とする。
+- **英文レジュメ。** 英語の文法・時制、アクション動詞（action verb）の適否（動詞始まり・主語省略）、定量性、ATS適合（表・画像・グラフィックの回避、求人票キーワードとの文脈整合）、分量（1〜2枚）を検査する。和文の文法・表記の検査は対象外とする。
 
 判定は `verdict`（BLOCK / CONCERNS / CLEAN）と `findings`（各 finding に `severity` = 重大 / 警告 / 軽微）で返る。
 
@@ -169,11 +169,11 @@ fit_assessment.json も同じく必須ではない。
 | Step 0 のプロファイルゲート | `profile.json` が `validate_profile.py` で PASS していなければ作成へ進まない。未作成・FAIL は hub のプロファイル整備へ戻す。ただし FAIL の場合は、ERROR の内容を示し、利用者が欠落を承知で着手を希望するなら、欠けた項目の値を直接引用または前提とする記述を作らないという条件で進めてよい。どの項目が欠けたままかを成果物に明記する。hub がすでにこの選択を利用者へ求めている場合は、再度問わずにその選択に従う。 |
 | Step 2 の独立監査ゲート | `job-change-document-auditor` の `verdict` が BLOCK、または `severity` = 重大 の finding があれば Step 3 で作成担当へ差し戻す。差し戻しは同一書類につき最大2回まで行う。 |
 
-差し戻し時は、監査の findings（target・evidence・fix）をそのまま作成担当へ渡し、反映後に Step 2 から再度通す。2回の差し戻しで解消しない指摘は、未決事項として調整根拠の説明に明記し、利用者へ判断を委ねてから納品する。例えば「profile.json の実績だけでは求人要件を十分に満たせない」という指摘は、経歴の補強か応募判断の見直しが要るため、利用者の判断事項とする。機械的な検証の ERROR は差し戻しの上限にかかわらず解消してから納品し、未解決が監査の finding だけである場合に限り、未決事項として明記したうえで納品してよい。
+差し戻し時は、監査の findings（target・evidence・fix）をそのまま作成担当へ渡し、反映後に Step 2 から再度通す。2回の差し戻しで解消しない指摘は、未解決事項として調整根拠の説明に明記し、利用者へ判断を委ねてから納品する。例えば「profile.json の実績だけでは求人要件を十分に満たせない」という指摘は、経歴の補強か応募判断の見直しが要るため、利用者の判断事項とする。機械的な検証の ERROR は差し戻しの上限にかかわらず解消してから納品し、未解決が監査の finding だけである場合に限り、未決事項として明記したうえで納品してよい。
 
 ## 役割の実行（ハーネス別）
 
-本スキルのパイプラインは、専門の役割へ作業を委ねる形で書いてある。役割の内容は `references/roles/` に置き、これを原本とする。
+本スキルのパイプラインは、専門の役割へ作業を委ねる形で書いてある。役割の内容は `references/roles/` に置き、その内容を原本とする。
 
 | エージェント名 | 役割プロンプトの原本 |
 |---|---|
@@ -189,7 +189,7 @@ fit_assessment.json も同じく必須ではない。
 | `job-change-document-writer` | opus | アピールマッピング・形式選定・作成（Step 1）と監査指摘の反映（Step 3） |
 | `job-change-document-auditor` | sonnet | 独立コンテキストでの書類監査（Step 2）。和文の文法・表記も自身で検査する |
 
-model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
+model は各エージェントの frontmatter に固定済みである。本スキルは起動時に上書きしない。
 
 ## スクリプトのCLI使用例
 

@@ -6,7 +6,7 @@
 
 1. **evidence のない主張を書かない。** 各次元の verdict は evidence（1件以上）に対応づけ、裏付けのない印象・憶測を score や verdict に反映しない。
 2. **エビデンスレベルC・D単独で断定しない。** 口コミ・伝聞（company_research 内でレベルC・Dが付いた claim）のみを根拠に、その次元を高い、または低いと断定しない。C・D を根拠にする場合は verdict を限定表現にする（「口コミでは〜という声がある。傍証にとどめる」）。レベルの定義と限定表現の書き方は evidence-grading.md に従う。
-3. **企業が自社を良く見せる主張に高い確度を置かない。** 採用サイトの「風通しが良い」等は、company_research 側でレベルAでも confidence を high にしていない。これを culture_fit の断定材料にしない。
+3. **企業が自社を良く見せる主張を、確かなものとして扱わない。** 採用サイトの「風通しが良い」等は、company_research 側でレベルAでも confidence を high にしていない。これを culture_fit の断定材料にしない。
 4. **材料が無いときは score を null（判断保留）にする。** 憶測で数値を埋めず、unknown を優先する方針を守る。
 5. **profile・self_analysis に無い事実を創作しない。** 本人の経歴・強み・条件は profile.json と self_analysis.json の記載を根拠にする。
 
@@ -83,9 +83,9 @@ job_posting の `scope_of_change` は、2024年4月から求人票への明示�
 
 evidence は `{"source": "job_posting", "ref": "scope_of_change.work_location.unlimited", "note": "…"}` の形で書き、`ref` にはフィールドパスを、`note` には `quote`（求人票の記載の引用）を転記する。
 
-`unlimited` が真であることは、それ自体では転勤・職種転換が起きる証拠ではなく、企業の裁量で起こしうるという事実である。verdict はこの区別を保った書き方にする。
+`unlimited` が真であることは、それ自体では転勤・職種転換が起きる証拠ではなく、企業の裁量で起こしうるという事実である。verdict には、この区別が分かるように書く。
 
-`job_posting.json` の `schema_version` が `1.0` の場合、この節は適用しない。1.0 には `scope_of_change` が無く、取り込みの時点でこの3項目を見ていないためである。判定を変えず、`overall.open_questions` へ「求人票の取り込みが旧形式であり、業務・就業場所の変更の範囲を確認していない」と入れる。
+`job_posting.json` の `schema_version` が `1.0` の場合、この節は適用しない。1.0 には `scope_of_change` が無く、取り込みの時点で業務の変更の範囲・就業場所の変更の範囲・有期契約の更新上限を見ていないためである。判定を変えず、`overall.open_questions` へ「求人票の取り込みが旧形式であり、業務・就業場所の変更の範囲を確認していない」と入れる。
 
 ### culture_fit（文化適合）
 
@@ -102,7 +102,7 @@ company_research の philosophy・workstyle・reputation トピックと、self_
 希望年収と提示レンジ・業界平均を突き合わせる。
 
 - job_posting の `salary`（提示レンジ）と、profile の `salary.desired`（希望年収）を突き合わせる。
-- company_research の `company_metrics.compensation_level`（有価証券報告書の平均年間給与等）を参照点に加える。ただし全従業員平均であり職種別内訳を欠く限界を verdict または overall.open_questions に書く。
+- company_research の `company_metrics.compensation_level`（有価証券報告書の平均年間給与等）を参照点に加える。ただし、この値は全従業員平均であり、職種別の内訳が無い。その限界を verdict または overall.open_questions に書く。
 - 提示レンジ下限が希望を下回る場合は score を高くしない。上限との差、昇給余地の不確実性も勘案する。
 - time_analysis.json に `comparison` があれば、実質時給の現職との差分（`comparison.delta.hourly_wage_binding_basis`・同 `labor_basis`）を verdict の根拠にする。額面年収の増加だけを根拠に score を高くしない。
 - evidence の source は主に `job_posting`・`profile`・`company_research`・`time_analysis`。
@@ -116,7 +116,7 @@ time_analysis.json の年間拘束時間・実質時給と、must/want 条件（
 - time_analysis の入力に統計フォールバックが使われた項目（`fallbacks_used`）は、実測でない旨を verdict に反映し、確度を上げすぎない。
 - 残業・通勤・労働時間に関する must/want 条件との整合を見る。
 - time_analysis.json に `comparison` があれば、年間拘束時間の現職との差分（`comparison.delta.annual_binding_hours`）を verdict の根拠にする。`comparison` が無い場合は、現職と比較できていない旨を verdict に書く。
-- 通勤の負担を所要時間だけで表さない。commute.json の `transfers`（乗り換え回数）・`crowding`（混雑の程度）があれば verdict で触れる。長時間通勤は睡眠と運動を削るため、年収差で相殺できるとは限らない旨を、通勤片道が長い場合の verdict に書く（根拠は `references/fit-methods.md`）。
+- 通勤の負担を所要時間だけで表さない。commute.json の `transfers`（乗り換え回数）・`crowding`（混雑の程度）があれば verdict で触れる。通勤が長いほど睡眠時間と運動の時間が減るため、年収差で相殺できるとは限らない旨を、通勤片道が長い場合の verdict に書く（根拠は `references/fit-methods.md`）。
 - evidence の source は主に `time_analysis`・`job_posting`。
 
 ## must_condition_results の判定

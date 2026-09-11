@@ -11,7 +11,7 @@
 
 対象の列挙・例外・役割ごとの可否はここにのみ置き、参照元へ複製しない。参照元の SKILL.md は、原則としての規範（個人情報を外部送信に用いない）と、そのスキルに固有の帰結だけを書く。
 
-役割プロンプト（`agents/*.md` と `skills/*/references/roles/*.md`）だけは例外で、規範の要点を原文どおりに持つ。役割プロンプトはサブエージェントへ単体で渡り、本ファイルを開けるとは限らないためである。たとえば `job-change-posting-parser` の `tools` は `WebFetch` と `WebSearch` だけで `Read` を持たず、参照先を開く手段が無い。これは意図した複製であり、本ファイルを変えたときは14の役割プロンプトも同時に直す。
+役割プロンプト（`agents/*.md` と `skills/*/references/roles/*.md`）だけは例外で、規範の要点を原文どおりに持つ。役割プロンプトはサブエージェントへ単体で渡り、本ファイルを開けるとは限らないためである。たとえば `job-change-posting-parser` は `tools` に `WebFetch` と `WebSearch` だけを持ち、`Read` が無いため参照先を開けない。これは意図した複製であり、本ファイルを変えたときは14の役割プロンプトも同時に直す。
 
 ## 境界の原則（広い列挙）
 
@@ -57,7 +57,7 @@
 | `interview_questions.json` | profile と `interview_notes_user.md` から作った想定質問。`basis` が profile の該当箇所を指す | 同上 |
 | `interview-prep-report.md` | 回答の評価の総括 | 同上 |
 
-これに対し、`companies/{企業スラッグ}/company_research.json`・`companies/{企業スラッグ}/exam_assessment.json`・`companies/{企業スラッグ}/interview_intel.json` と `job-search/{検索ID}/` 配下は、Web 送信手段を持つ役割が読み書きする。該当するのは `job-change-company-researcher`・`job-change-research-auditor`・`job-change-exam-scout`・`job-change-interview-scout`・`job-change-job-searcher` である。ここへ個人情報とその派生値を書かない。同じ `companies/{企業スラッグ}/` にある個人情報のファイル（上の表）は、これらの役割の役割プロンプトがファイル名を挙げて読まないよう定めている。適合性評価の派生値の置き場所を `career-private/fit/{企業スラッグ}/` 配下に限るのも、同じ理由による。
+これに対し、`companies/{企業スラッグ}/company_research.json`・`companies/{企業スラッグ}/exam_assessment.json`・`companies/{企業スラッグ}/interview_intel.json` と `job-search/{検索ID}/` 配下は、Web 送信手段を持つ役割が読み書きする。該当するのは `job-change-company-researcher`・`job-change-research-auditor`・`job-change-exam-scout`・`job-change-interview-scout`・`job-change-job-searcher` である。ここへ個人情報とその派生値を書かない。同じ `companies/{企業スラッグ}/` にある個人情報のファイル（上の表）については、これらの役割プロンプトが、ファイル名を挙げて読まないよう定めている。適合性評価の派生値の置き場所を `career-private/fit/{企業スラッグ}/` 配下に限るのも、同じ理由による。
 
 `_manifest.json` にも個人情報とその派生値を書かない。記録する項目の仕様は `freshness-policy.md` にある。
 
@@ -89,7 +89,7 @@
 
 ## 役割ごとの可否
 
-Web 送信手段（WebSearch・WebFetch）を持つかどうかで、`career-private/` 配下を読んでよいかが決まる。各役割の `tools` は `agents/*.md` の frontmatter に固定してある。
+各役割が Web 送信手段（WebSearch・WebFetch）を持つかどうかで、`career-private/` 配下を読んでよいかが決まる。各役割の `tools` は `agents/*.md` の frontmatter に固定してある。
 
 | 役割 | Web 送信手段 | `career-private/` 配下 |
 |---|---|---|
@@ -110,4 +110,4 @@ Web 送信手段（WebSearch・WebFetch）を持つかどうかで、`career-pri
 
 役割の `tools` を変更するときは、この表を必ず確認する。Web ツールを1つ足すだけで、その役割は個人情報を受け取れなくなる。
 
-サブエージェントを起動できないハーネス（Codex ほか）では、本体が役割プロンプトを読んで自分にその役割を課す。本体は Web 送信手段を持ちうるが、その場合でも Web 送信手段を持たない役割の作業中は Web 送信手段を使わない。
+サブエージェントを起動できないハーネス（Codex ほか）では、本体が役割プロンプトを読んで自分にその役割を課す。本体は Web 送信手段を持ちうる。それでも、その手段を持たない役割として作業する間は使わない。

@@ -92,13 +92,13 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 - `companies/{企業スラッグ}/company_research.json` の存在を確認する。無ければ、既定では `job-change-company-research` へ差し戻す。ただし、企業の公開情報が集まらない場合、または利用者が求人票だけでの評価を明示的に希望した場合は、フォールバックして評価を続けてよい。フォールバック時は `culture_fit` の score を `null`（判断保留）にし、`compensation_fit` は求人票の提示額だけを根拠に評価する。いずれについても理由を verdict に書き、未確認のまま残る点を `overall.open_questions` へ企業研究で確認すべき事項として挙げる。フォールバックしたことを利用者へ1回だけ伝える。
 - `career-private/self_analysis.json` は任意入力である。無くても進めるが、culture_fit の行動証拠と aspiration_alignment（志向の一致）の根拠が弱くなる旨を利用者に伝え、`job-change-self-analysis` の実施を促してよい。自己分析が無い場合、志向の一致に4以上の score は付けられない。
 - `career-private/profile.json` の `schema_version` を確認する。`1.0` または `1.1` の場合、`work_character_preferences` が無いため `work_character_fit` の score を `null`（判断保留）にし、その理由を verdict に書く。`aspiration_alignment` も、自己分析が無ければ同様に扱う。フォールバックしている旨を利用者へ1回だけ伝え、`job-change-profile` での条件の構造化を案内する。
-- `career-private/profile.json` の `company_score_axes` の有無を確認する。`job-change-profile` の初回作成は採点軸の申告を既定で飛ばす初回の範囲であるため（原本は同スキルの「初回と深掘りの分担」）、検証を PASS していても未申告のことがある。未申告だったときの扱いは Step 2 に書いてある。必須条件の優先順位（`conditions[].priority`）も同じ理由で欠けていることがあるが、必須条件は1件ずつ判定するため、順位が無くても評価は進む。
+- `career-private/profile.json` の `company_score_axes` の有無を確認する。`job-change-profile` の初回作成では、採点軸の申告を既定で飛ばす（原本は同スキルの「初回と深掘りの分担」）。そのため、`company_score_axes` は検証を PASS していても未申告のことがある。未申告だったときの扱いは Step 2 に書いてある。必須条件の優先順位（`conditions[].priority`）も同じ理由で欠けていることがあるが、必須条件は1件ずつ判定するため、順位が無くても評価は進む。
 - `job-search/{検索ID}/job_search_results.json` があり、当該求人がその結果に含まれる場合は、`inputs.job_search_screening` を `true` にし、`screening_source`（`search_id`・`result_index`・`classification`・`screened_at`）を記録する。fit-assessor は Web ツールを持たないため、このファイルのパスを渡してよい。
 - `career-private/commute.json` に `routes.{企業スラッグ}` があるか確認する。無ければ AskUserQuestion で片道通勤分数を1回だけ確認し、commute.json の `routes.{企業スラッグ}` へ本スキルが転記する（住所ジオコーディング・Web 経路検索はしない）。それでも不明なら統計フォールバックで進める（time_analysis 側の `fallbacks_used` に記録される）。この1系統だけで扱う。片道分数を確認する際、乗り換え回数（`transfers`）と混雑の程度（`crowding`。`low`／`medium`／`high`）も任意項目として同時に聞き、答えがあれば `routes.{企業スラッグ}` へ併せて転記する。通勤の負担を所要時間だけで表さないための項目であり、拘束時間の算定式には入らない（`time_fit` の verdict で所要時間と併せて扱う）。
 
 ### Step 2 拘束時間と企業スコアの算出
 
-fit-assessor を Agent ツールで起動し、拘束時間・実質時給と、企業スコア（0〜100点）を算出させる。任せる作業は次のとおりである。
+fit-assessor を Agent ツールで起動し、拘束時間・実質時給と、企業スコア（0〜100点）を算出させる。指示書には、入力ファイルの絶対パスと本スキルの絶対パス（`{SKILL_DIR}`）に加え、job-change-company-research の絶対パス（`references/evidence-grading.md`・`references/company-score-rubric.md` の所在）を渡す。任せる作業は次のとおりである。
 
 - 数値を、**求人票 metrics（job_posting.json の `metrics`）> 企業研究の指標（company_research.json の `company_metrics`。レベル順に選ぶ）> 統計フォールバック**の優先順で抽出する。各数値の出典（`posting`/`research`/`user`/`fallback`）・出典URL・レベルを `career-private/fit/{企業スラッグ}/sources.json` へ記録し、これを `--sources-json` へ渡す。
 - `scripts/calculate_time_analysis.py` を Bash で実行し、`career-private/fit/{企業スラッグ}/time_analysis.json` を生成する。CLI は全入力を引数で受ける（`--scheduled-hours`・`--break-minutes`・`--overtime-h-month`・`--annual-holidays`・`--paid-leave-rate`・`--paid-leave-granted`・`--paid-leave-taken`・`--commute-oneway-min`・`--salary`・`--sources-json <出典メタJSON>`・`--out <出力パス>`・`--json`）。スクリプトは、未指定の項目にのみ統計フォールバック定数を適用し、`fallbacks_used` へ記録する。
@@ -126,7 +126,7 @@ calculate_time_analysis.py の定義式・フォールバック定数・出力�
 - **`time_fit` と `compensation_fit` の verdict は現職との差分で書く。** time_analysis.json の `comparison.delta` を根拠に、年間拘束時間と実質時給が現職より増えるか減るかを書く。応募先の絶対値だけを示して良し悪しを断じない。差分が出せていない場合は、その旨と理由を verdict に書く。
 - **求人票から判定できない作業特性を推測で埋めない。** 完了条件の明確さ・一人で完結しやすさ・結果を短期で確認できるかどうかは、`work_character_fit` の verdict に判定できない旨を書き、`overall.open_questions` へ面接での確認事項として入れる。
 - must_condition_results は profile の必須条件（`conditions[level=must]` と `work_character_preferences[desire=must]`）と `ref` で1対1に対応させ、`yes`/`no`/`unknown` で判定する。
-- Step 2 で算出した企業スコアを `company_score` へそのまま入れる。値を手で書き換えない。企業スコアは7次元の score や総合判定の根拠には持ち込まない。
+- Step 2 で算出した企業スコアを `company_score` へそのまま入れる。値を手で書き換えない。企業スコアを7次元の score や総合判定の根拠に使わない。
 - overall で `推奨`/`条件付き推奨`/`非推奨`/`判断保留` を根拠付きで付す。満たさない必須条件があるのに `推奨` にしない。
 - 判断基準の原本は `references/fit-criteria.md`、データ形式の原本は `references/fit-format.md`、作業特性の語彙の原本は hub の `references/screening-axes.md`。
 
@@ -164,8 +164,8 @@ ERROR が1件でもあれば Step 3 へ差し戻す。PASS（ERROR 0件）にな
 - 経験の近さと志向の一致は別々に伝える。経験が近いことを推奨の理由にまとめない。
 - `skill_gap` が `none` 以外の場合は、不足する要件と補完に要する期間の段階を明示する。
 - 判定が現時点で得られている材料に基づくものであり、入社直後の満足の高さは持続を意味しないことを添える。未確認の論点として直属上司の関与のしかたを必ず挙げる（根拠は `references/fit-methods.md`）。
-- `fit_assessment.json` の `company_score` を参考として併記する。`total`・`coverage`・`provisional` と、軸ごとの内訳（実測値とその出典・単位、点数、重み、基準の出所）を示す。基準を利用者が上書きした軸（`threshold_source` が `user`）はその旨を伝える。判定できなかった軸は、実測値が無いのか基準が無いのか判定結果が無いのかを `reason` のとおりに伝え、企業研究での追加調査か基準の申告を促す。この点数は利用者が選んだ軸と重みに基づくものであり、企業そのものの質の絶対評価ではない。異なる利用者の点数とは比べられないことを添え、7次元の score や総合判定の根拠へ持ち込まず、別の情報として示す。`provisional` が `true` の場合は、判定できた軸の重みが足りず少数の軸に引きずられる点数であることを添える。`total` が `null` の場合は点数を提示せず、その理由を `rationale` のとおりに伝え、採点する軸が未申告であれば hub の `job-change-profile` での申告を促す。
-- `company_score.total` が数値の場合、その値を `career-private/company_index.json` の当該エントリーの `score` へ本スキル本体が転記する（一覧・グルーピング用のコピー。形式の原本は hub の `references/company-index-format.md`）。`total` が `null` の場合は転記せず、既存の値があればそのまま残す。企業スラッグ（ディレクトリ名）はリネームしない。
+- `fit_assessment.json` の `company_score` を参考として併記する。`total`・`coverage`・`provisional` と、軸ごとの内訳（実測値とその出典・単位、点数、重み、基準の出所）を示す。基準を利用者が上書きした軸（`threshold_source` が `user`）はその旨を伝える。判定できなかった軸は、実測値が無いのか基準が無いのか判定結果が無いのかを `reason` のとおりに伝え、企業研究での追加調査か基準の申告を促す。この点数は利用者が選んだ軸と重みに基づくものであり、企業そのものの質の絶対評価ではない。異なる利用者の点数とは比べられないことを添え、7次元の score や総合判定の根拠には使わず、別の情報として示す。`provisional` が `true` の場合は、判定できた軸の重みが足りず少数の軸に引きずられる点数であることを添える。`total` が `null` の場合は点数を提示せず、その理由を `rationale` のとおりに伝え、採点する軸が未申告であれば hub の `job-change-profile` での申告を促す。
+- `company_score.total` が数値の場合、その値を `career-private/company_index.json` の当該エントリーの `score` へ本スキル本体が転記する（一覧と分類に使うコピー。形式の原本は hub の `references/company-index-format.md`）。`total` が `null` の場合は転記せず、既存の値があればそのまま残す。企業スラッグ（ディレクトリ名）はリネームしない。
 - `companies/{企業スラッグ}/_manifest.json` の `artifacts` に `fit_assessment` の所在と日付を記録する（`{updated_at: "YYYY-MM-DD"}`）。値そのもの（評価内容）は非個人情報側（`companies/` 等）に置かず、fit_assessment.json は career-private 配下に留める。manifest には所在と日付のみを書く。
 
 ## 合否ゲートと差し戻し
@@ -215,7 +215,7 @@ python {SKILL_DIR}/scripts/calculate_company_score.py --research {company_resear
 python {SKILL_DIR}/scripts/calculate_company_score.py --research {company_research.json} --profile {profile.json} --qualitative-json {qualitative_judgment.json} --out {company_score.json}
 ```
 
-`--out` は指定パスへ書き出し、`--json` は標準出力へ出す。単体テストは次で実行する。
+`--out` は指定パスへ書き出し、`--json` は標準出力へ書き出す。単体テストは次で実行する。
 
 ```bash
 cd {SKILL_DIR} && python -m unittest discover -s scripts/tests
