@@ -1,103 +1,103 @@
-# Codex への導入
+# Installing on Codex
 
-この文書は、利用者が AI エージェント（Codex）に読ませて実行させることを想定して書いてある。利用者は「`docs/install-codex.md` のとおりに導入して」と伝えるだけでよい。各手順には、成功したかどうかを機械的に判定できる完了条件を付けてある。
+This document is written on the assumption that the user has an AI agent (Codex) read and carry out these instructions. The user only needs to say "install this according to `docs/install-codex.md`." Each step carries a completion condition that can be judged mechanically.
 
-## 前提
+## Prerequisites
 
-- Codex CLI が使えること。
-- Python 3.9 以上が使えること。検証スクリプトは標準ライブラリのみを使う。
-- このリポジトリを clone 済みであること。以下ではその場所を `<REPO>` と書く。
+- The Codex CLI is usable.
+- Python 3.9 or later is usable. The validation scripts use only the standard library.
+- This repository has already been cloned. Below, its location is written as `<REPO>`.
 
-## 手順1: スキルを配置する
+## Step 1: Place the skills
 
-Codex はスキルを次の場所から読む。用途に合うほうを選ぶ。
+Codex reads skills from the following locations. Choose whichever fits the intended use.
 
-| 置き先 | 適用範囲 |
+| Location | Scope |
 |---|---|
-| `$HOME/.agents/skills/` | すべての作業ディレクトリ |
-| `<作業ディレクトリ>/.agents/skills/` | そのリポジトリのみ（Codex は上位ディレクトリもたどる） |
+| `$HOME/.agents/skills/` | All working directories |
+| `<working directory>/.agents/skills/` | That repository only (Codex also walks up through parent directories) |
 
-`<REPO>/skills/` の下にある `job-change-*` の9ディレクトリを、選んだ置き先へそのままコピーする。9スキルは相互に参照するため、一括で置く。個別に選んで置かない。
+Copy the 9 `job-change-*` directories under `<REPO>/skills/` as-is into the chosen location. Because the 9 skills reference each other, place them all together; do not select and place them individually.
 
 ```bash
 mkdir -p "$HOME/.agents/skills"
 cp -r <REPO>/skills/job-change-* "$HOME/.agents/skills/"
 ```
 
-Windows の PowerShell では次のとおりである。
+On Windows PowerShell, it is as follows.
 
 ```powershell
 New-Item -ItemType Directory -Force "$HOME\.agents\skills"
 Copy-Item -Recurse "<REPO>\skills\job-change-*" "$HOME\.agents\skills\"
 ```
 
-**完了条件。** 次のコマンドが `9` を出力する。
+**Completion condition.** The following command outputs `9`.
 
 ```bash
 ls -d "$HOME"/.agents/skills/job-change-* | wc -l
 ```
 
-## 手順2: agents/ は配置しない
+## Step 2: Do not place agents/
 
-`<REPO>/agents/` にある14ファイルは Claude Code 専用のエージェント定義であり、Codex では使わない。コピーしない。
+The 14 files under `<REPO>/agents/` are agent definitions specific to Claude Code, and are not used on Codex. Do not copy them.
 
-Codex では、各スキルの本体が `references/roles/*.md` を読み、その役割として自分で実行する。読み替えの手順は `job-change-support/references/role-execution.md` に書いてある。
+On Codex, each skill's own body reads `references/roles/*.md` and carries out the work by taking on that role itself. The procedure for this substitution is written in `job-change-support/references/role-execution.md`.
 
-**完了条件。** 次のコマンドが `14` を出力する（役割プロンプトがスキル側にそろっている）。
+**Completion condition.** The following command outputs `14` (confirming the role prompts are present on the skill side).
 
 ```bash
 ls "$HOME"/.agents/skills/job-change-*/references/roles/*.md | wc -l
 ```
 
-## 手順3: 設定ファイルを作る
+## Step 3: Create the configuration file
 
-利用者データの置き場所は設定ファイルの記述だけで決まる。既定の置き場所は無い。
+Where the user's data is stored is decided solely by the configuration file. There is no default location.
 
-**この置き場所には、現年収・居住地・在籍企業名・実績を含む個人情報が保存される。** 置き場所は必ず利用者に確認する。エージェントは独断で決めない。同期や共有の対象になっているディレクトリを避けるよう伝える。
+**This location will store personal information, including current salary, place of residence, current employer's name, and achievements.** Always confirm the location with the user. The agent never decides this on its own. Tell the user to avoid a directory that is the target of sync or sharing.
 
-利用者が答えた場所を絶対パスにして、次を実行する。
+Take the location the user answered, make it an absolute path, and run the following.
 
 ```bash
 python "$HOME/.agents/skills/job-change-support/scripts/jc_config.py" --init --data-root /absolute/path/to/job-change-data
 ```
 
-`jc_config.py` が `~/.job-change/config.json` を作る。既に設定がある場合は上書きせず終了コード 1 を返すので、その場合は既存の設定をそのまま使う。
+`jc_config.py` creates `~/.job-change/config.json`. If a configuration already exists, it is not overwritten and exit code 1 is returned; in that case, use the existing configuration as-is.
 
-**完了条件。** 次のコマンドが終了コード 0 を返し、`"status": "ok"` と `data_root` を含む JSON を出力する。
+**Completion condition.** The following command returns exit code 0 and outputs JSON containing `"status": "ok"` and `data_root`.
 
 ```bash
 python "$HOME/.agents/skills/job-change-support/scripts/jc_config.py" --show
 ```
 
-設定の仕様は [configuration.md](configuration.md) にある。`python3` でしか動かない環境では、作成された `~/.job-change/config.json` の `python` を `python3` に書き換える。
+The configuration specification is in [configuration.md](configuration.md). In an environment where only `python3` works, rewrite the `python` value in the created `~/.job-change/config.json` to `python3`.
 
-## 手順4: 動作を確認する
+## Step 4: Verify it works
 
-1. Codex で「転職の準備をしたい」と伝え、`job-change-support` が起動することを確認する。
-2. hub が設定ゲートを通り（手順3で作成済みのため通るはず）、依頼に応じたサブスキルを提示することを確認する。
+1. Tell Codex 「転職の準備をしたい」 ("I want to prepare for a job change") and confirm that `job-change-support` launches.
+2. Confirm that the hub passes the configuration gate (it should pass, since Step 3 already created the configuration) and presents the sub-skill matching the request.
 
-**完了条件。** hub が設定の再作成を求めず、振り分け先のサブスキルを提示する。
+**Completion condition.** The hub does not ask to recreate the configuration, and presents the sub-skill it is routing to.
 
-## Claude Code との差
+## Differences from Claude Code
 
-Codex にはサブエージェントの仕組みがない。このスキル群は次のように振る舞いを変える。
+Codex has no subagent mechanism. This skill family changes behavior as follows.
 
-| 項目 | Claude Code | Codex |
+| Item | Claude Code | Codex |
 |---|---|---|
-| 役割の実行 | 14体のサブエージェントへ委譲する | 本体が `references/roles/*.md` を読み、その役割として実行する |
-| 作成と監査の独立性 | 別の文脈で実行するため保たれる | 同一の文脈になるため下がる |
-| ツールの制限 | 役割の `tools` frontmatter が機械的に効く | 効かない |
+| Role execution | Delegated to the 14 subagents | The skill body itself reads `references/roles/*.md` and executes as that role |
+| Independence of creation and audit | Preserved, because it runs in a separate context | Reduced, because it runs in the same context |
+| Tool restriction | The role's `tools` frontmatter takes mechanical effect | Has no effect |
 
-このうち下の2項目は、ルールで補う必要がある。エージェントは次を守る。
+The last two items need to be compensated for with rules. The agent observes the following.
 
-- **監査の段階では、作成時の判断理由・迷った箇所・書き換えの経緯を参照しない。** 成果物と `references/` の仕様だけを見て判定する。作成側の意図を補って読まない。
-- **Web 送信手段を持たない役割として作業している間は、Web 検索とページ取得を使わない。** とくに `profile.json` を読んだ後に求人検索や企業研究へ移る場合、読んだ個人情報を検索クエリへ持ち込まない。
-- **Web 送信手段を持つ役割として作業している間は、`{data_root}/career-private/` 配下のファイルを開かない。** パスを渡されても開かない。
+- **During the audit stage, do not consult the reasoning, points of hesitation, or history of revisions from the creation stage.** Judge using only the deliverable and the specification in `references/`. Do not read the creating side's intent into it.
+- **While working as a role without web-sending capability, do not use web search or page retrieval.** In particular, when moving from reading `profile.json` to job search or company research, do not carry the personal information just read into a search query.
+- **While working as a role with web-sending capability, do not open files under `{data_root}/career-private/`.** Do not open them even if given a path to one.
 
-各役割プロンプトの冒頭「扱ってよい入力」に、その役割で守るべきルールが書いてある。役割として作業を始める前に必ず読む。
+Each role prompt's opening section, "Inputs this role may handle," states the rules to observe for that role. Always read it before starting work as that role.
 
-## つまずきやすい点
+## Common pitfalls
 
-- **スキルが認識されない。** 置き先が `.agents/skills/` であることを確認する。`.codex/skills/` は使わない。ディレクトリ名は `job-change-support` のようにスキル名と一致させる。
-- **`jc_config.py --show` が終了コード 2 を返す。** 設定ファイルが見つかっていない。手順3を実行する。環境変数 `JOB_CHANGE_CONFIG` を設定している場合は、それが実在するファイルを指しているか確認する。
-- **検証スクリプトが動かない。** `python --version` の出力が 3.9 以上であることを確認する。標準ライブラリ以外の依存はないので、パッケージのインストールは不要である。
+- **The skill is not recognized.** Confirm the location is `.agents/skills/`. `.codex/skills/` is not used. Match the directory name to the skill name, as in `job-change-support`.
+- **`jc_config.py --show` returns exit code 2.** No configuration file has been found. Run Step 3. If the environment variable `JOB_CHANGE_CONFIG` is set, confirm it points to a file that actually exists.
+- **The validation script does not run.** Confirm that `python --version` reports 3.9 or later. Because there are no dependencies outside the standard library, no package installation is needed.

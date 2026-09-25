@@ -1,22 +1,22 @@
-# 設定ファイル
+# Configuration file
 
-転職支援スキル群では、利用者データの置き場所を設定ファイルの記述だけが決める。既定の置き場所は無い。設定が確定するまで、hub（`job-change-support`）はどのサブスキルへも振り分けない。
+In the job-change support skill family, where the user's data is stored is decided solely by the configuration file. There is no default location. Until the configuration is settled, the hub (`job-change-support`) does not route to any sub-skill.
 
-置き場所を暗黙に決めない理由は2つある。第一に、利用者データには現年収・居住地・在籍企業名などの個人情報が含まれ、どこへ置くかは利用者が決めるべきである。第二に、スキル本体を置いたディレクトリへ既定で書き込むと、スキルを更新・再導入するたびに個人情報の所在が変わる。
+There are two reasons for not deciding the location implicitly. First, the user's data includes personal information such as current salary, place of residence, and current employer's name, and where it is stored should be the user's own decision. Second, if the skill body's own directory were used as a default write location, the location of personal information would shift every time the skill is updated or reinstalled.
 
-## 探索順序
+## Search order
 
-次の順に探し、最初に見つかったものを使う。
+The following locations are searched in order, and the first one found is used.
 
-| 順 | 場所 | 用途 |
+| Order | Location | Purpose |
 |---|---|---|
-| 1 | 環境変数 `JOB_CHANGE_CONFIG` が指すファイル | 一時的な切り替え、CI |
-| 2 | カレントディレクトリから上位へたどった最初の `.job-change/config.json` | 案件ごと・リポジトリごとに分ける場合 |
-| 3 | `~/.job-change/config.json` | 通常の利用 |
+| 1 | The file pointed to by the environment variable `JOB_CHANGE_CONFIG` | Temporary switching, CI |
+| 2 | The first `.job-change/config.json` found by walking up from the current directory | For separating configuration per project or per repository |
+| 3 | `~/.job-change/config.json` | Ordinary use |
 
-`JOB_CHANGE_CONFIG` の指すファイルが存在しない場合は、その指定を無視して 2 以降を探す。
+If the file pointed to by `JOB_CHANGE_CONFIG` does not exist, that setting is ignored and the search continues from 2 onward.
 
-## 内容
+## Content
 
 ```json
 {
@@ -29,59 +29,59 @@
 }
 ```
 
-| キー | 必須 | 既定 | 内容 |
+| Key | Required | Default | Content |
 |---|---|---|---|
-| `schema_version` | 任意 | `"1.0"` | 設定ファイルの版 |
-| `data_root` | **必須** | なし | 利用者データを置くディレクトリ。絶対パスで書く。先頭の `~` はホームディレクトリへ展開される |
-| `private_dir` | 任意 | `career-private` | 個人情報を置くディレクトリ名。`data_root` 直下の単純な名前で書く（パス区切り文字を含められない） |
-| `companies_dir` | 任意 | `companies` | 企業別成果物を置くディレクトリ名 |
-| `job_search_dir` | 任意 | `job-search` | 求人検索結果を置くディレクトリ名 |
-| `python` | 任意 | `python` | 検証スクリプトを実行するコマンド。`python3` や絶対パスも書ける |
+| `schema_version` | Optional | `"1.0"` | The version of the configuration file |
+| `data_root` | **Required** | None | The directory that holds the user's data. Written as an absolute path. A leading `~` expands to the home directory |
+| `private_dir` | Optional | `career-private` | The name of the directory holding personal information. Written as a simple name directly under `data_root` (it cannot contain a path separator) |
+| `companies_dir` | Optional | `companies` | The name of the directory holding per-company deliverables |
+| `job_search_dir` | Optional | `job-search` | The name of the directory holding job-search results |
+| `python` | Optional | `python` | The command used to run the validation scripts. `python3` or an absolute path can also be given |
 
-## ディレクトリ構成
+## Directory structure
 
 ```
 {data_root}/
-├─ career-private/          ← 個人情報。Web ツールを持つエージェントへ渡さない
+├─ career-private/          ← Personal information. Not passed to any agent with web tools
 │   ├─ profile.json
 │   ├─ self_analysis.json
 │   ├─ company_index.json
 │   ├─ commute.json
-│   └─ fit/{企業スラッグ}/{fit_assessment,time_analysis}.json
-├─ companies/{企業スラッグ}/  ← 企業別成果物（非個人情報）
-└─ job-search/{YYYYMMDD}-{スラッグ}/job_search_results.json
+│   └─ fit/{company slug}/{fit_assessment,time_analysis}.json
+├─ companies/{company slug}/  ← Per-company deliverables (non-personal information)
+└─ job-search/{YYYYMMDD}-{slug}/job_search_results.json
 ```
 
-`career-private/` を `companies/` の外側へ置くのは、Web 送信手段を持つエージェントが作業するツリーから個人情報を隔離するためである。`private_dir` の名前を変えてもこの隔離は保たれる。
+`career-private/` is placed outside `companies/` in order to isolate personal information from the tree that an agent with web-sending capability works in. Renaming `private_dir` preserves this isolation.
 
-## 作成
+## Creating the configuration
 
-hub は、利用者が初めて起動した時点で設定がなければ、置き場所を尋ねる。手作業で作る場合は次を実行する。
+If no configuration exists the first time the user launches it, the hub asks where to place the data. To create it by hand, run the following.
 
 ```bash
-python <スキルの配置先>/job-change-support/scripts/jc_config.py --init --data-root /absolute/path/to/job-change-data
+python <installation location of the skills>/job-change-support/scripts/jc_config.py --init --data-root /absolute/path/to/job-change-data
 ```
 
-既に設定ファイルがある場合は上書きせず、終了コード 1 を返す。
+If a configuration file already exists, it is not overwritten, and the exit code is 1.
 
-## 確認
+## Checking the configuration
 
 ```bash
-python <スキルの配置先>/job-change-support/scripts/jc_config.py --show
+python <installation location of the skills>/job-change-support/scripts/jc_config.py --show
 ```
 
-探索順序に従って確定した設定と、各データの絶対パスを JSON で出力する。終了コードは、成功なら 0、設定は見つかったが内容が不正なら 1、未設定なら 2 である。
+This outputs, as JSON, the configuration settled by the search order and the absolute path for each data item. The exit code is 0 on success, 1 if a configuration was found but its content is invalid, and 2 if unconfigured.
 
-個別のパスだけが必要な場合は `--path` を使う。キーは `data_root`・`private`・`companies`・`job_search`・`profile`・`company_index`・`self_analysis`・`commute` である。
+When only an individual path is needed, use `--path`. The keys are `data_root`, `private`, `companies`, `job_search`, `profile`, `company_index`, `self_analysis`, and `commute`.
 
 ```bash
 python .../jc_config.py --path profile
 ```
 
-いずれのオプションもディレクトリを作らない。ディレクトリは、各スキルが成果物を書く時点で作る。
+None of these options create a directory. Each directory is created by the individual skill at the point it writes a deliverable.
 
-## スキル本文でのパス表記
+## How paths are written in skill text
 
-各 SKILL.md と references は、データのパスを `{DATA_ROOT}/career-private/profile.json` のように書く。`{DATA_ROOT}` は `jc_config.py --show` が返す `data_root` に読み替える。ディレクトリ名を既定から変えている場合は、`--show` が返す `paths` を使う。
+Each SKILL.md and reference document writes data paths in the form `{DATA_ROOT}/career-private/profile.json`. `{DATA_ROOT}` is read as the `data_root` returned by `jc_config.py --show`. When the directory names have been changed from their defaults, use the `paths` returned by `--show`.
 
-スキル本体を指すプレースホルダは2種類ある。`{SKILL_DIR}` はそのスキル自身のディレクトリを指し、`{HUB_SKILL_DIR}` は `job-change-support` のディレクトリを指す。
+There are two placeholders that refer to a skill body itself. `{SKILL_DIR}` refers to that skill's own directory, and `{HUB_SKILL_DIR}` refers to the `job-change-support` directory.

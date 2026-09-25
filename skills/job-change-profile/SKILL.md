@@ -1,12 +1,20 @@
 ---
 name: job-change-profile
 description: >-
-  転職支援スキル群の profile.json 作成・更新に特化したサブスキル。利用者データの単一の原本である
-  profile.json を、構造化した想起手がかり（時系列×プロジェクト単位）で聞き取り、実績の定量化・スキルの棚卸し・
-  転職の軸の構造化を支援し、作成・機械的な検証・独立監査を経て作る。聞き取りは AskUserQuestion の選択式を中心に、
-  1回最大4問×各4択で行い、自由記述は企業名・期間・実績値など選択式にできない項目に限る。兼務・出向・副業のような同時期の複数所属と、1つの職の中で並行して担当した複数の案件のどちらも記録できる。作成と独立監査は専用エージェント
-  （job-change-profile-writer / job-change-profile-auditor）が担う。job-change-support（hub）から振り分けられて動く。
-  強みの根拠づけ・キャリアの物語化は job-change-self-analysis、応募書類の文面は job-change-documents が担う。
+  Sub-skill of the job-change support skill group, dedicated to creating and updating profile.json. It divides
+  profile.json — the single canonical source of the user's data — into 10 sections (basic information, career
+  skeleton, responsibilities and achievements, skills, reasons for changing jobs, conditions, work-character
+  preferences, scoring axes, target companies and roles, annual salary), elicits each section through its own
+  single-file procedure, and judges each section's reach stage (missing / skeleton / deep) with a script. It elicits
+  information through structured recall cues (chronological × project unit), and supports quantification of
+  achievements, a skill inventory, and structuring of job-change axes, building the result through writing,
+  mechanical validation, and independent audit. Elicitation centers on AskUserQuestion's choice format, at most 4
+  questions per call with up to 4 choices each; free text is limited to items that cannot be put into choices, such
+  as company names, periods, and achievement figures. It can record both concurrent employment at the same time
+  (concurrent roles, secondment, side work) and multiple concurrent projects handled within a single job. Writing
+  and independent audit are each handled by a dedicated agent (job-change-profile-writer / job-change-profile-auditor).
+  It runs when dispatched from job-change-support (the hub). Grounding strengths and building a career narrative
+  belong to job-change-self-analysis; wording of application documents belongs to job-change-documents.
   Use when the user creates or updates a job-change profile in Japan — registering career history, taking stock of
   skills, quantifying achievements, or structuring must/want conditions into profile.json.
   trigger words: プロファイルを作りたい, 経歴を登録, 職務経歴の棚卸し, プロファイルを更新, 職歴の登録,
@@ -16,276 +24,353 @@ allowed-tools: Read, Write, Glob, Grep, Bash, AskUserQuestion, Agent, Skill
 
 # job-change-profile
 
-転職支援スキル群で利用者データの単一の原本となる profile.json を作る、または更新するとき、このスキル1つで聞き取りから納品までの手順がそろう。構造化した想起手がかり（企業→在籍期間→役割→担当プロジェクト→成果の時系列枠）で聞き取り、実績の定量化・スキルの棚卸し・転職の軸の構造化を支援する。作成・機械的な検証・独立監査を経て profile.json を確定する。成果物は後続のサブスキル（企業研究・応募書類作成・面接対策・試験対策・自己分析）がすべて入力として読む。
+When creating or updating profile.json — the single canonical source of the user's data in the job-change support
+skill group — this one skill holds the complete procedure from elicitation through delivery. profile.json is built
+in 10 sections, and each section has one file, `references/sections/{id}.md`, holding its procedure and settled
+wording (the catalogue is `references/sections.md`). Elicitation uses structured recall cues (a chronological frame
+of company → tenure period → role → project → outcome) and supports quantification of achievements, a skill
+inventory, and structuring of job-change axes. profile.json is settled through writing, mechanical validation, and
+independent audit. Every downstream sub-skill (company research, application-document writing, job interview
+preparation, exam preparation, self-analysis) reads the result as an input.
 
-profile.json の中核は、職務経歴・実績・スキルの内容と、その内容が求人要件へどう対応するかという点（relevance）である。根拠は `references/profile-methods.md` にある。ただし、求人要件への対応（relevance）は応募先ごとに変わるため、profile.json には固定して保持しない。応募時に応募書類サブスキルが再構成する。本スキルは、応募先ごとの relevance を再構成できる粒度（職務単位の経歴・成果・定量値）の正確性・網羅性・最新性を保つことに責任を持つ。
+The core of profile.json is the content of career history, achievements, and skills, and how that content maps to
+job requirements (relevance). The grounding for this lives in `references/profile-methods.md`. Relevance to job
+requirements changes with each application, so profile.json does not hold it as a fixed value; the
+application-documents sub-skill reconstructs it at application time. This skill is responsible for keeping the
+granularity that lets each application reconstruct its own relevance — career history, achievements, and quantified
+values at the job level — accurate, comprehensive, and current.
 
-## 目的と原則
+## Purpose and principles
 
-1. **構造化した想起手がかりで聞き取る。** 自由記述に委ねず、時系列（在籍期間）×プロジェクト単位の枠に沿って聞く。構造化面接は非構造化面接の約2倍の妥当性を持つ。時系列やテーマをまたいで暦の出来事を手がかりにする聞き方も、自伝的記憶の構造に沿って想起の完全性・一貫性を高める（`references/elicitation-guide.md`）。
+1. **Elicit with structured recall cues.** Elicitation follows a fixed frame of tenure period × project unit. A
+   structured interview carries about twice the validity of an unstructured one.
+   A method that uses calendar events as cues across time and theme also raises the completeness and consistency of
+   recall, in line with the structure of autobiographical memory (`references/elicitation-guide.md`).
 
-2. **利用者の申告を事実として記録し、疑わない。** 述べられた経歴・実績・数値は、そのまま事実として記録する。証拠書類の提示を求めず、「それは証明できるか」「本当にそうか」という形の問いを置かない。本人が自分から不確かだと述べた値だけ、その旨をメモへ残す（`references/elicitation-guide.md`）。聞き取り側に許される操作は、表現の具体化・数値化の支援・転職市場で通る表現への置き換えの3つに限り、いずれも本人の申告に事実を足さない。置き換えは本人へ示して了承を得た文だけを使う（`references/answer-handling.md`）。創作の抑止は、作成担当が聞き取りメモにある事実だけを使い、監査担当が成果物とメモを照合することで働く（原則6）。
+2. **Record the user's own statements as fact, without doubting them.** The career history, achievements, and
+   figures the user states are recorded as fact, as stated. Elicitation never asks for supporting documents and
+   never asks a question shaped like "can you prove that" or "is that really true." Only a value the user
+   themselves called uncertain gets that note in the elicitation notes (`references/elicitation-guide.md`).
+   Elicitation permits exactly three operations — making a statement concrete, supporting quantification, and
+   rewording into language the job market accepts — and none of them adds a fact the user did not state. A reworded
+   sentence is used only after it is shown to the user and the user accepts it (`references/answer-handling.md`).
+   Fabrication is held in check elsewhere: the writer uses only facts recorded in the elicitation notes, and the
+   auditor checks the deliverable against those notes (Principle 6).
 
-3. **実績は定量化を推奨しつつ、無理に数値化しない。** 定量化困難な業務には、代替表現の型を用意する（型の一覧の原本は `references/quantification-guide.md`）。ただしすべての実績へ機械的に数値を付けることは強制しない。数値は本人が述べたものに限り、聞き取り側から候補の値を提案しない。過剰な数値は書類全体の信頼を毀損する（`references/quantification-guide.md`）。
+3. **Recommend quantifying achievements, without forcing a number onto every one.** For work that resists
+   quantification, a set of alternative phrasing patterns is available (the canonical list of patterns lives in
+   `references/quantification-guide.md`). Attaching a number to every achievement mechanically is never required. A
+   figure is used only when the user states it; elicitation never proposes a candidate value. An excess of figures
+   damages the credibility of the whole document (`references/quantification-guide.md`).
 
-3-2. **回答の様式は利用者が決める。** 利用者が、選択式で聞いた問いに自由記述で答えても、複数の問いへ一度に答えても、経歴を一気に語っても、聞き取り側はその答え方を直さない。受け取った内容を項目へ振り分け、未回答の項目だけを聞く。派遣・業務委託・出向・休業・起業などの定型でない経歴は、定型に合わせて書き換えず、そのまま記録する（`references/answer-handling.md`）。
+3-2. **The user decides the form of the answer.** Elicitation never corrects how the user answers — whether the
+   user answers a choice-format question in free text, answers several questions at once, or narrates a whole
+   career history in one go. What comes in is sorted into its items, and only the items still unanswered get asked
+   next. A career history with an atypical shape — temporary staffing, contract work, secondment, a leave of
+   absence, running a business — is recorded as it is, without reshaping it into a typical form
+   (`references/answer-handling.md`).
 
-4. **スキルは専門スキルと転用可能スキルを分ける。** 入口は technical / business / languages / certifications とする。補助分類として、厚労省ポータブルスキルの9要素（対課題5・対人4）を持つ。この2層で、専門スキルと転用可能スキルを分けて棚卸しする。汎用分類の一律適用に依存しない（`references/profile-methods.md`）。
+4. **Separate specialized skills from transferable skills.** The entry point is technical / business / languages /
+   certifications. A secondary classification holds the 9 elements of the MHLW's (Ministry of Health, Labour and
+   Welfare) portable skills (5 対課題 (task-facing), 4 対人 (people-facing)). These two layers take stock of specialized and
+   transferable skills separately, without depending on a uniform application of a generic taxonomy
+   (`references/profile-methods.md`).
 
-5. **転職の軸は必須条件を少数に絞り、再評価を前提とする。** 譲れない条件と望ましい条件の分離は維持する。そのうえで、必須条件（`conditions[level=must]` と `work_character_preferences[desire=must]` の合計）は3件程度までに絞る。優先順位と再評価時期はメタ情報として残す。利用者の選好は、聞き取りの過程で定まり、時とともに変わる。そのため、軸を固定した結論として扱わない（`references/profile-methods.md`）。深掘り（建設的言い換え・根拠づけ）は `job-change-self-analysis` へ誘導する。
+5. **Keep must-have conditions to a small number, and treat job-change axes as open to reassessment.** The
+   separation between conditions that cannot be given up and conditions that are merely desirable is kept. Within
+   that, must-have conditions — the sum of `conditions[level=must]` and `work_character_preferences[desire=must]` —
+   are narrowed to about 3 items. Priority and the time for reassessment are kept as metadata. A user's preferences
+   settle over the course of elicitation and change over time, so an axis is never treated as a fixed conclusion
+   (`references/profile-methods.md`). A deep dive — constructive rewording, grounding a preference in reasons — is
+   directed to `job-change-self-analysis`.
 
-6. **事実を創作・補完しない。** profile.json に載せる経歴・実績・数値は、聞き取りメモに記録のある範囲に限る。実績値・期間・役職を推測で補完しない。経歴の詐称は懲戒・内定取消につながり、社会保険等の突合により高い確率で発覚する（`references/profile-methods.md`）。
+6. **Do not fabricate or fill in facts.** The career history, achievements, and figures placed in profile.json stay
+   within what the elicitation notes record. An achievement figure, a period, or a job title is never filled in by
+   inference. Falsifying a career history leads to disciplinary action or a withdrawn offer, and cross-checking
+   against social insurance and similar records exposes it with high probability (`references/profile-methods.md`).
 
-7. **初回は骨格までを確定し、深掘りは必要になる工程の直前まで先送りする。** 初回作成では、職歴の骨格・現職の役割・転職理由・主要な条件・作業特性8件までで profile.json を成立させる。実績の定量化・スキルの棚卸し・企業スコアの採点軸・条件の網羅は、下流の工程が要るようになった時点でセクション更新として行う。所要時間が延びるほど途中で離脱する割合が上がり、対話という形式そのものは入力を速くしないためである（`references/elicitation-guide.md`）。
+7. **Build section by section: settle the skeleton on the first pass, and defer a deep dive until just before the
+   process that needs it.** profile.json is built in 10 sections (the catalogue is `references/sections.md`). On
+   first creation, 5 sections — career skeleton, current role, reasons for changing jobs, key conditions, and the 8
+   work-character preferences — are filled to `skeleton` to make profile.json valid. The other 5 sections —
+   responsibilities and achievements, skills, scoring axes, target companies and roles, annual salary — and the
+   deep dive on the first-pass sections are each done later, one section at a time, as a "section update," once a
+   downstream process needs that section. `scripts/profile_sections.py` judges which stage each section has
+   reached from profile.json alone, never from the memory of the conversation. This is because the dropout rate
+   rises as elicitation runs longer, and a conversational format does not by itself make data entry faster
+   (`references/elicitation-guide.md`).
 
-8. **手元の書類を読めるなら読む。ただし要求しない。** 職務経歴書・履歴書・レジュメがあれば、職歴の骨格はそこから取り込み、確認だけで済ませられる。ファイルの提出を条件にせず、無ければ従来どおり対話で聞く。ファイルから読んだ事実は本人の申告と同格であり、物証として扱わない（原則2）。
+8. **Read a document the user has on hand when one is available, without requiring it.** When a shokumu-keirekisho
+   (career history document), rirekisho (résumé form), or résumé is available, the career skeleton is imported from
+   it and only needs confirming. Submitting a file is never a condition; elicitation asks through conversation as
+   before when none is available. A fact read from a file carries the same standing as the user's own statement,
+   and is never treated as documentary proof (Principle 2).
 
-9. **個人情報を外部へ送信しない。** profile.json に含まれる個人情報は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルは境界の内側にある `profile.json`・`profile_interview_notes.md` を作る側である。writer（job-change-profile-writer）と auditor（job-change-profile-auditor）は、いずれも Web 送信手段を持たない。このため、これらのパスを渡してよい。
+9. **Personal information is never sent outward.** The personal information profile.json holds is never used in
+   any outward transmission, including a search query, a fetch, or an external API. The canonical listing of what
+   falls inside the boundary and which role may access it lives in the hub's
+   `{HUB_SKILL_DIR}/references/pii-boundary.md`. This skill builds `profile.json` and `profile_interview_notes.md`,
+   both inside that boundary. Neither the writer (job-change-profile-writer) nor the auditor
+   (job-change-profile-auditor) has a means to send data to the web, so these paths may be passed to them.
 
-## 範囲外
+## Out of scope
 
-次は本スキルの範囲外とする。依頼された場合は、対応できない旨と、代わりの担当・行動を伝える。
+The following fall outside this skill's scope. When asked for one of these, this skill states that it cannot
+handle the request and names the sub-skill or action to use instead.
 
-- **強みの根拠づけ・キャリアの物語化・退職理由の建設的言い換え。** `job-change-self-analysis` が担う。本スキルは軸の構造（reasons の短文）までを扱い、深掘りは `job-change-self-analysis` へ誘導する。
-- **応募書類の文面作成。** 職務経歴書・履歴書・英文レジュメ・志望動機書の執筆は `job-change-documents` が担う。本スキルはその土台データ（profile.json）を作り、渡す。
-- **企業別の要件対応づけ（アピールマッピング）。** 応募先ごとに変わる relevance は、profile へ固定して保持しない。応募時に `job-change-documents` が profile.json の職務単位データから再構成する。
-- **企業研究。** 企業の理念・事業・評判の調査は `job-change-company-research` が担う。
+- **Grounding strengths, building a career narrative, and constructive rewording of reasons for leaving.**
+  `job-change-self-analysis` handles these. This skill handles the structure of the axes (the short statements in
+  `reasons`) and directs a deep dive to `job-change-self-analysis`.
+- **Writing the wording of application documents.** `job-change-documents` handles drafting the shokumu-keirekisho,
+  rirekisho, English résumé, and statement of motivation. This skill builds the underlying data (profile.json) and
+  hands it over.
+- **Mapping requirements to the profile for a specific company (an appeal map).** Relevance changes with each
+  application and is never held fixed in the profile. `job-change-documents` reconstructs it from profile.json's
+  job-level data at application time.
+- **Company research.** Researching a company's philosophy, business, and reputation belongs to
+  `job-change-company-research`.
 
-## パスの解決
+## Path resolution
 
-利用者データの置き場所は設定ファイルの記述だけで決まる。既定の置き場所は無い。本文で `{DATA_ROOT}` と書いた箇所は、次のコマンドが返す `data_root` に読み替える。
+Where the user's data is placed is decided solely by what the configuration file states. There is no default
+location. Wherever this document writes `{DATA_ROOT}`, read it as the `data_root` the following command returns.
 
-hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、作業のどの段階よりも先に次を実行する。
+When dispatched from the hub (job-change-support), the hub passes an already-resolved `{DATA_ROOT}`. When launched
+on its own, this skill runs the following before any other step of the work.
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 ```
 
-| 終了コード | 状態 | 対応 |
+| Exit code | State | Response |
 |---|---|---|
-| 0 | 設定済み | 出力の `paths` に各データの絶対パスが入る。そのまま作業へ進む |
-| 1 | 設定はあるが内容が不正 | 出力の `errors` を利用者へ示し、修復されるまで作業へ進まない |
-| 2 | 未設定 | Skill ツールで `job-change-support` を起動して設定を作らせ、`{DATA_ROOT}` を解決してから戻る |
+| 0 | Configured | The output's `paths` holds the absolute path for each piece of data. Proceed with the work as it stands. |
+| 1 | Configured but invalid | Show the output's `errors` to the user, and do not proceed until it is fixed. |
+| 2 | Not configured | Launch `job-change-support` with the Skill tool to have it create the configuration, resolve `{DATA_ROOT}`, and return. |
 
-`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。探索順序を含む設定ファイルの仕様は `docs/configuration.md` にある。
+`{SKILL_DIR}` denotes this skill's own absolute path, and `{HUB_SKILL_DIR}` denotes the absolute path of
+`job-change-support` at the same install location. The configuration file's specification, including its search
+order, lives in `docs/configuration.md`.
 
-## データ配置
+## Data layout
 
-利用者データは、非公開ディレクトリ `{DATA_ROOT}/career-private/` に置く。本スキルが読み書きするパスは次のとおり。
+The user's data lives in the private directory `{DATA_ROOT}/career-private/`. The paths this skill reads and
+writes are as follows.
 
-| パス | 役割 | 入出力 |
+| Path | Role | Input/output |
 |---|---|---|
-| `career-private/profile.json` | 利用者プロファイルの単一の原本 | 出力（本スキルが作る・更新する） |
-| `career-private/profile_interview_notes.md` | 聞き取りメモ。記載形式の原本は `references/elicitation-guide.md` にある | 出力（聞き取り中に本体セッションが逐次追記。中断再開に対応） |
+| `career-private/profile.json` | The single canonical source of the user's profile | Output (this skill creates and updates it) |
+| `career-private/profile_interview_notes.md` | Elicitation notes. The canonical definition of the recording format lives in `references/elicitation-guide.md` | Output (the main session appends to it as elicitation proceeds; supports resuming after an interruption) |
 
-- profile.json のフィールド仕様・記入基準・検証規則の原本は hub（`job-change-support`）の `references/profile-format.md` にある。本スキルはこれを編集しない。
-- 記入例は hub の `assets/profile_example.json`（架空の人物）にある。本スキル側に複製を置かない。
-- スキル本体フォルダー（`skills/job-change-profile/`）に利用者データを置かない。
-- `career-private/` が未作成の場合は、必要になった時点で本スキルが作る。
+- The canonical definition of profile.json's field specification, entry criteria, and validation rules lives in the
+  hub's (`job-change-support`) `references/profile-format.md`. This skill does not edit it.
+- A filled-in example lives in the hub's `assets/profile_example.json` (a fictitious person). No copy is kept on
+  this skill's side.
+- No user data is placed in the skill's own folder (`skills/job-change-profile/`).
+- When `career-private/` does not yet exist, this skill creates it once it is needed.
 
-## 初回と深掘りの分担
+## Sections and reach stages
 
-初回作成は、既定では初回の範囲にとどめる。初回に確定させるのは次の5つに限る。
+profile.json is built in 10 sections. The canonical definition of the section list, the fields each fills, the
+first-pass scope, the process that needs each section, the dependency in the order of asking, and the criteria for
+judging the reach stage (`missing` / `skeleton` / `deep`) lives in `references/sections.md`. Each section's
+procedure and settled wording lives in `references/sections/{id}.md`, and building one section reads only that file
+and the common rules (`references/question-bank.md`).
 
-- 職歴の骨格（`career_history[]` の `company`・`period`・`role`。書類の取り込みがあれば確認だけで済む）
-- 現職の役割（`basic.current_role`）
-- 転職理由（`job_change_axis.reasons` を1件以上）
-- 主要な条件（`conditions[]`。希望年収の下限と、勤務地・リモートの制約があれば足りる。件数は少なくてよい）
-- 作業特性8件（`work_character_preferences`。選択式2回で埋まり、スキーマ上は省略できない）
+| Section id | Name | First pass |
+|---|---|---|
+| `basic` | Basic information | Current role only |
+| `career` | Career skeleton | Skeleton |
+| `achievements` | Responsibilities and achievements | skip |
+| `skills` | Skill inventory | skip |
+| `reasons` | Reasons for changing jobs | At least one item |
+| `conditions` | Structured conditions | Key conditions only |
+| `work_character` | Work-character preferences | All 8 items |
+| `score_axes` | Company scoring axes | skip |
+| `targets` | Target companies and roles | skip |
+| `salary` | Annual salary | skip |
 
-Step 2（職務ごとの深掘り）・Step 3（スキル棚卸し）・企業スコアの採点軸・条件の網羅と優先順位付け・現年収の実額は深掘り項目とし、初回は既定で飛ばす。利用者がその場で続けたいと述べた場合は、そのまま続けてよい。
+`scripts/profile_sections.py` judges the reach stage from the content of profile.json alone. Resuming after an
+interruption, and deciding which section to deep-dive into next, are both decided from this output, never from the
+memory of the conversation. A skipped section, and the deep dive on a first-pass section, are each done as a
+"section update," just before the process that needs it. When the user states on the spot a wish to continue,
+elicitation may continue as asked.
 
-飛ばした項目は「セクション更新」モードで深掘りし、それを要する工程の直前に置く。
+A profile.json that fills only the first-pass scope passes `validate_profile.py`. The 4 WARNs expected within the
+first-pass scope are listed under "Scope of the first pass" in `references/sections.md`, and are never grounds for
+sending Step 5 back.
 
-| 深掘りする項目 | それが要る工程 |
+## Pipeline
+
+Steps 0 through 6 run in order, from intake to delivery. Read `{SKILL_DIR}` as this skill's own absolute path, and
+`{HUB_SKILL_DIR}` as the hub's (`job-change-support`) absolute path. `{PROFILE}` denotes the absolute path of
+`profile.json`, and `{NOTES}` denotes the absolute path of `profile_interview_notes.md`.
+
+The main session performs elicitation with AskUserQuestion (a sub-agent cannot converse with the user). Elicitation
+centers on the choice format, at most 4 questions per AskUserQuestion call with up to 4 choices per question. When
+one question should take several answers, use `multiSelect: true` and keep it as one question.
+Free text is asked only for an item that cannot be put into choices, such as a company name, a tenure period, or an
+achievement figure. Questions use the structured questions set in advance in `references/question-bank.md`, never
+an open-ended question that invites rumination. A question addressed to the user, and its choice labels, are
+written in polite Japanese (敬体). For a question whose choices can be enumerated in advance,
+`references/question-bank.md` holds the settled wording, and that wording is used as it stands, never composed on
+the spot.
+
+The choice format is the shape of elicitation's own question, and it never constrains how the user answers. When
+the user answers in free text or answers several things at once, what comes in is sorted into its items and written
+to `{NOTES}`, and only the items still unanswered are asked next. The same item is never asked again in choice
+format. The canonical definition of how to handle each answer format, and the types of question that never doubt a
+statement, lives in `references/answer-handling.md`.
+
+### Step 0: Checking the premises
+
+- Check whether `profile.json` exists. If it does, validate it with the hub's `validate_profile.py`, then grasp
+  each section's reach stage with `scripts/profile_sections.py`.
+- Check the mode with AskUserQuestion. The choices are 「初回作成」 (first creation), 「節の更新」 (section update),
+  and 「全面点検」 (full review) (the wording is in `references/question-bank.md`'s Step 0).
+- For "section update," have the user go on to choose the target sections (the 10 sections are split across 3
+  questions, taken with `multiSelect: true`). Attach each section's current stage to its choice description. Read
+  the existing profile.json and elicit only the chosen sections.
+- For "first creation," proceed within the first-pass scope described above under "Sections and reach stages."
+  Only when the user states a wish to finish the deep dive in the same sitting does elicitation continue on the
+  spot into the skipped sections.
+- When a downstream sub-skill dispatches this skill naming a section it needs, that section is treated as a
+  "section update" regardless of the chosen mode.
+
+### Steps 1-4: Elicitation by section
+
+For each target section, read `references/sections/{id}.md` and ask with the procedure and settled wording it
+holds. What comes back is appended to `{NOTES}` on the spot. The dependency in the order between sections (`career`
+→ `achievements` → `skills`, and `reasons` → `conditions` → `work_character` → `score_axes`) follows "Section
+order" in `references/sections.md`; a section with no dependency may be taken in whatever order the user chooses.
+The Step numbers match the column in `references/question-bank.md`'s correspondence table.
+
+| Step | Section | First pass | Canonical procedure |
+|---|---|---|---|
+| 1 | `career`, `basic` | Skeleton and current role | `references/sections/career.md`, `references/sections/basic.md` |
+| 2 | `achievements` | skip | `references/sections/achievements.md` |
+| 3 | `skills` | skip | `references/sections/skills.md` |
+| 4 | `reasons`, `conditions`, `work_character` | First pass | `references/sections/reasons.md`, `references/sections/conditions.md`, `references/sections/work_character.md` |
+| 4 | `score_axes`, `targets`, `salary` | skip | `references/sections/score_axes.md`, `references/sections/targets.md`, `references/sections/salary.md` |
+
+The section files hold the following matters, and SKILL.md does not repeat them.
+
+- `career`: importing an existing document (including reading a `.docx`), settling the skeleton, concurrent
+  employment, separating the employer from the place of work, and detecting and recording a gap in employment.
+- `achievements`: a deep dive in the order responsibilities → key projects → achievements, support for
+  quantification, presenting a reworded candidate, and `project`/`period` for a concurrent project.
+- `skills`: reverse lookup from what the user says, the 9 elements of portable skills, and how to present
+  candidates when converting into an unfamiliar occupation.
+- `conditions`: the 4 items axis, operator, threshold, and verification method, handling a qualitative condition,
+  the count and priority of must-have conditions, and migration from 1.x.
+- `work_character`: the desired level for each of the 8 traits, the `statement` for `desire=must`, and handling the
+  3 traits a job posting cannot settle.
+- `score_axes`: choosing a quantitative axis, building a qualitative axis, weight and criteria, a check against two
+  fictitious companies, and a mismatch between a scoring axis and a must-have condition.
+
+When an existing profile.json has `schema_version` `1.0` or `1.1`, migration follows "Migration from 1.x" in
+`references/sections/conditions.md`. A free-text condition is never assigned to an axis mechanically.
+
+### Step 5: Writing, mechanical validation, independent audit
+
+As elicitation proceeds, the main session appends its results to `{NOTES}` (`profile_interview_notes.md`) and keeps
+them collected there (this supports resuming after an interruption). The `job-change-profile-writer` agent (model:
+opus) is launched. It is passed `{NOTES}`, the existing `{PROFILE}` (when updating), the hub's
+`references/profile-format.md`, and the output destination `{PROFILE}`. The writer creates or updates profile.json
+from the facts in the notes alone. On receiving its return value, the main session runs the hub's
+`validate_profile.py` and confirms ERROR 0. The `job-change-profile-auditor` agent (model: opus, in a new context
+that is not given the writer's reasoning) is then launched to audit the result. When `verdict` is BLOCK, or a
+finding carries `severity` = must_fix, the work is sent back to the writing step of Step 5 (at most twice; after
+that, it is the user's decision).
+
+This step runs as usual even within the first-pass scope. A profile.json that fills only the first-pass scope
+produces a WARN for each skipped section. Such a section stays `missing`, which is expected, and is never grounds
+for sending the work back. It is presented to the user as a section whose deep dive is still ahead.
+
+### Step 6: Guidance on update practice and delivery
+
+Guide the user on update practice — append whenever a new achievement comes in, review at least once a quarter,
+and give priority to the most recent 7-10 years when writing it into an application document. At the same time,
+rewrite `updated_at` to today's date. profile.json is an input for downstream sub-skills, so no formatted file is
+produced from it. Instead, attach the output of `scripts/profile_sections.py` and summarize for the user what was
+written — the job summary, the number of career-history entries and their tenure periods, skills, job-change axes
+and must-have conditions, company scoring axes, and annual salary. Finally, guide the user to the downstream work
+that can take profile.json as input: self-analysis in `job-change-self-analysis`, company research in
+`job-change-company-research`, and application-document writing in `job-change-documents`. When a section remains
+`missing` or `skeleton`, name that section and the process that needs it (the "Section list" table in
+`references/sections.md`) once, without urging a deep dive on the spot. The final message states its conclusion
+first. It carries no empty section, no repetition of the same content, and no formulaic preamble.
+
+## Pass/fail gate and send-back
+
+The pipeline has one validation-and-audit gate.
+
+| Gate | Passing condition and where a send-back returns to |
 |---|---|
-| 企業スコアの採点軸（`company_score_axes`）・必須条件の優先順位（`conditions[].priority`・`priority_note`） | `job-change-fit-assessment` の適合性評価 |
-| 実績の定量化（`achievements[].description`・`metric`）・スキルの棚卸し（`skills`） | `job-change-documents` の応募書類作成 |
-| 強みの根拠づけ・キャリアの物語化・転職理由の建設的な言い換え | `job-change-self-analysis`（本スキルの範囲外） |
+| Step 5's validation-and-audit gate | The work returns to Step 5's writing step when the hub's `validate_profile.py` FAILs (1 or more ERRORs), when `job-change-profile-auditor`'s `verdict` is BLOCK, or when a finding carries `severity` = must_fix. A send-back happens at most twice for the same deliverable. |
 
-初回の範囲だけを埋めた profile.json は `validate_profile.py` を PASS する。定量的な `metric` が1件もない・`skills` が空・`targets` が空・`level=must` の条件に `priority` が付いていない、の4件の WARN は、初回の範囲では想定内である。Step 5 の差し戻しの理由にしない（優先順位付けも深掘り項目である）。
+On a send-back, the audit's findings (`target`, `evidence`, `fix`) are passed to the writer as they stand, and once
+reflected, the work runs again from Step 5's mechanical validation. A finding that two send-backs fail to resolve
+is delivered only after the user has settled it as an open item — for example, a finding that a figure with no
+record in the elicitation notes sits in profile.json has the user choose between asking again and removing it. A
+mechanical validation ERROR is resolved before delivery regardless of the send-back limit. Delivery may proceed
+with an open item noted explicitly only when what remains unresolved is an audit finding.
 
-## パイプライン
+## Role execution (by harness)
 
-受付から納品まで Step 0〜6 を順に進める。`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は hub（`job-change-support`）の絶対パスに読み替える。`{PROFILE}` は `profile.json`、`{NOTES}` は `profile_interview_notes.md` の絶対パスを指す。
+This skill's pipeline is written as delegating work to specialized roles. The content of each role lives in
+`references/roles/`, which is the canonical definition.
 
-聞き取りは本体セッションが AskUserQuestion で行う（サブエージェントは利用者と対話できない）。選択式を中心に、1回の AskUserQuestion につき最大4問・各質問は最大4択とする。1つの問いで複数の答えを受けたい場合は `multiSelect: true` を使い、問いを分けて回数を増やさない。自由記述で聞くのは、企業名・在籍期間・実績値など、選択式にできない項目だけである。質問は `references/question-bank.md` のあらかじめ定めた構造化質問を使い、反すうを招く自由回答の質問を置かない。利用者へ発する質問文と選択肢のラベルは敬体で書く。選択肢を事前に列挙できる質問については、`references/question-bank.md` に確定した文言があり、それをそのまま使う（言い回しをその場で作らない）。
-
-選択式は聞き取り側の問いの形であり、利用者の答え方を縛らない。利用者が自由記述や一括の回答で答えた場合は、受け取った内容を項目へ振り分けて `{NOTES}` へ書き、答えの無かった項目だけを次に聞く。同じ項目を選択式で聞き直さない。回答の様式ごとの対応と、申告を疑わない問いの型の原本は `references/answer-handling.md` にある。
-
-### Step 0 前提確認
-
-- `profile.json` の有無を確認する。あれば hub の `validate_profile.py` で検証し、現状を把握する。
-- モードを AskUserQuestion で確認する。選択肢は「初回作成」「セクション更新（basic / 職歴 / スキル / 軸 / 志望 / 年収のどれか）」「全面点検」。
-- 更新モードでは、既存の profile.json を読み、対象セクションのみを聞き取り対象にする。
-- 「初回作成」を選んだ場合は、上記「初回と深掘りの分担」の範囲で進める。深掘りまで一度に済ませたいと利用者が述べた場合だけ、Step 2 以降をその場で続ける。
-
-### Step 1 職歴の骨格（時系列）
-
-#### 既存書類の取り込み
-
-聞き取りを始める前に、職務経歴書・履歴書・レジュメなどのファイル（Word・PDF・テキスト・Markdown）が手元にあるかを1問で聞く。文言は `references/question-bank.md` にある。**提出を求めない。** 無いと答えた場合は、そのまま下記の対話へ進む。あると答えた場合だけパスを受け取って読む。
-
-PDF・テキスト・Markdown は Read で読む。`.docx` は Read が扱わないため、Bash で Python の標準ライブラリを使って本文を読み出す。docx は ZIP であり、本文は `word/document.xml` にある。段落の終端 `</w:p>` を改行へ置き換えてからタグを除いて、段落の区切りを保つ。タグを除いたあとに `html.unescape` を通すのは、XML では `&`・`<`・`>` がエンティティで書かれるためである。戻さないままだと、「A&amp;B株式会社」が `A&amp;amp;B株式会社` のまま profile.json へ書き込まれる。
-
-```bash
-python -c "import zipfile,re,html,sys; xml=zipfile.ZipFile(sys.argv[1]).read('word/document.xml').decode('utf-8'); xml=re.sub(r'</w:p>','\n',xml); print(html.unescape(re.sub(r'<[^>]+>','',xml)))" {書類のパス}
-```
-
-表組みのセルも段落として出るため、表で書かれた職務経歴書でも企業名・在籍期間・役職は読み出せる。ただし行と列の対応は失われるので、表が主体の書類では読み取った並びを利用者に確かめる。`.doc`（旧形式）は ZIP 形式を持たないため、この方法では読めない。PDF かテキストでの用意を勧め、それが難しければ対話で聞く。スキャン画像だけの PDF は Read で文字が読めないことがある。LinkedIn のプロフィールを PDF に保存する機能は英語の文字だけに対応しており、日本語のプロフィールでは本文が欠ける。読めない箇所を推測で埋めず、その項目だけを対話で聞く。
-
-SES 業界のスキルシートでは、担当工程が記号で書かれていることが多い。記号の意味を本人に確かめてから `responsibilities` へ転記する。
-
-読めたら、企業名・在籍期間・役職・担当業務を抽出して `{NOTES}` へ転記し、抽出した一覧を利用者へ示して「違うところだけ教えてください」と聞く（違うところだけを申告してもらう。全項目への同意を求めない）。訂正のあった項目だけをメモへ `訂正:` の行で足す。
-
-業務内容・実績の記述のような長文は、企業名・在籍期間・役職に比べて抽出の精度が落ちる。長文はメモへ転記する時点で `（要確認）` を付け、利用者の確認が済んだ時点で外す。
-
-ファイルから読んだ事実は、対話で述べられた申告と同格に扱う（原則8）。物証として扱わず、他の項目の裏取りに使わない。
-
-#### 骨格の確定
-
-古い順または新しい順に、企業×在籍期間×役割の一覧をまず確定する。書類から取り込んだ場合は、その一覧が骨格であり、訂正の申告を受けた時点で確定とする。取り込んだ項目を対話で聞き直さない。転職・異動・昇進などの転機を時系列の手がかりにする。根拠は `references/elicitation-guide.md` にある。在籍中の職は period を `〜現在` と書く。
-
-骨格が出そろったら、同じ時期に複数の職に就いていた期間があったかを1問で確かめる（兼務・出向・副業・自営）。あった場合は、その職も `career_history` の1件として企業・期間・役割を聞き、どの立場での在籍かを `role` に書き分ける（例「業務委託（副業）」）。在籍期間が重なることは不整合ではない。
-
-派遣・SES・客先常駐・業務委託・出向のように雇用主と就業先が分かれる職は、雇用主を `company` に、就業先を `assignment` に書く。雇用形態は本人の言葉のまま `employment_type` に書く。休業・起業・公務員・海外勤務などの定型でない経歴の記録のしかたは `references/answer-handling.md` の表に従い、定型に合わせて書き換えない。
-
-並行の在籍を含めて骨格が確定したら、どの職歴の在籍期間にも含まれない期間（6か月以上）を機械的に検出し、その場で説明と期間中の活動を聞き、`career_gaps` に記録する。判定は全職歴の在籍期間の和集合に対して行う。隣どうしの職歴だけを見ると、本業と重なる副業がある場合に存在しない空白を検出する。
-
-### Step 2 職務ごとの深掘り（プロジェクト単位）
-
-この Step は深掘り項目に当たる（初回では飛ばし、応募書類の作成の直前にセクション更新として行う）。
-
-職歴1件ずつ、担当業務（responsibilities）→主要プロジェクト→実績（achievements）の順で聞く。実績については「何を・どの規模で・どう変えたか」を聞く。定量化は `references/quantification-guide.md` の型で支援する。数値が出ない実績は無理に数値化せず、工夫や評価された点を具体化して `metric` を `null` にする。利用者が述べた数値は、その出所を問わずそのまま記録する。幅や概算で述べた数値は、幅や概算のまま記録する。
-
-口語や曖昧な言い方（「手伝った」「作った」「いろいろやった」）は、`references/answer-handling.md` の置き換え表に従って書類で通る言い方の案を示し、本人が了承した文だけを `{NOTES}` へ `言い換え（本人了承）:` の行で残す。役割の表現は本人の申告した関与の範囲を超えて上げない。
-
-1つの職の中で複数の案件を並行して担当していた場合は、実績1件ごとに案件の呼び名（`project`）と、その案件の期間（`period`）も聞き、どの案件のいつの成果かを区別できるようにする。担当した案件が1つだけの職では、この2つを聞かない。
-
-### Step 3 スキル棚卸し
-
-同じく深掘り項目であり、応募書類の作成の直前に Step 2 とまとめて行う。Step 2 の発話を材料にするためである。
-
-technical / business / languages / certifications を、Step 2 の発話から逆引きで確認する（候補を選択肢として提示し、選ばせる）。そのうえで、厚労省ポータブルスキルの9要素（対課題5・対人4）を選択式で確認し、`skills.portable` に入れる（category は「対課題」か「対人」）。要件との対応づけは応募時に応募書類サブスキルが行う旨を伝える。詳細は `references/profile-methods.md` のスキル分類の節にある。
-
-利用者が未経験の職種への転換を望む場合、Step 2 の発話から作った候補は志望職種と重ならない。この場合は、志望職種（`targets.roles`）で一般に求められるスキルの候補も併せて示し、保有しているものだけを選ばせる。候補を示すことは保有を仮定することではない。選ばれなかった候補は書かない。
-
-### Step 4 転職の軸・志望対象・年収
-
-この Step で初回の範囲として聞くのは、reasons（1件以上必須）→ 主要な条件（`conditions`。希望年収の下限と、勤務地・リモートの制約があれば足りる）→ 作業特性の希望（`work_character_preferences` の8件）までである。企業スコアの採点軸・条件の網羅と優先順位付け・targets・現年収の実額は深掘り項目であり、初回は飛ばす。現年収のように立ち入った問いを初回へ置かないためでもある（`references/elicitation-guide.md`）。
-
-そのまま深掘りまで進める場合は、reasons → 条件（`conditions`）→ 作業特性の希望（`work_character_preferences`）→ 企業スコアの採点軸（`company_score_axes`）→ targets → salary の順で聞く。軸の建設的言い換え・根拠づけは `job-change-self-analysis` へ誘導する。根拠は `references/profile-methods.md` の must/want の節による。
-
-#### 条件の構造化
-
-条件は、軸・演算子・しきい値の形に構造化して `job_change_axis.conditions[]` へ入れる（自由文のまま置かない）。フィールド仕様は hub の `references/profile-format.md`、軸の語彙は hub の `references/screening-axes.md` を読む。
-
-条件1件ごとに、次を AskUserQuestion で確定する（1回の質問で複数の条件をまとめて扱ってよい）。
-
-1. 譲れない条件か、あれば望ましい条件か（`level`）。
-2. 8軸のどれに当たるか、または軸に当てはまらない質的条件か（`axis`）。
-3. 軸に当たる場合は、比較のしかたとしきい値（`operator`・`value`・`unit`）。例: 残業なら「1か月あたりの上限時間」、年間休日なら「年間の下限日数」、年収なら「下限額」。
-4. どこで確認できるか（`verification`）。値域の原本は hub の `references/profile-format.md` にあり、選択肢との対応は `references/question-bank.md` の「確認手段」の文言にある。
-
-軸に当てはまらない質的条件（例「モダンな技術スタックが整備されていること」）は、`axis` を `null`、`operator` を `qualitative`、`value` を `null` にする。`verification` は `research` または `interview` とする。この種の条件は、求人検索の分類に使わず、企業研究と面接での確認へ回す。その旨を利用者へ伝える。
-
-#### 作業特性の希望
-
-8つの作業特性それぞれについて、希望度（`must` / `important` / `neutral` / `not_required`）を確認する。特性の定義は hub の `references/screening-axes.md` にある。2回の AskUserQuestion（4特性ずつ）で埋まる。
-
-「どちらでもよい」「不要である」も明示的に選ばせる。`desire=must` を選んだ特性には、本人の言葉での条件文（`statement`）を1文で聞く。
-
-`clear_completion`・`solo_completable`・`short_feedback` の3特性は求人票からは判定できない。これらに `must` や `important` を選んだ場合は、面接での確認事項になる旨をその場で伝える。
-
-#### 必須条件の件数
-
-`conditions[level=must]` と `work_character_preferences[desire=must]` の合計が4件以上になったら、優先順位を付けて絞る対話を挟む。順位と再評価時期を `job_change_axis.priority_note` へ残す。
-
-#### 企業スコアの採点軸
-
-採点軸も深掘り項目であり、適合性評価の直前にセクション更新として扱う。初回で飛ばした場合は `company_score_axes` をフィールドごと書かない（空配列にしない）。
-
-企業を0〜100点で採点する軸と重みを決め、`company_score_axes[]` へ入れる。定量候補軸9個・点数への換算・重みの配分の規則は `job-change-company-research` の `references/company-score-rubric.md` にある。フィールド仕様は hub の `references/profile-format.md` を読む。次の順で決める。
-
-1. 定量候補軸9個（処遇水準・年間休日総数・月平均の残業時間・有給休暇の取得率・離職率・男性の育児休業取得率・売上高の成長率・営業利益率・自己資本比率）を提示し、重視するものを選ばせる。1回の AskUserQuestion で3問に分け、各問で3軸を `multiSelect: true` で受ける（1問あたりの選択肢は最大4件のため、9軸を1問へは入れられない）。処遇水準（`compensation_level`）は既定で選択済みとし、外すかどうかだけ確認する。
-2. 数値にならない事柄で重視したいものがあれば、定性軸として作る。ラベル（呼び名）・定義（何をもってそう言うか）・判定条件（何が確認できたら何点か。3段階程度）を利用者と決める。判定条件まで決められない事柄は採点に入れず、面接での確認事項へ回す旨をその場で伝える。
-3. 選んだ軸への重みの配分（合計100）と、定量軸で使う基準を1回の AskUserQuestion でまとめて聞く。第1問は重みの配分で、選んだ軸の数に応じた配分案を選択肢に置き、当てはまるものが無ければ自由記述で受ける。第2問は、統計に基づく既定の基準をそのまま使うか、自分の基準を使うかである。重みが0になる軸は置かず、採点に入れない軸は外す。
-4. 自分の基準を使うと答えた軸は、100点となる水準（`full`）と0点となる水準（`zero`）を自由記述で聞き、`thresholds` へ入れる。数値の聞き取りであり、AskUserQuestion は使わない。処遇水準（`compensation_level`）は既定の基準を持たないため、必ず聞く。現年収を `zero`、希望年収（またはそれを上回る水準）を `full` に置く聞き方を既定とし、本人が別の置き方を望めばそれに従う。
-5. 配分した重みで架空の2社を採点し、点数の高い側と「実際にどちらを選ぶか」への答えが一致するかを検算する。軸名どうしの抽象的な比較ではなく、企業像の比較で聞く（例: 「A社は年収が現職より120万円高いが残業が月30時間、B社は年収が現職と同水準で残業が月5時間。どちらを選ぶか」）。
-
-検算が食い違った場合は、配分を見直すか、配分と実際の選択の両方を記録して利用者へ提示する。どちらが本当の判断かをスキルの側で決めない。軸を1つも選ばない場合は、企業スコアが出ない旨をその場で伝える。
-
-#### 採点軸と必須条件の食い違い
-
-選んだ採点軸と重みが、`conditions[level=must]` や `work_character_preferences` の希望度と食い違うことがある。例: 残業の上限を必須条件にしているのに `monthly_overtime` を軸に選んでいない。`compensation_level` に最大の重みを置いたのに年収の条件が `want` のままである。
-
-どちらが本当かを聞き取り側で決めない。食い違う組み合わせをそのまま利用者へ提示し、どう扱うか（軸や重みを見直す・必須条件を見直す・両方このままにする）を本人に選ばせる。聞き取りメモには、提示した食い違いと、利用者が選んだ扱いの両方を残す。
-
-#### 1.x からの移行
-
-既存の `profile.json` が `schema_version` `1.0` または `1.1` の場合、`must_conditions` / `want_conditions` の自由文が残っている。**機械的に軸へ割り付けない。** 自由文からしきい値を推測することは事実の創作に当たる。
-
-移行モードでは、既存の自由文を1件ずつ提示し、上記「条件の構造化」の4項目を対話で確定する。全件を移し終えたら `must_conditions` / `want_conditions` を空配列にし、続けて作業特性8件と企業スコアの採点軸を確認する。最後に `schema_version` を `2.0` へ、`updated_at` を当日へ書き換える。
-
-利用者が移行を望まない場合は 1.x のまま残す。その場合、求人検索の8軸判定と適合性評価の作業特性の次元が使えない旨を1回だけ伝える。
-
-### Step 5 作成→機械的な検証→独立監査
-
-聞き取りの結果は、その途中で本体セッションが `{NOTES}`（`profile_interview_notes.md`）へ逐次追記し集約しておく（中断再開に対応）。`job-change-profile-writer` エージェント（model: opus）を起動する。渡すのは `{NOTES}`・既存 `{PROFILE}`（更新時）・hub の `references/profile-format.md`・出力先 `{PROFILE}` である。作成担当はメモにある事実だけから profile.json を作成・更新する。戻り値を受け、本体セッションが hub の `validate_profile.py` を実行して ERROR 0 を確認する。続いて `job-change-profile-auditor` エージェント（model: opus、作成担当の判断理由を渡さない新規コンテキスト）を起動して監査する。`verdict` が BLOCK、または `severity` = must_fix の finding があれば Step 5 の作成へ差し戻す（最大2回。以降は利用者判断）。
-
-この Step は初回の範囲でも従来どおり通す。初回の範囲だけを埋めた構成では、飛ばした深掘り項目に対応する WARN が出る。その項目は空のままなのだから想定内であり、差し戻しの理由にしない。利用者へは、欠落としてではなく「深掘りがこれからである」ものとして伝える。
-
-### Step 6 更新運用の案内と納品
-
-更新運用（実績が出るたびに追記し、少なくとも四半期に一度は見直す。応募書類へ書き起こすときは直近7〜10年を優先する）を案内する。あわせて `updated_at` を当日の日付へ書き換える。profile.json は下流のサブスキルの入力であって単体の読み物ではないため、整形したファイルは作らない。代わりに、何が書かれたか（職務要約・職歴の件数と在籍期間・スキル・転職の軸と必須条件・企業スコアの採点軸・年収）を利用者へ要約して示す。最後に、profile.json を入力に使える下流の作業を案内する。`job-change-self-analysis` の自己分析、`job-change-company-research` の企業研究、`job-change-documents` の応募書類作成である。また、初回の範囲で納品した場合は、飛ばした深掘り項目と、それを要する工程（上記「初回と深掘りの分担」の表）を1度だけ添える。その場で深掘りを促さない。最終メッセージは結論から述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
-
-## 合否ゲートと差し戻し
-
-パイプラインには1つの検証・監査ゲートがある。
-
-| ゲート | 通過条件と差し戻し先 |
-|---|---|
-| Step 5 の検証・監査ゲート | hub の `validate_profile.py` が FAIL（ERROR 1件以上）の場合、または `job-change-profile-auditor` の `verdict` が BLOCK の場合、または `severity` = must_fix の finding がある場合は、Step 5 の作成へ差し戻す。差し戻しは同一成果物につき最大2回まで行う。 |
-
-差し戻し時は、監査の findings（target・evidence・fix）をそのまま作成担当へ渡し、反映後に Step 5 の機械的な検証から再度通す。2回の差し戻しで解消しない指摘は、未決事項として利用者へ判断を委ねてから納品する。例: 聞き取りメモに記録の無い数値が profile.json にある、という指摘は、聞き直すか削るかを利用者に選ばせる。機械的な検証の ERROR は、差し戻しの上限にかかわらず解消してから納品する。未解決が監査の finding だけである場合に限り、未決事項として明記したうえで納品してよい。
-
-## 役割の実行（ハーネス別）
-
-本スキルのパイプラインは、専門の役割へ作業を委ねる形で書いてある。役割の内容は `references/roles/` に置き、これを原本とする。
-
-| エージェント名 | 役割プロンプトの原本 |
+| Agent name | Canonical role prompt |
 |---|---|
 | `job-change-profile-writer` | `{SKILL_DIR}/references/roles/profile-writer.md` |
 | `job-change-profile-auditor` | `{SKILL_DIR}/references/roles/profile-auditor.md` |
 
-ハーネス別の実行手順、起動する数の判断、作成と監査を分ける理由の原本は hub の `{HUB_SKILL_DIR}/references/role-execution.md` にある。
+The canonical definition of the execution procedure by harness, the judgment of how many agents to launch, and the
+reason for separating writing from auditing lives in the hub's `{HUB_SKILL_DIR}/references/role-execution.md`.
 
-## エージェントのモデル方針
+## Agent model policy
 
-| エージェント | model | 責務 |
+| Agent | model | Responsibility |
 |---|---|---|
-| `job-change-profile-writer` | opus | 聞き取りメモから profile.json を作成・更新（Step 5）と監査指摘の反映。メモに無い事実を創作しない |
-| `job-change-profile-auditor` | opus | 独立コンテキストでの創作・誇張・時系列整合・並行在籍・軸の件数の監査、検証スクリプトの再実行（Step 5） |
+| `job-change-profile-writer` | opus | Creates and updates profile.json from the elicitation notes (Step 5) and reflects audit findings. Never fabricates a fact the notes lack |
+| `job-change-profile-auditor` | opus | In an independent context, audits fabrication and exaggeration, chronological consistency, concurrent employment, and the count of must-have axes, and reruns the validation script (Step 5) |
 
-機械的検査は hub の `validate_profile.py` が担う。model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
+Mechanical checking is handled by the hub's `validate_profile.py`. Each agent's model is fixed in its own
+frontmatter, and it is never overridden at launch.
 
-## スクリプトのCLI使用例
+## Script CLI usage examples
 
-profile.json の検証には hub（`job-change-support`）の `validate_profile.py` を用いる（本スキルは検証スクリプトを持たない。二重管理しない）。終了コードは PASS で 0、FAIL で 1、WARN のみは PASS 扱いである。`{HUB_SKILL_DIR}` は hub の絶対パス、末尾のパスは検証対象の profile.json のパスに読み替える。
+Validating profile.json uses the hub's (`job-change-support`) `validate_profile.py` (this skill holds no
+validation script of its own, to avoid managing the same thing in two places). The exit code is 0 for PASS, 1 for
+FAIL; WARN alone counts as PASS. Read `{HUB_SKILL_DIR}` as the hub's absolute path, and the trailing path as the
+path of the profile.json under validation.
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/profile.json
 python {HUB_SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/profile.json --json
 ```
 
-`--json` は結果を JSON 形式（`status`・`error_count`・`warning_count`・`errors`・`warnings`）で出力する。profile.json のフィールド仕様・検証規則の原本は hub の `references/profile-format.md` にある。記入例は hub の `assets/profile_example.json` を見る。
+`--json` outputs the result in JSON form (`status`, `error_count`, `warning_count`, `errors`, `warnings`). The
+canonical definition of profile.json's field specification and validation rules lives in the hub's
+`references/profile-format.md`. See the hub's `assets/profile_example.json` for a filled-in example.
 
-## references 一覧
+This skill's `profile_sections.py` reports each section's reach stage. Its exit code is always 0, and it never
+decides pass or fail. The output format is in "How to use the script" in `references/sections.md`.
 
-| ファイル | 何を | いつ読むか |
+```bash
+python {SKILL_DIR}/scripts/profile_sections.py {DATA_ROOT}/career-private/profile.json
+python {SKILL_DIR}/scripts/profile_sections.py {DATA_ROOT}/career-private/profile.json --json
+```
+
+## References list
+
+| File | What it holds | When to read it |
 |---|---|---|
-| `references/elicitation-guide.md` | 時系列×プロジェクト単位の想起手がかりの根拠、並行在籍と空白期間の扱い、既存書類の取り込みと初回の軽量化の根拠、選択式優先の運用、聞き取りメモの記載形式、更新運用、DOI/URL 付き出典 | 聞き取りの方針を定めるとき、監査の観点を確認するとき |
-| `references/answer-handling.md` | 申告を疑わない問いの型、聞き取り側に許される3つの操作（具体化・数値化の支援・表現の置き換え）、役割の表現の段階と置き換え表、回答の様式への対応、定型でない経歴の記録のしかた、メモの行の型 | 回答を受け取るたび、言い換え案を示すとき、定型でない経歴を聞くとき、監査で言い換えの範囲を検査するとき |
-| `references/question-bank.md` | Step 1〜4 で使うあらかじめ定めた構造化質問と、各質問が埋めるフィールドの対応表、質問文の文体、AskUserQuestion へ渡す確定した選択肢の文言 | ヒアリングの各 Step で質問を選ぶとき、質問文を書くとき |
-| `references/quantification-guide.md` | 定量化の型と代替表現、事実と異なる数値のリスク、定量化の効果の限界、職種依存、DOI/URL 付き出典 | 実績の聞き取り・作成・監査で定量表現を判断するとき |
-| `references/profile-methods.md` | 採用側が見る情報、スキル分類、must/want の根拠と限界、ATS の実像、経歴詐称の帰結、設計の限界とエビデンスギャップ、DOI/URL 付き出典 | 設計判断の根拠を確認するとき、監査の観点を定めるとき |
+| `references/sections.md` | The section catalogue (the 10 sections, the fields each fills, the first-pass scope, the process that needs each section, the dependency in the order of asking, the criteria for judging reach stage), and how to use `profile_sections.py` | When choosing a section in Step 0, when reporting a remaining section at delivery, when adding or removing a section |
+| `references/sections/{id}.md` | Each section's procedure, its opening question, the settled wording passed to AskUserQuestion, and the downstream process it serves | When eliciting that section (reading only this file and `question-bank.md`'s common rules per section) |
+| `references/elicitation-guide.md` | The grounding for chronological × project-unit recall cues, handling concurrent employment and an employment gap, the grounding for importing an existing document and lightening the first pass, the operation of preferring the choice format, the elicitation notes' recording format, update practice, and sources with a DOI or URL | When settling the elicitation policy, when confirming an audit perspective |
+| `references/answer-handling.md` | The types of question that never doubt a statement, the 3 operations elicitation may perform (making a statement concrete, supporting quantification, rewording), the scale of role phrasing and its replacement table, handling each answer format, how to record a career history with an atypical shape, and the notes' line formats | Whenever an answer comes in, when presenting a reworded candidate, when eliciting a career history with an atypical shape, when the audit checks the scope of a reworded sentence |
+| `references/question-bank.md` | The common rules for the register of question text and the choice-format operation, the settled wording for Step 0 (choosing the mode and the sections), and the correspondence table between questions and sections/fields | When starting elicitation, when asking the mode and the sections in Step 0 |
+| `references/quantification-guide.md` | Patterns for quantification and alternative phrasing, the risk of a figure that departs from fact, the limits of quantification's effect, dependency on occupation, and sources with a DOI or URL | When judging a quantitative expression during elicitation, writing, or audit of an achievement |
+| `references/profile-methods.md` | The information the hiring side looks at, skill classification, the grounding and limits of must/want, the real picture of ATS (applicant tracking systems), the consequences of falsifying a career history, the limits of the design and its evidence gaps, and sources with a DOI or URL | When confirming the grounding for a design decision, when settling an audit perspective |

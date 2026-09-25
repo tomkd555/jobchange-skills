@@ -14,7 +14,7 @@
 | `job-change-support` | 入口の hub。依頼を判別し、設定とプロファイルを確認してから各スキルへ渡します | `config.json`・`company_index.json` |
 | `job-change-profile` | 職務経歴・スキル・転職の軸を聞き取り記録します | `profile.json` |
 | `job-change-self-analysis` | 行動の記録・他者からの評価・行動傾向の聞き取りをもとに自己分析を進めます | `self_analysis.json` |
-| `job-change-job-search` | Web 検索で求人を集め、掲載ページの引用と出典 URL を付けます | `job_search_results.json` |
+| `job-change-job-search` | Web 検索で求人を集め、掲載ページの引用と出典 URL を付けます。主条件に加えて、条件を良くする・範囲を広げる派生レーンを並列に検索し、結果に出た全企業の基本情報と公表値も集めます | `job_search_results.json` |
 | `job-change-company-research` | 求人を起点に企業を調べます | `job_posting.json`・`company_research.json` |
 | `job-change-fit-assessment` | 条件と本人が決めた評価基準を紐づけます | `fit_assessment.json`・`time_analysis.json` |
 | `job-change-documents` | 職務経歴書・履歴書・志望動機などを作成します | `documents/` 配下の各書類 |
@@ -23,7 +23,7 @@
 
 ## エビデンスレベル
 
-企業についての主張には、1 件ごとに出典 URL・エビデンスレベル・原文のままの引用・取得日を付けます。レベルは A〜D の 4 段階で、内容がもっともらしいかどうかではなく、誰が発信したかで決まります。
+企業についての主張には、1 件ごとに出典 URL・エビデンスレベル・原文のままの引用・取得日を付けます。レベルは A〜D の 4 段階で、誰が発信したかで決まります。内容のもっともらしさはレベルを左右しません。
 
 | レベル | 区分 | 具体例 |
 |---|---|---|

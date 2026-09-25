@@ -1,132 +1,132 @@
-# 適合性評価の方法論（根拠と限界）
+# Fit-assessment methodology (grounds and limits)
 
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
-<!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
+<!-- The [E1]-style notation in this document is the citation-id notation. To keep the half-width square brackets, this rule is disabled for this file. -->
 
-job-change-fit-assessment スキルの判定設計の根拠と限界を定める原本である。7次元（experience_proximity / aspiration_alignment / work_character_fit / condition_fit / culture_fit / compensation_fit / time_fit）のスコア、必須条件の1対1判定、総合判定の決め方そのものは `references/fit-criteria.md` が定める。本ファイルはその判定基準の背後にある知見を示す。どこまでが実証で支持され、どこからが運用上の取り決めかも分ける。エージェント（fit-assessor）が verdict と `overall.open_questions` を書くときの根拠として参照する。
+This is the canonical definition of the grounds and limits behind the judgement design of the job-change-fit-assessment skill. The scoring of the seven dimensions (experience_proximity / aspiration_alignment / work_character_fit / condition_fit / culture_fit / compensation_fit / time_fit), the one-to-one judgement of must-have conditions, and how the overall verdict is decided are themselves defined by `references/fit-criteria.md`. This file presents the findings behind those judgement criteria, and separates what is supported by evidence from what is an operational convention. The agent (fit-assessor) consults it as grounds when writing the verdict and `overall.open_questions`.
 
-対象は日本国内での就業に限る。判定の根拠には、日本の労働者を標本とする実証を優先して据える。欧米の標本だけの知見は、日本での妥当性が確かめられるまで判定の根拠に据えず、確認事項の設計や注記の材料として扱う。エビデンスレベルは A〜D の4段階（A=一次・公式、B=信頼できる二次、C=口コミ・集計サイト、D=個人ブログ・伝聞・未確認）で表記し、学術研究には DOI を記す。定義の原本は `job-change-company-research/references/evidence-grading.md` にあり、査読済みの学術研究はレベル A に含まれる。
+The scope is employment within Japan. The grounds for judgement place priority on evidence sampled from Japanese workers. A finding based on Western samples alone serves only as material for designing confirmation items or for a caveat until its validity in Japan is confirmed. Evidence levels are shown in four grades, A through D (A = primary/official, B = reliable secondary, C = word-of-mouth/aggregate sites, D = personal blog/hearsay/unconfirmed), and academic research carries its DOI. The canonical definition lives in `job-change-company-research/references/evidence-grading.md`, and peer-reviewed academic research is included in Level A.
 
-## 直属上司との適合を score にしない理由
+## Why manager fit is not turned into a score
 
-直属上司との適合は、日本の労働者にとって定着と満足を左右する独立した要因である。一方で、求人票と企業研究からは判定できない。よって7次元のいずれの score にも織り込まず、確認事項として扱う（確度: 可能性が高い、65%以上80%未満）。
+Fit with the direct manager is an independent factor shaping retention and satisfaction for Japanese workers. At the same time, it cannot be judged from the job posting and company research. It is therefore handled as a confirmation item, outside all seven dimensions' scores (confidence: likely, 65% or more but less than 80%).
 
-- 日米の従業員標本の比較では、上司との適合が情緒的組織コミットメントへ結びつく経路が、日本では直接と間接（組織との適合を経由）の両方に認められ、米国では間接のみであった。その結びつきは日本で米国より強い[E1]。
-- 日本138名・韓国144名の比較では、組織との適合と上司部下交換関係の3要因交互作用が職務満足と組織コミットメントの双方に有意であり、両者の補完効果が日本で顕著に現れる一方、韓国では認められなかった[E2]。
-- 日本の非製造業ホワイトカラー400名の共分散構造分析では、上司部下交換関係が相互作用的公正と離職意図の関係を完全媒介し、離職意図に直接関連したのは上司部下交換関係だけであった[E3]。
-- 日本の労働者1,946名を対象とする上司支援の日本語版尺度は、ワークエンゲイジメント・情緒的組織コミットメント・離職意図と想定どおりの相関を示す[E4]。
+- A comparison of Japanese and US employee samples found that the path from manager fit to affective organisational commitment runs both directly and indirectly (via organisation fit) in Japan, while in the US it runs only indirectly. That link was stronger in Japan than in the US[E1].
+- A Japan–Korea comparison (138 Japanese, 144 Korean) found a significant three-way interaction of organisation fit and leader–member exchange on both job satisfaction and organisational commitment; the complementary effect of the two was pronounced in Japan and was not found in Korea[E2].
+- A covariance structure analysis of 400 Japanese non-manufacturing white-collar workers found that leader–member exchange fully mediated the relationship between interactional justice and turnover intention, and that only leader–member exchange related directly to turnover intention[E3].
+- A Japanese-language scale of manager support, targeting 1,946 Japanese workers, shows the expected correlations with work engagement, affective organisational commitment, and turnover intention[E4].
 
-設計への含意: 直属上司との適合については、8番目の次元を作らず、`culture_fit` の score にも含めない。本スキルは、`fit-criteria.md` が求人票から判定できない3つの作業特性を扱うのと同じ構造をとり、直属上司の関与のしかたを `overall.open_questions` の必須の確認事項として立て、面接での逆質問の素材へ回す。score を持たせないのは、求人票と企業研究に材料が存在せず、数値を付ければ憶測になるためである。
+Implication for the design: fit with the direct manager is not made an eighth dimension, and is not included in `culture_fit`'s score either. This skill takes the same structure `fit-criteria.md` uses for the three work characteristics that cannot be judged from the job posting, and raises how the direct manager is involved as a required confirmation item in `overall.open_questions`, feeding it into material for a reverse question at interview. It carries no score because the job posting and company research hold no material for it, and attaching a number would be a guess.
 
-**確信度を下げる証拠（限界）**: 配属チームとの適合を独立変数とした日本の標本による研究は特定できていない（エビデンスギャップ）。本文が扱うのは上司との適合だけである。関係的適合の効果が東アジアで北米より強いとする国際比較のメタ分析[E5]は、東アジアの標本に日本が含まれるかを原典の本文で確認できていないため、日本の根拠としては用いない。
+**Evidence lowering confidence (limits)**: no study using a Japanese sample with fit with the assigned team as an independent variable has been identified (an evidence gap). This text covers manager fit only. An international meta-analysis reporting that the effect of relational fit is stronger in East Asia than in North America[E5] is not used as grounds for Japan, since whether the East Asian sample it covers includes Japan could not be confirmed in the original text.
 
-## 現職を比較対象に置く理由
+## Why the current job is placed as a comparison point
 
-応募先の適合を単体で測るだけでは応募判断の材料として足りない。現職に留まる選択も比較の対象になる（確度: 可能性が非常に高い、80%以上90%未満）。
+Measuring the target's fit alone is not enough material for the application decision. Staying at the current job is also a choice under comparison (confidence: very likely, 80% or more but less than 90%).
 
-- 自発的離職の規定因のメタ分析は、代替雇用機会の認知の補正相関を ρ=.23（k=79、N=58,512）と推定し、代替雇用機会の認知を離職の重要な規定因の1つと位置づける[E6]。この値は先行するメタ分析の ρ=.12[E7] を約4倍の標本で上方修正したものである。
-- 65独立標本・N=42,907 のメタ分析は、職務満足・情緒的コミットメント・代替機会を統制してもなお、組織内外の埋め込みが離職意図および実際の離職と負の関連を持つことを示す[E8]。現職に留まる要因は、不満や代替機会とは独立に働く。
+- A meta-analysis of the determinants of voluntary turnover estimates the corrected correlation for perceived alternative employment at ρ=.23 (k=79, N=58,512), positioning perceived alternative employment as an important determinant of turnover[E6]. This revises the earlier meta-analysis's ρ=.12[E7] upward, on a sample roughly four times as large.
+- A meta-analysis of 65 independent samples, N=42,907, shows that organisational and community embeddedness relate negatively to turnover intention and actual turnover even after controlling for job satisfaction, affective commitment, and alternatives[E8]. The factors that keep someone at their current job operate independently of dissatisfaction and alternatives.
 
-日本の状況を見ると、転職が待遇を必ず改善するわけではない。令和6年雇用動向調査では、転職入職者の賃金が前職と比べて増加した割合は40.5%、減少した割合は29.4%、変わらない割合は28.4%である。増加の内訳は1割以上が29.4%、1割未満が11.2%であり、減少の内訳は1割以上が21.7%、1割未満が7.6%である[E9]。令和2年転職者実態調査では、現在の勤め先について職業生活全体の満足度を示す指数（満足から不満足を引いた値）は42.0ポイントである一方、賃金の増減を示す同種の指数は、20歳以上49歳以下でプラス、19歳以下と50歳以上でマイナスとなり、年齢によって符号が反転する[E10]。転職前後の職務内容の変化を測るタスク距離が小さいほど転職後の収入低下が抑えられる傾向も報告されている[E11]。
+Looking at the situation in Japan, a job change does not necessarily improve pay. In the Reiwa 6 (2024) Survey on Employment Trends, the share of job changers whose wages increased over their previous job was 40.5%, the share whose wages decreased was 29.4%, and the share unchanged was 28.4%. Within the increase, 29.4% were a rise of 10% or more and 11.2% a rise under 10%; within the decrease, 21.7% were a fall of 10% or more and 7.6% a fall under 10%[E9]. In the Reiwa 2 (2020) Survey on Job Changers, the satisfaction index for overall working life at the current employer (satisfied minus dissatisfied) is 42.0 points, while the equivalent index for the change in wages is positive for ages 20 through 49 and negative for ages 19 and under and 50 and over — the sign flips with age[E10]. A tendency has also been reported for a smaller task distance — the change in job content across the move — to hold down the post-change drop in income[E11].
 
-設計への含意: `calculate_time_analysis.py` は現職についても実行し、応募先の `time_analysis.json` は `comparison` に現職の拘束時間・実質時給と現職との差分を持つ。`time_fit` と `compensation_fit` の verdict には応募先の絶対値ではなく現職との差分を書く。現職の労働時間・通勤時間は利用者入力で取り、`commute.json` と同じ系統を使う。
+Implication for the design: `calculate_time_analysis.py` also runs for the current job, and the target's `time_analysis.json` carries in `comparison` the current job's committed time and effective hourly wage and the difference from it. The `time_fit` and `compensation_fit` verdicts are written on the difference from the current job. The current job's working hours and commute time are taken as user input, using the same lane as `commute.json`.
 
-**確信度を下げる証拠（限界）**: 離職研究のメタ分析は英語圏中心である。日本の統計は横断調査であり、同一個人の転職前後の変化を追跡したものではない。令和2年転職者実態調査の数値は、概況 PDF から文字を抽出できないため、一次資料の本文を確認できておらず、報道発表の転載記事に依拠している。
+**Evidence lowering confidence (limits)**: the turnover meta-analyses are centred on English-language settings. The Japanese statistics are cross-sectional surveys; each captures different individuals at a single point in time before and after a job change. The Reiwa 2 Survey on Job Changers' figures could not be confirmed against the primary source's body text, since the summary PDF's text could not be extracted, and rest on a reprinted press-release article.
 
-## 通勤を線形の時間コストとして扱わない理由
+## Why commute is not treated as a linear time cost
 
-通勤時間は拘束時間へ加算するだけでは足りない。長時間通勤が睡眠と運動を削り、身体指標とも関連することは、日本の標本で繰り返し観測されている。この負担は年収差で相殺できるとは限らない（確度: 可能性が高い、65%以上80%未満）。
+Adding commute time to the committed time alone is not enough. That long commutes cut into sleep and exercise, and relate to physical-health indicators, has been repeatedly observed in Japanese samples. This burden does not necessarily offset against a difference in salary (confidence: likely, 65% or more but less than 80%).
 
-- 日本の公立小中学校教員11,390名の全国調査では、長時間労働・長時間通勤・学校の都市度が不眠と有意に関連する[E12]。
-- 東京の学校教員146名の研究では、平均通勤時間42.1分（標準偏差22.5）のもとで、長時間通勤が運動の少なさ（`p<0.001`）と睡眠時間の短さ（`p=0.001`）に有意に関連した[E13]。
-- 人間ドック受診者4,854名では、他の生活習慣を補正すると通勤時間60分以上が独立して体格指数と正に相関する[E14]。
-- 首都圏の主要通勤路線の乗車実験は、心拍変動から通勤ストレスを定量計測し、急行と各停で負荷の推移が異なることを示す[E15]。
-- 勤務時間が長くなることへの忌避感より通勤時間が長くなることへの忌避感の方が強く、女性と非正規雇用者で顕著であり、長時間通勤に対する賃金プレミアムが存在するとの報告がある[E16]。査読を経ていない公的研究機関の報告として扱う。
+- A nationwide survey of 11,390 Japanese public elementary- and middle-school teachers found long working hours, a long commute, and the urbanity of the school significantly related to insomnia[E12].
+- A study of 146 school teachers in Tokyo found that, with an average commute of 42.1 minutes (SD 22.5), a long commute significantly related to less exercise (`p<0.001`) and shorter sleep (`p=0.001`)[E13].
+- Among 4,854 people undergoing a comprehensive health checkup, a commute of 60 minutes or more independently correlated positively with body mass index after adjusting for other lifestyle factors[E14].
+- An in-vehicle experiment on major commuter lines in the Tokyo metropolitan area quantified commute stress from heart-rate variability, showing the load's trajectory differs between rapid and local services[E15].
+- Aversion to a longer commute is reported to be stronger than aversion to longer working hours, pronounced among women and non-regular employees, and a wage premium for a long commute is reported to exist. This is treated as a report from a public research institute that has not undergone peer review[E16].
 
-国際的な根拠としては、通勤の負担が労働市場か住宅市場で補償されるという均衡仮説をパネルデータで検定した研究があり、通勤時間の長い人ほど主観的厚生が体系的に低い[E17]。所得・職務満足・住宅の質を統制してもなお通勤時間が女性の心理的健康を悪化させ、男性には同様の効果がないことを示した英国パネル調査もある[E19]。
+As international grounds, there is a panel-data test of the equilibrium hypothesis that commute burden is compensated for in the labour market or the housing market, and subjective well-being is systematically lower for people with a longer commute[E17]. A UK panel study also shows that commute time worsens women's psychological health even after controlling for income, job satisfaction, and housing quality, with no equivalent effect for men[E19].
 
-設計への含意: `time_fit` の判定基準は、通勤時間の長さを年収差で相殺できるとは限らない旨の注記を伴う。日本の根拠が睡眠・運動・身体指標に集中しているため、注記は「長時間通勤は睡眠・運動を削る」という形をとり、主観的幸福感への直接の断定を含まない。`commute.json` は乗り換え回数と混雑の程度を任意項目として持ち、通勤の負担を所要時間だけで表さない。
+Implication for the design: the `time_fit` judgement criteria carry a note that a long commute does not necessarily offset against a difference in salary. Since the Japanese grounds concentrate on sleep, exercise, and physical-health indicators, the note takes the form "a long commute cuts into sleep and exercise," and does not include a direct assertion about subjective well-being. `commute.json` carries the number of transfers and the degree of crowding as optional items, so that commute burden is not represented by time alone.
 
-**確信度を下げる証拠（限界）**: 広く流通する「片道1時間の通勤を補償するには約40%の増収が必要」という数値は、学術誌掲載版[E17]には存在しない。掲載版が報告するのは片道22分について月約470ユーロ（月あたりの平均労働所得の35.4%）であり、著者自身が具体的数値に固執しない旨を明記している。40%という数値は2004年のワーキングペーパー版の17ページの脚注14[E18]にのみあり、掲載版では置き換えられて消えている。引用する場合はこの経緯を添える。通勤時間を独立変数、主観的幸福感または生活満足を従属変数とした日本の査読論文は、既存の references が引用済みの北川ほか（2011）を除いて特定できていない（エビデンスギャップ）。東京の教員146名の研究[E13]では、通勤時間と精神的ストレス指標の直接の関連は有意な結果として報告されていない。通勤時間が長いほど通勤満足が下がる一方、通勤と生活満足全体との一貫した関連は確立されていないとする総説[E20]もあるため、通勤の議論を生活満足の議論へすり替えない。
+**Evidence lowering confidence (limits)**: the widely circulated figure that "compensating for a one-hour one-way commute needs roughly a 40% increase in income" does not exist in the published journal version[E17]. What the published version reports is about EUR 470 per month for a 22-minute one-way commute (35.4% of average monthly labour income); the authors themselves state they do not commit to a specific figure. The 40% figure exists only in footnote 14 on page 17 of the 2004 working-paper version[E18], and has been replaced and dropped in the published version. Cite it with this history attached when using it. No peer-reviewed Japanese paper treating commute time as the independent variable and subjective well-being or life satisfaction as the dependent variable has been identified, other than the one already cited in existing references (Kitagawa et al., 2011) (an evidence gap). In the study of 146 teachers in Tokyo[E13], a direct relationship between commute time and a mental-stress indicator was not reported as significant. A review also exists reporting that, while a longer commute lowers commute satisfaction, a consistent relationship between commute and overall life satisfaction has not been established[E20]; keep the discussion of commute on commute itself, without turning it into a discussion of life satisfaction.
 
-## 転職後の満足が時間とともに変わることを注記する理由
+## Why the change in post-move satisfaction over time is noted
 
 <!-- textlint-disable jtf-style/2.1.2.漢字 -->
-<!-- 著者名を原文のまま示す箇所である。人名の表外漢字はここでのみ許容する。 -->
+<!-- This section shows an author's name as it appears in the original. A non-joyo kanji in a personal name is allowed only here. -->
 
-適合性評価は判定時点の材料だけで推奨・非推奨を出す。入社直後の満足の高さがそのまま持続するとは限らないため、判定がその時点の材料に基づくことを報告へ明記する（確度: どちらかといえば可能性が高い、50%超65%未満）。
+The fit assessment gives a recommend/do-not-recommend verdict from the material available at the time of judgement alone. Since high satisfaction right after joining does not necessarily last, the report states that the verdict is based on the material at that point (confidence: somewhat likely, over 50% but less than 65%).
 
-- 管理職標本の個人内の縦断分析は、自発的な転職の前に職務満足が低下し、転職直後に上昇し、その後に低下するという軌跡を支持する[E21]。
-- ドイツのパネルデータでは、自発的な転職者の新職への満足は際立って高いが短期に限られ、事業所閉鎖を用いた外生的な検定では転職が満足度を高める効果が認められない[E22]。
-- 日本の標本では、勤続年数を統制すると転職経験者の残留意識が未経験者と比べて低くないことが示されており、転職経験者の残留意識が低く見えるのは勤続年数が短いためと解釈されている[E23]。この知見は、転職経験そのものを定着しにくさの徴候として扱わない根拠になる。
+- A within-person longitudinal analysis of a managerial sample supports a trajectory in which job satisfaction falls before a voluntary job change, rises right after the change, and then falls again[E21].
+- In German panel data, a voluntary job changer's satisfaction with the new job is markedly high but short-lived, and an exogenous test using plant closures found no effect of a job change raising satisfaction[E22].
+- A Japanese sample shows that, after controlling for tenure, a job changer's intention to stay is not lower than a non-changer's; the appearance of a lower intention to stay among job changers is interpreted as arising from their shorter tenure[E23]. This finding grounds not treating job-change experience itself as a sign of weaker retention.
 
-設計への含意: 適合性評価の報告は、判定が現時点の材料に基づくものであり、入社直後の満足の高さは持続を意味しないという注記を伴う。この注記は、job-change-self-analysis スキルが持つ「感情の将来予測を確信の根拠にしない」という規則と対応する。
+Implication for the design: the fit-assessment report carries a note that the verdict is based on the material available at this point, and that high satisfaction right after joining does not mean it will last. This note corresponds to the rule the job-change-self-analysis skill holds, that a forecast of future emotion is not treated as grounds for confidence.
 
-**確信度を下げる証拠（限界）**: 満足の軌跡に関する根拠は米国の管理職標本とドイツのパネルデータに基づく。転職前後の同一個人を追跡し職務満足の変化を測定した日本の縦断研究は、既存の references が引用済みの Watanabe ほか（2023）を除いて特定できていない（エビデンスギャップ）。感情予測の誤りについては、過大評価は出来事を明示せず全般的な気分を予測させた場合に限られ、強度バイアスの一部は測定手続きに由来する見かけ上の効果であるとする反証[E24]があり、これに対する反論も公刊されている。両論を併記する。
+**Evidence lowering confidence (limits)**: the grounds on the trajectory of satisfaction rest on a US managerial sample and German panel data. No Japanese longitudinal study tracking the same individuals before and after a job change and measuring the change in job satisfaction has been identified, other than the one already cited in existing references (Watanabe et al., 2023) (an evidence gap). On the error in affective forecasting, a rebuttal exists[E24] arguing that overestimation occurs only when the event is left unspecified and a general mood is forecast instead, and that part of the intensity bias is an apparent effect arising from the measurement procedure; a counter-rebuttal to this has also been published. Both sides are presented.
 
 <!-- textlint-enable jtf-style/2.1.2.漢字 -->
 
-## 企業品質の軸と重みを利用者ごとに決める理由
+## Why the axes and weights for company quality are decided per user
 
-企業の質をどの側面で測るかは利用者によって異なる。全利用者へ同じ軸と同じ重みを当てはめる根拠は無い（確度: 可能性が高い、65%以上80%未満）。
+Which aspect measures a company's quality differs by user. There is no grounds for applying the same axes and the same weights to every user (confidence: likely, 65% or more but less than 80%).
 
-- 小川と大里（2011）は、首都圏の私立大学の社会科学系の学生154名に架空企業を評価させるポリシー・キャプチャリング法（実際の選択から属性の重みを逆算する手法）で企業選定基準の重みを推定した。全体では仕事内容（β=0.48）、給与水準（0.38）、社風適合（0.36）、会社規模（0.12）の順であった。ただし自己効力感の高い群では社風（0.39）が給与（0.37）を上回って順位が入れ替わり、女性標本でも社風（0.40）が給与（0.37）を上回った（男性は給与0.38・社風0.33）[E25]。
-- 豪州で転職を検討中の就業者400名を対象とするポリシー・キャプチャリング法では、企業魅力度の評価の分散の40%が回答者間の差に帰属した[E26]。
-- 米国の全国標本（就業者1,815名）の表明選好実験では、在宅勤務の選択肢への支払意思額が学歴により0%・4%・7%と分かれた。裁量の価値も、最低学歴群では賃金の0.1%、最高学歴群では5.8%に相当し、群の間で差が開いた。同じ研究は、身体的負担と有給休暇を除く多くの属性で男女の評価がおおむね一致することも示している[E27]。
+- Ogawa and Osato (2011) used policy-capturing (a method that back-calculates attribute weights from actual choices) to have 154 social-science students at a private university in the Tokyo metropolitan area evaluate fictional companies, and estimated the weight of company-selection criteria. Overall, the order was job content (β=0.48), pay level (0.38), culture fit (0.36), and company size (0.12). In the high-self-efficacy group, however, culture (0.39) exceeded pay (0.37) and the order flipped; the same reversal — culture (0.40) exceeding pay (0.37) — appeared in the female sample (for men, pay was 0.38 and culture 0.33)[E25].
+- A policy-capturing study of 400 employed people in Australia considering a job change found that 40% of the variance in company-attractiveness ratings was attributable to differences between respondents[E26].
+- A stated-preference experiment on a US national sample (1,815 employed people) found willingness to pay for a work-from-home option split by education level at 0%, 4%, and 7%. The value of discretion also differed by group, at 0.1% of wages in the lowest-education group and 5.8% in the highest-education group. The same study also shows that, for most attributes other than physical burden and paid leave, men's and women's ratings broadly agree[E27].
 
-共通する部分も存在する。71研究・667係数のメタ分析は、職務・組織特性や適合の知覚は、応募者が企業に引きつけられる度合いを一貫して予測すると報告する[E28]。242標本・638,514名のメタ分析では、職務属性を重視する度合いに有意な男女差が40属性中33で認められたが、そのうち26は効果量が0.20以下であった[E29]。個人差は、重視する総量よりも、どの属性へ重みを配分するかに現れる。
+A common part also exists. A meta-analysis of 71 studies and 667 coefficients reports that job and organisation characteristics and perceived fit consistently predict how much an applicant is attracted to a company[E28]. A meta-analysis of 242 samples and 638,514 people found a significant gender difference in the weight placed on job attributes for 33 of 40 attributes, but 26 of those had an effect size of 0.20 or under[E29]. An individual difference shows up mainly in how that weight is allocated across attributes.
 
-申告した重みは、そのままでは実際の判断と一致しない。小川と大里（2011）は同じ標本へ直接質問法も実施し、仕事内容と会社規模の位置づけは一致する一方、給与水準と社風適合では順位が食い違うことを示した。自己効力感による部分集団差は、選択場面からの推定でしか検出できていない[E25]。応募書類の評価という採用の文脈でも、被験者が申告した影響要因と実験的に操作した真の影響との相関は -0.31・0.14・0.11 と低い[E30]。したがって、申告した重みを検算なしに確定させない。
+A stated weight does not, as it stands, match actual judgement. Ogawa and Osato (2011) also ran a direct-question method on the same sample, and found that while the ranking of job content and company size agreed, pay level and culture fit disagreed in ranking. The subgroup difference by self-efficacy could be detected only through the estimate from the choice task[E25]. In the context of hiring — evaluating application documents — the correlation between a subject's self-reported influencing factor and the experimentally manipulated true influence was low, at -0.31, 0.14, and 0.11[E30]. A stated weight is therefore not fixed without cross-checking it.
 
-設計への含意: 企業を採点する軸は候補の一覧から選ばせ、既定で選択済みにするのは処遇水準だけにする。数値で公表される指標を定量軸として候補に並べ、数値にならない事柄は利用者がラベル・定義・判定条件を決めた場合にだけ定性軸として採点へ入れる。重みは合計100の配分として申告させたうえで、その重みで架空2社を採点し、「実際にどちらを選ぶか」という答えと点数の高い側が一致するかを検算する。食い違えば配分を見直すか、申告と実際の選択の両方を提示する。申告した軸と、必須条件・作業特性の希望度・求人検索で実際に残した求人とが食い違う場合も同様に、どちらが本当の判断かを決めず両方を利用者へ提示する。軸・点数化・重みの原本は `job-change-company-research/references/company-score-rubric.md` にある。
+Implication for the design: the axes for scoring a company are chosen from a list of candidates, with only the compensation level pre-selected by default. A publicly reported numeric indicator is listed as a quantitative-axis candidate; a matter with no number attached enters scoring as a qualitative axis only when the user has decided its label, definition, and judgement conditions. The weight is declared as an allocation summing to 100, and that weight is then used to score two fictional companies, checking whether "which one they would actually choose" agrees with which one scores higher. If they disagree, the allocation is revisited, or both the stated allocation and the actual choice are presented. When the declared axes disagree with the must-have conditions, the desired degree of a work characteristic, or the jobs actually kept from job search, both are likewise presented to the user without deciding which is the true judgement. The canonical definition of the axes, scoring, and weighting lives in `job-change-company-research/references/company-score-rubric.md`.
 
-**確信度を下げる証拠（限界）**: 日本の標本による直接証拠は大学生154名の研究[E25]に限られ、一般の転職市場の求職者を標本とする選択実験は特定できていない。選好の潜在クラスとその構成比を報告した日本の研究も見つからないため、重視軸の類型をあらかじめ用意していない。[E28] については原典の本文に当たれず、属性別の効果量を取得していない。反証として、補償型の意思決定を仮定する場合には直接申告した重みのほうが職務選択をよく予測するという報告がある[E31]。この研究については標本の人数と国を確認できていない。
+**Evidence lowering confidence (limits)**: direct evidence from a Japanese sample is limited to the study of 154 university students[E25]; no choice experiment with a general job-seeker sample in the job-change market has been identified. No Japanese study reporting latent preference classes and their composition has been found either, so this skill does not pre-build a typology of weighting patterns. For [E28], the original text could not be reached, and attribute-level effect sizes were not obtained. As a counter-report, one exists arguing that, under a compensatory decision-making assumption, a directly stated weight better predicts job choice[E31]. The sample size and country for this study could not be confirmed.
 
-## 調査の限界とエビデンスギャップ（本スキルの前提）
+## Research limits and evidence gaps (this skill's premises)
 
-- 配属チームとの適合を独立変数とした日本の標本による研究は特定できていない。
-- 通勤時間と主観的幸福感の関係を扱った日本の査読論文は、既存の references が引用済みの1件を除いて特定できていない。
-- 転職前後の同一個人を追跡し職務満足の変化を測定した日本の縦断研究は、既存の references が引用済みの1件を除いて特定できていない。
-- 7次元という次元の切り方そのもの、score 1〜5 の目安、総合判定の決定表は実務上の取り決めであり、これらの枠組み自体の妥当性を検証した実証研究は取得していない。
-- 企業品質の重視軸について、一般の転職市場の求職者を標本とする日本の選択実験と、選好の潜在クラスの構成比を報告した日本の研究は特定できていない。
+- No study using a Japanese sample with fit with the assigned team as an independent variable has been identified.
+- No peer-reviewed Japanese paper treating the relationship between commute time and subjective well-being has been identified, other than the one already cited in existing references.
+- No Japanese longitudinal study tracking the same individuals before and after a job change and measuring the change in job satisfaction has been identified, other than the one already cited in existing references.
+- The seven-dimension breakdown itself, the guidance for a score of 1–5, and the decision table for the overall verdict are operational conventions; no empirical study validating the framework itself has been obtained.
+- On the axes weighted for company quality, no Japanese choice experiment with a general job-seeker sample and no Japanese study reporting the composition of latent preference classes have been identified.
 
-これらのギャップがあるため、本スキルは論点を2つに分けて扱う。日本の標本で支持された論点（上司との適合を確認事項として立てること、現職を比較対象に置くこと、通勤を睡眠・運動の観点から注記すること）は確定的に扱い、欧米の標本だけに基づく論点（満足の時間変化の軌跡）は注記の形で留保を付ける。
+Because these gaps exist, this skill treats two kinds of point differently. A point supported by a Japanese sample (raising manager fit as a confirmation item, placing the current job as a comparison point, noting commute from the angle of sleep and exercise) is treated as settled, while a point based on a Western sample alone (the trajectory of satisfaction over time) carries a caveat in the form of a note.
 
-## 出典一覧
+## Sources
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元または著者. 表題. 年. レベル. URL）で出典を並べる節である。区切りのピリオドと人名の一部を和文の句読点・表外漢字として判定させないため、この節だけ無効化する。表題を確認できていない文献は、著者名・年・DOI で示す。 -->
+<!-- This section lists sources in bibliographic form (publisher or author. title. year. level. URL). This section is disabled entirely so that the separating periods and part of the personal names are not judged as Japanese punctuation or non-joyo kanji. A source whose title could not be confirmed is shown by author name, year, and DOI. -->
 
-- [E1] Astakhova. 2016. レベルA. DOI:10.1016/j.jbusres.2015.08.039. https://doi.org/10.1016/j.jbusres.2015.08.039
-- [E2] Jung, Takeuchi. 2014. レベルA. DOI:10.1080/09585192.2013.778163. https://doi.org/10.1080/09585192.2013.778163
-- [E3] 山口. 2026. レベルA. DOI:10.20698/comm.54.2_121. https://doi.org/10.20698/comm.54.2_121
-- [E4] 森ほか. 2025. レベルA. DOI:10.7888/juoeh.47.125. https://doi.org/10.7888/juoeh.47.125
-- [E5] Oh ほか. 2014. レベルA（東アジア標本の構成を原典本文で確認できていない）. DOI:10.1111/peps.12026. https://doi.org/10.1111/peps.12026
-- [E6] Rubenstein ほか. 2018. レベルA. DOI:10.1111/peps.12226. https://doi.org/10.1111/peps.12226
-- [E7] Griffeth ほか. 2000. レベルA. DOI:10.1177/014920630002600305. https://doi.org/10.1177/014920630002600305
-- [E8] Jiang ほか. 2012. レベルA. DOI:10.1037/a0028610. https://doi.org/10.1037/a0028610
-- [E9] 厚生労働省. 令和6年 雇用動向調査結果の概況. 2025-08-26. レベルA. https://www.mhlw.go.jp/toukei/list/9-23-1.html
-- [E10] 厚生労働省. 令和2年 転職者実態調査の概況. 2021. レベルA（概況 PDF から文字を抽出できず、報道発表の転載記事で確認）. https://www.mhlw.go.jp/toukei/list/6-21c.html
-- [E11] 小松. 2024. レベルA. DOI:10.24592/jshrm.25.1_9. https://doi.org/10.24592/jshrm.25.1_9
-- [E12] Hori ほか. 2020. レベルA. DOI:10.1016/j.sleep.2019.09.017. https://doi.org/10.1016/j.sleep.2019.09.017
-- [E13] Journal of Human Ergology 44(1) 1-9. 東京の学校教員146名を対象とする通勤時間と生活習慣の研究. レベルA. PMID:27281916. https://pubmed.ncbi.nlm.nih.gov/27281916/
-- [E14] 早坂ほか. 2003. レベルA. DOI:10.15064/jjpm.43.3_203_2. https://doi.org/10.15064/jjpm.43.3_203_2
-- [E15] 鹿島, 武田. 2009. レベルA. DOI:10.24639/tpsr.TPSR_11R_16. https://doi.org/10.24639/tpsr.TPSR_11R_16
-- [E16] 森川. 経済産業研究所ディスカッションペーパー 18-J-009. 2018. レベルB（査読を経ていない公的研究機関の報告）. https://www.rieti.go.jp/jp/publications/dp/18j009.pdf
-- [E17] Stutzer, Frey. 2008. レベルA. DOI:10.1111/j.1467-9442.2008.00542.x. https://doi.org/10.1111/j.1467-9442.2008.00542.x
-- [E18] Stutzer, Frey. IZA Discussion Paper No. 1278（[E17] のワーキングペーパー版。17ページ脚注14）. 2004. レベルB（掲載版で置き換えられた記述を含む）. https://docs.iza.org/dp1278.pdf
-- [E19] Roberts ほか. 2011. レベルA. DOI:10.1016/j.jhealeco.2011.07.006. https://doi.org/10.1016/j.jhealeco.2011.07.006
-- [E20] Chatterjee ほか. 2020. レベルA. DOI:10.1080/01441647.2019.1649317. https://doi.org/10.1080/01441647.2019.1649317
-- [E21] Boswell ほか. 2005. レベルA. DOI:10.1037/0021-9010.90.5.882. https://doi.org/10.1037/0021-9010.90.5.882
-- [E22] Chadi, Hetschko. 2018. レベルA. DOI:10.1111/jems.12217. https://doi.org/10.1111/jems.12217
-- [E23] 吉澤, 宮地. 2009. レベルA. DOI:10.32222/jaiop.23.1_3. https://doi.org/10.32222/jaiop.23.1_3
-- [E24] Levine ほか. 2012. レベルA. DOI:10.1037/a0029544. https://doi.org/10.1037/a0029544
-- [E25] 小川, 大里. 2011. レベルA. DOI:10.32222/jaiop.25.1_25. https://doi.org/10.32222/jaiop.25.1_25
-- [E26] Hicklenton ほか. 2021. レベルA. DOI:10.1371/journal.pone.0254646. https://doi.org/10.1371/journal.pone.0254646
-- [E27] Maestas ほか. 2023. レベルA. DOI:10.1257/aer.20190846. https://doi.org/10.1257/aer.20190846
-- [E28] Chapman ほか. 2005. レベルA（原典本文に当たれず、属性別の効果量は未取得）. DOI:10.1037/0021-9010.90.5.928. https://doi.org/10.1037/0021-9010.90.5.928
-- [E29] Konrad ほか. 2000. レベルA. DOI:10.1037/0033-2909.126.4.593. https://doi.org/10.1037/0033-2909.126.4.593
-- [E30] Nisbett, Wilson. 1977. レベルA. DOI:10.1037/0033-295X.84.3.231. https://doi.org/10.1037/0033-295X.84.3.231
-- [E31] Slaughter ほか. 2006. レベルA（標本の人数と国を確認できていない）. DOI:10.1177/1094428105279936. https://doi.org/10.1177/1094428105279936
+- [E1] Astakhova. 2016. Level A. DOI:10.1016/j.jbusres.2015.08.039. https://doi.org/10.1016/j.jbusres.2015.08.039
+- [E2] Jung, Takeuchi. 2014. Level A. DOI:10.1080/09585192.2013.778163. https://doi.org/10.1080/09585192.2013.778163
+- [E3] 山口. 2026. Level A. DOI:10.20698/comm.54.2_121. https://doi.org/10.20698/comm.54.2_121
+- [E4] 森ほか. 2025. Level A. DOI:10.7888/juoeh.47.125. https://doi.org/10.7888/juoeh.47.125
+- [E5] Oh ほか. 2014. Level A (whether the East Asian sample's composition includes Japan could not be confirmed in the original text). DOI:10.1111/peps.12026. https://doi.org/10.1111/peps.12026
+- [E6] Rubenstein ほか. 2018. Level A. DOI:10.1111/peps.12226. https://doi.org/10.1111/peps.12226
+- [E7] Griffeth ほか. 2000. Level A. DOI:10.1177/014920630002600305. https://doi.org/10.1177/014920630002600305
+- [E8] Jiang ほか. 2012. Level A. DOI:10.1037/a0028610. https://doi.org/10.1037/a0028610
+- [E9] Ministry of Health, Labour and Welfare. Overview of the Reiwa 6 (2024) Survey on Employment Trends. 2025-08-26. Level A. https://www.mhlw.go.jp/toukei/list/9-23-1.html
+- [E10] Ministry of Health, Labour and Welfare. Overview of the Reiwa 2 (2020) Survey on Job Changers. 2021. Level A (the summary PDF's text could not be extracted; confirmed via a reprinted press-release article). https://www.mhlw.go.jp/toukei/list/6-21c.html
+- [E11] 小松. 2024. Level A. DOI:10.24592/jshrm.25.1_9. https://doi.org/10.24592/jshrm.25.1_9
+- [E12] Hori ほか. 2020. Level A. DOI:10.1016/j.sleep.2019.09.017. https://doi.org/10.1016/j.sleep.2019.09.017
+- [E13] Journal of Human Ergology 44(1) 1-9. A study of commute time and lifestyle habits among 146 school teachers in Tokyo. Level A. PMID:27281916. https://pubmed.ncbi.nlm.nih.gov/27281916/
+- [E14] 早坂ほか. 2003. Level A. DOI:10.15064/jjpm.43.3_203_2. https://doi.org/10.15064/jjpm.43.3_203_2
+- [E15] 鹿島, 武田. 2009. Level A. DOI:10.24639/tpsr.TPSR_11R_16. https://doi.org/10.24639/tpsr.TPSR_11R_16
+- [E16] 森川. Research Institute of Economy, Trade and Industry Discussion Paper 18-J-009. 2018. Level B (a report from a public research institute that has not undergone peer review). https://www.rieti.go.jp/jp/publications/dp/18j009.pdf
+- [E17] Stutzer, Frey. 2008. Level A. DOI:10.1111/j.1467-9442.2008.00542.x. https://doi.org/10.1111/j.1467-9442.2008.00542.x
+- [E18] Stutzer, Frey. IZA Discussion Paper No. 1278 (the working-paper version of [E17]; footnote 14, page 17). 2004. Level B (contains a passage replaced in the published version). https://docs.iza.org/dp1278.pdf
+- [E19] Roberts ほか. 2011. Level A. DOI:10.1016/j.jhealeco.2011.07.006. https://doi.org/10.1016/j.jhealeco.2011.07.006
+- [E20] Chatterjee ほか. 2020. Level A. DOI:10.1080/01441647.2019.1649317. https://doi.org/10.1080/01441647.2019.1649317
+- [E21] Boswell ほか. 2005. Level A. DOI:10.1037/0021-9010.90.5.882. https://doi.org/10.1037/0021-9010.90.5.882
+- [E22] Chadi, Hetschko. 2018. Level A. DOI:10.1111/jems.12217. https://doi.org/10.1111/jems.12217
+- [E23] 吉澤, 宮地. 2009. Level A. DOI:10.32222/jaiop.23.1_3. https://doi.org/10.32222/jaiop.23.1_3
+- [E24] Levine ほか. 2012. Level A. DOI:10.1037/a0029544. https://doi.org/10.1037/a0029544
+- [E25] 小川, 大里. 2011. Level A. DOI:10.32222/jaiop.25.1_25. https://doi.org/10.32222/jaiop.25.1_25
+- [E26] Hicklenton ほか. 2021. Level A. DOI:10.1371/journal.pone.0254646. https://doi.org/10.1371/journal.pone.0254646
+- [E27] Maestas ほか. 2023. Level A. DOI:10.1257/aer.20190846. https://doi.org/10.1257/aer.20190846
+- [E28] Chapman ほか. 2005. Level A (the original text could not be reached; attribute-level effect sizes not obtained). DOI:10.1037/0021-9010.90.5.928. https://doi.org/10.1037/0021-9010.90.5.928
+- [E29] Konrad ほか. 2000. Level A. DOI:10.1037/0033-2909.126.4.593. https://doi.org/10.1037/0033-2909.126.4.593
+- [E30] Nisbett, Wilson. 1977. Level A. DOI:10.1037/0033-295X.84.3.231. https://doi.org/10.1037/0033-295X.84.3.231
+- [E31] Slaughter ほか. 2006. Level A (the sample size and country could not be confirmed). DOI:10.1177/1094428105279936. https://doi.org/10.1177/1094428105279936
 
 <!-- textlint-enable -->

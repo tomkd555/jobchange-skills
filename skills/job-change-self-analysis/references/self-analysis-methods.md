@@ -1,115 +1,115 @@
-# 自己分析の方法論（採用理論の根拠と限界）
+# Self-analysis methodology (the grounds and limits of the adopted theory)
 
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
-<!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
+<!-- The [E1] form in the body is the notation for a source id. This file disables that rule to keep the half-width square brackets. -->
 
-job-change-self-analysis スキルが採用する分析軸の実証的裏付けと限界を定める原本である。SKILL.md の原則・question-bank.md の質問設計・エージェント2体（writer / auditor）がこのファイルを参照する。エビデンスレベルは A〜D の4段階（A=一次・公式、B=信頼できる二次、C=口コミ・集計サイト、D=個人ブログ・伝聞・未確認）で表記し、学術研究には DOI を記す。定義の原本は `job-change-company-research/references/evidence-grading.md` にあり、査読済みの学術研究はレベル A に含まれる。表記形式は `[E番号] 文献名 (年) レベル DOI:xxx https://doi.org/xxx` とし、末尾の「出典一覧」に対応づける。
+This is the canonical definition setting the empirical grounding and the limits of the analytical axes the job-change-self-analysis skill adopts. SKILL.md's principles, question-bank.md's question design, and the two agents (writer / auditor) all reference this file. Evidence levels are marked on a four-level A-D scale (A = primary or official, B = a reliable secondary source, C = word of mouth or an aggregation site, D = a personal blog, hearsay, or unconfirmed), and academic research carries a DOI. The canonical definition lives in `job-change-company-research/references/evidence-grading.md`, and peer-reviewed academic research is included in Level A. The citation format is `[E-number] title (year) level DOI:xxx https://doi.org/xxx`, matched to the "Sources" list at the end.
 
-## 中核の制約: 内省は単独では信頼できない
+## The core constraint: introspection alone is unreliable
 
-自己分析を内省単独で行ってはならない。本スキルの設計は、この制約を最も裏付けの強いものとして中核に置く（確度: ほぼ確実、90%以上）。
+Self-analysis is never done through introspection alone. This skill's design places this constraint at its core, as the one with the strongest support (confidence: near-certain, above 90%).
 
-- 人は高次の認知過程を内省によって直接とらえることがほとんどできず、心的過程の言語報告は真の内省ではなく暗黙の因果理論に由来する[E45]。内省は無意識の心的過程を直接知る手段にならない。自己知識を高める有効な経路は、他者の目を通した自己観察と、自らの行動の観察である[E44]。人は、自分の心の動きが自分には見えていると思い込みやすい（introspection illusion）[E51]。
-- 他者評価（観察者評定）は、学業成績・職務遂行の予測において自己評価より高い予測妥当性を持ち、自己評価に対して増分妥当性を持つ（263標本・44,178名のメタ分析）[E49]。**この数値は単一の大規模メタ分析に由来する。**
-- ただしフィードバックは万能ではない。フィードバック介入は平均では成績を高める（d=.41）が、3分の1超の介入では成績を低下させ、注意が課題から自己（人格）へ向かうほど有効性が下がる[E50]。**この d=.41 は単一の大規模メタ分析に由来する。**
+- A person can barely grasp a higher-order cognitive process directly through introspection, and a verbal report of a mental process comes from an implicit causal theory [E45]. Introspection is no means of directly knowing an unconscious mental process. The effective routes to greater self-knowledge are self-observation through the eyes of others, and observation of one's own behaviour [E44]. A person readily assumes that their own mental workings are visible to themselves (the introspection illusion) [E51].
+- Evaluation by others (an observer's rating) has higher predictive validity than self-evaluation in predicting academic performance and job performance, and holds incremental validity over self-evaluation (a meta-analysis of 263 samples and 44,178 people) [E49]. **This figure comes from a single large-scale meta-analysis.**
+- Feedback, though, is no cure-all. A feedback intervention raises performance on average (d=.41), and over a third of interventions lower performance; effectiveness falls the more attention turns from the task to the self (character) [E50]. **This d=.41 comes from a single large-scale meta-analysis.**
 
-この制約から、本スキルは次を運用規則とする。
+From this constraint, this skill sets the following as its operating rules.
 
-1. 強み（strengths）は、行動証拠（behavioral_episodes）または他者証言（others_feedback）への対応づけを必須とする。内省だけを根拠とする強みは成果物として認めない（検証スクリプトが ERROR とする）。
-2. 他者フィードバックの受け取りは課題志向で行う。「あなたはこういう人だ」という人格評価としてではなく、「どの行動が、どの結果につながったか」という行動と結果への対応づけとして記録する[E50]。
-3. 内省で得た価値観・興味は、可能な限り過去の行動エピソードへ対応づけて裏付ける。
+1. A strength (`strengths`) requires mapping to behavioural evidence (`behavioral_episodes`) or feedback from others (`others_feedback`). A strength grounded in introspection alone is never accepted in the deliverable (the validation script reports it as an ERROR).
+2. Feedback from others is taken in with a task-oriented focus. It is recorded as a mapping between an action and a result — "which action led to which result" [E50].
+3. A value or an interest reached through introspection is backed up, wherever possible, by mapping it to a past behavioural episode.
 
-## 採用する4つの分析軸と実証的裏付け
+## The four adopted analytical axes and their empirical grounding
 
-分析の軸は「興味」「価値観」「career adaptability の4次元」「過去の行動」の4つに置く。妥当性・効果の裏付けが相対的に強い枠組みを採用する（確度: 可能性が非常に高い、80%以上90%未満）。
+The analytical axes are set at four: interests, values, the four dimensions of career adaptability, and past behaviour. The frameworks adopted are the ones whose support for validity and effect is relatively strong (confidence: very likely, 80% to under 90%).
 
-### 興味・興味適合（Holland の枠組み）
+### Interests and interest fit (Holland's framework)
 
-- 職業興味は職務業績（r=.14）・訓練成績（r=.26）と相関し、職務に焦点化した興味尺度では業績妥当性が .23 へ高まる[E1]。60研究・約568相関を統合したメタ分析で、興味と環境の適合（congruence）指標は個別の興味得点より業績予測力が高い[E2]。
-- ただし興味適合と「全体的な職務満足」の関係は弱い。65年・105研究（N=39,602）のメタ分析で相関は ρ=0.19 にとどまり、適合は全体的な職務満足よりも成果・キャリア満足との関連が強い[E11]。
-- 運用: 興味は RIASEC の6領域（Realistic・Investigative・Artistic・Social・Enterprising・Conventional）の枠組みを軸名として使う。適合の高さを満足の保証として扱わない。興味診断の結果は確定した判定とせず、内省と行動の裏付けを併せる。
+- Vocational interest correlates with job performance (r=.14) and training performance (r=.26), and a performance-focused interest scale raises the validity for performance to .23 [E1]. In a meta-analysis integrating 60 studies and about 568 correlations, an interest-environment congruence index predicts performance better than an individual interest score [E2].
+- Interest fit, though, relates weakly to "overall job satisfaction." In a meta-analysis spanning 65 years and 105 studies (N=39,602), the correlation stayed at ρ=0.19, and fit relates more strongly to achievement and career satisfaction than to overall job satisfaction [E11].
+- Application: interests use the six-domain RIASEC framework (Realistic, Investigative, Artistic, Social, Enterprising, Conventional) as axis names. A high fit is never treated as a guarantee of satisfaction. The result of an interest diagnosis is never a settled judgment, and is combined with the support of introspection and behaviour.
 
-### career adaptability の4次元
+### The four dimensions of career adaptability
 
-- 日本語版キャリア・アダプタビリティ尺度（CAAS-J）では、若年労働者を対象として4因子24項目モデルが高い適合度を示し、内的整合性は α=.97 であった[E8]。**この α=.97 は当該の単一研究に由来する。** 他言語版の典型値（α≈.93）よりやや高く、単一の妥当性研究に基づく点は留保する。
-- concern（関心）・control（統制）・curiosity（好奇心）・confidence（自信）の4次元を分析の枠組みとする。次元名の枠組みのみ用い、尺度の項目文は転載しない（著作権のある尺度項目をそのまま転載することの禁止）。
+- The Japanese-language Career Adapt-Abilities Scale (CAAS-J) showed a high fit for a four-factor, 24-item model targeting young workers, with internal consistency of α=.97 [E8]. **This α=.97 comes from that single study.** It runs somewhat higher than the typical value for versions in other languages (α≈.93), and the reservation stands that it rests on a single validity study.
+- The four dimensions — concern, control, curiosity, and confidence — form the analytical framework. Only the framework of dimension names is used, and no scale item text is reproduced (a copyrighted scale item is never reproduced as it stands).
 
-### 過去の行動（行動証拠）
+### Past behaviour (behavioural evidence)
 
-- 中途採用面接では、成果に至る行動プロセス（どの場面でどう考え、どう行動したか）に注目し、環境が変わっても同じ行動を再現できるかを見極める[E42]。これは STAR／行動面接に自己分析の結果（過去の具体的行動）を載せる接点である。
-- 前掲の内省の限界[E44]から、行動の観察は内省より信頼できる自己知識の経路である。behavioral_episodes を成果物の必須要素に置く根拠がここにある。
+- A mid-career hiring interview attends to the behavioural process leading to a result — how the person thought and acted in a given situation — and judges whether the same behaviour reproduces even when the environment changes [E42]. This is the point where the result of self-analysis (a concrete past behaviour) connects with the STAR/behavioural interview.
+- Given the limits of introspection cited above [E44], observing behaviour is a more reliable route to self-knowledge than introspection. This is the ground for placing `behavioral_episodes` as a required element of the deliverable.
 
-### 価値観
+### Values
 
-- 価値観は内省で言葉にする。ただし、内省だけを根拠にすると、上記の限界がそのまま当てはまる。過去の行動エピソードへ対応づけて裏付けることを運用規則とする（values は evidence_episode_ids でエピソードへ対応づける）。
+- A value is put into words through introspection. Grounding it in introspection alone, though, carries the same limits described above. The operating rule is to back it up by mapping it to a past behavioural episode (`values` maps to an episode with `evidence_episode_ids`).
 
-### 補助: strengths 介入（well-being 面）
+### A supplementary point: strengths interventions (the well-being side)
 
-- signature strengths 介入のメタ分析（14論文・29効果量）で、ポジティブ感情 g=0.32、生活満足 g=0.42、抑うつ低減 g=0.21 であった[E12]。**これは well-being（主観的幸福感）の面での小〜中の効果であり、職務業績の向上を示すものではない。**
-- 運用: 強みは自己記述で言葉にし、商用の診断ツールに依存しない（後述の限界を参照）。
+- A meta-analysis of signature-strengths interventions (14 papers, 29 effect sizes) found g=0.32 for positive affect, g=0.42 for life satisfaction, and g=0.21 for reduced depression [E12]. **This is a small-to-medium effect on the well-being (subjective well-being) side, and says nothing about job performance.**
+- Application: a strength is put into words through self-description, and this skill does not depend on a commercial diagnostic tool (see the limits described below).
 
-## 妥当性が弱い枠組みの限定使用
+## Limited use of frameworks with weak validity
 
-次の枠組みは、確定した判定を与える診断としては用いず、内省を促す呼び水（質問群）としてだけ限って使う。
+The following frameworks are never used as a diagnosis that gives a settled judgment, and are used only as a prompt (a set of questions) for introspection.
 
-- Schein のキャリア・アンカーは構成概念妥当性が弱い。Career Orientations Inventory は、7件の研究データを用いた最良適合モデルでも当てはまりが弱い[E7]。日本の大企業従業員1,083名でも、創造性因子の概念的実在性の再検討が必要とされた[E6]。8分類は question-bank.md で呼び水として掲載してよいが、結果を確定した「自分のアンカー」として扱わない。
-- 商用の strengths ツールは、独立した妥当性が限定的である。症状が主観的幸福感へ及ぼす影響を心理的強み・対人資源が緩衝するという主張は、223研究・N=127,587 のメタ分析で明確に支持されなかった[E10]。**この結果は単一の大規模メタ分析に由来する。** CliftonStrengths 等の商用ツールへの依存を避け、無償の自己記述で代替する。項目文をそのまま転載しない。
-- RIASEC の自己診断ツールについては、キャリア介入としての有効性に関する既存の証拠が時代遅れで地理的にも限定的であり、決定的な結論を出せる段階にないと査読論文が指摘する[E23]。RIASEC は興味の枠組みとして使うが、診断ツールの介入効果を根拠にしない。
-- MBTI と 16Personalities は使わない。4文字の型へ分類する形式は、中間付近の人を二分するため型そのものが安定しない。理由の出典、利用者が結果を持ち込んだ場合の扱い、性格の自己申告に使ってよい枠組みと構成概念だけを借りる枠組みの区別と利用条件は、いずれも `personality-guide.md` にある。
-- ダークトライアド（マキャベリズム・自己愛・サイコパシー）の尺度は使わない。他者のリスクを判定するための尺度であり、自己分析に建設的な用途が無い。自分に貼るラベルとして有害になりうる。
+- Schein's career anchors have weak construct validity. Even the Career Orientations Inventory's best-fitting model, built from seven studies' data, fits poorly [E7]. Even among 1,083 employees at large Japanese companies, the conceptual reality of the creativity factor was found to need reconsideration [E6]. The eight categories may be listed as a prompt in question-bank.md, and their result is never treated as a settled "your anchor."
+- A commercial strengths tool has limited independent validity. The claim that psychological strengths and interpersonal resources buffer the effect of symptoms on subjective well-being found no clear support in a meta-analysis of 223 studies and N=127,587 [E10]. **This result comes from a single large-scale meta-analysis.** Dependence on a commercial tool such as CliftonStrengths is avoided, and a free self-description substitutes for it. No item text is reproduced as it stands.
+- For a RIASEC self-diagnosis tool, a peer-reviewed paper points out that the existing evidence for its effectiveness as a career intervention is dated and geographically limited, and not yet at a stage where a decisive conclusion can be drawn [E23]. RIASEC is used as the framework for interests, and an intervention effect claimed for a diagnostic tool never grounds anything here.
+- MBTI and 16Personalities are not used. A format that sorts a person into a four-letter type splits a person near the midpoint in two, so the type itself is unstable. The sources for this reason, how to handle a result the user brings in, and the distinction and terms of use between a framework that may be used for the self-report of personality and a framework whose construct alone is borrowed are all in `personality-guide.md`.
+- A Dark Triad scale (Machiavellianism, narcissism, psychopathy) is not used. It is a scale for judging risk in others, and has no constructive use in self-analysis. It can be harmful as a label a person applies to themselves.
 
-## 反すうを防ぐ運用規則
+## Operating rules for preventing rumination
 
-過度な内省は有害である（確度: 可能性が非常に高い、80%以上90%未満）。
+Excessive introspection is harmful (confidence: very likely, 80% to under 90%).
 
-- 反すう（rumination）は抑うつを悪化させ、問題解決を損ない、周囲からの支援を失わせる。適応的な自己反省とは区別される[E52]。日本語話者を対象とした縦断研究でも、自己反すうは恐怖心の増加を予測する一方、自己内省は回避行動の減少を予測し、自己焦点の種類が効果を分ける[E54]。実務家も、内省が過剰になると逆効果になりうるとし、周囲との関係・観察を重視すべきと指摘する[E22]。
-- 人は将来の感情を系統的に読み違える。人は将来の感情反応の強度・持続を過大評価する（インパクト・バイアス、焦点化が原因）[E55]。「この仕事に就けば幸せになれる／転職を後悔する」といった感情の将来予測は、自己分析の確信の根拠にしない。
+- Rumination worsens depression, impairs problem-solving, and forfeits support from those around a person. It is distinguished from adaptive self-reflection [E52]. In a longitudinal study of Japanese speakers too, self-rumination predicted an increase in fear while self-reflection predicted a decrease in avoidance behaviour, and the kind of self-focus divides the effect [E54]. Practitioners, too, point out that introspection can become counterproductive once excessive, and that relationships with and observation by those around a person should be weighted [E22].
+- A person systematically misreads a future feeling. A person overestimates the intensity and duration of a future emotional reaction (the impact bias, caused by focalism) [E55]. An affective forecast such as "taking this job will make me happy" or "I will regret changing jobs" never grounds a firm conclusion in self-analysis.
 
-運用規則:
+Operating rules:
 
-1. 自己分析は question-bank.md のあらかじめ定めた構造化された問いに限定し、無制限の内省を促さない。
-2. 「なぜ」の深掘りは、感情の反すうに陥らせず、必ず行動・事実（エピソード）へ対応づける。
-3. 感情の将来予測を、判断・断定の根拠にしない。emotion_note は当時の動機・感情の記録であり、将来の予測ではない。
+1. Self-analysis is limited to the fixed, structured questions in question-bank.md, and never encourages unlimited introspection.
+2. Probing further with "why" never leads to emotional rumination, and always maps to a behaviour or a fact (an episode).
+3. An affective forecast never grounds a judgment or a firm conclusion. `emotion_note` is a record of the motivation and feeling at the time, and carries no forecast of the future.
 
-## 論争点（両論併記）
+## A contested point (both sides stated)
 
-- Dunning-Kruger 効果の仕組みは未決着である。能力下位者が自己を過大評価する現象（成績の下位四分位が実測12パーセンタイルで自己を62パーセンタイルと推定）[E46]は数値として確認されるが、その仕組みを「メタ認知能力の欠如」とする解釈は争われている。非対称誤差は、平均への回帰と better-than-average ヒューリスティックで説明でき、その2つを除去すると消えるとの反論がある[E47]。一方、個人差データに適した検定では、効果が従来報告よりはるかに小さい可能性があるとの再解析もある[E48]。**本スキルは自己評価の過信の仕組みを断定しない**。この論争は、内省単独の自己評価を確定的に扱わない前記の運用規則を補強する。
+The mechanism behind the Dunning-Kruger effect remains unsettled. The phenomenon of a low performer overestimating themselves (a bottom quartile that measured at the 12th percentile estimated itself at the 62nd) [E46] is confirmed as a figure, and the interpretation that explains its mechanism as "a lack of metacognitive ability" is contested. A counterargument holds that the asymmetric error can be explained by regression to the mean and the better-than-average heuristic, and disappears once the two are removed [E47]. A reanalysis using a test suited to individual-difference data, on the other hand, finds the effect could be far smaller than previously reported [E48]. **This skill does not assert a settled mechanism for overconfidence in self-evaluation.** This dispute reinforces the operating rule stated above, of never treating a self-evaluation grounded in introspection alone as settled.
 
-## 実務手法の位置づけ
+## The place of practical methods
 
-実務手法（Will-Can-Must、モチベーショングラフ、自分史／キャリアの棚卸し、他己分析、ジョハリの窓）は、進行のよりどころとして有用である。ただし効果があるという主張の多くは人材サービス提供者自身の自己報告であり[E14][E17][E19]、興味診断ツールの介入効果に関する証拠自体が弱い[E23]。
+Practical methods (Will-Can-Must, the motivation graph, a personal history or a career stock-take, evaluation by others, the Johari window) are useful as a basis for moving the process forward. Most of the claims of their effectiveness, though, are self-reports by staffing-service providers themselves [E14][E17][E19], and the evidence itself for the intervention effect of an interest-diagnosis tool is weak [E23].
 
-運用: 実務手法を質問設計・進行のよりどころとして採用しつつ、利用者に「診断結果＝確定した自分」と扱わせない。手法で得られた結果は内省・行動・他者証言で裏付けてから成果物へ取り入れる。
+Application: a practical method is adopted as a basis for question design and moving the process forward, while the user is never led to treat "a diagnostic result" as "the settled self." A result obtained through a method is taken into the deliverable only once backed up by introspection, behaviour, and testimony from others.
 
-## 出典一覧
+## Sources
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. レベル. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+<!-- This section lists sources in bibliographic form (publisher. title. year. level. URL). This section alone disables the rule, so the linter does not judge the separating periods and parts of organisation names as Japanese punctuation or as synonyms. -->
 
-- [E1] Journal of Applied Psychology (APA). Are you interested? A meta-analysis of relations between vocational interests and performance/turnover. 2011. レベルA. DOI:10.1037/a0024343. https://doi.org/10.1037/a0024343
-- [E2] Perspectives on Psychological Science (SAGE/APS). Vocational Interests and Performance: A Quantitative Summary. 2012. レベルA. DOI:10.1177/1745691612449021. https://doi.org/10.1177/1745691612449021
-- [E6] 組織科学（組織学会）. キャリア・アンカー9因子モデルの適合性の検証. 2024. レベルA. DOI:10.11207/soshikikagaku.20240702-4. https://doi.org/10.11207/soshikikagaku.20240702-4
-- [E7] Journal of Career Assessment (SAGE). Underlying Factor Structure of Schein's Career Anchor Model. 2013. レベルA. DOI:10.1177/1069072712475179. https://doi.org/10.1177/1069072712475179
-- [E8] キャリア・カウンセリング研究（日本キャリア・カウンセリング学会）. 日本語版キャリア・アダプタビリティ尺度の開発. 2024. レベルA. DOI:10.34512/careercounseling.26.1_1. https://doi.org/10.34512/careercounseling.26.1_1
-- [E10] Journal of Affective Disorders (Elsevier). Internalising symptoms and wellbeing: Meta-analysis of buffering. 2025. レベルA. DOI:10.1016/j.jad.2025.119809. https://doi.org/10.1016/j.jad.2025.119809
-- [E11] Journal of Vocational Behavior (Elsevier). Interest fit and job satisfaction: A systematic review and meta-analysis. 2020. レベルA. DOI:10.1016/j.jvb.2020.103503. https://doi.org/10.1016/j.jvb.2020.103503
-- [E12] Journal of Happiness Studies (Springer). The Impact of Signature Character Strengths Interventions: A Meta-Analysis. 2019. レベルA. DOI:10.1007/s10902-018-9990-2. https://doi.org/10.1007/s10902-018-9990-2
-- [E14] リクルート（リクナビNEXT）. 自己分析のフレームワーク＆手法11種（Will-Can-Must）. 2021-05-28. レベルB（自己報告）. https://next.rikunabi.com/tenshokuknowhow/archives/25424/
-- [E17] リクルート（リクナビNEXT）. 自己分析手法11種の一覧. 2021-05-28. レベルB（自己報告）. https://next.rikunabi.com/tenshokuknowhow/archives/25424/
-- [E19] キャリコンスタディ（LIFE&CAREER LLC）. 【キャリコン】自己理解の支援. 2020-09-24. レベルC. https://careerconsultant-study.com/jikorikai-support/
-- [E22] THE CAREER STORY（就活の教科書）. 法政大学 児美川孝一郎教授インタビュー. 2024-08-20. レベルC. https://reashu.com/story/professor-interview-komikawa/
-- [E23] Frontiers in Organizational Psychology. RIASEC self-assessment tools as career interventions. 2026-04-24. レベルA. https://www.frontiersin.org/journals/organizational-psychology/articles/10.3389/forgp.2026.1792707/full
-- [E42] Humanage, Inc.（i-note）. 中途採用で活躍する人材を見極める面接術（再現性）. 2025-05-30. レベルC. https://www.i-note.jp/assessment/tekisei-kensa/articles/028.html
-- [E44] Annual Review of Psychology. Self-knowledge: its limits, value, and potential for improvement. 2004. レベルA. DOI:10.1146/annurev.psych.55.090902.141954. https://doi.org/10.1146/annurev.psych.55.090902.141954
-- [E45] Psychological Review (APA). Telling more than we can know: Verbal reports on mental processes. 1977. レベルA. DOI:10.1037/0033-295X.84.3.231. https://doi.org/10.1037/0033-295X.84.3.231
-- [E46] Journal of Personality and Social Psychology (APA). Unskilled and unaware of it. 1999. レベルA. DOI:10.1037/0022-3514.77.6.1121. https://doi.org/10.1037/0022-3514.77.6.1121
-- [E47] Journal of Personality and Social Psychology (APA). Unskilled, unaware, or both? The better-than-average heuristic. 2002. レベルA. DOI:10.1037/0022-3514.82.2.180. https://doi.org/10.1037/0022-3514.82.2.180
-- [E48] Intelligence (Elsevier). The Dunning-Kruger effect is (mostly) a statistical artefact. 2020. レベルA. DOI:10.1016/j.intell.2020.101449. https://doi.org/10.1016/j.intell.2020.101449
-- [E49] Psychological Bulletin (APA). An other perspective on personality: Meta-analytic integration of observers' accuracy. 2010. レベルA. DOI:10.1037/a0021212. https://doi.org/10.1037/a0021212
-- [E50] Psychological Bulletin (APA). The effects of feedback interventions on performance. 1996. レベルA. DOI:10.1037/0033-2909.119.2.254. https://doi.org/10.1037/0033-2909.119.2.254
-- [E51] Advances in Experimental Social Psychology (Elsevier). The Introspection Illusion. 2009. レベルA. DOI:10.1016/s0065-2601(08)00401-2. https://doi.org/10.1016/s0065-2601(08)00401-2
-- [E52] Perspectives on Psychological Science. Rethinking Rumination. 2008. レベルA. DOI:10.1111/j.1745-6924.2008.00088.x. https://doi.org/10.1111/j.1745-6924.2008.00088.x
-- [E54] 感情心理学研究（日本感情心理学会）. 自己反すうと自己内省が社交不安に及ぼす影響. 2017. レベルA. DOI:10.4092/jsre.25.1_17. https://doi.org/10.4092/jsre.25.1_17
-- [E55] Current Directions in Psychological Science. Affective forecasting: Knowing what to want. 2005. レベルA. DOI:10.1111/j.0963-7214.2005.00355.x. https://doi.org/10.1111/j.0963-7214.2005.00355.x
+- [E1] Journal of Applied Psychology (APA). Are you interested? A meta-analysis of relations between vocational interests and performance/turnover. 2011. Level A. DOI:10.1037/a0024343. https://doi.org/10.1037/a0024343
+- [E2] Perspectives on Psychological Science (SAGE/APS). Vocational Interests and Performance: A Quantitative Summary. 2012. Level A. DOI:10.1177/1745691612449021. https://doi.org/10.1177/1745691612449021
+- [E6] Soshiki Kagaku (組織科学, Organizational Science; published by the Academic Association for Organizational Science). Verifying the fit of the nine-factor model of career anchors (キャリア・アンカー9因子モデルの適合性の検証). 2024. Level A. DOI:10.11207/soshikikagaku.20240702-4. https://doi.org/10.11207/soshikikagaku.20240702-4
+- [E7] Journal of Career Assessment (SAGE). Underlying Factor Structure of Schein's Career Anchor Model. 2013. Level A. DOI:10.1177/1069072712475179. https://doi.org/10.1177/1069072712475179
+- [E8] Career Counseling Studies (キャリア・カウンセリング研究, published by the Japanese Society for the Study of Career Counseling). Development of the Japanese-language Career Adapt-Abilities Scale (日本語版キャリア・アダプタビリティ尺度の開発). 2024. Level A. DOI:10.34512/careercounseling.26.1_1. https://doi.org/10.34512/careercounseling.26.1_1
+- [E10] Journal of Affective Disorders (Elsevier). Internalising symptoms and wellbeing: Meta-analysis of buffering. 2025. Level A. DOI:10.1016/j.jad.2025.119809. https://doi.org/10.1016/j.jad.2025.119809
+- [E11] Journal of Vocational Behavior (Elsevier). Interest fit and job satisfaction: A systematic review and meta-analysis. 2020. Level A. DOI:10.1016/j.jvb.2020.103503. https://doi.org/10.1016/j.jvb.2020.103503
+- [E12] Journal of Happiness Studies (Springer). The Impact of Signature Character Strengths Interventions: A Meta-Analysis. 2019. Level A. DOI:10.1007/s10902-018-9990-2. https://doi.org/10.1007/s10902-018-9990-2
+- [E14] Recruit (リクルート, Rikunabi NEXT). Eleven self-analysis frameworks and methods, including Will-Can-Must (自己分析のフレームワーク＆手法11種（Will-Can-Must）). 2021-05-28. Level B (a self-report). https://next.rikunabi.com/tenshokuknowhow/archives/25424/
+- [E17] Recruit (リクルート, Rikunabi NEXT). A list of eleven self-analysis methods (自己分析手法11種の一覧). 2021-05-28. Level B (a self-report). https://next.rikunabi.com/tenshokuknowhow/archives/25424/
+- [E19] Career Consul Study (キャリコンスタディ, LIFE&CAREER LLC). [Career counselling] Support for self-understanding (【キャリコン】自己理解の支援). 2020-09-24. Level C. https://careerconsultant-study.com/jikorikai-support/
+- [E22] THE CAREER STORY (Job-Hunting Textbook, 就活の教科書). An interview with Professor Koichiro Komikawa of Hosei University (法政大学 児美川孝一郎教授インタビュー). 2024-08-20. Level C. https://reashu.com/story/professor-interview-komikawa/
+- [E23] Frontiers in Organizational Psychology. RIASEC self-assessment tools as career interventions. 2026-04-24. Level A. https://www.frontiersin.org/journals/organizational-psychology/articles/10.3389/forgp.2026.1792707/full
+- [E42] Humanage, Inc. (i-note). Interview techniques for identifying candidates who will thrive in mid-career hiring (reproducibility) (中途採用で活躍する人材を見極める面接術（再現性）). 2025-05-30. Level C. https://www.i-note.jp/assessment/tekisei-kensa/articles/028.html
+- [E44] Annual Review of Psychology. Self-knowledge: its limits, value, and potential for improvement. 2004. Level A. DOI:10.1146/annurev.psych.55.090902.141954. https://doi.org/10.1146/annurev.psych.55.090902.141954
+- [E45] Psychological Review (APA). Telling more than we can know: Verbal reports on mental processes. 1977. Level A. DOI:10.1037/0033-295X.84.3.231. https://doi.org/10.1037/0033-295X.84.3.231
+- [E46] Journal of Personality and Social Psychology (APA). Unskilled and unaware of it. 1999. Level A. DOI:10.1037/0022-3514.77.6.1121. https://doi.org/10.1037/0022-3514.77.6.1121
+- [E47] Journal of Personality and Social Psychology (APA). Unskilled, unaware, or both? The better-than-average heuristic. 2002. Level A. DOI:10.1037/0022-3514.82.2.180. https://doi.org/10.1037/0022-3514.82.2.180
+- [E48] Intelligence (Elsevier). The Dunning-Kruger effect is (mostly) a statistical artefact. 2020. Level A. DOI:10.1016/j.intell.2020.101449. https://doi.org/10.1016/j.intell.2020.101449
+- [E49] Psychological Bulletin (APA). An other perspective on personality: Meta-analytic integration of observers' accuracy. 2010. Level A. DOI:10.1037/a0021212. https://doi.org/10.1037/a0021212
+- [E50] Psychological Bulletin (APA). The effects of feedback interventions on performance. 1996. Level A. DOI:10.1037/0033-2909.119.2.254. https://doi.org/10.1037/0033-2909.119.2.254
+- [E51] Advances in Experimental Social Psychology (Elsevier). The Introspection Illusion. 2009. Level A. DOI:10.1016/s0065-2601(08)00401-2. https://doi.org/10.1016/s0065-2601(08)00401-2
+- [E52] Perspectives on Psychological Science. Rethinking Rumination. 2008. Level A. DOI:10.1111/j.1745-6924.2008.00088.x. https://doi.org/10.1111/j.1745-6924.2008.00088.x
+- [E54] Japanese Journal of Emotional Psychology (感情心理学研究, published by the Japanese Society of Research on Emotions). The effects of self-rumination and self-reflection on social anxiety (自己反すうと自己内省が社交不安に及ぼす影響). 2017. Level A. DOI:10.4092/jsre.25.1_17. https://doi.org/10.4092/jsre.25.1_17
+- [E55] Current Directions in Psychological Science. Affective forecasting: Knowing what to want. 2005. Level A. DOI:10.1111/j.0963-7214.2005.00355.x. https://doi.org/10.1111/j.0963-7214.2005.00355.x
 
 <!-- textlint-enable -->

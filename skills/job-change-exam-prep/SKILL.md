@@ -1,12 +1,15 @@
 ---
 name: job-change-exam-prep
 description: >-
-  転職（中途採用）の筆記試験・適性検査対策を担うサブスキル。対象企業で使われる検査種別（SPI3・玉手箱・
-  GAB/CAB・TG-WEB・TAL・内田クレペリン・性格検査・外資系オンラインアセスメント）を、受検案内 URL の
-  ドメイン判別と job-change-exam-scout エージェントの調査で特定し、検査種別ごとに対策計画（科目別の
-  学習項目・時間配分・教材方針・スケジュール）を作り、出題形式を模した自作問題で演習する。確定情報と
-  推定を区別し、能力検査は反復練習、性格検査は一貫した正直な回答という、検査種別ごとの対策の差に従う。実在の
-  検査問題は複製しない。hub（job-change-support）から振り分けられて使う。
+  Sub-skill for written-test and aptitude-assessment preparation in Japanese mid-career hiring. It identifies
+  the assessment type used by the target company (SPI3, 玉手箱 (Tamatebako), GAB/CAB, TG-WEB, TAL, 内田クレペリン検査 (Uchida-Kraepelin),
+  personality tests, foreign-affiliated online assessments) through domain detection of the exam-invitation
+  URL and investigation by the job-change-exam-scout agent, builds a preparation plan per assessment type
+  (subject-level study items, time allocation, materials policy, schedule), and practices with self-made
+  questions that mimic the question format. It distinguishes confirmed information from estimates, and
+  follows the difference in preparation per assessment type: repeated practice for ability tests (能力検査), consistent
+  honest answers for personality tests. It does not reproduce real exam questions. Used when routed from the
+  hub (job-change-support).
   Use when the user prepares for a written test or aptitude assessment in a Japanese mid-career job change
   (including foreign-affiliated online assessments) — identifying which test a company uses, building a
   study plan, and practicing question formats.
@@ -17,172 +20,172 @@ allowed-tools: Read, Write, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
 
 # job-change-exam-prep
 
-中途採用の筆記試験・適性検査に備えるとき、このスキルが検査種別の特定から対策計画の作成・演習までを担う。対象は日本の中途採用で使われる検査を中心とし、外資系のオンラインアセスメントにも対応する。
+When preparing for a written test or aptitude assessment in mid-career hiring, this skill covers everything from identifying the assessment type through building a preparation plan and practicing. It focuses on assessments used in Japanese mid-career hiring and also handles foreign-affiliated online assessments.
 
-検査は種別ごとに出題形式も対策の効き方も異なる。まず対象企業で使われる検査種別を特定し、種別に応じた対策計画を作り、出題形式を模した自作問題で演習する、という順で進める。検査種別の調査は専用エージェント `job-change-exam-scout` に委ね、本スキルはその起動・結果の突き合わせ・計画作成・演習を担う。
+Assessments differ in question format and in how well preparation works, depending on type. The skill proceeds in this order: identify the assessment type used by the target company, build a preparation plan matched to the type, then practice with self-made questions that mimic the question format. Investigating the assessment type is delegated to the dedicated agent `job-change-exam-scout`; this skill handles launching it, reconciling its results, building the plan, and running practice.
 
-## 目的と原則
+## Purpose and principles
 
-1. **検査種別を先に特定する。** 対策は検査種別に依存するため、種別が定まらないまま学習項目を決めない。受検案内 URL があれば `references/domain-detection.md` のドメイン判別で系統を即時に絞り、`job-change-exam-scout` の調査で種別を確定・補強する。確定情報（採用ページ等での明記）と推定（選考体験記からの類推）を区別し、推定を確定であるかのように書かない。
+1. **Identify the assessment type first.** Preparation depends on the assessment type, so study items are not decided before the type is settled. If an exam-invitation URL is available, the domain detection in `references/domain-detection.md` immediately narrows down the family, and investigation by `job-change-exam-scout` confirms and reinforces the type. Confirmed information (explicitly stated on the careers page, etc.) is distinguished from estimates (inferred from candidate write-ups); estimates are never written as if they were confirmed.
 
-2. **対策は検査種別ごとに分ける。** 能力検査（SPI3・玉手箱・TG-WEB・GAB・CAB 等）は反復練習で得点が上がる。一方、性格検査・TAL・内田クレペリンは対策の効きにくい検査であり、このうち性格検査では一貫した正直な回答を勧める。回答のゆがみ（faking）が妥当性に与える影響は、学術的に決着していない。両論は `references/prep-methods.md` に併記する。
+2. **Separate preparation by assessment type.** Ability tests (SPI3, 玉手箱 (Tamatebako), TG-WEB, GAB, CAB, etc.) are tests where scores rise with repeated practice. Personality tests, TAL, and 内田クレペリン検査 (Uchida-Kraepelin), by contrast, are tests where preparation has little effect; for personality tests specifically, consistent honest answers are recommended. Whether faking (distorting answers) affects validity is not academically settled. Both views are presented together in `references/prep-methods.md`.
 
-3. **実在の検査問題を複製しない。** 演習は `references/assessment-catalog.md` が示す出題形式に基づき、形式を模した自作問題で行う。実在の検査問題・著作物の複製、受検代行、替え玉受検は行わない。
+3. **Do not reproduce real exam questions.** Practice is done with self-made questions that mimic the question formats shown in `references/assessment-catalog.md`. Reproducing real exam questions or copyrighted material, taking an exam on the user's behalf, or exam impersonation are not performed.
 
-4. **個人情報を外部へ送信しない。** 利用者の個人情報を、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。`job-change-exam-scout` は WebSearch・WebFetch を持つ。このため `profile.json` と `career-private/` 配下のパス・内容をこのエージェントへ渡さない。Step 1 の指示書には企業名・応募職種・求人票のみを渡す。本スキルは `profile.json` を必須の前提としない。職種の把握のために参照する場合も、`profile.json` の内容を Web 送信手段を持つ手順へ渡さない。
+4. **Do not send personal information externally.** The user's personal information is never used in any external transmission, including search queries, fetches, or external APIs. The canonical definition of what this covers and which roles may or may not handle it lives in the hub's `{HUB_SKILL_DIR}/references/pii-boundary.md`. `job-change-exam-scout` has WebSearch and WebFetch. For this reason, paths and contents under `career-private/` and `profile.json` are not passed to this agent. The Step 1 instructions pass only the company name, applied role, and job posting. This skill does not require `profile.json` as a prerequisite. Even when it is consulted to understand the applied role, its contents are not passed to any procedure with web-sending capability.
 
-5. **ベンダー公表値は自己報告として扱う。** 検査提供元や対策媒体が公表する完了率・データ件数などの数値は、独立検証を経ていない自己報告値として扱い、断定の根拠にしない。
+5. **Vendor-published figures are treated as self-reported.** Numbers such as completion rates or sample sizes published by an assessment vendor or a preparation outlet are treated as self-reported figures that have not passed independent verification, and are not used as grounds for an assertion.
 
-## 範囲外
+## Out of scope
 
-次は本スキルの範囲外とする。依頼された場合は、対応できない旨を伝える。
+The following are out of scope for this skill. When requested, the skill states that it cannot handle them.
 
-- **受検の代行・替え玉受検・不正行為。** 利用者本人に代わって検査を受検する行為、替え玉受検、監視環境の回避は扱わない。
-- **面接本番の想定問答。** 面接そのものの対策は `job-change-interview-prep` が担う。ケース面接・フェルミ推定については、筆記・オンライン選考の一環として思考の型を扱う。面接で掘り下げられたときの想定問答は `job-change-interview-prep` へ委ねる。
-- **企業研究・応募書類作成。** それぞれ `job-change-company-research`・`job-change-documents` が担う。
-- **合否・スコアの予測や保証。** 対策計画は学習の方針であり、合否やスコアを予測・保証しない。
+- **Taking an exam on the user's behalf, exam impersonation, or misconduct.** Taking an assessment in place of the user, exam impersonation, and evading proctoring are not handled.
+- **Rehearsing answers for the actual interview.** Preparation for the interview itself is handled by `job-change-interview-prep`. For case interviews and Fermi estimation, this skill covers the thinking pattern as part of written/online screening. Rehearsed answers for follow-up probing during an interview are delegated to `job-change-interview-prep`.
+- **Company research and document creation.** These are handled by `job-change-company-research` and `job-change-documents` respectively.
+- **Predicting or guaranteeing pass/fail or scores.** A preparation plan is a study policy; it does not predict or guarantee pass/fail or scores.
 
-## パスの解決
+## Path resolution
 
-利用者データの置き場所は設定ファイルの記述だけで決まる。既定の置き場所は無い。本文で `{DATA_ROOT}` と書いた箇所は、次のコマンドが返す `data_root` に読み替える。
+Where the user's data is stored is decided solely by the configuration file. There is no default location. Wherever this document writes `{DATA_ROOT}`, read it as the `data_root` returned by the following command.
 
-hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、作業のどの段階よりも先に次を実行する。
+When routed from the hub (job-change-support), the hub passes the already-resolved `{DATA_ROOT}`. When launched standalone, run the following before any other step of the work.
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 ```
 
-| 終了コード | 状態 | 対応 |
+| Exit code | State | Action |
 |---|---|---|
-| 0 | 設定済み | 出力の `paths` に各データの絶対パスが入る。そのまま作業へ進む |
-| 1 | 設定はあるが内容が不正 | 出力の `errors` を利用者へ示し、利用者が設定を直すまで作業へ進まない |
-| 2 | 未設定 | Skill ツールで `job-change-support` を起動して設定を作らせ、`{DATA_ROOT}` を解決してから戻る |
+| 0 | Configured | The `paths` in the output hold the absolute path for each data item. Proceed with the work |
+| 1 | Configuration exists but is invalid | Show the `errors` in the output to the user, and do not proceed until the user fixes the configuration |
+| 2 | Not configured | Launch `job-change-support` with the Skill tool to create the configuration, resolve `{DATA_ROOT}`, then return |
 
-`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。探索順序を含む設定ファイルの仕様は `docs/configuration.md` にある。
+`{SKILL_DIR}` refers to this skill's own absolute path, and `{HUB_SKILL_DIR}` refers to the absolute path of `job-change-support` in the same installation. The configuration file's specification, including its search order, lives in `docs/configuration.md`.
 
-## 中間成果物
+## Intermediate deliverables
 
-企業別の成果物は `{DATA_ROOT}/companies/{企業スラッグ}/` 配下に置く。企業スラッグは hub と同じ規約に従い、`career-private/company_index.json` で解決する（例: 架空クラウドワークス社 → `kakuu-cloudworks`）。
+Per-company deliverables are placed under `{DATA_ROOT}/companies/{company slug}/`. The company slug follows the same convention as the hub and is resolved via `career-private/company_index.json` (e.g., fictional CloudWorks Inc. → `kakuu-cloudworks`).
 
-| パス | 内容 | 生成する Step |
+| Path | Content | Step that produces it |
 |---|---|---|
-| `companies/{企業スラッグ}/exam_assessment.json` | 検査種別の調査結果（種別・実施段階・根拠 URL・確度・出題形式・推奨対策） | Step 1（`job-change-exam-scout` が書き出す） |
-| `companies/{企業スラッグ}/exam-prep-plan.md` | 対策計画（検査種別ごとの学習項目・時間配分・教材方針・スケジュール） | Step 2 |
+| `companies/{company slug}/exam_assessment.json` | Investigation results on assessment type (type, stage, source URL, confidence, question format, recommended preparation) | Step 1 (written out by `job-change-exam-scout`) |
+| `companies/{company slug}/exam-prep-plan.md` | Preparation plan (study items, time allocation, materials policy, schedule per assessment type) | Step 2 |
 
-企業が特定できない汎用の対策依頼では、企業スラッグの代わりに `_general/` を用いて成果物を置く。
+For a generic preparation request where no company can be identified, deliverables are placed under `_general/`, which takes the company slug's place in the path.
 
-## パイプライン
+## Pipeline
 
-Step 0 から Step 3 を順に進める。
+Proceed through Step 0 to Step 3 in order.
 
-### Step 0 受付
+### Step 0 Intake
 
-次を確認する。確認は AskUserQuestion で選択式を中心に行い、最大4問・各4択とする。
+Confirm the following. Confirmation is done mainly through multiple-choice questions via AskUserQuestion, at most 4 questions with 4 options each.
 
-- 対象企業名（正式名称）。企業未定の汎用対策か、特定企業向けかを区別する。
-- 応募職種（総合職・エンジニア職など。CAB/GAB の別や検査傾向の判断に影響する）。
-- 受検案内 URL の有無。案内メール・受検ページの URL があるか。
+- Target company name (official name). Distinguish whether this is generic preparation with no company decided, or preparation for a specific company.
+- Applied role (general track, engineering track, etc. This affects the CAB/GAB distinction and assessment-tendency judgment).
+- Whether an exam-invitation URL exists. Whether there is an invitation email or a URL for the assessment page.
 
-受検案内 URL がある場合は、`references/domain-detection.md` のドメイン判別表に照らして系統を即時に判別し、確度を明示する。判別は URL 文字列の照合のみで行い、URL への外部アクセスやプロファイルの外部送信は伴わない。判別結果は暫定であり、確度は「推定」とする。日本 SHL 系（`e-exam`・`nsvs`・`tsvs`）からは玉手箱・GAB・CAB のいずれかまでしか絞れないこと、ペーパー形式は URL では判別できないこと、検査提供元がドメインを変える場合があることを併せて伝える。確定は Step 1 の調査で行う。
+If an exam-invitation URL exists, check it against the domain-detection table in `references/domain-detection.md` to immediately determine the family, and state the confidence explicitly. Detection is done by matching the URL string only; it involves no external access to the URL and no external transmission of the profile. The detection result is provisional, and its confidence is set to `推定` (estimate). Also convey that the Japan SHL family (`e-exam`, `nsvs`, `tsvs`) can only be narrowed to one of 玉手箱 (Tamatebako), GAB, or CAB; that paper-format tests cannot be detected from a URL; and that an assessment vendor may change its domain. Confirmation happens through the investigation in Step 1.
 
-特定企業向けの場合は、スラッグを解決する前に `validate_company_index.py` で一覧を検証する。FAIL（ERROR 1件以上）なら指摘内容を利用者へ示し、利用者が一覧を直すまで解決へ進まない。そのうえで企業スラッグを `career-private/company_index.json` で解決する。企業名が index に一致すればそのスラッグを使い、無ければ一度だけ導出して登録する。詳細は job-change-support の `references/company-index-format.md` にある。
+For a specific-company request, before resolving the slug, validate the index with `validate_company_index.py`. On FAIL (1 or more ERRORs), show the findings to the user and do not proceed to resolution until the user fixes the index. Then resolve the company slug via `career-private/company_index.json`. If the company name matches an entry in the index, use that slug; if not, derive one once and register it. Details are in job-change-support's `references/company-index-format.md`.
 
-スラッグを解決したら、`companies/{企業スラッグ}/company_research.json` の有無を確認する。ある場合は `check_freshness.py` で当該企業の `_manifest.json` を判定する。`stale` のトピックがあれば、その旨と対象トピック名を利用者へ示し、`job-change-company-research` での差分再調査を提案する。利用者が再調査せずに進むことを選んだ場合は、古い情報に基づく旨と対象トピック名を Step 2 の `exam-prep-plan.md` へ明記して進む。判定規則と TTL の原本は job-change-support の `references/freshness-policy.md` にある。
+Once the slug is resolved, check whether `companies/{company slug}/company_research.json` exists. If it does, judge that company's `_manifest.json` with `check_freshness.py`. If any topic is `stale`, show this fact and the affected topic names to the user, and propose an incremental re-investigation of the stale topics with `job-change-company-research`. If the user chooses to proceed without re-investigating, state clearly in the `exam-prep-plan.md` from Step 2 that the plan relies on outdated information, naming the affected topics. The canonical definition of the judgment rules and TTLs is in job-change-support's `references/freshness-policy.md`.
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/validate_company_index.py {DATA_ROOT}/career-private/company_index.json
-python {HUB_SKILL_DIR}/scripts/check_freshness.py {DATA_ROOT}/companies/{企業スラッグ}/_manifest.json
+python {HUB_SKILL_DIR}/scripts/check_freshness.py {DATA_ROOT}/companies/{company slug}/_manifest.json
 ```
 
-`validate_company_index.py` の終了コードは PASS で 0、FAIL で 1（WARN のみは PASS 扱い）である。`check_freshness.py` は常に終了コード 0 を返し、`fresh`・`stale`・`missing` の分類を出力する。
+`validate_company_index.py` exits 0 on PASS and 1 on FAIL (WARN only is treated as PASS). `check_freshness.py` always exits 0, and its output classifies each topic as `fresh`, `stale`, or `missing`.
 
-`profile.json` は本スキルの必須前提ではない。職種の把握のために参照してよいが、その内容を Step 1 のエージェントへ渡さない（原則 4）。
+`profile.json` is optional for this skill. It may be consulted to understand the applied role, but its content is not passed to the Step 1 agent (principle 4).
 
-### Step 1 検査種別の調査
+### Step 1 Investigating the assessment type
 
-`job-change-exam-scout` エージェント（model: sonnet）を Agent ツールで起動し、対象企業の中途採用で使われる検査種別を調査させる。
+Launch the `job-change-exam-scout` agent (model: sonnet) with the Agent tool to investigate the assessment types used in the target company's mid-career hiring process.
 
-- 指示書に渡すもの: 企業名（正式名称）・応募職種（あれば）・求人票（あれば）。本スキルの絶対パス（`{SKILL_DIR}`。`references/exam-assessment-format.md` と `scripts/` の所在）と、job-change-company-research の絶対パス（`references/evidence-grading.md` の所在）も渡す。`companies/{企業スラッグ}/company_research.json` があれば、topic=selection_process の claims の要約も渡す。要約は主張・出典URL・エビデンスレベルの3点を持つ。要約を渡すのは、すでに集めた証拠を捨てて調査をやり直させないためである。この要約は企業についての公開情報であり個人情報を含まないため、Web ツールを持つ調査担当へ渡してよい。`profile.json` は渡さない（原則 4）。
-- 調査結果が、渡した claims と食い違う場合は、エビデンスレベルの高いほうを採用する。同じレベルなら調査日の新しいほうを採用し、`exam_assessment.json` の `open_questions` に双方の主張と採否の理由を残す。
-- 出力先: エージェントは `{DATA_ROOT}/companies/{企業スラッグ}/exam_assessment.json` へ結果を書き出し、同一の JSON を返す。
-- 出力 JSON の形式（フィールド仕様・記入基準・機械的な検証の規則）の原本は `references/exam-assessment-format.md` にある。記入例は `assets/exam_assessment_example.json`（架空データ）にある。
+- What the instructions pass: the company name (official name), the applied role (if known), and the job posting (if available). Also pass this skill's absolute path (`{SKILL_DIR}`, for the location of `references/exam-assessment-format.md` and `scripts/`), and job-change-company-research's absolute path (for the location of `references/evidence-grading.md`). If `companies/{company slug}/company_research.json` exists, also pass a summary of the claims under topic=selection_process. The summary carries three items: the claim, the source URL, and the evidence level. This summary is passed so that evidence already gathered is not discarded and re-investigated from scratch. Because this summary is public information about the company and contains no personal information, it may be passed to an investigation role that has web tools. `profile.json` is not passed (principle 4).
+- When the investigation results conflict with the passed claims, the one with the higher evidence level is adopted. If the levels are equal, the more recently investigated one is adopted, and both claims plus the reason for the choice are recorded in `exam_assessment.json`'s `open_questions`.
+- Output destination: the agent writes the results to `{DATA_ROOT}/companies/{company slug}/exam_assessment.json` and returns the same JSON.
+- The canonical definition of the output JSON's format (field specification, entry criteria, mechanical validation rules) is in `references/exam-assessment-format.md`. A filled-in example (fictional data) is in `assets/exam_assessment_example.json`.
 
-エージェントの返答を受け取ったら、エージェントが書き出した成果物を検証する。FAIL（ERROR 1件以上）なら Step 2 へ進まず、指摘内容を付してエージェントへ差し戻す。
+After receiving the agent's response, validate the deliverable it wrote. On FAIL (1 or more ERRORs), do not proceed to Step 2; send it back to the agent along with the findings.
 
 ```bash
-python {SKILL_DIR}/scripts/validate_exam_assessment.py {DATA_ROOT}/companies/{企業スラッグ}/exam_assessment.json
+python {SKILL_DIR}/scripts/validate_exam_assessment.py {DATA_ROOT}/companies/{company slug}/exam_assessment.json
 ```
 
-終了コードは PASS で 0、FAIL で 1（WARN のみは PASS 扱い）である。WARN は差し戻しの理由にしないが、Step 2 で対策計画へ反映する（根拠1件のみの種別、`assessment-catalog.md` が扱わない検査名など）。
+Exit code 0 means PASS, 1 means FAIL (WARN only is treated as PASS). A WARN lets the deliverable proceed; reflect it in the preparation plan at Step 2 (e.g., a type backed by only a single piece of evidence, or an exam name not covered by `assessment-catalog.md`).
 
-企業が特定できず汎用対策とする場合は、本 Step を省略する。`references/domain-detection.md` の暫定判別（URL があれば）と、頻出検査（SPI3・玉手箱）を想定した基礎対策で Step 2 へ進む。
+If the company cannot be identified and this is a generic preparation request, skip this step. Proceed to Step 2 using the provisional detection from `references/domain-detection.md` (if a URL exists) and basic preparation assuming the most common assessments (SPI3, 玉手箱 (Tamatebako)).
 
-### Step 2 対策計画の作成
+### Step 2 Building the preparation plan
 
-`exam_assessment.json` の `assessments` と、`references/assessment-catalog.md`・`references/prep-methods.md` を突き合わせ、検査種別ごとに対策計画を作る。計画は次を含む。
+Cross-reference `exam_assessment.json`'s `assessments` against `references/assessment-catalog.md` and `references/prep-methods.md`, and build a preparation plan per assessment type. The plan includes the following.
 
-| 構成要素 | 内容 |
+| Component | Content |
 |---|---|
-| 科目別の学習項目 | 検査種別の出題科目（言語・非言語・計数・英語・法則性・命令表・暗号など）ごとに、習得すべき項目を挙げる。`references/assessment-catalog.md` の出題形式を根拠にする。 |
-| 時間配分 | 実施方式・制限時間の特徴（玉手箱・TG-WEB のように短時間で同一形式を連続出題する検査では時間管理が要点になる）を踏まえ、科目別の学習・演習の時間配分を示す。 |
-| 教材方針 | 検査種別に対応する定番教材の系統を示す（`references/prep-methods.md`）。対策困難な検査（TAL 等）は、その旨を明示して教材の過剰な投入を避ける。 |
-| スケジュール | 受検までの日数に応じた学習順序を示す。反復練習が効く能力検査を優先し、性格検査は回答方針の確認にとどめる。 |
+| Study items by subject | For each subject tested by the assessment type (verbal, non-verbal, quantitative, English, rule-inference, instruction tables, code-breaking, etc.), list the items to master. Base this on the question formats in `references/assessment-catalog.md`. |
+| Time allocation | Based on the administration method and time-limit characteristics (for tests like 玉手箱 (Tamatebako) and TG-WEB, which present the same format in rapid succession under short time limits, time management is a key point), show a time allocation for study and practice by subject. |
+| Materials policy | Show the standard family of materials matched to the assessment type (`references/prep-methods.md`). For assessments where preparation is difficult (TAL, etc.), state this explicitly and avoid over-investing in materials. |
+| Schedule | Show a study sequence matched to the number of days until the exam. Prioritize ability tests where repeated practice is effective; for personality tests, limit the plan to confirming the answering approach. |
 
-対策可能性の差（`references/prep-methods.md`）に従い、性格検査・TAL・内田クレペリンには過度な対策を勧めない。性格検査については、一貫した正直な回答を勧める。
+Following the difference in how well preparation works (`references/prep-methods.md`), do not recommend excessive preparation for personality tests, TAL, or 内田クレペリン検査 (Uchida-Kraepelin). For personality tests, recommend consistent honest answers.
 
-確定情報と推定情報を書き分ける。`confidence` が「推定」の種別は、対策計画に「推定である旨・根拠件数・確度」を明記し、確定種別と同等に断定しない。Step 0 で URL から暫定的に判別した結果と Step 1 の調査結果が食い違う場合は、両方を示し、確度の高いほうを優先する。
+Distinguish confirmed information from estimates. For a type whose `confidence` is `推定` (estimate), state in the preparation plan that it is an estimate, the number of supporting pieces of evidence, and the confidence level, and do not assert it with the same certainty as a confirmed type. When the provisional detection from Step 0 (based on the URL) conflicts with the Step 1 investigation results, show both and prioritize the one with higher confidence.
 
-計画を `companies/{企業スラッグ}/exam-prep-plan.md`（汎用時は `_general/exam-prep-plan.md`）へ書き出す。計画と最終メッセージはいずれも結論から述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
+Write the plan to `companies/{company slug}/exam-prep-plan.md` (or `_general/exam-prep-plan.md` for the generic case). Both the plan and the final message state the conclusion first. Do not include empty sections, repeated content, or boilerplate preambles.
 
-### Step 3 演習・模擬出題
+### Step 3 Practice and mock questions
 
-`references/assessment-catalog.md` が示す出題形式に基づき、対象検査の形式を模した自作問題を出題し、採点・解説する。
+Based on the question formats shown in `references/assessment-catalog.md`, present self-made questions that mimic the target assessment's format, then score and explain them.
 
-- 対象は反復練習が有効な能力検査系（SPI3・玉手箱・TG-WEB・GAB・CAB）を中心とする。出題→利用者の解答→採点→解説→弱点科目の再出題、を繰り返す。
-- 性格検査は演習の対象とせず、回答方針（一貫性・正直さ）の助言にとどめる。
-- ケース面接・フェルミ推定は、思考の型（前提確認 → 要素への分解 → 仮説 → 結論から述べる）に沿った練習とする。評価では思考の過程を重んじる（`references/prep-methods.md`）。
-- 実在の検査問題・著作物を複製しない（原則 3）。自作問題は形式のみを模す。
+- The focus is mainly on the ability-test family where repeated practice is effective (SPI3, 玉手箱 (Tamatebako), TG-WEB, GAB, CAB). Repeat the cycle: present a question → the user answers → score it → explain it → re-present questions on weak subjects.
+- For personality tests, the practice consists solely of advice on the answering approach (consistency, honesty).
+- Case interviews and Fermi estimation are practiced following the thinking pattern (confirm premises → decompose into elements → form a hypothesis → state the conclusion first). The evaluation weighs the thinking process (`references/prep-methods.md`).
+- Do not reproduce real exam questions or copyrighted material (principle 3). Self-made questions mimic only the format.
 
-## 合否ゲートと差し戻し
+## Pass/fail gates and send-backs
 
-本スキルには独立監査エージェントを置かない。ゲートは Step 1 の調査結果の妥当性に対して設ける。
+This skill does not have an independent audit agent. The gate is set against the validity of the Step 1 investigation results.
 
-- 形式ゲート（Step 1）は `validate_exam_assessment.py` の PASS で定義する。ERROR が1件でもあれば Step 2 へ進まない。この検証スクリプトは、出典 URL のない断定、値域外の `grade`・`confidence`、レベル A の根拠を持たない「確定」を機械的に検出し、FAIL とする。判定規則の原本は `references/exam-assessment-format.md` にある。
-- 種別特定ゲート（Step 1）では、`job-change-exam-scout` が有効な種別を返すことを求める。
-  - エージェントが `{"error": "企業名が指定されていない"}` を返した場合は、Step 0 へ戻り企業名を確認する。
-  - `assessments` が空で `open_questions` のみの場合は、検索範囲を広げる指示（別の選考体験記の媒体・採用ページの確認）を付してエージェントへ再依頼する。再依頼は最大2回までとする。
-  - 2回で種別が特定できない場合は、「種別不明」を未決事項として利用者へ伝える。そのうえで、頻出検査（SPI3・玉手箱）を想定した基礎対策に絞るか、受検案内の到着後に再調査するかを、利用者に委ねる。
-- 確度ゲート（Step 2）では、`confidence` が「推定」の種別について、対策計画に推定である旨・根拠件数・確度を明記する。確定種別と同等に断定しない。
-  - 機械的な検査が担保する部分。「確定」がレベル A の根拠を持つこと（持たなければ Step 1 の形式ゲートで FAIL）は、`validate_exam_assessment.py` が機械的に判定する。根拠1件のみの「推定」を WARN として指摘することも、同じく `validate_exam_assessment.py` が行う。
-  - 人の判断が要る部分。次の4点は機械では判定できない。とりわけ単一の体験記だけを根拠とする種別については、その限界を対策計画へ明示する。
-    - 引用が本当にその検査種別を述べているか
-    - エビデンスレベルの付与そのものが妥当か
-    - 複数の出典が食い違う場合にどちらに従うか
-    - 「推定」の種別を対策計画でどこまで前提にしてよいか
+- The format gate (Step 1) is defined by a PASS from `validate_exam_assessment.py`. If there is even one ERROR, Step 2 is not entered. This validation script mechanically detects assertions with no source URL, out-of-range `grade` or `confidence` values, and a `確定` (confirmed) claim with no level-A evidence, and treats them as FAIL. The canonical definition of the judgment rules is in `references/exam-assessment-format.md`.
+- The type-identification gate (Step 1) requires that `job-change-exam-scout` return a valid type.
+  - If the agent returns `{"error": "企業名が指定されていない"}`, return to Step 0 and confirm the company name.
+  - If `assessments` is empty with only `open_questions`, re-request the agent with instructions to broaden the search scope (other candidate-write-up outlets, checking the careers page). Re-requesting is capped at 2 attempts.
+  - If the type still cannot be identified after 2 attempts, tell the user "type unknown" as an open item. It is then left to the user to choose between narrowing to basic preparation assuming the most common assessments (SPI3, 玉手箱 (Tamatebako)), or re-investigating once the exam invitation arrives.
+- The confidence gate (Step 2) requires that for a type whose `confidence` is `推定` (estimate), the preparation plan states explicitly that it is an estimate, the number of supporting pieces of evidence, and the confidence level, without asserting it with the same certainty as a confirmed type.
+  - What the mechanical check guarantees. That a `確定` (confirmed) claim has level-A evidence (if not, it fails the Step 1 format gate) is judged mechanically by `validate_exam_assessment.py`. Flagging a `推定` (estimate) backed by only a single piece of evidence as WARN is also done by `validate_exam_assessment.py`.
+  - What requires human judgment. The following four points cannot be judged mechanically. In particular, for a type backed by only a single candidate write-up, its limitation is stated explicitly in the preparation plan.
+    - Whether the quoted passage genuinely describes that assessment type
+    - Whether the assignment of the evidence level itself is appropriate
+    - Which side to follow when multiple sources conflict
+    - How far a `推定` (estimate) type may be relied on in the preparation plan
 
-## 役割の実行（ハーネス別）
+## Role execution (by harness)
 
-本スキルのパイプラインは、専門の役割へ作業を委ねる形で書いてある。役割の内容は `references/roles/` に置き、これを原本とする。
+This skill's pipeline is written so that the work is delegated to specialized roles. The content of each role lives under `references/roles/`, which is its canonical definition.
 
-| エージェント名 | 役割プロンプトの原本 |
+| Agent name | Canonical role prompt |
 |---|---|
 | `job-change-exam-scout` | `{SKILL_DIR}/references/roles/exam-scout.md` |
 
-ハーネス別の実行手順と、起動する数の判断の原本は hub の `{HUB_SKILL_DIR}/references/role-execution.md` にある。
+The canonical definition of the execution procedure by harness, and how many instances to launch, is in the hub's `{HUB_SKILL_DIR}/references/role-execution.md`.
 
-## エージェントのモデル方針
+## Agent model policy
 
-| エージェント | model | 責務 |
+| Agent | model | Responsibility |
 |---|---|---|
-| `job-change-exam-scout` | sonnet | 対象企業の検査種別の調査（種別・実施段階・根拠 URL・確度・出題形式・推奨対策） |
+| `job-change-exam-scout` | sonnet | Investigating the target company's assessment types (type, stage, source URL, confidence, question format, recommended preparation) |
 
-model はエージェント定義の frontmatter に固定済みであり、起動時に上書きしない。
+The `model` is fixed in the agent definition's frontmatter and is not overridden at launch time.
 
-## references 一覧
+## References list
 
-| ファイル | 何を | いつ読むか |
+| File | What | When to read it |
 |---|---|---|
-| `references/assessment-catalog.md` | 主要検査（SPI3・玉手箱・GAB/CAB・TG-WEB・TAL・内田クレペリン・性格検査・外資系オンラインアセスメント）の提供元・構成・実施方式・出題形式と出典 | Step 1 の結果解釈、Step 2 の学習項目設計、Step 3 の出題形式の把握 |
-| `references/domain-detection.md` | 受検案内 URL のドメインによる検査系統の事前判別表と、その限界 | Step 0 で URL があるとき、Step 2 で暫定判別と調査結果を照合するとき |
-| `references/prep-methods.md` | 検査種別ごとの対策可能性の差、練習効果と faking の学術的知見、定番教材の系統、ケース面接・フェルミ推定の型 | Step 2 の対策方針の決定、Step 3 の演習方針 |
-| `references/exam-assessment-format.md` | `exam_assessment.json` のフィールド仕様・記入基準・機械的な検証の規則 | Step 1 の指示書作成と成果物の検証、Step 2 で WARN を計画へ反映するとき |
+| `references/assessment-catalog.md` | Providers, structure, administration method, question format, and sources for the major assessments (SPI3, 玉手箱 (Tamatebako), GAB/CAB, TG-WEB, TAL, 内田クレペリン検査 (Uchida-Kraepelin), personality tests, foreign-affiliated online assessments) | Interpreting Step 1's results, designing Step 2's study items, understanding Step 3's question formats |
+| `references/domain-detection.md` | The advance detection table for assessment family by exam-invitation-URL domain, and its limitations | When a URL exists at Step 0; when cross-checking the provisional detection against the investigation results at Step 2 |
+| `references/prep-methods.md` | The difference in preparation effectiveness by assessment type, academic findings on practice effects and faking, the standard family of materials, and the pattern for case interviews and Fermi estimation | Deciding the preparation policy at Step 2; the practice policy at Step 3 |
+| `references/exam-assessment-format.md` | The field specification, entry criteria, and mechanical validation rules for `exam_assessment.json` | Writing the Step 1 instructions and validating its deliverable; reflecting WARNs into the plan at Step 2 |

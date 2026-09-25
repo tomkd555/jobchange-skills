@@ -1,14 +1,14 @@
-# 再調査期限のポリシー（freshness-policy）
+# Re-investigation deadline policy (freshness-policy)
 
-企業別の成果物に再調査が必要かどうか（fresh・stale・missing）を判定する方針の原本である。判定の根拠は `companies/{企業スラッグ}/_manifest.json` であり、その仕様と TTL 対応表もここに置く。判定するツールは `scripts/check_freshness.py` である。
+The canonical reference defining the policy for judging whether a per-company deliverable needs re-investigation (fresh, stale, or missing). The judgment is grounded in `companies/{company slug}/_manifest.json`, whose specification and TTL table also live here. The tool that performs the judgment is `scripts/check_freshness.py`.
 
-## 方針
+## Policy
 
-- `companies/{企業スラッグ}/` は消さずに残す保管場所であり、TTL を超過しても成果物ファイルの削除・移動は行わない。
-- TTL 超過は、hub（job-change-support）が `job-change-company-research` へ「stale と判定されたトピックだけを調べ直すこと」を指示する根拠になる。stale でないトピック・fresh な成果物は再調査しない。既存の成果物をそのまま再利用する。
-- `_manifest.json` を書くのは、各成果物を作るスキル自身である。`job_posting` の欄は `job-change-company-research` が求人票の取得時に、`company_research` の欄は同スキルがトピック調査の完了時に、それぞれ更新する。`check_freshness.py` は判定のみを担い、`_manifest.json` を書き換えない。
+- `companies/{company slug}/` is a storage location that keeps everything without deleting it; a deliverable file is never deleted or moved even after its TTL has elapsed.
+- A TTL that has elapsed gives the hub (job-change-support) grounds to instruct `job-change-company-research` to "investigate only the topics judged stale." A topic that is not stale, and a deliverable that is fresh, is never re-investigated. The existing deliverable is reused as is.
+- The skill that creates each deliverable writes `_manifest.json` itself. `job-change-company-research` updates the `job_posting` field when it obtains the job posting, and updates the `company_research` field when it finishes investigating a topic. `check_freshness.py` only judges; it never rewrites `_manifest.json`.
 
-## `_manifest.json` の仕様
+## `_manifest.json` specification
 
 ```json
 {
@@ -31,46 +31,46 @@
 }
 ```
 
-| フィールド | 型 | 意味 |
+| Field | Type | Meaning |
 |---|---|---|
-| `schema_version` | number | 仕様のバージョン。現行は `1` |
-| `artifacts` | object | 成果物名をキーとするオブジェクト |
-| `artifacts.job_posting` | object \| null | 求人票の取得状況。`updated_at`（`YYYY-MM-DD`）・`source_url` を持つ。`source_url` は URL から取り込んだ場合のみ値を持ち、本文・ファイル・対話から作った場合は `null` である。未取得は `null` |
-| `artifacts.company_research` | object \| null | 企業研究の実施状況。`updated_at`（最終更新日）と、トピック名をキーとし `last_researched`（`YYYY-MM-DD`）を値に持つ `topics` オブジェクト、および `audit_verdict`・`audited_at` を持つ。未実施は `null` |
-| `artifacts.company_research.audit_verdict` | string | 独立監査の判定。`CLEAN`・`CONCERNS`・`BLOCK` のいずれか。書くのは `job-change-company-research` である |
-| `artifacts.company_research.audited_at` | string | 監査を行った日付（`YYYY-MM-DD`） |
+| `schema_version` | number | The specification version. Currently `1` |
+| `artifacts` | object | An object keyed by deliverable name |
+| `artifacts.job_posting` | object \| null | The state of obtaining the job posting. Holds `updated_at` (`YYYY-MM-DD`) and `source_url`. `source_url` holds a value only when the posting was ingested from a URL; it is `null` when built from body text, a file, or dialogue. `null` when not yet obtained |
+| `artifacts.company_research` | object \| null | The state of carrying out company research. Holds `updated_at` (the last update date), a `topics` object keyed by topic name whose value holds `last_researched` (`YYYY-MM-DD`), and `audit_verdict` and `audited_at`. `null` when not yet carried out |
+| `artifacts.company_research.audit_verdict` | string | The independent audit's verdict. One of `CLEAN`, `CONCERNS`, or `BLOCK`. `job-change-company-research` writes it |
+| `artifacts.company_research.audited_at` | string | The date the audit was carried out (`YYYY-MM-DD`) |
 
-`artifacts` には、上記2件のほかに、`exam_assessment` などの成果物を `{updated_at: "YYYY-MM-DD"}` の形で自由に追加してよい。記録してよいのは成果物名と日付だけであり、個人情報とその派生値は書かない（原本は `pii-boundary.md`）。`check_freshness.py` は `job_posting`・`company_research` の2件は常に判定の対象とする。
+`artifacts` may freely add a deliverable such as `exam_assessment` in the form `{updated_at: "YYYY-MM-DD"}`, beyond the two above. Only a deliverable name and a date may be recorded; personal information and any value derived from it are never written (canonical definition: `pii-boundary.md`). `check_freshness.py` always judges the two deliverables `job_posting` and `company_research`.
 
-これに加えて、次の任意成果物は、`artifacts` に記録がある場合に限り判定する。記録が無い場合と、値が `null` の場合（未取得の明示）は `missing` とせず、判定結果にも出さない。記録があって `updated_at` が欠落・不正な場合、またはオブジェクトでない場合は `missing` とする。上記以外のキーは判定せず読み飛ばす。
+Beyond these, the following optional deliverable is judged only when `artifacts` holds a record for it. When there is no record, and when the value is explicitly `null` (stating it has not been obtained), it is never treated as `missing` and never appears in the judgment result. When a record exists but `updated_at` is missing or invalid, or the value is of an invalid type, it is treated as `missing`. Any key other than the ones above is skipped without judgment.
 
-| 任意成果物 | 書き手 | TTL（日） |
+| Optional deliverable | Writer | TTL (days) |
 |---|---|---|
-| `interview_intel` | `job-change-interview-prep`（Step 0.9 の面接情報の調査の完了時に `{updated_at: "YYYY-MM-DD"}` を書く） | 180 |
+| `interview_intel` | `job-change-interview-prep` (writes `{updated_at: "YYYY-MM-DD"}` when Step 0.9's job-interview information investigation finishes) | 180 |
 
-任意成果物が `stale` または `missing` と判定された場合、hub は `job-change-company-research` ではなく、その成果物を書いたスキルへ再調査を渡す。
+When an optional deliverable is judged `stale` or `missing`, the hub hands the re-investigation to the skill that writes that deliverable (the Writer column above).
 
-## トピック名と TTL 対応表
+## Topic names and the TTL table
 
-`company_research.topics` のキーは、`job-change-company-research` スキルの `references/company-research-format.md` が定める8種のトピック名と一致させる。TTL（日数）はトピックの性質で決める。性質を、報道・ニュース、給与・福利厚生・働き方、理念・事業の3つに分ける。トピックごとの対応は次のとおりである。
+The keys of `company_research.topics` match the eight topic names defined by the `job-change-company-research` skill's `references/company-research-format.md`. The TTL (in days) is decided by the nature of the topic. Topics fall into three groups by nature: news and reporting; compensation, benefits, and work style; and philosophy and business. The table below gives the assignment for each topic.
 
-| topic | 分類 | TTL（日） |
+| topic | Category | TTL (days) |
 |---|---|---|
-| `philosophy` | 理念・事業系 | 365 |
-| `business` | 理念・事業系 | 365 |
-| `financials` | 給与・福利厚生・働き方系 | 180 |
-| `compensation` | 給与・福利厚生・働き方系 | 180 |
-| `benefits` | 給与・福利厚生・働き方系 | 180 |
-| `workstyle` | 給与・福利厚生・働き方系 | 180 |
-| `reputation` | 報道・ニュース系 | 90 |
-| `selection_process` | 既定 | 180 |
+| `philosophy` | Philosophy/business | 365 |
+| `business` | Philosophy/business | 365 |
+| `financials` | Compensation/benefits/work style | 180 |
+| `compensation` | Compensation/benefits/work style | 180 |
+| `benefits` | Compensation/benefits/work style | 180 |
+| `workstyle` | Compensation/benefits/work style | 180 |
+| `reputation` | News/reporting | 90 |
+| `selection_process` | Default | 180 |
 
-上の対応表に無いトピック名が `company_research.topics` に現れた場合は、既定 TTL（180日）を適用する。`job_posting` の TTL は `topics` とは別枠で 30日とする。
+For a topic name in `company_research.topics` that is not in the table above, apply the default TTL (180 days). `job_posting`'s TTL is a separate bracket from `topics`, set at 30 days.
 
-## 判定規則
+## Judgment rules
 
-判定の基準日は `--today` に指定した日付で、未指定なら実行時点の日付である。`check_freshness.py` はこの基準日と各成果物の最終更新日との経過日数を求め、経過日数が TTL 以下であれば `fresh`、TTL を超えていれば `stale` とする。TTL ちょうどは `fresh` 側に含める。
+The reference date for the judgment is the date given to `--today`, or the date at execution time when it is omitted. `check_freshness.py` computes the number of days elapsed between this reference date and each deliverable's last update date, and returns `fresh` when the elapsed days are within the TTL, `stale` when they exceed it. Exactly the TTL counts as `fresh`.
 
-- `job_posting`: `artifacts.job_posting` が無い・`null`、または `updated_at` が欠落・不正な日付形式の場合は `missing` とする。それ以外は `updated_at` と TTL=30日で判定する。
-- `company_research`: `artifacts.company_research` が無い・`null` の場合、トピック単位の判定は行わず `company_research` 全体を `missing` とする。存在する場合は、`topics` 配下の各トピックについて `last_researched` の有無・形式を確認する。欠落・不正な場合はそのトピックを `missing` とし、それ以外は対応表の TTL で `fresh`/`stale` を判定する。`topics` が無い・`null`・オブジェクト以外の場合は、トピック単位の判定は行わず `company_research` 全体を `missing` とする。`topics` が空のオブジェクトの場合は、トピックが1件も無いものとして扱い、判定対象にしない。
-- `_manifest.json` が存在しない、または JSON として読み込めない場合、`job_posting`・`company_research` の両方を `missing` として報告する。終了コードは 0 のままとする。再調査の要否を伝えるのが本ツールの役割であり、manifest 未整備を FAIL 扱いにしない。
+- `job_posting`: when `artifacts.job_posting` is absent or `null`, or `updated_at` is missing or in an invalid date format, it is `missing`. Otherwise it is judged from `updated_at` with a TTL of 30 days.
+- `company_research`: when `artifacts.company_research` is absent or `null`, the whole `company_research` is `missing`, with no per-topic judgment. When it exists, check the presence and format of `last_researched` for each topic under `topics`. A topic that is missing or invalid is `missing`; otherwise it is judged `fresh`/`stale` with the table's TTL. When `topics` is absent, `null`, or of an invalid type, the whole `company_research` is `missing`, with no per-topic judgment. When `topics` is an empty object, it is treated as having no topics at all and is excluded from the judgment.
+- When `_manifest.json` does not exist, or cannot be loaded as JSON, both `job_posting` and `company_research` are reported as `missing`. The exit code stays 0. This tool's role is to report whether re-investigation is needed, so a missing manifest still exits with 0.

@@ -1,61 +1,110 @@
-# 職務経歴書の記述基準
+# Shokumu-keirekisho writing standard
 
-日本の中途採用における職務経歴書の記述基準の原本である。作成担当（`job-change-document-writer`）は形式選定・職務要約・実績の記述に用いる。監査担当（`job-change-document-auditor`）は分量・要件対応・定量性の検査に用いる。
+This is the canonical definition for writing a shokumu-keirekisho (career history document) in
+mid-career hiring in Japan. The writer (`job-change-document-writer`) uses it for selecting the
+format and writing the summary section and the achievements. The auditor
+(`job-change-document-auditor`) uses it for checking length, correspondence with the requirements,
+and quantification.
 
-厚生労働省・ハローワークは、職務経歴書を「履歴書では書ききれない具体的なキャリアとやる気をアピールするためのもの」と位置づけ、様式例を無料配布している（出典: 厚生労働省 ハローワークインターネットサービス「履歴書・職務経歴書の書き方」 https://www.hellowork.mhlw.go.jp/member/career_doc01.html 一次・公式）。履歴書が定型項目を埋める書類であるのに対し、職務経歴書は経験と実績を自由記述で示す書類である。
+厚生労働省 (the Ministry of Health, Labour and Welfare) and ハローワーク (Hello Work) position the
+shokumu-keirekisho as a document 「履歴書では書ききれない具体的なキャリアとやる気をアピールするためのもの」 (for
+presenting the concrete career and motivation a rirekisho cannot fully convey), and distribute format
+examples free of charge (source: 厚生労働省
+ハローワークインターネットサービス "履歴書・職務経歴書の書き方"
+https://www.hellowork.mhlw.go.jp/member/career_doc01.html, primary/official). Where the rirekisho
+fills in fixed fields, the shokumu-keirekisho shows experience and achievement in free-form prose.
 
-## 3形式と使い分け
+## The three formats and when to use each
 
-職務経歴書には3つの基本形式がある。応募職種と経歴の関係、強調したい点に応じて選ぶ（出典: マイナビ転職エージェント「『編年体式』『逆編年体式』の職務経歴書の書き方やポイントを紹介！」 https://mynavi-agent.jp/knowledge/prepare/683.html 信頼できる二次）。
+The shokumu-keirekisho has three basic formats. Choose among them by the relationship between the
+target occupation and the career history, and by which point deserves emphasis (source: マイナビ転職エージェント
+"『編年体式』『逆編年体式』の職務経歴書の書き方やポイントを紹介！" https://mynavi-agent.jp/knowledge/prepare/683.html,
+reliable secondary).
 
-| 形式 | 並べ方 | 向く場面 |
+| Format | Ordering | Where it fits |
 |---|---|---|
-| 編年体式 | 社会人経験の開始から現在へ、時系列（古い順） | 同業界・同職種で一貫したキャリアを積み、成長の過程を示したい場合 |
-| 逆編年体式 | 現在から過去へ、時系列の逆順（新しい順） | 現職の内容と応募職の内容が近い場合、直近の経験を強調したい場合 |
-| キャリア式 | 時系列ではなく職務分野別にまとめる | 転職回数が多い場合、技術職などで分野別のスキルを強調したい場合 |
+| Chronological (編年体式) | From the start of working life to the present, in time order (oldest first) | A consistent career in the same industry and occupation, when the applicant wants to show a process of growth |
+| Reverse-chronological (逆編年体式) | From the present back to the past, in reverse time order (newest first) | The current role's content is close to the target job, or the applicant wants to emphasize the most recent experience |
+| Career style (キャリア式) | Grouped by field of work | Frequent job changes, or a technical role where the applicant wants to emphasize skill by field |
 
-- **編年体式**では、社会人としてのキャリアの開始から現在まで、経験した仕事を時系列に沿って書く。職務の連続性と成長が伝わる。
-- **逆編年体式**では、現在から過去へ向けて書く。直近の職務が冒頭に来るため、応募職と近い直近の経験を採用担当者がまず読む。現職と応募職の内容が似通う場合や、直近の実績を前面に出したい場合に向く。
-- **キャリア式**では、在籍企業の時系列ではなく、担当した業務分野ごとに経歴をまとめる。「やってきたこと」「得意分野」が分野単位で伝わるため、転職回数が多く、時系列では経歴が断片的に見える場合や、技術職でスキルの深さを示したい場合に向く。
+- In the **chronological** format, the applicant writes their work experience in time order from the
+  start of their working life to the present. It conveys continuity and growth in their work.
+- In the **reverse-chronological** format, the applicant writes from the present back toward the past.
+  Because the most recent role comes first, a hiring manager reads the experience closest to the
+  target job first. It fits a case where the current role and the target job resemble each other, or
+  where the applicant wants to foreground their most recent achievement.
+- In the **career style**, the career history is organized by the field of work the applicant handled.
+  Because "what I have done" and "my
+  strong field" come across by field, it fits a case with frequent job changes, where a
+  chronological account would look fragmented, or a technical role where the applicant wants to show
+  depth of skill.
 
-作成担当は、経歴と応募職の関係から形式を選び、選定理由を明示する。形式の決め手に欠ける場合、直近経験を重視するなら逆編年体式、分野別のスキルを強調するならキャリア式を優先する。
+The writer chooses a format from the relationship between the career history and the target job, and
+states the reason for the choice. When the choice is not clear-cut, prefer the
+reverse-chronological format when recent experience matters most, and the career style when
+field-specific skill deserves emphasis.
 
-## 職務要約
+## The summary section (職務要約)
 
-冒頭に、これまでの経歴と強みを短くまとめた職務要約を置く。採用担当者が最初に読む部分であり、続きを読むかどうかの判断材料になる。
+Open with a short summary of the career history and strengths so far. A hiring manager reads this
+part first, and it becomes the material for deciding whether to keep reading.
 
-- 経験年数・主な業務領域・応募職に関係する実績を、数行で示す。
-- 応募職種との接点を先に述べる。応募職と無関係の経歴を長く書かない。
-- 職務要約に書く実績も、後述の定量化と、`profile.json` の実績の範囲内という原則に従う。
+- Show years of experience, the main area of work, and an achievement relevant to the target job in a
+  few lines.
+- State the connection to the target occupation first. Do not write at length about career history
+  unrelated to the target job.
+- An achievement written in the summary section also follows the quantification principle below and
+  the principle of staying within `profile.json`'s achievements.
 
-## 実績の定量化
+## Quantifying achievements
 
-実績は、可能な限り数値・割合・金額で示す。定量化された実績が、他の応募者との差を生む。
+Show an achievement with a number, a percentage, or an amount wherever possible. A quantified
+achievement creates the difference from other applicants.
 
-- 「Action（何をしたか）＋ 対象 ＋ Result（結果）」の型で書き、結果を「◯%改善」「◯%増加」「年◯万円」のように定量化する（出典: Yale Office of Career Strategy「Writing Impactful Resume Bullets」 https://ocs.yale.edu/resources/writing-impactful-resume-bullets/ 信頼できる二次）。
-- チームの成果ではなく、本人の貢献を書く（同上）。
-- 定量値は `profile.json` の `achievements[].metric` と厳密一致させる。metric に無い数値を書かない。丸め・水増しをしない。
-- `metric` が `null`（定量化できない実績）の項目は、数値を作らず、担当範囲・役割・工夫を具体的な事実で示す。
+- Write in the form "Action (what was done) + object + Result," and quantify the result as
+  「◯%改善」「◯%増加」「年◯万円」 (◯% improvement, ◯% increase, ◯ ten-thousand yen per year) (source: Yale
+  Office of Career Strategy "Writing
+  Impactful Resume Bullets" https://ocs.yale.edu/resources/writing-impactful-resume-bullets/, reliable
+  secondary).
+- Write the applicant's own contribution (same source).
+- Match a quantified value exactly to `profile.json`'s `achievements[].metric`. Do not write a number
+  absent from `metric`. Do not round or inflate it.
+- For an item whose `metric` is `null` (an achievement that cannot be quantified), do not invent a
+  number; show the scope of responsibility, the role, and the effort with a concrete fact instead.
 
-## 分量
+## Length
 
-分量と職務要約の長さの数値目安は `references/templates.md` を原本とする（社会人経験7年程度まで A4 1〜2枚、それ以上2〜3枚。職務要約200〜300字）。以下はその背景である。
+The canonical definition of the numeric guide for length and for the summary section's length lives in
+`references/templates.md` (one to two A4 pages for roughly seven years of work experience or less,
+two to three pages beyond that; 200–300 characters for the summary). What follows is its background.
 
-- ページ数は出典により1〜2枚と2〜3枚で割れる（一覧は `templates.md`）。固定の合否基準ではなく、簡潔さ・関連性を測るための目安として扱う。英文レジュメの「A4/レター1〜2枚」は `references/english-resume.md` の分量基準（出典付き）で裏づけられる別基準であり、和文の職務経歴書には及ばない。
-- 経歴が長くても、応募職に関係する実績を選び、冗長な列挙を避ける。監査担当は、分量が目安を大きく超え、かつ応募職と無関係の実績が過剰に列挙されている場合を指摘する。
+- The page count splits across sources between one to two pages and two to three pages (the full list
+  is in `templates.md`). Treat this as a guide for measuring conciseness and relevance. The English
+  resume's "one to two A4 or letter pages" is a separate
+  standard grounded in `references/english-resume.md`'s length criterion (with its own source), and
+  does not extend to the Japanese-language shokumu-keirekisho.
+- Even with a long career history, select the achievements relevant to the target job and avoid a
+  redundant listing. The auditor flags a case where the length greatly exceeds the guide and an
+  excessive listing of achievements unrelated to the target job appears together.
 
-## 採用担当者が見る観点
+## What a hiring manager looks for
 
-採用担当者は、次の観点で職務経歴書を読む。これらに答える構成で作成する。
+A hiring manager reads a shokumu-keirekisho for the following points. Write a structure that answers
+them.
 
-| 観点 | 内容 |
+| Point | Content |
 |---|---|
-| 応募職種との合致 | 求人要件に対応する経験・実績があるか。アピールマッピング（`references/tailoring.md`）で要件と実績を対応づける。 |
-| 実績の再現性 | 過去の成果を、応募先でも再現できるか。成果に至った行動・工夫を示す。 |
-| 定着性 | 転職回数が多い場合、キャリアの軸の一貫性が読み取れるか。形式（キャリア式）と職務要約で軸を示す。 |
-| 具体性 | 抽象的な自己評価ではなく、事実と数値で書かれているか。 |
+| Fit with the target occupation | Whether an experience or an achievement corresponds to the posting requirements. The appeal mapping (`references/tailoring.md`) maps the requirements against the achievements. |
+| Reproducibility of the achievement | Whether a past result can be reproduced at the target company. Show the action and the effort that led to the result. |
+| Stability | For frequent job changes, whether a consistent axis in the career comes through. Show that axis through the format (the career style) and the summary section. |
+| Concreteness | Whether the document is written with fact and number. |
 
-## この基準の適用範囲と限界
+## The scope and limits of this standard
 
-- 3形式の使い分けは、大手転職エージェントの実務解説（信頼できる二次）に基づく。採用担当者の評価は企業・職種で幅があり、単一の正解はない。
-- 職務要約の字数目安は実務メディアにより表現が異なる（字数派と行数派がある）。本書は「応募職との接点を先に、実績は定量で」という原則を示し、数値目安（200〜300字）は `templates.md` に置く。
+- The distinction among the three formats rests on a major recruiting agency's practical guide
+  (reliable secondary). A hiring manager's evaluation varies by company and occupation, and no single
+  correct answer exists.
+- The character-count guide for the summary section differs by practical media outlet (some count
+  characters, others lines). This document states the principle "the connection to the target job
+  first, an achievement in quantified form," and places the numeric guide (200–300 characters) in
+  `templates.md`.

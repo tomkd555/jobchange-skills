@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.2",
+  "schema_version": "2.3",
   "search_id": "20260725-better-than-cloudworks",
   "mode": "similar_better",
   "executed_at": "2026-07-25",
@@ -24,6 +24,19 @@
       "remote_policy": "フルリモート",
       "employment_type": "正社員"
     },
+    "derivations": [
+      {
+        "lane": "better_salary",
+        "roles": ["インフラエンジニア", "SRE"],
+        "industries": null,
+        "salary_min": 7000000,
+        "location": "全国（フルリモート）",
+        "remote_policy": "フルリモート",
+        "employment_type": "正社員",
+        "changed_conditions": ["salary_min"],
+        "rationale": "年収下限を主集合・基準求人の600万円から700万円へ上げて検索した"
+      }
+    ],
     "exploration": null
   },
   "baseline": {
@@ -207,7 +220,9 @@
       "classification_override": null,
       "slug": null,
       "search_set": "primary",
+      "lane": null,
       "role_match": "same",
+      "company_key": "架空アトラス",
       "baseline_comparison": {
         "axes": [
           {
@@ -261,6 +276,233 @@
         ],
         "overall": "better"
       }
+    },
+    {
+      "title": "SREエンジニア（フルリモート）",
+      "company_name": "架空フェニックス株式会社",
+      "url": "https://example.com/jobs/phoenix-sre",
+      "source_site": "マイナビ転職エンジニア",
+      "salary_range": "700万〜950万円",
+      "location": "全国（フルリモート）",
+      "remote_policy": "フルリモート",
+      "annual_holidays": 122,
+      "match_notes": "better_salary: 主集合・基準求人の年収下限を700万円に上げて検索。提示下限700万円で基準求人を上回る。",
+      "better_points": [
+        "提示レンジの下限が基準求人より100万円高い"
+      ],
+      "quote": "年収700万〜950万円／フルリモート／年間休日122日／月平均残業9時間",
+      "duty_items": [
+        {
+          "quote": "SLO策定と運用改善",
+          "category": "operate"
+        },
+        {
+          "quote": "障害対応の自動化",
+          "category": "automate"
+        },
+        {
+          "quote": "インフラのコード化（Terraform）",
+          "category": "build"
+        },
+        {
+          "quote": "リリース後の負荷検証",
+          "category": "verify"
+        },
+        {
+          "quote": "プロダクトチームとの運用調整",
+          "category": "coordinate"
+        }
+      ],
+      "axis_observations": [
+        {
+          "axis": "remote_certainty",
+          "stated": true,
+          "value": "guaranteed",
+          "value_text": null,
+          "quote": "完全フルリモート勤務（出社不要）"
+        },
+        {
+          "axis": "overtime_hours",
+          "stated": true,
+          "value": 9,
+          "value_text": null,
+          "quote": "月平均残業9時間"
+        },
+        {
+          "axis": "annual_holidays",
+          "stated": true,
+          "value": 122,
+          "value_text": null,
+          "quote": "年間休日122日"
+        },
+        {
+          "axis": "oncall_load",
+          "stated": true,
+          "value": "exists",
+          "value_text": null,
+          "quote": "オンコール対応（当番制）あり"
+        },
+        {
+          "axis": "hands_on_ratio",
+          "stated": true,
+          "value": 0.8,
+          "value_text": null,
+          "quote": "SLO策定と運用改善／障害対応の自動化／インフラのコード化（Terraform）"
+        },
+        {
+          "axis": "coordination_ratio",
+          "stated": true,
+          "value": 0.2,
+          "value_text": null,
+          "quote": "プロダクトチームとの運用調整"
+        },
+        {
+          "axis": "experience_distance",
+          "stated": true,
+          "value": null,
+          "value_text": "必須要件は SRE 実務3年以上",
+          "quote": "必須要件: SRE としての実務経験3年以上",
+          "required_experience": [
+            "SRE としての実務経験3年以上"
+          ],
+          "job_family": "SRE"
+        },
+        {
+          "axis": "salary_condition",
+          "stated": true,
+          "value": 7000000,
+          "value_text": null,
+          "quote": "年収700万〜950万円"
+        }
+      ],
+      "axis_judgements": [
+        {
+          "axis": "remote_certainty",
+          "level": "must",
+          "judgement": "meets",
+          "threshold_ref": "cond-remote",
+          "rationale": "観測は guaranteed であり、条件のしきい値（guaranteed）を満たす"
+        },
+        {
+          "axis": "overtime_hours",
+          "level": "must",
+          "judgement": "meets",
+          "threshold_ref": "cond-overtime",
+          "rationale": "観測は月9時間であり、条件の上限（月10時間以下）を満たす"
+        },
+        {
+          "axis": "annual_holidays",
+          "level": "want",
+          "judgement": "not_meets",
+          "threshold_ref": "cond-holidays",
+          "rationale": "観測は122日であり、望ましい水準（125日以上）を下回る"
+        },
+        {
+          "axis": "oncall_load",
+          "level": "want",
+          "judgement": "not_meets",
+          "threshold_ref": "no_oncall",
+          "rationale": "オンコール対応（当番制）が明記されている"
+        },
+        {
+          "axis": "hands_on_ratio",
+          "level": "want",
+          "judgement": "meets",
+          "threshold_ref": "hands_on",
+          "rationale": "観測は0.8であり、手を動かす業務が主である"
+        },
+        {
+          "axis": "coordination_ratio",
+          "level": "none",
+          "judgement": "meets",
+          "threshold_ref": null,
+          "rationale": "観測は0.2であり、調整業務の比率は低い"
+        },
+        {
+          "axis": "experience_distance",
+          "level": "none",
+          "judgement": "unknown",
+          "threshold_ref": null,
+          "rationale": "必須要件は読み取れたが、この記入例では経歴との突き合わせを行っていない"
+        },
+        {
+          "axis": "salary_condition",
+          "level": "want",
+          "judgement": "meets",
+          "threshold_ref": "cond-salary",
+          "rationale": "提示下限700万円は望ましい水準（600万円以上）を満たし、基準求人の下限（600万円）も上回る"
+        }
+      ],
+      "classification": "apply_candidate",
+      "classification_reasons": [
+        {
+          "axis": "remote_certainty",
+          "reason": "完全フルリモートが明記されており、必須条件を満たす"
+        },
+        {
+          "axis": "overtime_hours",
+          "reason": "月平均9時間で必須条件の上限を下回る"
+        }
+      ],
+      "classification_override": null,
+      "slug": null,
+      "search_set": "derived",
+      "lane": "better_salary",
+      "role_match": "same",
+      "company_key": "架空フェニックス",
+      "baseline_comparison": {
+        "axes": [
+          {
+            "axis": "salary_condition",
+            "relation": "higher",
+            "baseline_value": "600万〜850万円（下限600万円）",
+            "candidate_value": "700万〜950万円（下限700万円）",
+            "quote": "年収700万〜950万円",
+            "note": null
+          },
+          {
+            "axis": "remote_certainty",
+            "relation": "same",
+            "baseline_value": "フルリモート勤務制度あり",
+            "candidate_value": "完全フルリモート勤務（出社不要）",
+            "quote": "完全フルリモート勤務（出社不要）",
+            "note": null
+          },
+          {
+            "axis": "annual_holidays",
+            "relation": "higher",
+            "baseline_value": "120日",
+            "candidate_value": "122日",
+            "quote": "年間休日122日",
+            "note": null
+          },
+          {
+            "axis": "overtime_hours",
+            "relation": "unknown",
+            "baseline_value": null,
+            "candidate_value": null,
+            "quote": null,
+            "note": "基準求人に固定残業・みなし残業の記載が無いため比較できない（候補求人には月平均残業9時間の記載がある）"
+          },
+          {
+            "axis": "employment_type",
+            "relation": "same",
+            "baseline_value": "正社員",
+            "candidate_value": "正社員",
+            "quote": "雇用形態: 正社員",
+            "note": null
+          },
+          {
+            "axis": "scope_of_change",
+            "relation": "unknown",
+            "baseline_value": null,
+            "candidate_value": null,
+            "quote": null,
+            "note": "基準求人の job_posting.json が schema_version 1.0 で scope_of_change を持たないため、比較できない"
+          }
+        ],
+        "overall": "better"
+      }
     }
   ],
   "search_log": [
@@ -271,7 +513,8 @@
       "hit_count": 214,
       "adopted_count": 1,
       "source": "求人ボックス",
-      "search_set": "primary"
+      "search_set": "primary",
+      "lane": null
     },
     {
       "query": "https://tenshoku.mynavi.jp/engineer/list/p13/e01/min0600/f618/o16/",
@@ -280,21 +523,114 @@
       "hit_count": 37,
       "adopted_count": 0,
       "source": "マイナビ転職エンジニア",
-      "search_set": "primary"
+      "search_set": "primary",
+      "lane": null
+    },
+    {
+      "query": "https://tenshoku.mynavi.jp/engineer/list/p13/e01/min0700/f618/o16/",
+      "url": "https://tenshoku.mynavi.jp/engineer/list/p13/e01/min0700/f618/o16/",
+      "fetched_at": "2026-07-25",
+      "hit_count": 19,
+      "adopted_count": 1,
+      "source": "マイナビ転職エンジニア",
+      "search_set": "derived",
+      "lane": "better_salary"
     }
   ],
+  "company_profiles": {
+    "架空アトラス": {
+      "name": "架空アトラス株式会社",
+      "aliases": ["架空アトラス（株）"],
+      "official_url": "https://example.com/atlas",
+      "careers_url": "https://example.com/atlas/careers",
+      "hq_location": "東京都渋谷区",
+      "industry": "SaaS",
+      "business_summary": {
+        "text": "中小企業向けの人事労務 SaaS を自社開発し、サブスクリプションで提供する。",
+        "quote": "人事労務クラウドを中小企業向けに提供しています",
+        "source_url": "https://example.com/atlas/company",
+        "grade": "A"
+      },
+      "basics": {
+        "employee_count": {"value": 320, "source_url": "https://example.com/atlas/company", "grade": "A", "as_of": "2026-03", "note": null},
+        "founded_year": {"value": null, "source_url": null, "grade": null, "as_of": null, "note": "公表値を確認できなかった"},
+        "listed": {"value": true, "source_url": "https://example.com/atlas/ir", "grade": "A", "as_of": "2026", "note": null},
+        "capital_yen": {"value": null, "source_url": null, "grade": null, "as_of": null, "note": "公表値を確認できなかった"},
+        "edinet_code": {"value": null, "source_url": null, "grade": null, "as_of": null, "note": "公表値を確認できなかった"},
+        "certifications": {"value": null, "source_url": null, "grade": null, "as_of": null, "note": "公表値を確認できなかった"},
+        "review_aggregate": {"value": null, "source_url": null, "grade": null, "as_of": null, "note": "口コミ集計サイトの掲載が無かった"}
+      },
+      "metrics": {
+        "compensation_level": {"value": 6820000, "unit": "円", "source_url": "https://example.com/atlas/ir/yuho2025.pdf", "grade": "A", "as_of": "2025-12", "note": "有価証券報告書「従業員の状況」の平均年間給与"},
+        "annual_holidays": {"value": 125, "unit": "日", "source_url": "https://example.com/atlas/careers", "grade": "A", "as_of": "2026", "note": null},
+        "monthly_overtime": {"value": null, "unit": "時間", "source_url": null, "grade": null, "as_of": null, "note": "公表値を確認できなかった（しょくばらぼは取得できない）"},
+        "paid_leave_rate": {"value": null, "unit": "%", "source_url": null, "grade": null, "as_of": null, "note": "公表値を確認できなかった（しょくばらぼは取得できない）"},
+        "turnover_rate": {"value": null, "unit": "%", "source_url": null, "grade": null, "as_of": null, "note": "公表値を確認できなかった（しょくばらぼは取得できない）"},
+        "male_childcare_leave_rate": {"value": 42.0, "unit": "%", "source_url": "https://example.com/atlas/ir/yuho2025.pdf", "grade": "A", "as_of": "2025-12", "note": null},
+        "revenue_growth": {"value": 18.5, "unit": "%", "source_url": "https://example.com/atlas/ir/yuho2025.pdf", "grade": "A", "as_of": "2025-12", "note": null},
+        "operating_margin": {"value": -3.2, "unit": "%", "source_url": "https://example.com/atlas/ir/yuho2025.pdf", "grade": "A", "as_of": "2025-12", "note": null},
+        "equity_ratio": {"value": 61.0, "unit": "%", "source_url": "https://example.com/atlas/ir/yuho2025.pdf", "grade": "A", "as_of": "2025-12", "note": null}
+      },
+      "negative_checks": {
+        "labor_law_violation_list": {"checked": true, "hit": false, "source_url": "https://www.mhlw.go.jp/kinkyu/151106.html", "as_of": "2026-06-30", "note": "公表事案に掲載が無い。違反が無い証拠にはならない"}
+      },
+      "recent_news": [
+        {"headline": "架空アトラス、シリーズCで30億円を調達", "date": "2026-04-10", "source_url": "https://example.com/atlas/news/2026-04", "grade": "A"}
+      ],
+      "open_questions": []
+    },
+    "架空フェニックス": {
+      "name": "架空フェニックス株式会社",
+      "aliases": [],
+      "official_url": "https://example.com/phoenix",
+      "careers_url": "https://example.com/phoenix/careers",
+      "hq_location": "大阪府大阪市",
+      "industry": "SaaS",
+      "business_summary": {
+        "text": "製造業向けの需要予測 SaaS を自社開発し、サブスクリプションで提供する。",
+        "quote": "製造業のお客様へ需要予測クラウドを提供しています",
+        "source_url": "https://example.com/phoenix/company",
+        "grade": "A"
+      },
+      "basics": {
+        "employee_count": {"value": 210, "source_url": "https://example.com/phoenix/company", "grade": "A", "as_of": "2026-02", "note": null},
+        "founded_year": {"value": 2012, "source_url": "https://example.com/phoenix/company", "grade": "A", "as_of": "2026", "note": null},
+        "listed": {"value": false, "source_url": "https://example.com/phoenix/company", "grade": "A", "as_of": "2026", "note": null},
+        "capital_yen": {"value": 250000000, "source_url": "https://example.com/phoenix/company", "grade": "A", "as_of": "2026-02", "note": null},
+        "edinet_code": {"value": null, "source_url": null, "grade": null, "as_of": null, "note": "非上場のため無い"},
+        "certifications": {"value": null, "source_url": null, "grade": null, "as_of": null, "note": "認定の取得は確認できなかった"},
+        "review_aggregate": {"value": "3.3（回答21件）", "source_url": "https://example.com/reviews/phoenix", "grade": "C", "as_of": "2026-05", "note": "本文の閲覧にはログインが必要なため件数のみ確認した"}
+      },
+      "metrics": {
+        "compensation_level": {"value": null, "unit": "円", "source_url": null, "grade": null, "as_of": null, "note": "非上場のため公表資料が無い"},
+        "annual_holidays": {"value": 122, "unit": "日", "source_url": "https://example.com/phoenix/careers", "grade": "B", "as_of": "2026", "note": null},
+        "monthly_overtime": {"value": null, "unit": "時間", "source_url": null, "grade": null, "as_of": null, "note": "公表値を確認できなかった（しょくばらぼは取得できない）"},
+        "paid_leave_rate": {"value": null, "unit": "%", "source_url": null, "grade": null, "as_of": null, "note": "公表値を確認できなかった（しょくばらぼは取得できない）"},
+        "turnover_rate": {"value": null, "unit": "%", "source_url": null, "grade": null, "as_of": null, "note": "公表値を確認できなかった（しょくばらぼは取得できない）"},
+        "male_childcare_leave_rate": {"value": null, "unit": "%", "source_url": null, "grade": null, "as_of": null, "note": "公表値を確認できなかった"},
+        "revenue_growth": {"value": null, "unit": "%", "source_url": null, "grade": null, "as_of": null, "note": "非上場のため公表資料が無い"},
+        "operating_margin": {"value": null, "unit": "%", "source_url": null, "grade": null, "as_of": null, "note": "非上場のため公表資料が無い"},
+        "equity_ratio": {"value": null, "unit": "%", "source_url": null, "grade": null, "as_of": null, "note": "非上場のため公表資料が無い"}
+      },
+      "negative_checks": {
+        "labor_law_violation_list": {"checked": true, "hit": false, "source_url": "https://www.mhlw.go.jp/kinkyu/151106.html", "as_of": "2026-06-30", "note": "公表事案に掲載が無い。違反が無い証拠にはならない"}
+      },
+      "recent_news": [],
+      "open_questions": []
+    }
+  },
   "screening": {
     "screened_at": "2026-07-25",
     "profile_schema_version": "2.0",
     "axes_source": "job_change_axis.conditions",
     "counts": {
-      "apply_candidate": 1,
+      "apply_candidate": 2,
       "needs_more_research": 0,
       "excluded": 0,
-      "total": 1
+      "total": 2
     },
     "recommendation": "応募推奨あり",
-    "rationale": "必須条件をすべて満たす求人が1件あり、狙った改善軸（年収・年間休日）の双方で基準求人を上回る。",
+    "rationale": "必須条件をすべて満たす求人が主集合1件・派生レーン（better_salary）1件の計2件あり、狙った改善軸（年収・年間休日）でいずれも基準求人を上回る。",
     "unmet_axis_summary": [
       {
         "axis": "remote_certainty",
@@ -308,12 +644,12 @@
       },
       {
         "axis": "annual_holidays",
-        "not_meets": 0,
+        "not_meets": 1,
         "unknown": 0
       },
       {
         "axis": "oncall_load",
-        "not_meets": 0,
+        "not_meets": 1,
         "unknown": 1
       },
       {
@@ -329,7 +665,7 @@
       {
         "axis": "experience_distance",
         "not_meets": 0,
-        "unknown": 1
+        "unknown": 2
       },
       {
         "axis": "salary_condition",
@@ -340,17 +676,19 @@
     "current_employer_exclusion": {
       "performed": true,
       "excluded_count": 0,
-      "method": "profile の career_history のうち period が「〜現在」のエントリの company と company_name を照合した"
+      "method": "merge_search_results.py（正規化企業名の一致）"
     },
-    "exploration": {
-      "performed": false,
-      "result_count": null,
-      "apply_candidate_count": null
+    "derivations": {
+      "performed": true,
+      "lanes": [
+        {"lane": "better_salary", "result_count": 1, "apply_candidate_count": 1}
+      ]
     }
   },
-  "coverage_notes": "求人ボックスとマイナビ転職エンジニアを対象とした。会員登録が必要な求人は範囲外とした。重複の排除で2件を除いた。相場の基準線は求人ボックス給料ナビ「クラウドエンジニア」の中央値595万円（https://xn--pckua2a7gp15o89zb.com/クラウドエンジニアの年収・時給 2026年7月取得。エビデンスレベルC。同サイトの独自試算による参考値である）。",
+  "coverage_notes": "求人ボックスとマイナビ転職エンジニアを対象とした。派生レーン（better_salary）で追加の検索を行った。会員登録が必要な求人は範囲外とした。重複の排除で2件を除いた。相場の基準線は求人ボックス給料ナビ「クラウドエンジニア」の中央値595万円（https://xn--pckua2a7gp15o89zb.com/クラウドエンジニアの年収・時給 2026年7月取得。エビデンスレベルC。同サイトの独自試算による参考値である）。",
   "open_questions": [
     "固定残業の有無が基準求人・候補求人のいずれにも記載が無い。応募前に確認する",
-    "基準求人の求人票が schema_version 1.0 のため、就業場所・業務の変更の範囲を比較できていない"
+    "基準求人の求人票が schema_version 1.0 のため、就業場所・業務の変更の範囲を比較できていない",
+    "架空フェニックスのオンコール対応の頻度は求人票に記載が無い。応募前に確認する"
   ]
 }

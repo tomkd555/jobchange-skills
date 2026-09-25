@@ -1,91 +1,97 @@
-# 求人検索の方法論（根拠と限界）
+# Job search methodology (grounds and limitations)
 
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
-<!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
+<!-- The [E1] form in the body text is the notation for a source id. This file disables that rule to keep the half-width square brackets. -->
 
-job-change-job-search スキルの設計判断の根拠と限界を定める原本である。探索の量をどこまで増やすかと、報告で何を先に述べるかの判断がこのファイルに拠る。観測と判定の分担も、記載の無い軸の扱いも、同じくこのファイルに拠る。SKILL.md のパイプライン（Step 2 の検索、Step 3.5 の8軸判定、Step 5 の納品と接続）と合否ゲートが参照する。検索担当エージェント（job-change-job-searcher）の役割プロンプトも参照する。
+This is the canonical source defining the grounds and limitations behind the job-change-job-search skill's design decisions. The judgment for how far to increase the volume of search, and what to state first in the report, rests on this file. The division of labor between observation and judgment, and the handling of an axis with no statement, rest on this file too. It is referenced by SKILL.md's pipeline (Step 2's search, Step 3.5's eight-axis judgment, Step 5's delivery and hand-off) and its pass/fail gates. The searcher agent's (job-change-job-searcher's) role prompt references it too.
 
-エビデンスレベルは A〜D の4段階（A=一次・公式、B=信頼できる二次、C=口コミ・集計サイト、D=個人ブログ・伝聞・未確認）で表記し、学術研究には DOI を記す。定義の原本は `job-change-company-research/references/evidence-grading.md` にあり、査読済みの学術研究はレベル A に含まれる。対象は日本国内での就業である。本ファイルが引く学術研究はいずれも米国・欧州の標本に基づき、日本の標本での追試は特定できていない。したがってこれらの知見は、探索の進め方と報告のしかたを定める根拠として用いる。求人の合否を機械的に決める根拠にはしない。
+The evidence level is expressed on a four-step scale (A = primary/official, B = reliable secondary, C = word-of-mouth/aggregator sites, D = personal blogs/hearsay/unconfirmed), and academic research carries a DOI. The canonical definition lives in `job-change-company-research/references/evidence-grading.md`, and peer-reviewed academic research is included in level A. The scope is employment within Japan. Every academic study this file cites is based on a US or European sample, and no replication on a Japanese sample could be identified. These findings are therefore used as grounds for setting how to conduct the search and how to report it. They are never used as grounds for mechanically deciding a posting's pass or fail.
 
-## 探索の量は就業の質を予測しない
+## Search volume does not predict employment quality
 
-検索件数を増やすこと自体は、得られる仕事の質を高めない。本スキルは候補を増やすことを既定の提案にせず、事前に決めた必須条件を満たす求人が見つかった時点で探索を止めること（満足化）を促す（確度: 可能性が非常に高い、80%以上90%未満）。
+Increasing the number of search results, on its own, never raises the quality of the job obtained. This skill's default behavior is to encourage stopping the search (satisficing) once a posting meeting the required conditions set in advance is found (confidence: very likely, 80% to under 90%).
 
-- 378独立標本・N=165,933 のメタ分析では、求職の量（探索強度）は面接数を rc=.23、内定数を rc=.14、就業状態を rc=.19 で予測した一方、就業の質は予測しなかった。就業の質を予測するのは探索の質と自己調整である[E1]。
+- A meta-analysis of 378 independent samples (N=165,933) found that job-search quantity (search intensity) predicted the number of interviews at rc=.23, the number of offers at rc=.14, and employment status at rc=.19, while it did not predict employment quality. What predicts employment quality is search quality and self-regulation [E1].
 
-設計への含意: 応募候補が少ないときに、検索経路を足して候補の件数を増やすことを既定の提案にしない。`screening.recommendation` が `応募推奨なし` の場合、条件を緩める前に、条件の再確認を提案する（SKILL.md の合否ゲート「応募推奨」）。必須条件を満たした求人を応募候補として提示し、より良い求人が他に存在しないことの確認を求めない。
+Implication for the design: this skill's default proposal, when there are few application candidates, avoids adding search routes to increase the candidate count. When `screening.recommendation` is `応募推奨なし`, it proposes reconfirming the conditions before loosening them (SKILL.md's pass/fail gate "Recommendation to apply"). It presents a posting meeting the required conditions as an application candidate, and never asks for confirmation that no better posting exists elsewhere.
 
-**確信度を下げる証拠（限界）**: 上記の統合は探索強度と就業の質との関連を扱うものであり、探索を打ち切る時点を実験的に操作した検証ではない。「どこで満足化すべきか」というしきい値そのものに、実証の裏付けはない。
+**Evidence that lowers confidence (limitations)**: the meta-analysis above deals with the relation between search intensity and employment quality, without experimentally manipulating the point at which search is cut off. The threshold itself, of "where to satisfice," carries no empirical support.
 
-## 最良を探し続けることの代償
+## The cost of always searching for the best
 
-最良の求人を探し続ける構えでは、条件面の成果が高くても満足が伴わない。本スキルは、事前に決めた条件を満たす求人を見つける道具であり、条件が最も良い求人を選び出す道具ではない（確度: 可能性が高い、65%以上80%未満）。
+With a stance of always searching for the best posting, satisfaction fails to follow even when the outcome on paper is strong. This skill is a tool for finding a posting that meets conditions decided in advance (confidence: likely, 65% to under 80%).
 
-- 最良を探し続ける求職者は、20%高い初任給の職を得ながら、その職への満足は低く、求職の過程を通じて負の感情を多く経験した[E2]。
-- 7標本（総数1,747名）で、最大化傾向（maximizing）の尺度は幸福感・楽観性・自尊心・生活満足と負に、抑うつ・完全主義・後悔と正に相関した[E3]。
+- Job seekers who kept searching for the best obtained a starting salary 20% higher, yet reported lower satisfaction with that job, and experienced more negative emotion throughout the job-search process [E2].
+- Across seven samples (1,747 people total), the maximizing-tendency scale correlated negatively with happiness, optimism, self-esteem, and life satisfaction, and positively with depression, perfectionism, and regret [E3].
 
-設計への含意: 分類は `apply_candidate` / `needs_more_research` / `excluded` の3値である。求人を条件の良さで序列化した順位表は成果物に持たない。similar_better モードで狙う改善軸（年収・休日・リモート・残業・変更の範囲）を検索前に確認するのは、探索の対象を「指定した軸で上回る求人」へ限定するためである。応募候補が0件のとき、除外候補や追加調査候補から最有力候補を仕立てない。
+Implication for the design: classification takes three values, `apply_candidate` / `needs_more_research` / `excluded`. The deliverable carries no ranking table that orders postings by the strength of their conditions. Confirming, before the search, the improvement axis targeted in similar_better mode (salary, holidays, remote work, overtime, scope of change) serves to confine the search's target to "a posting that beats the reference on the specified axis." When there are zero application candidates, this never dresses up an excluded posting or a needs-more-research posting as the top candidate.
 
-**確信度を下げる証拠（限界）**: 最大化傾向の研究は米国の新卒学部生（11大学、回答548名）を対象とした単発の縦断研究[E2]と、尺度の相関を扱う横断研究[E3]である。新卒一括採用と中途採用が制度的に分離した日本の中途市場へそのまま当てはめる根拠はない。また [E3] の7標本では、自尊心と完全主義は一部の標本でのみ測定されている。
+**Evidence that lowers confidence (limitations)**: the maximizing-tendency research is a single longitudinal study of US new graduate undergraduates (11 universities, 548 respondents) [E2], and a cross-sectional study dealing with scale correlations [E3]. There are no grounds for applying it directly to Japan's mid-career market, where new-graduate mass hiring and mid-career hiring are institutionally separate. In [E3]'s seven samples, self-esteem and perfectionism were also measured only in some of the samples.
 
-## 報告では選び方を明示する
+## The report states the selection method plainly
 
-成果物の報告では、どういう基準でどう絞ったかを、どの求人が最も良いかより先に述べる（確度: 可能性が高い、65%以上80%未満）。
+In the deliverable's report, stating the criteria and how the postings were narrowed comes before stating which posting is best (confidence: likely, 65% to under 80%).
 
-- 108本の論文・683の効果量・重複を除く47,245名のメタ分析では、意思決定者の注意が結果よりも選択の過程へ向くときに、幸福感の低下は緩和されていた[E4]。
+- A meta-analysis of 108 papers, 683 effect sizes, and 47,245 people after removing duplicates found that the decline in well-being was mitigated when the decision maker's attention was directed toward the choice process over the outcome [E4].
 
-設計への含意: 報告は `screening.recommendation` と `rationale`（総合判定とその理由）から始め、次に分類ごとの件数と、軸ごとの未充足・判定不能の件数を示す。個々の求人は、満たしている必須条件・判定できなかった軸・満たさなかった必須条件を添えて列挙する。`classification_reasons` を全件に持たせるのは、分類の結果だけでなく分類の経路を利用者へ残すためである。
+Implication for the design: the report begins with `screening.recommendation` and `rationale` (the overall verdict and its reason), then shows the count per classification and the unmet/undecidable count per axis. Each posting is listed individually, along with the required conditions it meets, the axes that could not be judged, and the required conditions it fails to meet. Every entry carries `classification_reasons` so the user retains the path to the classification, alongside its result.
 
-**確信度を下げる証拠（限界）**: [E4] のメタ分析では、選択の複雑さに関する調整変数の一部が、予測どおりには支持されていない。また同分析は消費者の選択一般を対象としており、求職を対象とした部分集合の効果量は取得できていない。
+**Evidence that lowers confidence (limitations)**: in [E4]'s meta-analysis, some of the moderating variables concerning choice complexity received support falling short of the prediction. The analysis also targets consumer choice in general, and no effect size for the job-search subset specifically could be obtained.
 
-## 観測と判定を分ける
+## Separating observation from judgment
 
-求人票から読めた事実（観測）と、利用者の条件との突き合わせ（判定）を分ける。観測は Web 検索を担う役割が書き、判定は利用者プロファイルを読めるスキル本体が書く（確度: 実証によらない。個人情報の境界から導かれる運用上の取り決めである）。
+The facts readable from a posting (observation) are separated from the matching against the user's conditions (judgment). The role carrying out web search writes the observation, and the skill body that can read the user profile writes the judgment (confidence: not grounded in evidence; this is an operational convention derived from the personal-information boundary).
 
-この分離により、個人情報を Web 送信手段を持つ役割へ渡さずに条件判定が成立する。検索担当エージェントは WebSearch・WebFetch を持つため、`profile.json` と `career-private/` 配下を渡してはならない。同じ理由から、残業の上限・年間休日の下限・作業特性の希望といったしきい値も渡さない。しきい値は本人の条件であり、それ自体が個人を特定しうる情報だからである。匿名化条件として許容されている年収下限（`salary_min`）だけを例外とする。
+This separation makes condition judgment possible without passing personal information to a role holding means of outward web transmission. Since the searcher agent holds WebSearch and WebFetch, `profile.json` and everything under `career-private/` must never be passed to it. For the same reason, thresholds such as an overtime ceiling, an annual-holidays floor, or work-characteristic preferences are never passed either. A threshold is the user's own condition, and it can itself be information that identifies the individual. The salary floor (`salary_min`), already allowed as an anonymised condition, is the sole exception.
 
-設計への含意: `job_search_results.json` は観測層・判定層・総括の3層構造を持つ。観測層（`axis_observations`・`duty_items` など）は検索担当エージェントが書く。判定層（`axis_judgements`・`classification`）と `screening` は、スキル本体が Step 3.5 でローカルに書く。この境界は文書上の約束にとどまらない。`validate_job_search_results.py` の PII リントが、`profile.json` から「外部へ出してはならない言葉」を組み立てて成果物本文を機械的に検査する。PII リントの抽出元と検出規則の原本は `job-search-format.md` の「PII リント」に、8軸と業務分類の語彙の原本は `{HUB_SKILL_DIR}/references/screening-axes.md` にある。
+Implication for the design: `job_search_results.json` has a three-layer structure: observation, judgment, and summary. The searcher agent writes the observation layer (`axis_observations`, `duty_items`, and the rest). The skill body writes the judgment layer (`axis_judgements`, `classification`) and `screening` locally in Step 3.5. This boundary reaches beyond a documented promise. `validate_job_search_results.py`'s PII lint builds "words that must never go outward" from `profile.json`, and mechanically inspects the deliverable's body against them. The canonical source of the PII lint's extraction and detection rules lives in "PII lint" in `job-search-format.md`, and the canonical vocabulary for the eight axes and duty classification lives in `{HUB_SKILL_DIR}/references/screening-axes.md`.
 
-**確信度を下げる証拠（限界）**: 分離の代償として、検索担当エージェントは条件に合わない求人をその場で捨てられず、判定はすべて後段になる。取得件数に対する応募候補の比率は、この設計では下がる。個人情報の境界を守ることを、探索の効率より優先している。
+**Evidence that lowers confidence (limitations)**: as the cost of this separation, the searcher agent cannot discard a posting that fails the conditions on the spot, and every judgment moves to a later stage. The ratio of application candidates to postings fetched drops under this design. This design gives priority to guarding the personal-information boundary over search efficiency.
 
-## 記載が無いことを証拠に使わない
+## The absence of a statement is never used as evidence
 
-求人票に記載がない軸は `stated: false` とし、判定は `unknown` になる。記載の無さを、条件を満たす証拠にも満たさない証拠にも使わない（確度: 実証によらない。観測の欠測を推測で埋めないという運用上の取り決めである）。
+An axis a posting does not state is set to `stated: false`, and its judgment becomes `unknown`. The absence of a statement is never used as evidence that a condition is met, and never as evidence that it is not met (confidence: not grounded in evidence; this is an operational convention against filling a missing observation by guesswork).
 
-求人票は、掲載側が選んだ項目だけを載せた文書であり、網羅的な仕様書ではない。記載の欠落は、その条件が存在しないことも、存在するが書かれなかったことも意味しうる。両者を区別する材料が求人票の側にない以上、欠落からどちらの結論も導けない。とくに `oncall_load`（夜間・休日対応）では、運用・保守・インフラ系の求人において、記載が無くても対応が存在しうる。
+A posting is a selective document: it carries only the items the lister chose to place in it. A missing statement can mean the condition does not exist, and it can equally mean the condition exists but was left unwritten. Since the posting itself offers no material to tell the two apart, no conclusion can be drawn from its absence either way. This holds especially for `oncall_load` (night and holiday response duty): in operations, maintenance, and infrastructure postings, the duty can exist even when the posting never states it.
 
-設計への含意: `unknown` が多い求人は自動的に `needs_more_research`（追加調査候補）へ分類される。報告には、判定できなかった軸と、それを確認する手段（企業研究または面接）を添える。`clear_completion`・`solo_completable`・`short_feedback` の3特性は求人票の文面から判定できないため、求人検索の分類判断に一切影響させない。定性表現しか無い軸（「残業少なめ」など）は `value: null` とし、`value_text` に文言を転記して数値を推定しない。
+Implication for the design: a posting with a high count of `unknown` axes is automatically classified as `needs_more_research` (a needs-further-research candidate). The report attaches the axes that could not be judged, and the means to confirm them (company research or interviewing). The three characteristics `clear_completion`, `solo_completable`, and `short_feedback` cannot be judged from a posting's own text, so they play no part whatsoever in the job-search classification decision. An axis carrying only a qualitative expression (such as 「残業少なめ」 (light overtime)) is set to `value: null`, with its wording copied into `value_text`, without estimating a number.
 
-**確信度を下げる証拠（限界）**: この規則により、記載が薄い求人ほど `needs_more_research` へ寄る。掲載情報の量は企業の掲載方針に左右されるため、この分類は求人そのものの質を表さない。分類が表すのは情報の充足度である。この点を報告に反映する。
+**Evidence that lowers confidence (limitations)**: under this rule, a posting with a thinner statement leans further toward `needs_more_research`. The volume of listed information depends on the company's own listing policy, so this classification never represents the quality of the posting itself. What the classification represents is the sufficiency of the information. Reflect this point in the report.
 
-## 探索集合は主集合と交換しない
+## Derivation lanes are never traded against the primary set
 
-利用者の条件の偏りを点検する探索集合（`bias-checklist.md`）は、主集合の12本とは別枠の追加クエリで作る。主集合の本数を削って探索へ回さない（確度: 実証によらない。上の2節の知見から導いた運用上の取り決めである）。
+Derivation lanes toward improving conditions and toward widening scope (`derivation-lanes.md`) are built from additional queries in a track separate from the primary set's twelve. The primary set's query count is never cut down to feed a lane (confidence: not grounded in evidence; this is an operational convention derived from the findings of the two sections above).
 
-探索の量が就業の質を予測しないという知見[E1]は、量を増やしても質が上がらないことを示すものであり、主集合の本数を減らして探索へ振り向ければ質が上がることを示すものではない。主集合を削れば、利用者が指定した条件での取りこぼしが増えるだけである。探索集合の価値は、本人が指定しなかった範囲に応募候補があるかを1回だけ確かめることにある。その確認は主集合の網羅を削らずに行う。
+What the finding that search volume does not predict employment quality [E1] shows extends only as far as this: increasing volume never raises quality. Whether shifting queries from the primary set to a lane would raise quality falls outside this finding's scope. Cutting the primary set only increases the postings missed within the conditions the user specified. A lane's value lies in confirming whether an application candidate exists in the scope the user did not specify, and in the range of better conditions than specified. That confirmation happens without cutting the primary set's coverage.
 
-設計への含意: 探索集合は fuzzy モードの既定とし、利用者が要らないと言えば作らない。探索集合の求人は主集合と同じ規則で判定・分類し、報告では主集合の下に分けて置く。探索集合の応募候補を、主集合の応募候補が0件のときの最有力候補に仕立てない（「最良を探し続けることの代償」の含意と同じである）。
+There are two reasons for recording lanes separately from the primary set: keeping the primary set's coverage from being traded against a lane, held in place by the deliverable's own structure; and letting the user see the yield per lane (`screening.derivations`) and judge which direction held an application candidate.
 
-**確信度を下げる証拠（限界）**: 探索集合を追加することが応募の結果を改善するかどうかを検証した研究は特定できていない。探索集合の本数（最大6本）も運用上の上限であり、実測に基づかない。
+Implication for the design: lanes are the default in both modes, and none is built when the user says they are unneeded. A derived posting is judged and classified under the same rules as the primary set, and the report places it below the primary set, split by lane. A derived application candidate is never dressed up as the top candidate when the primary set has zero application candidates (the same implication as in "The cost of always searching for the best").
 
-## 調査の限界とエビデンスギャップ（本スキルの前提）
+**Evidence that lowers confidence (limitations)**: no study verifying whether adding a lane improves application outcomes could be identified. The count of lanes (three queries each) and the salary raise are likewise operational conventions, set without measurement.
 
-- 本ファイルが引く4件はいずれも米国・欧州の標本である。日本の中途市場で探索量と就業の質の関係を検証した研究は特定できていない。
-- 求職に特化した最大化傾向のメタ分析は存在しない。求職の文脈での知見[E2]と、選択一般の文脈での知見[E3][E4]を接続して用いている。
-- 満足化のしきい値（必須条件を何件まで、探索をどこで打ち切るか）を検証した実証は特定できていない。本スキルが必須条件の件数を利用者の申告に委ねるのは、この理由による。
-- 観測と判定の分離、および記載の無さを証拠に使わない規則は、実証研究ではなく、個人情報の境界と欠測の扱いから導かれた運用上の取り決めである。
-- 探索集合を別枠にする規則も同じく運用上の取り決めであり、利用者側の条件の偏りが求職の成果へ与える影響を日本の中途市場で測った研究は特定できていない。
+## Company information stays at the observation level
 
-これらのギャップから、本スキルの設計は論点を2つに分けて扱う。証拠が強い論点（探索量を成果の代理指標にしないこと、選び方を報告に残すこと）は確定的に扱う。効果量や適用範囲に留保がある論点（最大化傾向の代償を中途市場へ一般化すること）は、留保付きで扱う。求人検索の判定材料は求人票の記載だけであり、判定そのものが企業研究や面接で覆りうる。この前提を、応募推奨の合否ゲートと報告の双方に反映する。
+`company_profiles` is the observation layer the searcher writes, and it carries no judgment. Classification is decided solely by the posting's eight-axis judgment, and company information plays no part in it. Company information never substitutes for company research. It passes through neither the eight-topic coverage nor the audit that company research requires, and company research after choosing where to apply is still carried out separately. The purpose of gathering company information at the search stage is letting the user see, at an early stage, whether to advance a `needs_more_research` posting into company research, and whether any negative public information exists about an application candidate's company.
 
-## 出典一覧
+## Research limitations and evidence gaps (this skill's premises)
+
+- All four studies this file cites are US or European samples. No study verifying the relation between search volume and employment quality in Japan's mid-career market could be identified.
+- No meta-analysis of maximizing tendency specialised to job search exists. This file connects and uses a finding from the job-search context [E2] with findings from the general-choice context [E3][E4].
+- No empirical verification of the satisficing threshold (how many required conditions, where to cut off the search) could be identified. This is the reason this skill leaves the count of required conditions to the user's own declaration.
+- Separating observation from judgment, and the rule against using the absence of a statement as evidence, are operational conventions derived from the personal-information boundary and the handling of missing observations.
+- The rule keeping derivation lanes in a separate track is likewise an operational convention. No study measuring, in Japan's mid-career market, the effect of user-side condition bias on job-search outcomes could be identified.
+
+Given these gaps, this skill's design handles its points in two groups. A point with strong evidence (never using search volume as a proxy for outcome, keeping the selection method in the report) is treated as settled. A point carrying reservations on effect size or scope of application (generalising the cost of maximizing tendency to the mid-career market) is treated with those reservations attached. The judgment material for job search is only what a posting states, and the judgment itself can be overturned by company research or interviewing. Reflect this premise in both the pass/fail gate for recommending an application and in the report.
+
+## Source list
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 著者と年. レベル. DOI. URL）で出典を並べる節である。区切りのピリオドを和文の句読点として判定させないため、この節だけ無効化する。 -->
+<!-- This section lists sources in bibliographic form (publisher. author and year. level. DOI. URL). This section alone disables the rule, so the separating periods are never judged as Japanese punctuation. -->
 
-- [E1] Journal of Applied Psychology. van Hooft ほか. 2021. レベルA（378独立標本・N=165,933 のメタ分析）. DOI:10.1037/apl0000675. https://doi.org/10.1037/apl0000675
-- [E2] Psychological Science. Iyengar ほか. 2006. レベルA（米国の新卒学部生11大学・回答548名の縦断研究）. DOI:10.1111/j.1467-9280.2006.01677.x. https://doi.org/10.1111/j.1467-9280.2006.01677.x
-- [E3] Journal of Personality and Social Psychology. Schwartz ほか. 2002. レベルA（7標本・総数1,747名）. DOI:10.1037/0022-3514.83.5.1178. https://doi.org/10.1037/0022-3514.83.5.1178
-- [E4] Journal of Consumer Psychology. Belli ほか. 2022. レベルA（108本・683効果量・重複を除く47,245名のメタ分析）. DOI:10.1002/jcpy.1283. https://doi.org/10.1002/jcpy.1283
+- [E1] Journal of Applied Psychology. van Hooft et al. 2021. Level A (a meta-analysis of 378 independent samples, N=165,933). DOI:10.1037/apl0000675. https://doi.org/10.1037/apl0000675
+- [E2] Psychological Science. Iyengar et al. 2006. Level A (a longitudinal study of US new-graduate undergraduates, 11 universities, 548 respondents). DOI:10.1111/j.1467-9280.2006.01677.x. https://doi.org/10.1111/j.1467-9280.2006.01677.x
+- [E3] Journal of Personality and Social Psychology. Schwartz et al. 2002. Level A (seven samples, 1,747 people total). DOI:10.1037/0022-3514.83.5.1178. https://doi.org/10.1037/0022-3514.83.5.1178
+- [E4] Journal of Consumer Psychology. Belli et al. 2022. Level A (a meta-analysis of 108 papers, 683 effect sizes, 47,245 people after removing duplicates). DOI:10.1002/jcpy.1283. https://doi.org/10.1002/jcpy.1283
 
 <!-- textlint-enable -->

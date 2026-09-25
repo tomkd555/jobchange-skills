@@ -1,53 +1,53 @@
-# 外資系選考の面接（ビヘイビアラル面接・ケース面接）
+# Foreign-affiliated company interviews (behavioral interviews, case interviews)
 
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
-<!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
+<!-- The [E1]-style notation in the body is the source-id notation. To preserve the half-width square brackets, this rule is disabled for this file. -->
 
-外資系選考で用いられるビヘイビアラル（コンピテンシー）面接とケース面接の進め方・評価観点をまとめる。日本の中途採用面接に通じる質問類型は `question-bank.md` を、回答評価のアンカーは `evaluation-rubric.md` を原本とする。job-change-interview-coach は外資系選考でこれらの質問類型（category=ビヘイビアラル・ケース）を加える。
+This document summarizes how behavioral (competency) interviews and case interviews, both used in foreign-affiliated company selection, proceed and what they evaluate. The canonical source for question categories common to mid-career hiring interviews in Japan is `question-bank.md`; the canonical source for answer-evaluation anchors is `evaluation-rubric.md`. job-change-interview-coach adds these question categories (category=ビヘイビアラル [behavioral], category=ケース [case]) for a foreign-affiliated selection process.
 
-## ビヘイビアラル面接（コンピテンシー面接）
+## Behavioral interviews (competency interviews)
 
-過去の具体的な行動から、応募先が求めるコンピテンシー（職務遂行能力）を評価する面接である。
+An interview that evaluates the competency (job-performance capability) the employer requires, based on specific past behavior.
 
-| 観点 | 内容 |
+| Criterion | Content |
 |---|---|
-| 質問とコンピテンシーの対応 | 各質問が特定のコンピテンシー（例: リーダーシップ・課題解決・協働）に対応づけられている。応募先が定義するコンピテンシーごとに、それを示す過去の行動を1つずつ準備する[E69]。 |
-| 採点方式（BARS） | 回答は BARS（行動基準評定尺度。Behaviorally Anchored Rating Scale）で採点される。行動の水準ごとに評価基準が明文化されており、抽象的な印象でなく具体的な行動が点数に結び付く[E69]。 |
-| 回答構成 | STAR（状況・課題・行動・結果）で構成し、行動（Action）に回答時間の50〜60%を割く。担った役割・判断・行動を、本人を主語にして述べる[E69]。評価アンカーは `evaluation-rubric.md` と共通である。 |
+| Correspondence between question and competency | Each question maps to a specific competency (for example, leadership, problem-solving, or collaboration). The candidate prepares one piece of past behavior demonstrating each competency the employer defines[E69]. |
+| Scoring method (BARS) | Answers are scored with BARS (a Behaviorally Anchored Rating Scale). Evaluation criteria are documented explicitly for each level of behavior, so specific behavior determines the score[E69]. |
+| Answer structure | The answer is structured with STAR (Situation, Task, Action, Result), devoting 50 to 60 percent of the answer time to Action. The candidate states the role, the judgment, and the action they themselves took, with themselves as the subject[E69]. The evaluation anchors are shared with `evaluation-rubric.md`. |
 
-## ケース面接
+## Case interviews
 
-与えられたビジネス課題に対し、思考の過程を示しながら解を組み立てる面接であり、フェルミ推定（限られた情報から数量を概算する問い）を含む場合がある。
+An interview in which the candidate builds a solution to a given business problem while showing their thought process; it may include Fermi estimation (a question that estimates a quantity from limited information).
 
-### 標準的な進め方
+### Standard procedure
 
-1. 問いの範囲・定義・制約を確認し、面接官と前提をそろえる[E68]。
-2. 論点を、漏れなく重複なく（MECE）3〜5個へ分解し、現状を分析して課題を特定する。汎用のフレームワークをそのまま当てはめず、課題の文脈に合わせて調整する[E70]。
-3. 分解した論点に沿って対策を挙げ、優先順位を付ける[E68]。
-4. 結論を先に述べ、根拠を後に続ける（アンサーファースト）[E68]。
-5. 面接官の反論・追加条件に応じて、仮説を更新する[E68]。
+1. Confirm the scope, definition, and constraints of the question, aligning premises with the interviewer[E68].
+2. Break the issue down into three to five points, mutually exclusive and collectively exhaustive (MECE), analyze the current state, and identify the problem. Never apply a generic framework unmodified; adjust it to the context of the problem[E70].
+3. List countermeasures along the decomposed points and prioritize them[E68].
+4. State the conclusion first, followed by the supporting reasoning (answer-first)[E68].
+5. Update the hypothesis in response to the interviewer's counterarguments and additional conditions[E68].
 
-まず仮説を立てて進める。必要な情報がすべてそろうのを待たず、まず仮説を立て、分析で検証・修正する[E70]。フェルミ推定では、数値の正確さより、分解の仕方・仮定の置き方・説明の筋道（思考プロセス）が問われる[E43]。
+Proceed by first forming a hypothesis. Form a hypothesis before all the information is in hand, then verify and revise it through analysis[E70]. In Fermi estimation, what is evaluated is the way the problem is decomposed, the assumptions made, and the line of explanation (the thought process)[E43].
 
-### 評価観点
+### Evaluation criteria
 
-| 観点 | 内容 |
+| Criterion | Content |
 |---|---|
-| 論理 | 論点の分解と、結論に至る筋道の一貫性[E42][E70]。 |
-| 数字感覚 | 概算・定量分析の妥当さ[E42]。 |
-| 伝える力 | 思考を相手に分かる形で説明できるか[E68]。 |
+| Logic | Consistency of the decomposition of the issue and the line of reasoning reaching the conclusion[E42][E70]. |
+| Number sense | The soundness of the estimation and quantitative analysis[E42]. |
+| Communication | Whether the thinking can be explained in a way the other party can follow[E68]. |
 
-問われるのは、どう考えたかを相手に示せることである[E42][E68]。結論の正しさそのものより、どう考えたかを示せているかが評価される。
+What is evaluated is whether the candidate can show the other party how they thought[E42][E68]. Showing the thought process matters more than the correctness of the conclusion itself.
 
-## 出典
+## Sources
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. レベル. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+<!-- This section lists sources in a bibliographic format (publisher. title. year. level. URL). This rule is disabled for this section only, so that the separating periods and parts of company names are not judged as Japanese punctuation or synonyms. -->
 
-- [E42] Management Consulted. BCG Case Interview | Land A BCG Career. 2026. レベルC. https://managementconsulted.com/bcg-case-interview/
-- [E43] ワンキャリア. フェルミ推定・ケース面接を対策！ポイントは「論理性・コミュ力・楽しむ姿勢」. 2026. レベルC. https://www.onecareer.jp/articles/298
-- [E68] コンサルGO. ケース面接の例題と対策を解説！考え方や回答のコツ、よくある失敗例も紹介. 2026-02-16. レベルB. https://consulgo.jp/article/case-interview-example/
-- [E69] CareerTestPrep. Behavioural Interview Questions: The Complete STAR Method Guide 2026. 2026-05-31. レベルB. https://www.careertestprep.com/blog/behavioural-interview-questions-star-method
-- [E70] The Thinksters. How to structure a consulting case interview: frameworks, tips, and examples. 2025-09-26. レベルB. https://thethinksters.com/how-to-structure-a-consulting-case-interview-frameworks-tips-and-examples/
+- [E42] Management Consulted. BCG Case Interview | Land A BCG Career. 2026. Level C. https://managementconsulted.com/bcg-case-interview/
+- [E43] ワンキャリア. フェルミ推定・ケース面接を対策！ポイントは「論理性・コミュ力・楽しむ姿勢」. 2026. Level C. https://www.onecareer.jp/articles/298
+- [E68] コンサルGO. ケース面接の例題と対策を解説！考え方や回答のコツ、よくある失敗例も紹介. 2026-02-16. Level B. https://consulgo.jp/article/case-interview-example/
+- [E69] CareerTestPrep. Behavioural Interview Questions: The Complete STAR Method Guide 2026. 2026-05-31. Level B. https://www.careertestprep.com/blog/behavioural-interview-questions-star-method
+- [E70] The Thinksters. How to structure a consulting case interview: frameworks, tips, and examples. 2025-09-26. Level B. https://thethinksters.com/how-to-structure-a-consulting-case-interview-frameworks-tips-and-examples/
 
 <!-- textlint-enable -->

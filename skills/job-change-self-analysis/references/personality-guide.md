@@ -1,132 +1,132 @@
-# 性格・行動傾向の扱い（personality-guide）
+# Handling of personality and behavioural tendencies (personality-guide)
 
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
-<!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
+<!-- The [E1] form in the body is the notation for a source id. This file disables that rule to keep the half-width square brackets. -->
 
-job-change-self-analysis スキルで、性格・行動傾向を自己申告として集め、行動証拠と他者証言に対応づけて成果物へ載せるときの原本である。`self_analysis.json` の `personality` の記入基準と Step 3.5 の問い（`question-bank.md`）、エージェント2体（writer / auditor）の判断は、いずれもこのファイルを原本とする。内省の限界と反すう防止の根拠は `self-analysis-methods.md` にあり、ここへは複製しない。エビデンスレベルは A〜D の4段階で表記し、学術研究には DOI を記す。
+This is the canonical definition, in the job-change-self-analysis skill, for collecting personality and behavioural tendencies as self-reports, mapping them to behavioural evidence and feedback from others, and carrying them into the deliverable. The entry criteria for `personality` in `self_analysis.json`, the Step 3.5 questions (`question-bank.md`), and the judgment of the two agents (writer / auditor) all treat this file as canonical. The grounds for the limits of introspection and for preventing rumination are in `self-analysis-methods.md`, and are not duplicated here. Evidence levels are marked on a four-level A-D scale, and academic research carries a DOI.
 
-## 位置づけ
+## Position
 
-性格の自己申告は、行動エピソードと他者証言に次ぐ3つ目の素材である。自己申告は本人の自己像を表すが、特性そのものの証拠ではない（`self-analysis-methods.md` の「内省は単独では信頼できない」）。したがって、自己申告の項目は次の3つの役割に限る。
+Self-reported personality is the third material, after behavioural episodes and feedback from others. A self-report shows the person's own self-image, and carries no evidence of the trait itself ("Introspection alone is unreliable" in `self-analysis-methods.md`). The items in a self-report are therefore limited to the following three roles.
 
-1. エピソードの想起を促す呼び水。項目へ答えたら、その傾向が表れたエピソードを1つ挙げてもらい、`linked_episode_ids` で対応づける。
-2. 自己像と他者証言の一致・不一致を可視化する材料（ジョハリの窓）。不一致はそのまま記録し、都合の良い側へ寄せない。
-3. 作業特性の希望（`work_character_preferences`）・志向・面接での自己PRと弱みの説明に、行動に根ざした言葉を与える材料。
+1. A prompt that draws out an episode. After the person answers an item, have them name one episode where that tendency showed up, and map it with `linked_episode_ids`.
+2. Material that makes the agreement and disagreement between self-image and feedback from others visible (the Johari window). A disagreement is recorded as it stands, without leaning toward the more favourable side.
+3. Material that gives behaviour-grounded language to work-characteristic preferences (`work_character_preferences`), orientation, and the description of strengths and weaknesses in a job interview.
 
-自己申告だけで強みを作らない。エピソードにも他者証言にも対応づかない自己申告は、`personality.markers` に残るが `strengths` の根拠にならない。
+A self-report alone never builds a strength. A self-report that maps to neither an episode nor feedback from others stays in `personality.markers`, and grounds no entry in `strengths`.
 
-## 使ってよい道具と使わない道具
+## Instruments used and not used
 
-性格に関する検査は、公開の可否と利用条件が道具ごとに違う。本スキルが問いとして出してよいのは、公開されていて再配布・改変が許される項目群に限る。
+For a personality assessment, whether it is public and the terms of its use differ by instrument. This skill may ask only items that are public and permit redistribution and modification.
 
-| 道具 | 利用条件 | 本スキルでの扱い |
+| Instrument | Terms of use | Handling in this skill |
 |---|---|---|
-| IPIP（International Personality Item Pool） | パブリックドメイン。複製・編集・翻訳・利用のいずれも許可や料金を要しない[E1] | ビッグファイブ5因子と誠実さ・謙虚さ（HEXACO 由来の IPIP 版）の枠組みと項目の趣旨を使ってよい。項目は本スキルの二者択一の形に書き直して出す |
-| HEXACO-PI-R（原版） | 非営利の学術研究に限り無償。それ以外は著者への連絡を要する[E2] | 原版の項目は使わない。誠実さ・謙虚さの枠組みだけを IPIP 版の趣旨で使う |
-| Short Grit Scale（Grit-S） | 非営利の研究・教育に限り無償。商用利用・広い公開配布・採用のような利害のある場面での利用は著者の条件で除かれている[E3] | 尺度は使わない。「やり抜く力」という構成概念だけを参照し、本スキルが独自に書いた二者択一の項目で聞く |
-| General Self-Efficacy Scale（GSE） | 原版（英語）は研究目的で無償。日本語の標準尺度（一般性セルフ・エフィカシー尺度）は有償の検査である[E4] | 尺度は使わない。「自己効力感」という構成概念だけを参照し、本スキルが独自に書いた項目で聞く |
-| O*NET Interest Profiler | CC BY 4.0。出典を示せば翻訳を含む改変も許される[E5] | 本スキルは採点する検査を出さないため、項目は使わない。興味（RIASEC）の枠組みの名称だけを使う |
-| O*NET Work Importance Profiler ほかの Career Exploration Tools の内容 | CC BY-ND 4.0。項目をそのまま使うことは許されるが、改変（日本語への書き直しを含む）は別の開発者ライセンスと検証の義務を要する[E5] | 項目を日本語へ書き直して出すことはしない。仕事の価値の枠組みの名称だけを使う |
-| VPI 職業興味検査（日本版） | 有償の検査キットであり、JILPT は販売していない[E6] | 使わない。RIASEC は枠組みの名称としてだけ使う |
-| 厚生労働省 job tag の自己診断ツール・JILPT キャリア・インサイト・VRT カード・GATB | 公的機関が提供し、利用者が自分で受けられる。ハローワークで受けられるものもある | 本スキルからは出さない。利用者が受けた結果を持ち込んだ場合は、呼び水として扱い、確定した判定にしない |
-| Schein のキャリア・アンカー質問票 | 有償の出版物 | 8分類の呼び水としてだけ使う（`question-bank.md`） |
-| Career Construction Interview（Savickas） | 論文で公開された面接の枠組みであり、採点する尺度ではない | 5つの設問の趣旨を本スキルの言葉で書いた問いを使う（`question-bank.md` の CCI 型の5問）。原文の設問をそのまま転載しない |
-| VIA 性格の強み | 正式版の調査票は VIA Institute の知的財産。公開研究版（GACS・SSS）も集団を対象とする研究目的に限られる[E7]。24の強みの名称を転載してよいかは利用規約で確かめていない | 調査票は出さない。24の強みの名称は、強みを言葉にする候補として会話で示すにとどめ、成果物へ一覧として転載しない |
-| CliftonStrengths（ギャラップ） | 商標と著作権で保護され、テーマ名と説明の転載が禁じられている[E8] | 出さない。名称も転載しない |
-| MBTI・16Personalities | 4文字の型に分類する。下位尺度の再検査信頼性は不均一で、思考―感情の尺度は .61 にとどまる[E9]。16Personalities は採点モデルが公開されておらず、独立した妥当性研究は確認できていない[E10] | 出さない。利用者が「私は INFP です」のように型を名乗った場合は、型を否定も肯定もせず、「その型で言うと、どんな行動が思い当たりますか」と聞いてエピソードへ移る |
-| SPI3・玉手箱（性格検査の部分は OPQ）・TAL などの企業側の適性検査 | 採用側の意思決定のための商用検査。項目は非公開。受検者本人に結果は返らない | 出さない。何を測るかの説明にとどめ、対策は `job-change-exam-prep` へ回す |
-| ミイダス・グッドポイント診断・doda キャリアタイプ診断・エン転職の診断 | 各社が自社データで作った無償の診断。独立した妥当性研究は公開されていない | 出さない。項目も転載しない。強みの呼び名の候補として、公開されている18の呼び名（グッドポイント診断）を語彙表に載せる |
-| ダークトライアド（SD3 など） | 研究用の尺度は公開されている | 出さない。他者のリスク判定のための尺度であり、自己分析に建設的な用途が無く、自分に貼るラベルとして有害になりうる |
+| IPIP (International Personality Item Pool) | Public domain. Copying, editing, translating, and using it requires no permission or fee [E1] | The Big Five framework and the intent of its items, and honesty-humility (the IPIP version derived from HEXACO), may be used. Items are rewritten into this skill's forced-choice form before being asked |
+| HEXACO-PI-R (the original version) | Free for non-commercial academic research only. Any other use requires contacting the author [E2] | The original items are not used. Only the honesty-humility framework is used, in the sense of the IPIP version |
+| Short Grit Scale (Grit-S) | Free for non-commercial research and education only. The author's terms exclude commercial use, wide public distribution, and use in a setting with a stake, such as hiring [E3] | The scale is not used. Only the construct of grit is referenced, and it is asked through a forced-choice item this skill wrote on its own |
+| General Self-Efficacy Scale (GSE) | The original (English) version is free for research purposes. The standard Japanese scale (一般性セルフ・エフィカシー尺度, the General Self-Efficacy Scale) is a paid assessment [E4] | The scale is not used. Only the construct of self-efficacy is referenced, and it is asked through an item this skill wrote on its own |
+| O*NET Interest Profiler | CC BY 4.0. Modification, including translation, is allowed when the source is credited [E5] | This skill offers no scored assessment, so its items are not used. Only the name of the interests (RIASEC) framework is used |
+| The content of the O*NET Work Importance Profiler and the other Career Exploration Tools | CC BY-ND 4.0. Using the items unchanged is allowed, and modifying them (including rewriting into Japanese) requires a separate developer licence and verification obligation [E5] | Items are not rewritten into Japanese and offered. Only the name of the work-values framework is used |
+| VPI Vocational Interest Inventory (Japanese version) | A paid assessment kit, and JILPT does not sell it [E6] | Not used. RIASEC is used only as the name of the framework |
+| The self-diagnosis tool on the Ministry of Health, Labour and Welfare's job tag site, JILPT Career Insight, the VRT card, and the GATB | Provided by public institutions, and the user can take them independently. Some are available at a Hello Work office (ハローワーク, the public employment service) | Not offered by this skill. When the user brings in a result they took elsewhere, treat it as a prompt, never as a settled judgment |
+| Schein's Career Anchor questionnaire | A paid publication | Used only as a prompt for the eight categories (`question-bank.md`) |
+| Career Construction Interview (Savickas) | An open-ended interview framework described in an academic paper | Questions written in this skill's own words, carrying the intent of the five questions, are used (the five CCI-style questions in `question-bank.md`). The original questions are never reproduced as they stand |
+| VIA Character Strengths | The official survey is the intellectual property of the VIA Institute. The public research versions (GACS, SSS) are also limited to research on groups [E7]. Whether reproducing the names of the 24 strengths is allowed has not been confirmed against the terms of use | The survey is not offered. The names of the 24 strengths are shown in conversation only as candidates for putting a strength into words, and are never reproduced as a list in the deliverable |
+| CliftonStrengths (Gallup) | Protected by trademark and copyright, and reproducing its theme names and descriptions is prohibited [E8] | Not offered. Its names are not reproduced either |
+| MBTI, 16Personalities | Sorts a person into a four-letter type. The subscales' retest reliability is uneven, and the thinking-feeling scale reaches only .61 [E9]. 16Personalities has not published its scoring model, and no independent validity study has been confirmed [E10] | Not offered. When the user names a type, such as 「私は INFP です」 ("I'm an INFP"), the type is neither denied nor affirmed; the conversation moves to an episode by asking, 「その型で言うと、どんな行動が思い当たりますか」 ("In terms of that type, what behaviour comes to mind?") |
+| Employer-side aptitude tests such as SPI3, 玉手箱 (Tamatebako; its 性格検査 part is OPQ), and TAL | Commercial tests for the hiring side's decision-making. Items are not public, and the result is never returned to the test-taker | Not offered. The description stays at what the test measures, and preparation is referred to `job-change-exam-prep` |
+| Miidas, GOOD POINT diagnosis, doda's Career Type diagnosis, and en-japan's diagnosis | Free diagnostics each company built from its own data. No independent validity study has been published | Not offered. Their items are not reproduced either. The 18 published names from GOOD POINT diagnosis are listed in the vocabulary table as candidate names for a strength |
+| The Dark Triad (such as the SD3) | Research scales are public | Not offered. It is a scale for judging risk in others, has no constructive use in self-analysis, and can be harmful as a label a person applies to themselves |
 
-## 構成概念の語彙
+## Construct vocabulary
 
-`personality.markers[].construct` に使える識別子は次の表に限る。`validate_self_analysis.py` はこの表と同じ語彙を持ち、表に無い識別子を ERROR とする。表の第1列（バックティックで囲んだ文字列）が識別子である。
+The identifiers usable in `personality.markers[].construct` are limited to the following table. `validate_self_analysis.py` holds the same vocabulary as this table, and reports an identifier absent from the table as an ERROR. The table's first column (the string in backticks) is the identifier.
 
-| 識別子 | 名称 | 由来 | 何を見るか |
+| Identifier | Name | Origin | What it observes |
 |---|---|---|---|
-| `conscientiousness` | 誠実性 | ビッグファイブ（IPIP） | 計画・段取り・やり切りの傾向 |
-| `emotional_stability` | 情緒安定性 | ビッグファイブ（IPIP） | 負荷のかかる場面での平静さと回復 |
-| `extraversion` | 外向性 | ビッグファイブ（IPIP） | 人と関わる場面でのエネルギーの向き |
-| `agreeableness` | 協調性 | ビッグファイブ（IPIP） | 対立の場面での折り合いのつけ方 |
-| `openness` | 開放性 | ビッグファイブ（IPIP） | 未知の方法・領域への向かい方 |
-| `honesty_humility` | 誠実さ・謙虚さ | HEXACO（IPIP 版） | 成果の帰属と率直さ |
-| `grit` | やり抜く力 | 構成概念のみ参照（尺度は使わない） | 長期の目標への持続 |
-| `self_efficacy` | 自己効力感 | 構成概念のみ参照（尺度は使わない） | 難所を自分の手順で越えられるという見込み |
-| `planning_style` | 進め方 | 本スキルの枠組み | 計画先行か、即応しながらの調整か |
-| `collaboration_style` | 協働の型 | 本スキルの枠組み | 単独で集中するか、対話で進めるか |
-| `change_orientation` | 変化への向き | 本スキルの枠組み | 安定した環境か、変化の多い環境か |
-| `decision_style` | 判断の型 | 本スキルの枠組み | 数字と計測を先に置くか、仮説と直感を先に置くか |
-| `feedback_timing` | 評価を受ける間隔 | 本スキルの枠組み | 短い間隔で結果を知りたいか、節目でまとめて知りたいか |
-| `stress_trigger` | 負荷の要因 | 本スキルの枠組み | 曖昧さ・締切・対人摩擦・単調な作業のどれが最も消耗させるか |
-| `recovery_style` | 回復の型 | 本スキルの枠組み | 一人で整えるか、人と話して整えるか |
+| `conscientiousness` | Conscientiousness | Big Five (IPIP) | The tendency to plan, arrange steps, and follow through |
+| `emotional_stability` | Emotional stability | Big Five (IPIP) | Calm and recovery under a demanding situation |
+| `extraversion` | Extraversion | Big Five (IPIP) | The direction of energy in a situation involving other people |
+| `agreeableness` | Agreeableness | Big Five (IPIP) | How the person settles a conflict |
+| `openness` | Openness | Big Five (IPIP) | How the person approaches an unfamiliar method or field |
+| `honesty_humility` | Honesty-humility | HEXACO (IPIP version) | How credit for a result is attributed, and candour |
+| `grit` | Grit | Construct referenced only (no scale used) | Persistence toward a long-term goal |
+| `self_efficacy` | Self-efficacy | Construct referenced only (no scale used) | The expectation of getting through a difficulty by one's own approach |
+| `planning_style` | Approach | This skill's own framework | Whether planning comes first, or adjustment happens on the fly |
+| `collaboration_style` | Collaboration style | This skill's own framework | Whether the person concentrates alone or moves forward through dialogue |
+| `change_orientation` | Orientation toward change | This skill's own framework | Whether a stable environment or a highly changeable one suits the person |
+| `decision_style` | Decision style | This skill's own framework | Whether numbers and measurement come first, or hypothesis and intuition come first |
+| `feedback_timing` | Interval for receiving evaluation | This skill's own framework | Whether the person wants results at short intervals, or gathered at milestones |
+| `stress_trigger` | Source of strain | This skill's own framework | Which of ambiguity, a deadline, interpersonal friction, or monotonous work drains the person most |
+| `recovery_style` | Recovery style | This skill's own framework | Whether the person recovers alone or by talking with someone |
 
-ビッグファイブ5因子と誠実さ・謙虚さは、職務遂行との関連が最も繰り返し確かめられた枠組みである[E11][E12]。本スキルの枠組みの7項目は、作業特性の希望（hub の `screening-axes.md`）と適合性評価の文化適合に突き合わせるために置く。15項目すべての項目文は本スキルが書いたものであり、他の検査の項目を転載していない。ビッグファイブの項目も IPIP の項目の翻訳ではなく、因子の趣旨に沿って場面と行動で書き直したものである。
+The Big Five factors and honesty-humility are the framework whose link to job performance has been confirmed most repeatedly [E11][E12]. The seven items in this skill's own framework exist to check against work-characteristic preferences (the hub's `screening-axes.md`) and against culture fit in fit assessment. This skill wrote the wording of all 15 items itself, and reproduces no item from another assessment. The Big Five items, too, are rewritten by this skill around a situation and a behaviour, in keeping with the intent of each factor.
 
-## 聞き方
+## How to ask
 
-自己申告は、行動に根ざした二者択一で聞く。望ましさが釣り合う2つの行動を並べ、どちらが自分に近いかを選ばせる。単一の文に「当てはまる／当てはまらない」で答える形式より、望ましい側へ寄せる歪みが小さい[E13][E14]。AskUserQuestion の選択式（最大4択）は二者択一に向く。
+A self-report is asked as a behaviour-grounded forced choice. Two behaviours whose desirability is balanced are set side by side, and the person picks which is closer to them. This produces less bias toward the more desirable side than a format that answers a single sentence with 「当てはまる／当てはまらない」 (applies / does not apply) [E13][E14]. AskUserQuestion's choice form (up to 4 options) suits a forced choice.
 
-守ること。
+Rules to keep.
 
-- 2つの選択肢はどちらも「強みとして働く場面がある」書き方にする。「計画的」対「場当たり的」のように、一方が明らかに望ましい対は作らない。
-- 形容詞（誠実・怠惰・無責任）ではなく、場面と行動で書く。「締切が迫ったとき、まず残りの作業を書き出す」のように書く。
-- 1項目に答えるたびに、その傾向が表れたエピソードを1つ挙げてもらう。既存の `behavioral_episodes` から選ばせ、無ければその場で1件を STAR で聞く。挙がらなければ `linked_episode_ids` を空のままにする。エピソードにも他者証言にも対応づかない項目は WARN になるが、成果物としては成立する。
-- 「どちらも同じくらい」「場面による」も選択肢として受ける。無理に一方へ寄せない。
-- 1回の Step で出す問いは16問（15の構成概念。`stress_trigger` だけ2問。内訳は `question-bank.md`）までとし、追加の「なぜ」を重ねない（反すう防止）。
-- 他者証言（`others_feedback`）に同じ傾向についての記述があれば `feedback_ids` で対応づける。自己申告と他者証言が食い違う場合は、`note` に食い違いをそのまま書く。
+- Write both options so each works as a strength in some situation. Never build a pair where one side is clearly more desirable, as in 「計画的」 (planned) against 「場当たり的」 (haphazard).
+- Write a situation and a behaviour, as in 「締切が迫ったとき、まず残りの作業を書き出す」 (when a deadline is close, first list the remaining work).
+- Each time an item is answered, have the person name one episode where that tendency showed up. Have them choose from the existing `behavioral_episodes`, and when none fits, ask for one episode in STAR form on the spot. When none comes up, leave `linked_episode_ids` empty. An item that maps to neither an episode nor feedback from others produces a WARN, and the deliverable still stands.
+- 「どちらも同じくらい」 (both about equally) and 「場面による」 (it depends on the situation) are accepted as answers too. Never force the person toward one side.
+- The questions asked in one Step are limited to 16 (covering 15 constructs; `stress_trigger` alone gets 2 questions; the breakdown is in `question-bank.md`), and no further "why" is layered on top (to prevent rumination).
+- When feedback from others (`others_feedback`) describes the same tendency, map it with `feedback_ids`. When a self-report disagrees with feedback from others, write the disagreement as it stands in `note`.
 
-確定した文言は `question-bank.md` の Step 3.5 にある。
+The settled wording is in Step 3.5 of `question-bank.md`.
 
-## 結果の書き方
+## How to write the result
 
-- 型やタイプの名称で人を分類しない。「〜型です」「〜タイプです」「あなたは内向型です」と書かない。`personality.presentation` に型やタイプの名称が含まれる場合、検証スクリプトが WARN を出す。
-- 描写文で書く。「事前に計画を固めてから着手する行動が、ep-1 と ep-2 で繰り返し見られた」のように、過去形でエピソードへ対応づけて書く。
-- 数値・パーセンタイル・5段階の点数を付けない。数値は測定した値のように見えるため、読み手は根拠より強く受け取る。
-- 一時点の自己像として書く。「現時点でこう自己申告している」であり、確定した特性ではない。
-- 誰にでも当てはまる文（「慎重なときもあれば大胆なときもある」）を書かない。その文が別の人のエピソード集へそのまま移せるなら、根拠づけができていない（バーナム効果[E15]）。監査担当はこの観点で検査する。
-- 自己申告と他者証言の不一致は、不一致のまま書く。
+- Never sort a person by the name of a type or category. Never write 「〜型です」, 「〜タイプです」 or 「あなたは内向型です」. When `personality.presentation` contains the name of a type or category, the validation script reports a WARN.
+- Write a descriptive passage. Write it in the past tense, mapped to an episode, as in 「事前に計画を固めてから着手する行動が、ep-1 と ep-2 で繰り返し見られた」 (the behaviour of settling a plan before starting showed up repeatedly, in ep-1 and ep-2).
+- Attach no number, percentile, or five-point score. A number looks like a measured value, so a reader gives it more weight than the evidence supports.
+- Write it as a self-image at one point in time. It states 「現時点でこう自己申告している」 (what the person reports about themselves at this point), and stays open to revision as a trait.
+- Never write a sentence that fits anyone (「慎重なときもあれば大胆なときもある」). When a sentence could move unchanged into another person's set of episodes, it carries no grounding (the Barnum effect [E15]). The auditor checks from this perspective.
+- Write a disagreement between a self-report and feedback from others as it stands.
 
-## 下流への接続
+## Connection downstream
 
-| 接続先 | 使い方 |
+| Destination | How it is used |
 |---|---|
-| `job_change_axis.work_character_preferences`（hub の profile.json） | `planning_style` は `clear_completion` と、`collaboration_style` は `solo_completable` と、`feedback_timing` は `short_feedback` の希望度と突き合わせる。食い違いがあれば `notes` に書き、どちらが本当かをスキルの側で決めない |
-| `job-change-fit-assessment` の `culture_fit`・`work_character_fit` | `change_orientation`・`stress_trigger`・`recovery_style` を、企業研究の働き方・評判の事実と突き合わせる材料にする。自己申告単独で score を上げない |
-| `job-change-interview-prep` の自己PR・弱み | `strengths` の根拠（エピソード・他者証言）と `personality.markers` の描写を、弱みの質問への答えの素材にする。利用者は、「負荷の要因」と「回復の型」から、改善行動を添えて弱みを語れる |
-| `job-change-exam-prep` の性格検査 | 性格検査では、一貫した正直な回答を勧める（同スキルの `prep-methods.md`）。ここで整理した自己像は、その一貫性を保つための材料であり、検査の回答を作り込むためのものではない |
-| 厚生労働省のジョブ・カード | `behavioral_episodes` と `career_narrative` の内容は、ジョブ・カードのキャリア・プランシートの自己理解の欄と重なる。別途ジョブ・カードが要る利用者には、この成果物を流用できる旨を伝える[E16] |
+| `job_change_axis.work_character_preferences` (profile.json, held by the hub) | `planning_style` is checked against the preference level for `clear_completion`, `collaboration_style` against `solo_completable`, and `feedback_timing` against `short_feedback`. A disagreement is written in `notes`, and the skill never decides which side is true |
+| `culture_fit` and `work_character_fit` in `job-change-fit-assessment` | `change_orientation`, `stress_trigger`, and `recovery_style` become material for checking against the facts about working style and reputation from company research. A self-report alone never raises a `score` |
+| Self-promotion and weaknesses in `job-change-interview-prep` | The grounds for `strengths` (episodes, feedback from others) and the description in `personality.markers` become material for the answer to a question about weaknesses. From "source of strain" and "recovery style," the user can talk about a weakness while naming the improving behaviour that goes with it |
+| The personality test in `job-change-exam-prep` | For a personality test, a consistent, honest answer is recommended (`prep-methods.md` of that skill). The self-image organised here is material for keeping that consistency |
+| The Ministry of Health, Labour and Welfare's Job Card (ジョブ・カード) | The content of `behavioral_episodes` and `career_narrative` overlaps with the self-understanding section of the Job Card's Career Plan Sheet. For a user who separately needs a Job Card, tell them this deliverable can be reused for it [E16] |
 
-## 限界
+## Limits
 
-- 性格が職務遂行を説明する割合は小さい。54件のメタ分析を統合した研究では、誠実性と総合的な職務遂行の相関は ρ=.19、外向性 .10、協調性 .10、神経症傾向 -.12、開放性 .13 である[E11]。誠実性単独で説明できる分散は4%に満たず、5因子を合わせても数パーセントにとどまる。これらは統計的な補正を経た相関であり、補正の妥当性を疑う立場からは、さらに低く見積もられる[E18]。適合性評価で、性格の適合を経験の近さやスキルの適合より重く扱わない。
-- 説明できる割合が小さいにもかかわらず Step 3.5 を置くのは、面接での弱みの説明と自己PR、性格検査での一貫した回答、作業特性の希望との突き合わせに、行動に根ざした言葉が要るためである。この目的に対して15項目は上限であり、利用者が省略を望めば Step 3.5 全体を飛ばしてよい。
-- 性格の効き方は職種で変わる。誠実性はどの職種群でも妥当性を持つが、外向性は管理職と営業職で妥当性が高い[E12]。
-- 自己申告と他者証言は、誠実性と情緒安定性で食い違いやすい。この2つの構成概念を `strengths` の根拠に使うときは、他者証言の対応づけを強く勧める。
-- 興味の適合と職務満足の相関は弱い（ρ=.19。`self-analysis-methods.md` の [E11]）。興味の適合を満足の保証として扱わない。
-- 上司との適合は満足・定着と関連するが、職務遂行との関連は弱い[E17]。求人票と企業研究からは判定できないため、面接での確認事項に残す（`job-change-fit-assessment` の `fit-criteria.md`）。
+- Personality explains only a small share of job performance. In a study that integrated 54 meta-analyses, the correlation between conscientiousness and overall job performance is ρ=.19, extraversion .10, agreeableness .10, neuroticism -.12, and openness .13 [E11]. Conscientiousness alone explains under 4% of the variance, and the five factors together stay at a few percent. These are correlations after statistical correction, and a position that doubts the correction's validity estimates them lower still [E18]. In fit assessment, personality fit is never weighted more heavily than closeness of experience or skill fit.
+- Step 3.5 exists despite this small explanatory share because describing a weakness and a strength in a job interview, answering a personality test consistently, and checking against work-characteristic preferences all need behaviour-grounded language. For this purpose, 15 items is a ceiling, and the whole of Step 3.5 may be skipped when the user wants to omit it.
+- How personality operates changes by occupation. Conscientiousness holds validity across every occupational group, and extraversion holds higher validity for management and sales roles [E12].
+- A self-report and feedback from others tend to disagree on conscientiousness and emotional stability. When either of these two constructs grounds a `strengths` entry, mapping it to feedback from others is strongly recommended.
+- The correlation between interest fit and job satisfaction is weak (ρ=.19; [E11] in `self-analysis-methods.md`). Interest fit is never treated as a guarantee of satisfaction.
+- Fit with a supervisor relates to satisfaction and retention, and its relation to job performance is weak [E17]. It cannot be judged from a job posting or company research, so it stays as a matter to confirm at the job interview (`fit-criteria.md` in `job-change-fit-assessment`).
 
-## 出典一覧
+## Sources
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. レベル. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+<!-- This section lists sources in bibliographic form (publisher. title. year. level. URL). This section alone disables the rule, so the linter does not judge the separating periods and parts of organisation names as Japanese punctuation or as synonyms. -->
 
-- [E1] International Personality Item Pool (Oregon Research Institute). IPIP Home — public domain statement. レベルA. https://ipip.ori.org/
-- [E2] HEXACO Personality Inventory-Revised (Lee & Ashton). Download terms. レベルA. https://hexaco.org/hexaco-inventory
-- [E3] Angela Duckworth. Research — measures and terms of use. レベルA. https://www.angeladuckworth.com/measures （原著: Duckworth, A. L. & Quinn, P. D. Journal of Personality Assessment. 2009. DOI:10.1080/00223890802634290）
-- [E4] Schwarzer, R. & Jerusalem, M. Generalized Self-Efficacy scale. In Measures in health psychology: A user's portfolio. 1995. レベルB（著者による公開版の二次配布）. https://www.researchgate.net/publication/311570532_The_general_self-efficacy_scale_GSE
-- [E5] O*NET Resource Center. O*NET Career Exploration Tools Content License. レベルA. https://www.onetcenter.org/license_tools.html
-- [E6] 労働政策研究・研修機構. VPI 職業興味検査. レベルA. https://www.jil.go.jp/institute/seika/tools/VPI.html
-- [E7] VIA Institute on Character. Public Domain Surveys. レベルA. https://www.viacharacter.org/researchers/assessments/noregistration
-- [E8] Gallup, Inc. Product Terms of Use. レベルA. https://login.gallup.com/Home/ProductTerms
-- [E9] Journal of Best Practices in Health Professions Diversity. Randall, K., Isaacson, M. & Ciro, C. Validity and Reliability of the Myers-Briggs Personality Type Indicator: A Systematic Review and Meta-Analysis. 2017. レベルA. https://gwern.net/doc/psychology/personality/2017-randall.pdf
-- [E10] Medical News Today. Myers-Briggs: 16 personality types and their accuracy. レベルC. https://www.medicalnewstoday.com/articles/myers-briggs-16-personality-types
-- [E11] Journal of Personality (Wiley). Zell, E. & Lesick, T. L. Big Five Personality Traits and Performance: A Quantitative Synthesis of 50+ Meta-Analyses. 2022. レベルA. DOI:10.1111/jopy.12683. https://doi.org/10.1111/jopy.12683
-- [E12] Personnel Psychology (Wiley). Barrick, M. R. & Mount, M. K. The Big Five Personality Dimensions and Job Performance: A Meta-Analysis. 1991. レベルA. DOI:10.1111/j.1744-6570.1991.tb00688.x. https://doi.org/10.1111/j.1744-6570.1991.tb00688.x
-- [E13] Frontiers in Psychology. A Meta-Analysis of the Faking Resistance of Forced-Choice Personality Inventories. 2021. レベルA. https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.732241/full
-- [E14] Frontiers in Psychology. Controlling for Response Biases in Self-Report Scales: Forced-Choice vs. Psychometric Modeling of Likert Items. 2019. レベルA. https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2019.02309/full
-- [E15] Current Psychology (Springer). Accepting personality test feedback: A review of the Barnum effect. レベルA. https://link.springer.com/article/10.1007/BF02686623
-- [E16] 厚生労働省. ジョブ・カード制度. レベルA. https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/jinzaikaihatsu/jobcard_system.html
-- [E17] Personnel Psychology (Wiley). Kristof-Brown, A. L., Zimmerman, R. D. & Johnson, E. C. Consequences of Individuals' Fit at Work: A Meta-Analysis. 2005. レベルA. DOI:10.1111/j.1744-6570.2005.00672.x. https://doi.org/10.1111/j.1744-6570.2005.00672.x
-- [E18] Journal of Applied Psychology (APA). Sackett, P. R. ほか. Revisiting meta-analytic estimates of validity in personnel selection: Addressing systematic overcorrection for restriction of range. 2022. レベルA. DOI:10.1037/apl0000994. https://doi.org/10.1037/apl0000994
+- [E1] International Personality Item Pool (Oregon Research Institute). IPIP Home — public domain statement. Level A. https://ipip.ori.org/
+- [E2] HEXACO Personality Inventory-Revised (Lee & Ashton). Download terms. Level A. https://hexaco.org/hexaco-inventory
+- [E3] Angela Duckworth. Research — measures and terms of use. Level A. https://www.angeladuckworth.com/measures (original work: Duckworth, A. L. & Quinn, P. D. Journal of Personality Assessment. 2009. DOI:10.1080/00223890802634290)
+- [E4] Schwarzer, R. & Jerusalem, M. Generalized Self-Efficacy scale. In Measures in health psychology: A user's portfolio. 1995. Level B (secondary distribution of a version the author published). https://www.researchgate.net/publication/311570532_The_general_self-efficacy_scale_GSE
+- [E5] O*NET Resource Center. O*NET Career Exploration Tools Content License. Level A. https://www.onetcenter.org/license_tools.html
+- [E6] The Japan Institute for Labour Policy and Training (労働政策研究・研修機構, JILPT). VPI Vocational Interest Inventory. Level A. https://www.jil.go.jp/institute/seika/tools/VPI.html
+- [E7] VIA Institute on Character. Public Domain Surveys. Level A. https://www.viacharacter.org/researchers/assessments/noregistration
+- [E8] Gallup, Inc. Product Terms of Use. Level A. https://login.gallup.com/Home/ProductTerms
+- [E9] Journal of Best Practices in Health Professions Diversity. Randall, K., Isaacson, M. & Ciro, C. Validity and Reliability of the Myers-Briggs Personality Type Indicator: A Systematic Review and Meta-Analysis. 2017. Level A. https://gwern.net/doc/psychology/personality/2017-randall.pdf
+- [E10] Medical News Today. Myers-Briggs: 16 personality types and their accuracy. Level C. https://www.medicalnewstoday.com/articles/myers-briggs-16-personality-types
+- [E11] Journal of Personality (Wiley). Zell, E. & Lesick, T. L. Big Five Personality Traits and Performance: A Quantitative Synthesis of 50+ Meta-Analyses. 2022. Level A. DOI:10.1111/jopy.12683. https://doi.org/10.1111/jopy.12683
+- [E12] Personnel Psychology (Wiley). Barrick, M. R. & Mount, M. K. The Big Five Personality Dimensions and Job Performance: A Meta-Analysis. 1991. Level A. DOI:10.1111/j.1744-6570.1991.tb00688.x. https://doi.org/10.1111/j.1744-6570.1991.tb00688.x
+- [E13] Frontiers in Psychology. A Meta-Analysis of the Faking Resistance of Forced-Choice Personality Inventories. 2021. Level A. https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.732241/full
+- [E14] Frontiers in Psychology. Controlling for Response Biases in Self-Report Scales: Forced-Choice vs. Psychometric Modeling of Likert Items. 2019. Level A. https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2019.02309/full
+- [E15] Current Psychology (Springer). Accepting personality test feedback: A review of the Barnum effect. Level A. https://link.springer.com/article/10.1007/BF02686623
+- [E16] Ministry of Health, Labour and Welfare (厚生労働省). The Job Card system (ジョブ・カード制度). Level A. https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/jinzaikaihatsu/jobcard_system.html
+- [E17] Personnel Psychology (Wiley). Kristof-Brown, A. L., Zimmerman, R. D. & Johnson, E. C. Consequences of Individuals' Fit at Work: A Meta-Analysis. 2005. Level A. DOI:10.1111/j.1744-6570.2005.00672.x. https://doi.org/10.1111/j.1744-6570.2005.00672.x
+- [E18] Journal of Applied Psychology (APA). Sackett, P. R. et al. Revisiting meta-analytic estimates of validity in personnel selection: Addressing systematic overcorrection for restriction of range. 2022. Level A. DOI:10.1037/apl0000994. https://doi.org/10.1037/apl0000994
 
 <!-- textlint-enable -->

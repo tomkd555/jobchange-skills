@@ -1,59 +1,59 @@
-# 理念・社是・パーパス分析の原本（philosophy-analysis）
+# Canonical procedure for corporate philosophy, creed, and purpose analysis (philosophy-analysis)
 
-企業の理念・社是・パーパス・行動指針（topic=philosophy）を収集し分析する手順を定める原本である。企業研究の成果物では、理念を「掲げている文言」で終わらせず、行動指針・人事制度・開示された行動と接続して一貫性を検証する。エビデンスレベルと confidence のルールは `references/evidence-grading.md` に従う。
+This is the canonical procedure for collecting and analyzing a company's philosophy, corporate creed, purpose, and behavioral guidelines (topic=philosophy). In the company research deliverable, the philosophy's stated wording is connected to behavioral guidelines, HR systems, and disclosed conduct, and checked for consistency. Follow `references/evidence-grading.md` for the rules on evidence levels and confidence.
 
-## 収集源
+## Sources
 
-理念・パーパスは任意開示物から読み取る。発信者は企業自身である。自社を良く見せる方向の偏りに留意する。
+Philosophy and purpose are read from voluntary disclosures. The company itself is the speaker. Watch for a bias toward presenting itself favorably.
 
-| 収集源 | 読み取る内容 |
+| Source | What it reveals |
 |---|---|
-| 企業サイトの理念ページ | 明文の理念・社是・パーパス・ミッション・ビジョン・バリュー |
-| 採用サイト | 求める人物像・カルチャー・行動指針の運用面 |
-| 社長メッセージ・トップインタビュー | 理念の背景・重点・現在の解釈 |
-| 統合報告書 | 理念と事業戦略・価値創造プロセスの接続 |
-| サステナビリティ報告書 | 社会的価値・非財務の取り組みへの理念の反映 |
-| 社史・沿革 | 理念の由来・変遷の背景（企業の来歴という事実） |
+| The company site's philosophy page | The explicit wording of its philosophy, corporate creed, purpose, mission, vision, and values |
+| The recruiting site | The desired candidate profile, culture, and the operational side of its behavioral guidelines |
+| Messages from the president, top interviews | The background, emphasis, and current interpretation of the philosophy |
+| The integrated report | The connection between the philosophy and the business strategy and value-creation process |
+| The sustainability report | How the philosophy is reflected in social value and non-financial initiatives |
+| The company history, its founding and development | The origin and evolution of the philosophy (a fact about the company's own history) |
 
-## 分析手順
+## Analysis procedure
 
-理念分析は次の4段階で進める。「文言」の特定に始まり、「行動との一貫性」の検証で終わる。
+Philosophy analysis proceeds through the following four stages. It begins with identifying the "wording" and ends with checking "consistency with conduct."
 
-### 1. 明文の理念を特定する
+### 1. Identify the explicit philosophy
 
-パーパス・ミッション・ビジョン・バリューなど、企業が明文化している理念を、原文のまま claim の evidence へ転記する。この段階の claim は「〜という理念を掲げている」という真偽を確認できる事実にとどめ、理念の内容の良し悪しは評価として断定しない。
+Transcribe the philosophy the company states explicitly — its purpose, mission, vision, values — into a claim's evidence, verbatim. Keep the claim at this stage to a fact whose truth can be confirmed, in the form "the company states philosophy X." Do not assert the merit of the philosophy's content as an evaluation.
 
-### 2. 行動指針へ分解する
+### 2. Break it down into behavioral guidelines
 
-理念が行動指針（バリュー・クレド・行動規範）へどう具体化されているかを読み取り、抽象的なパーパスと日々の行動レベルの指針とを対応づける。
+Read how the philosophy is made concrete into behavioral guidelines (values, a credo, a code of conduct), and connect the abstract purpose to guidelines at the level of daily behavior.
 
-### 3. 人事制度・求める人物像へ接続する
+### 3. Connect it to HR systems and the desired candidate profile
 
-行動指針が、採用の「求める人物像」・評価制度・等級要件へどう反映されているかを読み取り、理念と人事制度の接続が確認できれば、その企業が理念を運用に組み込んでいる傍証と見る。理念と人事制度の対応関係は、応募書類（志望動機）・面接対策で「その企業だからこそ」を語る根拠になるため、selection_process や求める人物像と結び付けて記録する。
+Read how the behavioral guidelines are reflected in the recruiting "desired candidate profile," the evaluation system, and grade requirements. When you can confirm a connection between the philosophy and the HR system, treat it as supporting evidence that the company has built the philosophy into its operations. The correspondence between the philosophy and the HR system becomes grounds, in application documents (the reason for applying) and interview preparation, for the claim that a candidate wants this company specifically — so record it linked to selection_process and the desired candidate profile.
 
-### 4. 開示・行動との一貫性を検証する
+### 4. Check consistency with disclosures and conduct
 
-明文の理念と、開示された数値・制度・第三者情報が一貫しているかを検証する。
+Check whether the explicit philosophy is consistent with disclosed figures, systems, and third-party information.
 
-- 例: 「人を大切にする」理念に対し、しょくばらぼの定着率・有給取得率、認定制度（くるみん・健康経営優良法人等）の有無が整合するか。
-- 一貫していれば、理念が行動を伴う傍証として confidence を上げる材料になる（ただし後述の制限を守る）。
-- 食い違い（理念は多様性を掲げるが女性管理職比率の開示が乏しい等）があれば、それを open_questions に記録する。理念の未達を断定はしないが、検証の限界として残す。
+- Example: for a philosophy that "values its people," check whether it agrees with the Shokuba Labo retention rate and paid-leave-taking rate, and the presence of certifications (Kurumin, Health & Productivity Management Outstanding Organization, and so on).
+- When they are consistent, this becomes material for raising confidence, as supporting evidence that the philosophy is accompanied by conduct (subject to the limit described below).
+- When there is a discrepancy (for example, the philosophy states a commitment to diversity, but disclosure of the female-manager ratio is sparse), record it in open_questions, and treat it as a limit of the verification.
 
-## 自社を良く見せる主張の confidence 制限との関係
+## Relationship with the confidence limit on a claim that presents the company favorably
 
-理念分析で最も注意すべき対象は決まっている。企業が自社を良く見せるための主張の扱いである。
+The object demanding the most caution in philosophy analysis is fixed: a claim in which the company presents itself favorably.
 
-- 「風通しが良い」「挑戦を歓迎する文化」「成長できる環境」などは、企業自身が発信する評価的主張である。出典が企業公式（レベルA）であっても、その内容の真偽は担保されない。
-- この種の主張は、当該企業が所有するページ由来である旨を出典に明示し、confidence を high にしない（B 相当扱い）。
-- 事実（「〜というバリューを掲げている」）と、評価（「その文化が実現している」）を分けて claim にする。前者は掲げているという事実として確認でき、後者は第三者情報（しょくばらぼ・認定・口コミ集計の傍証）と突き合わせて初めて検証できる。
-- 理念の「実現度」を語る claim は、第三者の一次・二次情報との出所の突き合わせを伴わない限り、confidence を high にしない。
+- Statements such as "open communication," "a culture that welcomes challenge," or "an environment for growth" are evaluative claims the company itself sends out. Even when the source is the company's own official material (level A), the truth of the content is not guaranteed.
+- For this kind of claim, state in the source that it comes from a page the company itself owns, and do not set confidence to high (treat it as B-equivalent).
+- Separate the fact ("the company states value X") from the evaluation ("that culture is in fact realized") into different claims. The former can be confirmed as a stated fact; the latter can be verified only once cross-checked against third-party information (Shokuba Labo, certifications, aggregated review-site posts as supporting evidence).
+- Do not set confidence to high on a claim describing how far a philosophy has been realized, unless it is cross-checked against an independent primary or secondary source.
 
-## claim への反映
+## Reflecting this in claims
 
-理念分析の成果は topic=philosophy の claim にする。statement は反証可能な命題で書く。書き方は次の例に倣う。
+The result of philosophy analysis becomes a topic=philosophy claim. Write the statement as a falsifiable proposition. Follow the pattern in these examples.
 
-- 良い例（事実）:「パーパスとして『働くをなめらかに』を掲げ、行動指針を4項目に明文化している。」（evidence: 理念ページの引用、grade=A、confidence=medium）
-- 良い例（一貫性の検証）:「理念に掲げる『人を大切にする』は、健康経営優良法人2026の認定と整合する。」（evidence: 理念ページ grade=A ＋ 経産省認定DB grade=B、confidence=medium）
-- 悪い例（自己宣伝の断定）:「風通しが良く働きやすい社風である。」（評価的主張。confidence=high 不可）
+- Good example (fact): 「パーパスとして『働くをなめらかに』を掲げ、行動指針を4項目に明文化している。」 (evidence: a quote from the philosophy page, grade=A, confidence=medium)
+- Good example (consistency check): 「理念に掲げる『人を大切にする』は、健康経営優良法人2026の認定と整合する。」 (evidence: the philosophy page grade=A + the METI certification database grade=B, confidence=medium)
+- Bad example (a self-promotional assertion): 「風通しが良く働きやすい社風である。」 (an evaluative claim; confidence=high is not allowed)
 
-接続の根拠（どの理念がどの制度・人物像に対応するか）を claim の statement に残す。
+Keep the grounds for the connection (which philosophy corresponds to which system or desired candidate profile) in the claim's statement.

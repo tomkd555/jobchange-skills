@@ -17,6 +17,7 @@ import datetime
 import json
 import re
 import sys
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -36,11 +37,20 @@ _V1_SCHEMA_VERSION = "1.0"
 _V2_SCHEMA_VERSION = "2.0"
 _V21_SCHEMA_VERSION = "2.1"
 _V22_SCHEMA_VERSION = "2.2"
-_KNOWN_SCHEMA_VERSIONS = (_V1_SCHEMA_VERSION, _V2_SCHEMA_VERSION, _V21_SCHEMA_VERSION, _V22_SCHEMA_VERSION)
+_V23_SCHEMA_VERSION = "2.3"
+_KNOWN_SCHEMA_VERSIONS = (
+    _V1_SCHEMA_VERSION,
+    _V2_SCHEMA_VERSION,
+    _V21_SCHEMA_VERSION,
+    _V22_SCHEMA_VERSION,
+    _V23_SCHEMA_VERSION,
+)
 # 観測層・判定層・総括を持つバージョン。
-_SCREENING_SCHEMA_VERSIONS = (_V2_SCHEMA_VERSION, _V21_SCHEMA_VERSION, _V22_SCHEMA_VERSION)
+_SCREENING_SCHEMA_VERSIONS = (_V2_SCHEMA_VERSION, _V21_SCHEMA_VERSION, _V22_SCHEMA_VERSION, _V23_SCHEMA_VERSION)
 # search_log・improvement_axes・baseline_comparison が有効なバージョン。
-_V21_AND_LATER_SCHEMA_VERSIONS = (_V21_SCHEMA_VERSION, _V22_SCHEMA_VERSION)
+_V21_AND_LATER_SCHEMA_VERSIONS = (_V21_SCHEMA_VERSION, _V22_SCHEMA_VERSION, _V23_SCHEMA_VERSION)
+# search_sets・role_match・related_info が有効なバージョン。
+_V22_AND_LATER_SCHEMA_VERSIONS = (_V22_SCHEMA_VERSION, _V23_SCHEMA_VERSION)
 
 # 取得日時。YYYY-MM-DD、または ISO 8601（日付に時刻が続く形）を受ける。
 _FETCHED_AT_RE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}([T ][0-9:.+\-Z]+)?$")
@@ -146,8 +156,28 @@ _MAX_UNKNOWN_FOR_APPLY = 4
 RECOMMENDATIONS = ("応募推奨あり", "応募推奨なし", "判定不能")
 AXES_SOURCES = ("job_change_axis.conditions", "degraded")
 
-# 探索集合（2.2）。primary は利用者の指定条件、exploration は選好フィルタを外し隣接職種へ広げた集合。
-SEARCH_SETS = ("primary", "exploration")
+# 検索集合。primary は利用者の指定条件。exploration は 2.2 の探索集合、derived は 2.3 の派生レーン
+# （exploration を10レーンへ一般化したもの）。原本は references/job-search-format.md にある。
+SEARCH_SETS = ("primary", "exploration", "derived")
+_SEARCH_SETS_BY_VERSION = {
+    _V22_SCHEMA_VERSION: ("primary", "exploration"),
+    _V23_SCHEMA_VERSION: ("primary", "derived"),
+}
+# 派生レーン（2.3）。原本は references/derivation-lanes.md にある。
+DERIVATION_LANES = (
+    "adjacent_role",
+    "industry_widen",
+    "seniority_shift",
+    "remote_widen",
+    "region_widen",
+    "better_salary",
+    "better_holidays",
+    "better_workstyle",
+    "company_type",
+    "direct_careers",
+)
+# 1レーンあたりのクエリ本数の上限。超過は WARN。
+_MAX_QUERIES_PER_LANE = 3
 # 求人の職種と検索条件の職種との関係（2.2）。
 ROLE_MATCHES = ("same", "adjacent", "different")
 # related_info の許容キー（2.2）。ログイン不要で取得できる企業関連事実に限る。
@@ -165,6 +195,64 @@ RELATED_INFO_KEYS = (
 _RELATED_INFO_GRADES = ("A", "B", "C", "D")
 # related_info.as_of の形式。YYYY または YYYY-MM。
 _RELATED_INFO_AS_OF_RE = re.compile(r"^[0-9]{4}(-[0-9]{2})?$")
+# 2.3 で related_info に残る求人単位のキー。残りの7キーは company_profiles[].basics へ移る。
+POSTING_RELATED_INFO_KEYS = ("posting_age", "salary_benchmark")
+COMPANY_BASICS_KEYS = tuple(k for k in RELATED_INFO_KEYS if k not in POSTING_RELATED_INFO_KEYS)
+# company_profiles[].metrics の軸キーと単位（2.3）。job-change-company-research の
+# validate_company_research.QUANTITATIVE_AXIS_UNITS と同一に保つ（hub の test_vocabulary_sync が照合する）。
+COMPANY_METRIC_UNITS = {
+    "compensation_level": "円",
+    "annual_holidays": "日",
+    "monthly_overtime": "時間",
+    "paid_leave_rate": "%",
+    "turnover_rate": "%",
+    "male_childcare_leave_rate": "%",
+    "revenue_growth": "%",
+    "operating_margin": "%",
+    "equity_ratio": "%",
+}
+# 0〜100 の範囲に収まるべき比率の軸。
+_RATE_METRICS_0_100 = ("paid_leave_rate", "turnover_rate", "male_childcare_leave_rate", "equity_ratio")
+# 負の値を取りうる軸（成長率・利益率）。
+_SIGNED_METRICS = ("revenue_growth", "operating_margin")
+# company_key の正規化で先頭・末尾から取り除く法人格の表記。NFKC 後の形で書く。
+_LEGAL_ENTITY_TOKENS = (
+    "株式会社",
+    "有限会社",
+    "合同会社",
+    "合資会社",
+    "合名会社",
+    "一般社団法人",
+    "一般財団法人",
+    "公益社団法人",
+    "公益財団法人",
+    "(株)",
+    "(有)",
+    "(同)",
+)
+
+
+def normalize_company_key(name: Any) -> str:
+    """企業名を company_key へ正規化する。merge_search_results.py と共用する唯一の実装である。
+
+    NFKC 正規化（全角英数→半角、（株）・㈱→(株)）→ 空白の全除去 → 先頭・末尾の法人格表記の除去
+    （中間の表記は残す）→ ASCII の小文字化。法人格だけの名前は空文字を返す。
+    """
+    if not isinstance(name, str):
+        return ""
+    s = unicodedata.normalize("NFKC", name)
+    s = "".join(s.split())
+    changed = True
+    while changed and s:
+        changed = False
+        for token in _LEGAL_ENTITY_TOKENS:
+            if s.startswith(token):
+                s = s[len(token):]
+                changed = True
+            if s.endswith(token):
+                s = s[: -len(token)]
+                changed = True
+    return s.lower()
 
 # 現年収の混入検出に用いる下限。これ未満の数値は誤検出を避けるため PII 項目に含めない。
 _SALARY_MIN_FOR_LINT = 10000
@@ -248,7 +336,24 @@ def _is_valid_fetched_at(value: Any) -> bool:
     return True
 
 
-def _validate_search_log(document: dict, version: Any, result: ValidationResult) -> None:
+# company_profiles[].negative_checks・recent_news の日付。YYYY-MM-DD または YYYY-MM。
+_YEAR_MONTH_DAY_RE = re.compile(r"^[0-9]{4}-[0-9]{2}(-[0-9]{2})?$")
+
+
+def _is_valid_year_month_or_day(value: Any) -> bool:
+    """YYYY-MM-DD 形式の実在日付、または YYYY-MM 形式であれば True を返す。"""
+    if not isinstance(value, str) or not _YEAR_MONTH_DAY_RE.match(value):
+        return False
+    try:
+        datetime.date.fromisoformat(value if len(value) == 10 else f"{value}-01")
+    except ValueError:
+        return False
+    return True
+
+
+def _validate_search_log(
+    document: dict, version: Any, valid_lanes: list[str], result: ValidationResult
+) -> None:
     """検索の実行ログを検査する。2.1 では必須である。"""
     log = document.get("search_log")
     required = version in _V21_AND_LATER_SCHEMA_VERSIONS
@@ -301,17 +406,33 @@ def _validate_search_log(document: dict, version: Any, result: ValidationResult)
                     f"{path}.{key}",
                     f"{key} は0以上の整数または null でなければならない（実値: {count!r}）",
                 )
-        if version == _V22_SCHEMA_VERSION:
+        if version in _V22_AND_LATER_SCHEMA_VERSIONS:
+            allowed_sets = _SEARCH_SETS_BY_VERSION[version]
+            search_set = entry.get("search_set")
             if "search_set" not in entry:
                 result.add_error(
                     f"{path}.search_set",
-                    f"search_set は必須である（{'/'.join(SEARCH_SETS)} のいずれか）",
+                    f"search_set は必須である（{'/'.join(allowed_sets)} のいずれか）",
                 )
-            elif entry.get("search_set") not in SEARCH_SETS:
+            elif search_set not in allowed_sets:
                 result.add_error(
                     f"{path}.search_set",
-                    f"search_set は {'/'.join(SEARCH_SETS)} のいずれかである（実値: {entry.get('search_set')!r}）",
+                    f"search_set は {'/'.join(allowed_sets)} のいずれかである（実値: {search_set!r}）",
                 )
+            elif version == _V23_SCHEMA_VERSION:
+                lane = entry.get("lane")
+                if search_set == "derived":
+                    if lane not in valid_lanes:
+                        result.add_error(
+                            f"{path}.lane",
+                            "search_set が derived の search_log には derivations にあるレーンの"
+                            f"lane が必須である（実値: {lane!r}）",
+                        )
+                elif "lane" in entry and entry["lane"] is not None:
+                    result.add_error(
+                        f"{path}.lane",
+                        "search_set が primary の search_log に lane を書いてはならない",
+                    )
 
 
 def derive_baseline_overall(axes: list[dict], improvement_axes: list[str]) -> str:
@@ -1070,8 +1191,50 @@ def _validate_search_sets(document: dict, mode: str | None, result: ValidationRe
         )
 
 
-def _validate_related_info(item: dict, path: str, result: ValidationResult) -> None:
-    """results[].related_info（2.2 専用）を検査する。"""
+def _check_source_and_grade(entry: dict, path: str, result: ValidationResult) -> None:
+    """出典URL（http で始まる）とエビデンスレベル（A〜D）を検査する。出典付きの値で共用する。"""
+    source_url = entry.get("source_url")
+    if not (isinstance(source_url, str) and source_url.startswith("http")):
+        result.add_error(
+            f"{path}.source_url",
+            f"source_url は http で始まる文字列でなければならない（実値: {source_url!r}）",
+        )
+    grade = entry.get("grade")
+    if grade not in _RELATED_INFO_GRADES:
+        result.add_error(
+            f"{path}.grade",
+            f"grade は {'/'.join(_RELATED_INFO_GRADES)} のいずれかである（実値: {grade!r}）",
+        )
+
+
+def _validate_sourced_value(entry: dict, entry_path: str, key: str, result: ValidationResult) -> None:
+    """出典付き値1件の本体（value・source_url・grade・as_of）を検査する。entry は dict である前提。
+
+    results[].related_info（2.2 以降）と company_profiles[].basics（2.3）で共用する。
+    """
+    for required_key in ("value", "source_url", "grade", "as_of"):
+        if required_key not in entry:
+            result.add_error(f"{entry_path}.{required_key}", f"{required_key} は必須である")
+
+    value = entry.get("value")
+    if value is not None:
+        if isinstance(value, bool) and key != "listed":
+            result.add_error(
+                f"{entry_path}.value",
+                f"真偽値は listed 以外のキーでは使えない（{key} の実値: {value!r}）",
+            )
+        _check_source_and_grade(entry, entry_path, result)
+
+    as_of = entry.get("as_of")
+    if as_of is not None and not (isinstance(as_of, str) and _RELATED_INFO_AS_OF_RE.match(as_of)):
+        result.add_error(
+            f"{entry_path}.as_of",
+            f"as_of は YYYY または YYYY-MM 形式、または null でなければならない（実値: {as_of!r}）",
+        )
+
+
+def _validate_related_info(item: dict, path: str, version: Any, result: ValidationResult) -> None:
+    """results[].related_info（2.2 以降）を検査する。"""
     if "related_info" not in item:
         return
     related = item["related_info"]
@@ -1090,36 +1253,36 @@ def _validate_related_info(item: dict, path: str, result: ValidationResult) -> N
         if not isinstance(entry, dict):
             result.add_error(entry_path, "related_info の各値はオブジェクトでなければならない")
             continue
-        for required_key in ("value", "source_url", "grade", "as_of"):
-            if required_key not in entry:
-                result.add_error(f"{entry_path}.{required_key}", f"{required_key} は必須である")
+        _validate_sourced_value(entry, entry_path, key, result)
+        if version == _V23_SCHEMA_VERSION and key in COMPANY_BASICS_KEYS:
+            result.add_warning(entry_path, "2.3 では company_profiles[].basics へ置く")
 
-        value = entry.get("value")
-        if value is not None:
-            if isinstance(value, bool) and key != "listed":
-                result.add_error(
-                    f"{entry_path}.value",
-                    f"真偽値は listed 以外のキーでは使えない（{key} の実値: {value!r}）",
-                )
-            source_url = entry.get("source_url")
-            if not (isinstance(source_url, str) and source_url.startswith("http")):
-                result.add_error(
-                    f"{entry_path}.source_url",
-                    f"source_url は http で始まる文字列でなければならない（実値: {source_url!r}）",
-                )
-            grade = entry.get("grade")
-            if grade not in _RELATED_INFO_GRADES:
-                result.add_error(
-                    f"{entry_path}.grade",
-                    f"grade は {'/'.join(_RELATED_INFO_GRADES)} のいずれかである（実値: {grade!r}）",
-                )
 
-        as_of = entry.get("as_of")
-        if as_of is not None and not (isinstance(as_of, str) and _RELATED_INFO_AS_OF_RE.match(as_of)):
+def _validate_company_basics(basics: Any, path: str, result: ValidationResult) -> None:
+    """company_profiles[].basics（2.3）を検査する。1件ごとの本体は related_info と共用する。"""
+    b_path = f"{path}.basics"
+    if not isinstance(basics, dict):
+        result.add_error(b_path, "basics はオブジェクトが必須である")
+        return
+    for key, entry in basics.items():
+        entry_path = f"{b_path}.{key}"
+        if key not in COMPANY_BASICS_KEYS:
             result.add_error(
-                f"{entry_path}.as_of",
-                f"as_of は YYYY または YYYY-MM 形式、または null でなければならない（実値: {as_of!r}）",
+                entry_path,
+                f"basics のキーは {'/'.join(COMPANY_BASICS_KEYS)} のいずれかである（実値: {key!r}）",
             )
+            continue
+        if not isinstance(entry, dict):
+            result.add_error(entry_path, "basics の各値はオブジェクトでなければならない")
+            continue
+        _validate_sourced_value(entry, entry_path, key, result)
+        if entry.get("value") is None and not _is_nonempty_str(entry.get("note")):
+            result.add_warning(
+                f"{entry_path}.note", "value が null の場合、取得できなかった事情を note に書くことを推奨する"
+            )
+    missing = [k for k in COMPANY_BASICS_KEYS if k not in basics]
+    if missing:
+        result.add_warning(b_path, f"取得していない基礎情報がある: {', '.join(missing)}")
 
 
 def _validate_v22_result_item(
@@ -1130,11 +1293,12 @@ def _validate_v22_result_item(
         return
     path = f"results[{index}]"
 
+    allowed_sets = _SEARCH_SETS_BY_VERSION[_V22_SCHEMA_VERSION]
     search_set = item.get("search_set")
-    if search_set not in SEARCH_SETS:
+    if search_set not in allowed_sets:
         result.add_error(
             f"{path}.search_set",
-            f"search_set は {'/'.join(SEARCH_SETS)} のいずれかである（実値: {search_set!r}）",
+            f"search_set は {'/'.join(allowed_sets)} のいずれかである（実値: {search_set!r}）",
         )
     elif search_set == "exploration" and not exploration_defined:
         result.add_error(
@@ -1154,7 +1318,7 @@ def _validate_v22_result_item(
             "primary は利用者の指定条件による検索である。role_match が different の結果はノイズの可能性がある",
         )
 
-    _validate_related_info(item, path, result)
+    _validate_related_info(item, path, _V22_SCHEMA_VERSION, result)
 
 
 def _validate_screening_exploration(document: dict, results: Any, result: ValidationResult) -> None:
@@ -1306,6 +1470,514 @@ def _validate_threshold_refs(document: dict, profile: Any, result: ValidationRes
                     )
 
 
+# --- schema_version 2.3（派生レーンと企業プロフィール）の検査 -----------------
+
+
+def _validate_derivations(search_sets: dict, result: ValidationResult) -> list[str]:
+    """search_sets.derivations（2.3 必須）を検査し、有効なレーン id の一覧を返す。"""
+    path = "search_sets.derivations"
+    derivations = search_sets.get("derivations")
+    if not isinstance(derivations, list):
+        result.add_error(path, "derivations は配列が必須である")
+        return []
+
+    primary = search_sets.get("primary")
+    primary_salary_min = primary.get("salary_min") if isinstance(primary, dict) else None
+    if isinstance(primary_salary_min, bool) or not isinstance(primary_salary_min, (int, float)):
+        primary_salary_min = None
+
+    seen: list[str] = []
+    valid: list[str] = []
+    for i, derivation in enumerate(derivations):
+        d_path = f"{path}[{i}]"
+        if not isinstance(derivation, dict):
+            result.add_error(d_path, "derivations の各要素はオブジェクトでなければならない")
+            continue
+
+        lane = derivation.get("lane")
+        if lane not in DERIVATION_LANES:
+            result.add_error(
+                f"{d_path}.lane", f"lane は {'/'.join(DERIVATION_LANES)} のいずれかである（実値: {lane!r}）"
+            )
+        elif lane in seen:
+            result.add_error(f"{d_path}.lane", f"lane が重複している: {lane}")
+        else:
+            seen.append(lane)
+            valid.append(lane)
+
+        roles = derivation.get("roles")
+        if not isinstance(roles, list) or not all(_is_nonempty_str(r) for r in roles):
+            result.add_error(
+                f"{d_path}.roles", "roles は非空の文字列の配列でなければならない（該当が無ければ空配列）"
+            )
+
+        industries = derivation.get("industries")
+        if industries is not None and (
+            not isinstance(industries, list) or not all(_is_nonempty_str(x) for x in industries)
+        ):
+            result.add_error(
+                f"{d_path}.industries",
+                "industries は非空の文字列の配列、または任意を表す null でなければならない",
+            )
+
+        salary_min = derivation.get("salary_min")
+        if salary_min is not None:
+            if isinstance(salary_min, bool) or not isinstance(salary_min, (int, float)):
+                result.add_error(
+                    f"{d_path}.salary_min",
+                    f"salary_min は数値または null でなければならない（実値: {salary_min!r}）",
+                )
+            elif primary_salary_min is not None and salary_min < primary_salary_min:
+                result.add_error(
+                    f"{d_path}.salary_min",
+                    f"salary_min は primary の salary_min（{primary_salary_min}）を下回ってはならない"
+                    f"（実値: {salary_min}）",
+                )
+
+        for key in ("location", "remote_policy", "employment_type"):
+            if key in derivation and derivation[key] is not None and not isinstance(derivation[key], str):
+                result.add_error(f"{d_path}.{key}", f"{key} は文字列または null でなければならない")
+
+        changed = derivation.get("changed_conditions")
+        if not isinstance(changed, list) or not changed or not all(_is_nonempty_str(c) for c in changed):
+            result.add_error(
+                f"{d_path}.changed_conditions",
+                "changed_conditions は非空の文字列を1件以上持つ配列でなければならない",
+            )
+
+        if not _is_nonempty_str(derivation.get("rationale")):
+            result.add_error(f"{d_path}.rationale", "rationale は必須（非空）である")
+
+    return valid
+
+
+def _validate_search_sets_v23(document: dict, mode: str | None, result: ValidationResult) -> list[str]:
+    """search_sets（2.3）を検査し、有効な派生レーン id の一覧を返す。"""
+    search_sets = document.get("search_sets")
+    if not isinstance(search_sets, dict):
+        result.add_error("search_sets", "search_sets はオブジェクトが必須である")
+        return []
+
+    if not isinstance(search_sets.get("primary"), dict):
+        result.add_error("search_sets.primary", "primary はオブジェクトが必須である")
+
+    if search_sets.get("exploration") is not None:
+        result.add_error("search_sets.exploration", "2.3 では derivations を使う")
+
+    valid_lanes = _validate_derivations(search_sets, result)
+
+    derivations = search_sets.get("derivations")
+    if mode == "fuzzy" and isinstance(derivations, list) and not derivations:
+        result.add_warning(
+            "search_sets.derivations", "派生レーンを検索していない（偏りの点検を省いている）"
+        )
+    return valid_lanes
+
+
+def _validate_v23_result_item(
+    item: Any,
+    index: int,
+    valid_lanes: list[str],
+    company_profiles: Any,
+    result: ValidationResult,
+) -> None:
+    """result 1件の 2.3 専用フィールド（search_set・lane・role_match・company_key・related_info）を検査する。"""
+    if not isinstance(item, dict):
+        return
+    path = f"results[{index}]"
+
+    allowed_sets = _SEARCH_SETS_BY_VERSION[_V23_SCHEMA_VERSION]
+    search_set = item.get("search_set")
+    if search_set not in allowed_sets:
+        result.add_error(
+            f"{path}.search_set",
+            f"search_set は {'/'.join(allowed_sets)} のいずれかである（実値: {search_set!r}）",
+        )
+
+    lane = item.get("lane")
+    if search_set == "derived":
+        if lane not in valid_lanes:
+            result.add_error(
+                f"{path}.lane",
+                f"search_set が derived の result には derivations にあるレーンの lane が必須である"
+                f"（実値: {lane!r}）",
+            )
+    elif search_set == "primary" and "lane" in item and item["lane"] is not None:
+        result.add_error(f"{path}.lane", "search_set が primary の result に lane を書いてはならない")
+
+    role_match = item.get("role_match")
+    if role_match not in ROLE_MATCHES:
+        result.add_error(
+            f"{path}.role_match",
+            f"role_match は {'/'.join(ROLE_MATCHES)} のいずれかである（実値: {role_match!r}）",
+        )
+    elif search_set == "primary" and role_match == "different":
+        result.add_warning(
+            f"{path}.role_match",
+            "primary は利用者の指定条件による検索である。role_match が different の結果はノイズの可能性がある",
+        )
+
+    _validate_related_info(item, path, _V23_SCHEMA_VERSION, result)
+
+    company_key = item.get("company_key")
+    if not _is_nonempty_str(company_key):
+        result.add_error(f"{path}.company_key", "company_key は必須（非空）である")
+    elif isinstance(company_profiles, dict):
+        profile = company_profiles.get(company_key)
+        if not isinstance(profile, dict):
+            result.add_error(
+                f"{path}.company_key",
+                f"company_key は company_profiles に存在するキーでなければならない（実値: {company_key!r}）",
+            )
+        else:
+            normalized_name = normalize_company_key(item.get("company_name"))
+            candidates = {normalize_company_key(profile.get("name"))}
+            aliases = profile.get("aliases")
+            if isinstance(aliases, list):
+                candidates.update(normalize_company_key(a) for a in aliases)
+            if normalized_name and normalized_name not in candidates:
+                result.add_warning(
+                    f"{path}.company_key",
+                    f"company_name（{item.get('company_name')!r}）の正規化結果が "
+                    f"company_profiles[{company_key!r}] の name・aliases のいずれとも一致しない",
+                )
+
+
+def _validate_metric(key: str, entry: Any, path: str, result: ValidationResult) -> None:
+    """company_profiles[].metrics の軸1件を検査する。"""
+    if not isinstance(entry, dict):
+        result.add_error(path, "各項目は {value, unit, source_url, grade, as_of} のオブジェクトでなければならない")
+        return
+    for required_key in ("value", "unit", "source_url", "grade", "as_of"):
+        if required_key not in entry:
+            result.add_error(f"{path}.{required_key}", f"{required_key} は必須である")
+
+    if "unit" in entry and entry.get("unit") != COMPANY_METRIC_UNITS[key]:
+        result.add_error(
+            f"{path}.unit",
+            f"unit は {COMPANY_METRIC_UNITS[key]!r} でなければならない（実値: {entry.get('unit')!r}）",
+        )
+
+    value = entry.get("value")
+    if value is None:
+        if not _is_nonempty_str(entry.get("note")):
+            result.add_warning(
+                f"{path}.note", "value が null の場合、取得できなかった事情を note に書くことを推奨する"
+            )
+        return
+
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        result.add_error(f"{path}.value", f"value は数値または null でなければならない（実値: {value!r}）")
+    else:
+        if value < 0 and key not in _SIGNED_METRICS:
+            result.add_error(f"{path}.value", f"{key} は負の値を取らない（実値: {value}）")
+        if key in _RATE_METRICS_0_100 and not (0 <= value <= 100):
+            result.add_error(f"{path}.value", f"{key} は0〜100の範囲でなければならない（実値: {value}）")
+        if key == "compensation_level" and 0 <= value < _SALARY_CONDITION_WARN_BELOW:
+            result.add_warning(
+                f"{path}.value",
+                f"compensation_level は円単位である。{value} は万円単位で書いていないか確かめる",
+            )
+
+    _check_source_and_grade(entry, path, result)
+    as_of = entry.get("as_of")
+    if not (isinstance(as_of, str) and _RELATED_INFO_AS_OF_RE.match(as_of)):
+        result.add_error(
+            f"{path}.as_of", f"as_of は YYYY または YYYY-MM 形式でなければならない（実値: {as_of!r}）"
+        )
+
+
+def _validate_negative_checks(negative_checks: Any, path: str, result: ValidationResult) -> None:
+    """company_profiles[].negative_checks（労働法令違反の公表事案の確認記録）を検査する。"""
+    if not isinstance(negative_checks, dict):
+        result.add_error(path, "negative_checks はオブジェクトが必須である")
+        return
+    llv_path = f"{path}.labor_law_violation_list"
+    llv = negative_checks.get("labor_law_violation_list")
+    if not isinstance(llv, dict):
+        result.add_error(llv_path, "labor_law_violation_list はオブジェクトが必須である")
+        return
+
+    checked = llv.get("checked")
+    if not isinstance(checked, bool):
+        result.add_error(f"{llv_path}.checked", "checked は真偽値が必須である")
+        return
+
+    hit = llv.get("hit")
+    if checked:
+        if not isinstance(hit, bool):
+            result.add_error(f"{llv_path}.hit", "checked が true の場合、hit は真偽値が必須である")
+        source_url = llv.get("source_url")
+        if not (isinstance(source_url, str) and source_url.startswith("http")):
+            result.add_error(
+                f"{llv_path}.source_url",
+                f"source_url は http で始まる文字列でなければならない（実値: {source_url!r}）",
+            )
+        as_of = llv.get("as_of")
+        if not _is_valid_year_month_or_day(as_of):
+            result.add_error(
+                f"{llv_path}.as_of",
+                f"as_of は YYYY-MM-DD または YYYY-MM 形式でなければならない（実値: {as_of!r}）",
+            )
+        if hit is True and not _is_nonempty_str(llv.get("note")):
+            result.add_error(f"{llv_path}.note", "hit が true の場合、note（該当事案の要旨）は必須である")
+    else:
+        if hit is not None:
+            result.add_error(f"{llv_path}.hit", "checked が false の場合、hit は null でなければならない")
+
+
+def _validate_recent_news(news: Any, path: str, result: ValidationResult) -> None:
+    """company_profiles[].recent_news を検査する。"""
+    if not isinstance(news, list):
+        result.add_error(path, "recent_news は配列が必須である（該当が無ければ空配列）")
+        return
+    for i, entry in enumerate(news):
+        e_path = f"{path}[{i}]"
+        if not isinstance(entry, dict):
+            result.add_error(e_path, "recent_news の各要素はオブジェクトでなければならない")
+            continue
+        if not _is_nonempty_str(entry.get("headline")):
+            result.add_error(f"{e_path}.headline", "headline は必須（非空）である")
+        date = entry.get("date")
+        if not _is_valid_year_month_or_day(date):
+            result.add_error(
+                f"{e_path}.date", f"date は YYYY-MM-DD または YYYY-MM 形式でなければならない（実値: {date!r}）"
+            )
+        _check_source_and_grade(entry, e_path, result)
+
+
+def _validate_company_profiles(document: dict, results: Any, result: ValidationResult) -> None:
+    """company_profiles（2.3 必須）を検査する。"""
+    profiles = document.get("company_profiles")
+    if not isinstance(profiles, dict):
+        result.add_error("company_profiles", "company_profiles はオブジェクトが必須である")
+        return
+
+    referenced = set()
+    if isinstance(results, list):
+        for item in results:
+            if isinstance(item, dict) and _is_nonempty_str(item.get("company_key")):
+                referenced.add(item["company_key"])
+
+    for key, profile in profiles.items():
+        path = f"company_profiles.{key}"
+        if not isinstance(profile, dict):
+            result.add_error(path, "各企業プロフィールはオブジェクトでなければならない")
+            continue
+
+        aliases = profile.get("aliases")
+        if not isinstance(aliases, list) or not all(_is_nonempty_str(a) for a in aliases):
+            result.add_error(
+                f"{path}.aliases", "aliases は非空の文字列の配列でなければならない（該当が無ければ空配列）"
+            )
+
+        name = profile.get("name")
+        if not _is_nonempty_str(name):
+            result.add_error(f"{path}.name", "name は必須（非空）である")
+        else:
+            # キーは求人票の企業名から統合スクリプトが付け、name は会社概要の正式名称になりうる。
+            # 両者が違う場合は求人票の表記を aliases に残すため、name か aliases のどれかと一致すればよい。
+            candidates = {normalize_company_key(name)}
+            if isinstance(aliases, list):
+                candidates.update(normalize_company_key(a) for a in aliases)
+            if key not in candidates:
+                result.add_error(
+                    path,
+                    f"キーは name または aliases のいずれかの正規化結果と一致しなければならない"
+                    f"（name の正規化結果: {normalize_company_key(name)!r}、キー: {key!r}）",
+                )
+
+        for url_key in ("official_url", "careers_url"):
+            value = profile.get(url_key)
+            if value is not None and not (isinstance(value, str) and value.startswith("http")):
+                result.add_error(
+                    f"{path}.{url_key}",
+                    f"{url_key} は http で始まる文字列または null でなければならない（実値: {value!r}）",
+                )
+
+        for text_key in ("hq_location", "industry"):
+            value = profile.get(text_key)
+            if value is not None and not isinstance(value, str):
+                result.add_error(f"{path}.{text_key}", f"{text_key} は文字列または null でなければならない")
+
+        summary = profile.get("business_summary")
+        if summary is not None:
+            s_path = f"{path}.business_summary"
+            if not isinstance(summary, dict):
+                result.add_error(s_path, "business_summary はオブジェクトまたは null でなければならない")
+            else:
+                if not _is_nonempty_str(summary.get("text")):
+                    result.add_error(f"{s_path}.text", "text は必須（非空）である")
+                if not _is_nonempty_str(summary.get("quote")):
+                    result.add_error(f"{s_path}.quote", "quote は必須（非空）である")
+                _check_source_and_grade(summary, s_path, result)
+
+        _validate_company_basics(profile.get("basics"), path, result)
+
+        metrics = profile.get("metrics")
+        m_path = f"{path}.metrics"
+        if not isinstance(metrics, dict):
+            result.add_error(m_path, "metrics はオブジェクトが必須である")
+        else:
+            for metric_key in COMPANY_METRIC_UNITS:
+                if metric_key not in metrics:
+                    result.add_error(f"{m_path}.{metric_key}", f"{metric_key} は必須である")
+                    continue
+                _validate_metric(metric_key, metrics[metric_key], f"{m_path}.{metric_key}", result)
+            for unknown_key in metrics:
+                if unknown_key not in COMPANY_METRIC_UNITS:
+                    result.add_error(
+                        f"{m_path}.{unknown_key}",
+                        f"metrics のキーは {'/'.join(COMPANY_METRIC_UNITS)} のいずれかである"
+                        f"（実値: {unknown_key!r}）",
+                    )
+
+        _validate_negative_checks(profile.get("negative_checks"), f"{path}.negative_checks", result)
+        _validate_recent_news(profile.get("recent_news"), f"{path}.recent_news", result)
+
+        open_questions = profile.get("open_questions")
+        if not isinstance(open_questions, list) or not all(isinstance(q, str) for q in open_questions):
+            result.add_error(
+                f"{path}.open_questions", "open_questions は文字列の配列でなければならない（該当が無ければ空配列）"
+            )
+
+        if key not in referenced:
+            result.add_warning(path, "この企業プロフィールを参照する result が無い")
+
+
+def _validate_screening_derivations(
+    document: dict, results: Any, valid_lanes: list[str], result: ValidationResult
+) -> None:
+    """screening.derivations（2.3 専用）を検査する。screening.exploration が残っていれば無視して WARN する。"""
+    screening = document.get("screening")
+    if not isinstance(screening, dict):
+        return  # screening 自体の欠落・型不一致は _validate_screening が既に報告している。
+
+    if screening.get("exploration") is not None:
+        result.add_warning(
+            "screening.exploration", "2.3 では exploration は無視される（screening.derivations を使う）"
+        )
+
+    path = "screening.derivations"
+    derivations = screening.get("derivations")
+    if not isinstance(derivations, dict):
+        result.add_error(path, "derivations はオブジェクトが必須である")
+        return
+
+    performed = derivations.get("performed")
+    if not isinstance(performed, bool):
+        result.add_error(f"{path}.performed", "performed は真偽値が必須である")
+        return
+
+    lanes_field = derivations.get("lanes")
+    if not isinstance(lanes_field, list):
+        result.add_error(f"{path}.lanes", "lanes は配列が必須である")
+        return
+
+    items = results if isinstance(results, list) else []
+    seen: list[str] = []
+    for i, entry in enumerate(lanes_field):
+        e_path = f"{path}.lanes[{i}]"
+        if not isinstance(entry, dict):
+            result.add_error(e_path, "lanes の各要素はオブジェクトでなければならない")
+            continue
+        lane = entry.get("lane")
+        if lane not in DERIVATION_LANES:
+            result.add_error(
+                f"{e_path}.lane", f"lane は {'/'.join(DERIVATION_LANES)} のいずれかである（実値: {lane!r}）"
+            )
+            continue
+        if lane in seen:
+            result.add_error(f"{e_path}.lane", f"lane が重複している: {lane}")
+            continue
+        seen.append(lane)
+
+        actual_results = sum(
+            1
+            for r in items
+            if isinstance(r, dict) and r.get("search_set") == "derived" and r.get("lane") == lane
+        )
+        actual_apply = sum(
+            1
+            for r in items
+            if isinstance(r, dict)
+            and r.get("search_set") == "derived"
+            and r.get("lane") == lane
+            and r.get("classification") == "apply_candidate"
+        )
+        result_count = entry.get("result_count")
+        if isinstance(result_count, bool) or not isinstance(result_count, int):
+            result.add_error(
+                f"{e_path}.result_count", f"result_count は整数でなければならない（実値: {result_count!r}）"
+            )
+        elif result_count != actual_results:
+            result.add_error(
+                f"{e_path}.result_count",
+                f"実際の件数（{actual_results}件）と一致しない（記載: {result_count!r}）",
+            )
+        apply_count = entry.get("apply_candidate_count")
+        if isinstance(apply_count, bool) or not isinstance(apply_count, int):
+            result.add_error(
+                f"{e_path}.apply_candidate_count",
+                f"apply_candidate_count は整数でなければならない（実値: {apply_count!r}）",
+            )
+        elif apply_count != actual_apply:
+            result.add_error(
+                f"{e_path}.apply_candidate_count",
+                f"実際の件数（{actual_apply}件）と一致しない（記載: {apply_count!r}）",
+            )
+
+    missing = [l for l in valid_lanes if l not in seen]
+    extra = [l for l in seen if l not in valid_lanes]
+    if missing:
+        result.add_error(path, f"search_sets.derivations にあるレーンが欠落している: {', '.join(missing)}")
+    if extra:
+        result.add_error(path, f"search_sets.derivations に無いレーンがある: {', '.join(extra)}")
+
+    if performed and not valid_lanes:
+        result.add_error(f"{path}.performed", "performed が true だが派生レーンが無い")
+    if not performed and (valid_lanes or lanes_field):
+        result.add_error(f"{path}.performed", "performed が false なのに派生レーン・lanes を記録している")
+
+
+def _validate_search_log_derivation_link(document: dict, results: Any, result: ValidationResult) -> None:
+    """派生レーンの求人があるのに search_log に同じレーンのクエリが無い場合を検査する（2.3）。
+
+    2.2 の _validate_search_log_exploration_link を、レーンごとに一般化したもの。
+    ERROR はレーンごとに1件だけ報告する。1レーンのクエリが上限（_MAX_QUERIES_PER_LANE）を
+    超えていれば WARN にする。
+    """
+    log = document.get("search_log")
+    log_lane_counts: dict[str, int] = {}
+    if isinstance(log, list):
+        for entry in log:
+            if isinstance(entry, dict) and entry.get("search_set") == "derived":
+                lane = entry.get("lane")
+                if _is_nonempty_str(lane):
+                    log_lane_counts[lane] = log_lane_counts.get(lane, 0) + 1
+
+    result_lanes: set[str] = set()
+    if isinstance(results, list):
+        result_lanes = {
+            item.get("lane")
+            for item in results
+            if isinstance(item, dict)
+            and item.get("search_set") == "derived"
+            and _is_nonempty_str(item.get("lane"))
+        }
+    for lane in sorted(result_lanes):
+        if log_lane_counts.get(lane, 0) == 0:
+            result.add_error(
+                "search_log",
+                f"search_set が derived で lane が {lane} の result があるが、search_log に同じ lane の"
+                "要素が無い。派生レーンの求人はそのレーンのクエリからしか採用できない",
+            )
+
+    for lane, count in log_lane_counts.items():
+        if count > _MAX_QUERIES_PER_LANE:
+            result.add_warning("search_log", f"lane {lane} のクエリが{_MAX_QUERIES_PER_LANE}本を超えている（{count}本）")
+
+
 def validate(
     document: Any,
     pii_terms: list[tuple[str, str]] | None = None,
@@ -1365,7 +2037,11 @@ def validate(
         for i, item in enumerate(results):
             _validate_result_item(item, i, valid_mode, version, improvement_axes, result)
 
-    _validate_search_log(document, version, result)
+    valid_lanes: list[str] = []
+    if version == _V23_SCHEMA_VERSION:
+        valid_lanes = _validate_search_sets_v23(document, valid_mode, result)
+
+    _validate_search_log(document, version, valid_lanes, result)
 
     if version in _SCREENING_SCHEMA_VERSIONS:
         if isinstance(results, list):
@@ -1384,6 +2060,15 @@ def validate(
                 _validate_v22_result_item(item, i, exploration_defined, result)
         _validate_screening_exploration(document, results, result)
         _validate_search_log_exploration_link(document, results, result)
+
+    if version == _V23_SCHEMA_VERSION:
+        company_profiles = document.get("company_profiles")
+        if isinstance(results, list):
+            for i, item in enumerate(results):
+                _validate_v23_result_item(item, i, valid_lanes, company_profiles, result)
+        _validate_company_profiles(document, results, result)
+        _validate_screening_derivations(document, results, valid_lanes, result)
+        _validate_search_log_derivation_link(document, results, result)
 
     if pii_terms is None:
         result.add_warning(

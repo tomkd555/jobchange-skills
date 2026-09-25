@@ -1,148 +1,148 @@
-# 適合性評価の判定基準（fit-criteria）
+# Fit-assessment judgement criteria (fit-criteria)
 
-`fit_assessment.json` の7次元（experience_proximity / aspiration_alignment / work_character_fit / condition_fit / culture_fit / compensation_fit / time_fit）の判定基準を定める。データ構造・検証規則の原本は `references/fit-format.md`、エビデンスレベルA〜Dの原本は `job-change-company-research` スキルの `references/evidence-grading.md` にある。
+This defines the judgement criteria for `fit_assessment.json`'s seven dimensions (experience_proximity / aspiration_alignment / work_character_fit / condition_fit / culture_fit / compensation_fit / time_fit). The canonical definition of the data structure and validation rules lives in `references/fit-format.md`, and of evidence levels A–D in the `job-change-company-research` skill's `references/evidence-grading.md`.
 
-## 全次元に共通するルール
+## Rules common to every dimension
 
-1. **evidence のない主張を書かない。** 各次元の verdict は evidence（1件以上）に対応づけ、裏付けのない印象・憶測を score や verdict に反映しない。
-2. **エビデンスレベルC・D単独で断定しない。** 口コミ・伝聞（company_research 内でレベルC・Dが付いた claim）のみを根拠に、その次元を高い、または低いと断定しない。C・D を根拠にする場合は verdict を限定表現にする（「口コミでは〜という声がある。傍証にとどめる」）。レベルの定義と限定表現の書き方は evidence-grading.md に従う。
-3. **企業が自社を良く見せる主張を、確かなものとして扱わない。** 採用サイトの「風通しが良い」等は、company_research 側でレベルAでも confidence を high にしていない。これを culture_fit の断定材料にしない。
-4. **材料が無いときは score を null（判断保留）にする。** 憶測で数値を埋めず、unknown を優先する方針を守る。
-5. **profile・self_analysis に無い事実を創作しない。** 本人の経歴・強み・条件は profile.json と self_analysis.json の記載を根拠にする。
+1. **Do not write a claim with no evidence.** Ground each dimension's verdict in evidence (one or more items), and do not reflect an unsupported impression or guess into the score or verdict.
+2. **Do not assert a verdict from level C or D evidence alone.** Do not assert a dimension high or low on word-of-mouth or hearsay (a claim inside company_research graded C or D) alone. When grounding a verdict in C or D evidence, hedge the wording (「口コミでは〜という声がある。傍証にとどめる」). Follow evidence-grading.md for the level definitions and how to hedge.
+3. **Do not treat a company's self-flattering claim as established.** A recruiting-site claim such as 「風通しが良い」 (an open culture) does not have its confidence marked high by the company_research side, even at level A. Do not use this as grounds for asserting culture_fit.
+4. **Set the score to null (hold judgement) when material is lacking.** Do not fill in a number by guesswork; keep to the policy of preferring unknown.
+5. **Do not invent a fact absent from profile or self_analysis.** Ground the person's career, strengths, and conditions in what profile.json and self_analysis.json record.
 
-## score 1〜5 の一般的な目安
+## General guidance for the score of 1–5
 
-| score | 意味 |
+| score | Meaning |
 |---|---|
-| 5 | 要件・条件・志向がほぼすべて一致する。裏付けがそろう |
-| 4 | おおむね一致する。軽微な不足や未確認がある |
-| 3 | 部分的に一致する。長所と短所が拮抗する |
-| 2 | 不一致が優勢である。相応の懸念がある |
-| 1 | 明確に不一致である。重大な障害がある |
-| null | 判断材料が不足し、数値を付けられない（判断保留） |
+| 5 | Requirements, conditions, and aspiration nearly all match. Grounds are complete |
+| 4 | Broadly matches. A minor gap or unconfirmed point exists |
+| 3 | Partially matches. Strengths and weaknesses roughly balance |
+| 2 | Mismatch predominates. A commensurate concern exists |
+| 1 | Clearly mismatched. A serious obstacle exists |
+| null | Judgement material is insufficient; no number can be attached (hold judgement) |
 
-## 次元別の判定基準
+## Criteria by dimension
 
-### experience_proximity（経験の近さ）
+### experience_proximity (experience proximity)
 
-job_posting の `requirements.must[]`・`requirements.want[]` と、profile の `career_history`・`skills` を突き合わせ、**現在の経験からの距離**を測る。
+Cross-check job_posting's `requirements.must[]` and `requirements.want[]` against profile's `career_history` and `skills`, and measure the **distance from current experience**.
 
-- 必須要件（must）の充足を主軸に置く。必須要件を満たさない場合は score を高くしない。
-- 歓迎要件（want）の充足は加点要素とする。
-- 経験年数・実績（profile の achievements の metric）を evidence に用いる。
-- 不足する要件は `skill_gap_items` へ1件ずつ書き、`skill_gap` を3段階（および `none`・`unknown`）で示す。段階の判定基準は次のとおりである。
+- Place must-have requirement fulfilment at the centre. Do not give a high score when a must-have requirement is unmet.
+- Treat fulfilment of a nice-to-have requirement (want) as a plus.
+- Use years of experience and achievements (the `metric` of profile's achievements) as evidence.
+- Write each missing requirement into `skill_gap_items`, and express `skill_gap` in three stages (plus `none` and `unknown`). The criteria for the stages are as follows.
 
-| 段階 | 判定基準 |
+| Stage | Criterion |
 |---|---|
-| `complementable_within_3m` | 隣接技術の実務経験があり、学習対象が固有の差分に限られる。独学と業務内での適用により3か月以内に習得できる |
-| `needs_6_12m_study` | 隣接経験が乏しく、体系的な学習が必要である。または実務での適用機会を別途作る必要がある |
-| `not_applicable_now` | 必須要件の中核（経験年数・特定領域の実務）を満たさず、短期の学習では埋まらない |
+| `complementable_within_3m` | Has hands-on experience with an adjacent technology, and the learning need is limited to the specific gap. Reachable within three months through self-study and applying it on the job |
+| `needs_6_12m_study` | Adjacent experience is thin and systematic study is needed. Or a separate opportunity to apply it on the job must be created |
+| `not_applicable_now` | The core of a must-have requirement (years of experience, hands-on work in a specific area) is unmet, and short-term study will not fill it |
 
-- **この次元は「やりたいか」を含まない。** 経験が近いことを、その仕事を望んでいる根拠に使わない。志向は `aspiration_alignment` で別に評価する。
-- evidence の source は主に `job_posting`・`profile`。
+- **This dimension does not include "do they want to."** Do not use closeness of experience as grounds for wanting that job. Evaluate aspiration separately, in `aspiration_alignment`.
+- Evidence sources are mainly `job_posting` and `profile`.
 
-### aspiration_alignment（志向の一致）
+### aspiration_alignment (aspiration alignment)
 
-求人の業務内容が「今後やりたい仕事」に近いかを、**経験の近さとは独立に**評価する。
+Evaluate whether the job's duties are close to "the work they want to do going forward," **independently of experience proximity**.
 
-- self_analysis の `career_narrative.future_direction` を一次資料とし、`interests.domains`（RIASEC の領域名）・`interests.concrete_topics` と求人の技術領域・製品領域の重なりを見る。
-- profile の `job_change_axis.reasons`（転職で次に実現したいこと）を補助資料とする。
-- **経験の近さを志向の根拠に流用しない。** 「経験があるから志向にも合う」という推論を明示的に禁じる。
-- self_analysis が無い場合（`inputs.self_analysis=false`）は score を高くせず、4以上を付けることを認めない。
-- evidence には `self_analysis` または `profile` を必ず含める。求人票だけで志向を断定しない。
-- evidence の `ref` は `interests.domains[0]`・`career_narrative.future_direction` のようなフィールドパスで書く。
+- Treat self_analysis's `career_narrative.future_direction` as the primary source, and look at the overlap between `interests.domains` (RIASEC domain names) and `interests.concrete_topics` and the job's technical and product areas.
+- Treat profile's `job_change_axis.reasons` (what they want to achieve next through the job change) as a supporting source.
+- **Do not divert experience proximity into grounds for aspiration.** The inference "they have experience, so it must match their aspiration too" is explicitly prohibited.
+- When there is no self-analysis (`inputs.self_analysis=false`), do not raise the score; a score of 4 or higher is not allowed.
+- Evidence must always include `self_analysis` or `profile`. Do not assert aspiration from the job posting alone.
+- Write evidence's `ref` as a field path, such as `interests.domains[0]` or `career_narrative.future_direction`.
 
-### work_character_fit（作業特性の一致）
+### work_character_fit (work-character match)
 
-profile の `work_character_preferences[]`（8つの作業特性の希望度）と、求人・企業の実態を突き合わせる。特性の定義は job-change-support の `references/screening-axes.md` にある。
+Cross-check profile's `work_character_preferences[]` (the desired degree for eight work characteristics) against the job and company's reality. The characteristic definitions live in job-change-support's `references/screening-axes.md`.
 
-- 求人検索を経ている場合（`inputs.job_search_screening=true`）は、`job_search_results.json` の `axis_observations`（手を動かす比率・調整業務の比率・リモート確度・夜間対応）を evidence に用いる。
-- 求人検索を経ていない場合は、job_posting の業務内容と company_research の働き方から同じ観点を読む。
-- **求人票から判定できない3特性を推測で埋めない。** `clear_completion`（完了条件の明確さ）・`solo_completable`（一人で完結しやすさ）・`short_feedback`（結果を短期で確認できる度合い）は、求人票にも企業研究にもまず書かれない。verdict に「求人票・企業研究からは判定できない」と明記し、面接での確認事項として `overall.open_questions` へ挙げる。
-- 希望度が `must` の特性を満たさない場合は score を高くしない。その特性は `must_condition_results` でも `met=no` になる。
-- evidence の source は主に `job_search_screening`・`job_posting`・`company_research`・`profile`。
+- When the job has gone through job search (`inputs.job_search_screening=true`), use `job_search_results.json`'s `axis_observations` (the ratio of hands-on work, the ratio of coordination work, remote-work confidence, night-time response) as evidence.
+- When it has not, read the same points from job_posting's duty description and company_research's working style.
+- **Do not fill in the three characteristics that cannot be judged from the job posting by guessing.** `clear_completion` (clarity of completion criteria), `solo_completable` (ease of completing work solo), and `short_feedback` (how soon results can be confirmed) are almost never written into either the job posting or the company research. State plainly in the verdict 「求人票・企業研究からは判定できない」 (cannot be judged from the job posting or company research), and raise it in `overall.open_questions` as an interview-confirmation item.
+- Do not raise the score when a characteristic whose desired degree is `must` is unmet. That characteristic also becomes `met=no` in `must_condition_results`.
+- Evidence sources are mainly `job_search_screening`, `job_posting`, `company_research`, and `profile`.
 
-### condition_fit（条件適合）
+### condition_fit (condition match)
 
-job_posting の勤務条件（`location`・`employment_type`・`working_hours` 等）と、profile の `conditions[level=want]`・`targets` を突き合わせる。必須条件の充足は `must_condition_results` で別途判定するため、この次元では望ましい条件・志望対象との整合を扱う。
+Cross-check job_posting's working conditions (`location`, `employment_type`, `working_hours`, etc.) against profile's `conditions[level=want]` and `targets`. Since fulfilment of must-have conditions is judged separately in `must_condition_results`, this dimension covers alignment with desirable conditions and the target areas (`targets`).
 
-- リモート可否・勤務地・雇用形態・裁量労働などの条件が、本人の希望条件とどの程度一致するかを見る。
-- job_posting の `scope_of_change` を、勤務地・職種の条件を見るときの材料に加える（後述）。
-- evidence の source は主に `job_posting`・`profile`。
+- Look at how well conditions such as remote eligibility, work location, employment type, and discretionary work arrangements match the person's desired conditions.
+- Add job_posting's `scope_of_change` as material when looking at work-location and job-type conditions (described below).
+- Evidence sources are mainly `job_posting` and `profile`.
 
-#### scope_of_change（変更の範囲）の扱い
+#### Handling scope_of_change (the scope of change)
 
-job_posting の `scope_of_change` は、2024年4月から求人票への明示が義務づけられた3項目（業務の変更の範囲・就業場所の変更の範囲・有期契約の更新上限）を構造化したものである。形式の原本は `job-change-company-research` の `references/job-posting-format.md` にある。
+job_posting's `scope_of_change` structures the three items whose disclosure in job postings became mandatory from April 2024 (the scope of change in duties, the scope of change in work location, and the cap on fixed-term contract renewal). Its canonical format lives in `job-change-company-research`'s `references/job-posting-format.md`.
 
-| 状態 | 扱い |
+| State | Handling |
 |---|---|
-| `work_location.unlimited` が真 | 転勤リスクとして `condition_fit` の evidence に含める。勤務地が入社時の1か所に留まる保証が無い旨を verdict に書く |
-| `duties.unlimited` が真 | 職種転換リスクとして同様に扱う。現在の職務内容が続く保証が無い旨を verdict に書く |
-| `contract_renewal_cap.stated` が真で上限がある | 有期契約の期間の上限として、雇用形態に関する条件の判定材料にする |
-| いずれかが `null` | unknown のままにする。**記載を見つけられなかったことを、範囲が限定されている証拠として扱わない。** 確認事項を `overall.open_questions` へ入れる |
+| `work_location.unlimited` is true | Include as a relocation risk in `condition_fit`'s evidence. Write into the verdict that the work location is not guaranteed to stay at the single location it is at hiring |
+| `duties.unlimited` is true | Handle the same way, as a job-transfer risk. Write that the current duties are not guaranteed to continue |
+| `contract_renewal_cap.stated` is true and a cap exists | Treat as the upper limit on a fixed-term contract's duration, as material for judging the employment-type condition |
+| Either is `null` | Leave as unknown. **Do not treat failing to find a mention as evidence that the scope is limited.** Put the confirmation item into `overall.open_questions` |
 
-evidence は `{"source": "job_posting", "ref": "scope_of_change.work_location.unlimited", "note": "…"}` の形で書き、`ref` にはフィールドパスを、`note` には `quote`（求人票の記載の引用）を転記する。
+Write evidence in the form `{"source": "job_posting", "ref": "scope_of_change.work_location.unlimited", "note": "…"}`, with `ref` as the field path and `note` transcribing the `quote` (the job posting's wording).
 
-`unlimited` が真であることは、それ自体では転勤・職種転換が起きる証拠ではなく、企業の裁量で起こしうるという事実である。verdict には、この区別が分かるように書く。
+`unlimited` being true records only that the company may order relocation or a job transfer at its discretion. Write the verdict so this distinction is clear. Write the verdict so this distinction is clear.
 
-`job_posting.json` の `schema_version` が `1.0` の場合、この節は適用しない。1.0 には `scope_of_change` が無く、取り込みの時点で業務の変更の範囲・就業場所の変更の範囲・有期契約の更新上限を見ていないためである。判定を変えず、`overall.open_questions` へ「求人票の取り込みが旧形式であり、業務・就業場所の変更の範囲を確認していない」と入れる。
+When `job_posting.json`'s `schema_version` is `1.0`, `scope_of_change` is absent, since the scope of change in duties and in work location was not looked at when the posting was taken in. Do not change the judgement; put 「求人票の取り込みが旧形式であり、業務・就業場所の変更の範囲を確認していない」 into `overall.open_questions`.
 
-### culture_fit（文化適合）
+### culture_fit (culture match)
 
-company_research の philosophy・workstyle・reputation トピックと、self_analysis の行動証拠・価値観を突き合わせる。
+Cross-check company_research's philosophy, workstyle, and reputation topics against self_analysis's behavioural evidence and values.
 
-- **内省単独に重きを置かない。** self_analysis の主観的な自己申告だけで断定せず、self_analysis に記録された行動証拠（過去の具体的な行動・実績）との対応づけを優先する。
-- 企業側の材料は、自社を良く見せる主張（レベルAでも confidence が high でないもの）を断定に使わず、事実（制度の有無・開示数値・認定）と分けて扱う。
-- 口コミ由来（レベルC）は限定表現にとどめる。
-- self_analysis が無い場合（inputs.self_analysis=false）は、行動証拠を欠くため score を高くせず、verdict にその旨を書くか null にする。
-- evidence の source は主に `company_research`・`self_analysis`。
+- **Do not place heavy weight on introspection alone.** Do not assert from self_analysis's subjective self-report alone; prioritise correspondence with the behavioural evidence recorded in self_analysis (specific past actions and achievements).
+- Treat the company's own self-flattering claims (level A ones whose confidence is not high) as separate from facts (the existence of a system, a disclosed figure, a certification), and do not use the former as grounds for an assertion.
+- Keep word-of-mouth sources (level C) hedged.
+- When there is no self-analysis (inputs.self_analysis=false), do not raise the score, since behavioural evidence is lacking; write that into the verdict, or set it to null.
+- Evidence sources are mainly `company_research` and `self_analysis`.
 
-### compensation_fit（報酬適合）
+### compensation_fit (compensation match)
 
-希望年収と提示レンジ・業界平均を突き合わせる。
+Cross-check desired annual salary against the offered range and the industry average.
 
-- job_posting の `salary`（提示レンジ）と、profile の `salary.desired`（希望年収）を突き合わせる。
-- company_research の `company_metrics.compensation_level`（有価証券報告書の平均年間給与等）を参照点に加える。ただし、この値は全従業員平均であり、職種別の内訳が無い。その限界を verdict または overall.open_questions に書く。
-- 提示レンジ下限が希望を下回る場合は score を高くしない。上限との差、昇給余地の不確実性も勘案する。
-- time_analysis.json に `comparison` があれば、実質時給の現職との差分（`comparison.delta.hourly_wage_binding_basis`・同 `labor_basis`）を verdict の根拠にする。額面年収の増加だけを根拠に score を高くしない。
-- evidence の source は主に `job_posting`・`profile`・`company_research`・`time_analysis`。
+- Cross-check job_posting's `salary` (the offered range) against profile's `salary.desired` (desired annual salary).
+- Add company_research's `company_metrics.compensation_level` (the average annual salary from the securities report, etc.) as a reference point. This value is a company-wide average with no breakdown by job type, however; write that limit into the verdict or overall.open_questions.
+- Do not raise the score when the offered range's lower bound falls below the desired amount. Also factor in the gap to the upper bound and the uncertainty of room for raises.
+- If time_analysis.json has `comparison`, ground the verdict in the difference in effective hourly wage from the current job (`comparison.delta.hourly_wage_binding_basis` and the same for `labor_basis`). Do not raise the score on the increase in nominal annual salary alone.
+- Evidence sources are mainly `job_posting`, `profile`, `company_research`, and `time_analysis`.
 
-### time_fit（時間適合）
+### time_fit (time match)
 
-time_analysis.json の年間拘束時間・実質時給と、must/want 条件（残業・通勤・労働時間に関するもの）を突き合わせる。
+Cross-check time_analysis.json's annual committed time and effective hourly wage against the must/want conditions concerning overtime, commute, and working hours.
 
-- time_analysis.json の `annual.binding_hours`（年間拘束時間）・`annual.labor_hours`（年間労働時間）・`effective_hourly_wage`（実質時給。拘束基準・労働基準）を主たる材料にする。
-- 実質時給は、想定年収にレベル付きの根拠がある場合にのみ算出される（無ければ time_analysis 側で null）。null の場合は金額比較を断定に使わない。
-- time_analysis の入力に統計フォールバックが使われた項目（`fallbacks_used`）は、実測でない旨を verdict に反映し、確度を上げすぎない。
-- 残業・通勤・労働時間に関する must/want 条件との整合を見る。
-- time_analysis.json に `comparison` があれば、年間拘束時間の現職との差分（`comparison.delta.annual_binding_hours`）を verdict の根拠にする。`comparison` が無い場合は、現職と比較できていない旨を verdict に書く。
-- 通勤の負担を所要時間だけで表さない。commute.json の `transfers`（乗り換え回数）・`crowding`（混雑の程度）があれば verdict で触れる。通勤が長いほど睡眠時間と運動の時間が減るため、年収差で相殺できるとは限らない旨を、通勤片道が長い場合の verdict に書く（根拠は `references/fit-methods.md`）。
-- evidence の source は主に `time_analysis`・`job_posting`。
+- Treat time_analysis.json's `annual.binding_hours` (annual committed time), `annual.labor_hours` (annual working hours), and `effective_hourly_wage` (effective hourly wage, on a committed-time basis and a labor basis) as the primary material.
+- The effective hourly wage is computed only when a leveled basis for the expected annual salary exists (otherwise it is null on the time_analysis side). When it is null, do not use an amount comparison to assert.
+- For an item in time_analysis's input where a statistical fallback was used (`fallbacks_used`), reflect in the verdict that it is not measured, and do not overstate confidence.
+- Look at alignment with must/want conditions concerning overtime, commute, and working hours.
+- If time_analysis.json has `comparison`, ground the verdict in the difference in annual committed time from the current job (`comparison.delta.annual_binding_hours`). If `comparison` is absent, write into the verdict that a comparison with the current job could not be made.
+- Do not represent commute burden by time alone. If commute.json has `transfers` (number of transfers) or `crowding` (degree of crowding), touch on them in the verdict. Write into the verdict, when the one-way commute is long, that a longer commute cuts into sleep and exercise time, so it does not necessarily offset against a difference in salary (grounds in `references/fit-methods.md`).
+- Evidence sources are mainly `time_analysis` and `job_posting`.
 
-## must_condition_results の判定
+## Judging must_condition_results
 
-profile の必須条件（`conditions[level=must]` と `work_character_preferences[desire=must]`）の各条件を、job_posting・company_research の事実と突き合わせて `yes`・`no`・`unknown` で判定し、対応は `ref`（条件 id または特性 id）で1対1にする。
+Cross-check each of profile's must-have conditions (`conditions[level=must]` and `work_character_preferences[desire=must]`) against the facts in job_posting and company_research, judge each `yes`, `no`, or `unknown`, and match them one-to-one by `ref` (a condition id or a characteristic id).
 
-- 求人票・企業研究に明確な根拠がある場合のみ `yes`・`no` とし、その evidence を必ず添える。
-- 根拠が見つからない条件は `unknown` とする（憶測で yes/no にしない）。`unknown` の条件は evidence を空にしてよい。
-- **勤務地・リモートに関する必須条件は、`scope_of_change.work_location` も見て判定する。** 求人票の勤務地が条件を満たしていても、`work_location.unlimited` が真であれば、条件の充足は入社時点のものに留まる。この場合は `met` を `unknown` にせず、`yes` としたうえで evidence へ `scope_of_change.work_location.unlimited` を加え、`condition` の充足が就業場所の変更で失われうる旨を `note` に書く。求人票の勤務地が条件を満たさず、かつ `unlimited` が真の場合は `met=no` のままとする。職種・職務内容に関する必須条件と `duties.unlimited` の関係も同じ扱いとする。
-- `scope_of_change` の該当項目が `null` の場合は、その項目を根拠に使わない。記載が見つからないことを、範囲が限定されている根拠にしない。
-- `met=no` の条件が交渉・制度運用で解消しうる場合に限り `negotiable` を `true` にする。根拠（過去の交渉事例・制度の記載）を evidence へ添える。無根拠に `true` を付けない。
-- 必須条件に `no` があるのに総合判定を `推奨` にすることは認めない（ERROR）。
+- Mark `yes` or `no` only when the job posting or company research carries clear grounds, and always attach that evidence.
+- Mark `unknown` for a condition where grounds cannot be found (do not guess yes/no). An `unknown` condition may leave evidence empty.
+- **For a must-have condition about work location or remote work, also look at `scope_of_change.work_location` when judging.** Even when the job posting's work location satisfies the condition, if `work_location.unlimited` is true, the condition's fulfilment holds only as of hiring. In this case, do not set `met` to `unknown`; set it to `yes`, add `scope_of_change.work_location.unlimited` to evidence, and write into `note` that fulfilment could be lost through a change of work location. When the job posting's work location does not satisfy the condition and `unlimited` is true, leave `met=no`. Handle the relationship between a must-have condition about job type or duties and `duties.unlimited` the same way.
+- When the corresponding `scope_of_change` item is `null`, do not use that item as grounds. Do not treat failing to find a mention as grounds that the scope is limited.
+- Set `negotiable` to `true` only when a `met=no` condition can be resolved through negotiation or how a system is run. Attach grounds (a past negotiation example, a system's stated rule) to evidence. Do not attach `true` without grounds.
+- Marking the overall verdict `推奨` while a must-have condition has `no` is not allowed (ERROR).
 
-## overall（総合判定）
+## overall (overall verdict)
 
-7次元の score と must_condition_results を総合し、`推奨`・`条件付き推奨`・`非推奨`・`判断保留` のいずれかを付す。
+Combine the seven dimensions' scores and must_condition_results, and attach one of `推奨`, `条件付き推奨`, `非推奨`, or `判断保留`.
 
-| 状況 | 判定 |
+| Situation | Verdict |
 |---|---|
-| 必須条件をすべて満たし、主要次元の score が高い | `推奨` |
-| 主要な適合はあるが未確認の条件が残る。または `met=no` の全件が `negotiable=true`（根拠付き） | `条件付き推奨` |
-| 不一致が優勢。または交渉で解消できない必須条件が残る | `非推奨` |
-| 入力が乏しく（inputs の多くが false）判断材料が不足する | `判断保留` |
+| Every must-have condition is met, and the main dimensions score high | `推奨` |
+| The main fit holds but an unconfirmed condition remains. Or every `met=no` item has `negotiable=true` (with grounds) | `条件付き推奨` |
+| Mismatch predominates. Or a must-have condition that negotiation cannot resolve remains | `非推奨` |
+| Input is thin (most of `inputs` is false) and judgement material is insufficient | `判断保留` |
 
-- **経験が近いことだけを理由に推奨しない。** `experience_proximity` が高くても、`aspiration_alignment` または `work_character_fit` が低い場合は、その旨を rationale に明示し、`experience_proximity` の score の高さで打ち消さない。調整・管理・顧客折衝が中心の求人は、経験に近くても本人の希望と逆であることがある。
-- `skill_gap` が `not_applicable_now` の場合は `推奨`・`条件付き推奨` にしない。
-- rationale には、判定を分けた決め手と、条件付きの場合は解消すべき条件を書く。未確認の論点は `open_questions` に列挙する。求人票から判定できない作業特性（完了条件の明確さ・一人で完結しやすさ・結果を短期で確認できる度合い）は、必ず `open_questions` へ面接での確認事項として入れる。
-- **直属上司の関与のしかたを必ず `open_questions` へ入れる。** 日本の従業員標本では上司との適合が定着と満足を左右するが、求人票と企業研究からは判定できない。8番目の次元を作らず、`culture_fit` の score にも織り込まず、面接での確認事項として立てる（根拠は `references/fit-methods.md`）。
-- **判定がその時点の材料に基づくことを rationale に明記する。** 判定は現時点で得られている材料に基づくものであり、入社直後の満足の高さがそのまま持続するとは限らない。この注記を rationale の末尾へ置く（根拠は `references/fit-methods.md`）。
+- **Do not recommend on closeness of experience alone.** Even when `experience_proximity` scores high, if `aspiration_alignment` or `work_character_fit` scores low, state that plainly in the rationale, and do not let the high `experience_proximity` score cancel it out. A job centred on coordination, management, or client negotiation can be close to the person's experience while running against their aspiration.
+- Do not mark `推奨` or `条件付き推奨` when `skill_gap` is `not_applicable_now`.
+- In rationale, write what tipped the verdict, and, when conditional, what condition must be resolved. List unconfirmed points under `open_questions`. Always put a work characteristic that cannot be judged from the job posting (clarity of completion criteria, ease of completing work solo, how soon results can be confirmed) into `open_questions` as an interview-confirmation item.
+- **Always put how the direct manager is involved into `open_questions`.** In the Japanese employee sample, manager fit shapes retention and satisfaction, but it cannot be judged from the job posting and company research. Do not create an eighth dimension for it, and do not fold it into `culture_fit`'s score; raise it as an interview-confirmation item (grounds in `references/fit-methods.md`).
+- **State clearly in rationale that the verdict is based on the material at that point.** The verdict is based on the material available at this point, and high satisfaction right after joining does not necessarily last. Place this note at the end of rationale (grounds in `references/fit-methods.md`).

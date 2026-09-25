@@ -1,23 +1,23 @@
-# job_posting.json の原本仕様（job-posting-format）
+# Canonical specification of job_posting.json (job-posting-format)
 
-取り込んだ求人情報の構造化データ `job_posting.json` のフィールド仕様・記入基準・機械的な検証の規則を定める原本である。求人票の取り込み担当エージェント（job-change-posting-parser）がこの仕様に適合するオブジェクトを組み立て、`scripts/validate_job_posting.py` がこの仕様に照らして機械的に検査する。
+This is the canonical specification defining the field specification, entry criteria, and mechanical validation rules for `job_posting.json`, the structured data of an imported job posting. The job posting intake agent (job-change-posting-parser) assembles an object conforming to this specification, and `scripts/validate_job_posting.py` mechanically checks it against this specification.
 
-出力先は `{DATA_ROOT}/companies/{企業スラッグ}/job_posting.json` である。ファイルを書くのは呼び出し元スキル（job-change-company-research 本体）であり、スラッグ解決後にのみ書く。posting-parser エージェントはファイルを書かず、`{company_name, aliases, job_posting}` を最終メッセージの JSON で返す。
+The output location is `{DATA_ROOT}/companies/{company slug}/job_posting.json`. The calling skill (the job-change-company-research body itself) writes the file, and only after the slug is resolved. The posting-parser agent writes no file; it returns `{company_name, aliases, job_posting}` as JSON in its final message.
 
-## 取り込みの入口
+## Entry points for intake
 
-求人票は、企業ごとの工程の最初で必ず作る。入口は4通りあり、`source_type` で区別する。
+A job posting is always built at the start of the per-company pipeline. There are four entry points, distinguished by `source_type`.
 
-| `source_type` | 入口 | 取り込みのしかた | `source_url` |
+| `source_type` | Entry point | How it is taken in | `source_url` |
 |---|---|---|---|
-| `url` | 求人ページの URL | ページを取得して構造化する | URL（必須） |
-| `text` | 求人票の本文 | 貼り付けられた本文を構造化する | null または省略 |
-| `file` | 求人票の PDF・画像 | 利用者が示したファイルを読み取って構造化する | null または省略 |
-| `dialogue` | 企業名のみ | 対話で必須項目を聞き取って構造化する | null または省略 |
+| `url` | The URL of the job posting page | Fetch the page and structure it | The URL (required) |
+| `text` | The job posting's text | Structure the pasted text | null or omitted |
+| `file` | A PDF or image of the job posting | Read the file the user provided and structure it | null or omitted |
+| `dialogue` | The company name only | Ask through dialogue for the required items and structure them | null or omitted |
 
-本仕様は、`url` 以外の入口でも参考として URL を書くことを妨げない。`source_url` を検査するのは `source_type` が `url` のときだけである。
+A URL may also be written for reference at any entry point besides `url`. `source_url` is checked only when `source_type` is `url`.
 
-## 全体構造
+## Overall structure
 
 ```json
 {
@@ -49,76 +49,76 @@
 }
 ```
 
-## フィールド仕様
+## Field specification
 
-### 必須フィールド
+### Required fields
 
-| フィールド | 型 | 記入基準 |
+| Field | Type | Entry criteria |
 |---|---|---|
-| `schema_version` | 文字列 | 現行は `"1.1"`。`"1.0"` も既知バージョンとして受け入れる。それ以外は WARN |
-| `source_type` | 文字列 | 取り込みの入口。`url` / `text` / `file` / `dialogue` のいずれか |
-| `fetched_at` | 文字列 | 取得日（`YYYY-MM-DD` の実在日付）。対話で埋めた場合は聞き取った日 |
-| `company_name` | 文字列 | 求人票に記載された企業名 |
-| `title` | 文字列 | 求人の職種・ポジション名 |
+| `schema_version` | String | Currently `"1.1"`. `"1.0"` is also accepted as a known version. Anything else is a WARN |
+| `source_type` | String | The intake entry point. One of `url` / `text` / `file` / `dialogue` |
+| `fetched_at` | String | The fetch date (an actual date in `YYYY-MM-DD` form). When filled through dialogue, the date it was asked |
+| `company_name` | String | The company name as the job posting states it |
+| `title` | String | The job posting's job type or position name |
 
-`source_url` は、`source_type` が `url` のときに限り必須であり、`http` で始まる文字列でなければならない。それ以外の入口では null または省略してよい。
+`source_url` is required only when `source_type` is `url`, and must be a string starting with `http`. It may be null or omitted at any other entry point.
 
-上表のフィールドのいずれかが欠落または空の場合は ERROR となる。加えて、`source_type` が4つの値のいずれでもないとき、`source_type` が `url` でありながら `source_url` が `http` で始まらないとき、`fetched_at` が `YYYY-MM-DD` 形式の実在日付でないときも ERROR となる。
+An ERROR occurs when any field in the table above is missing or empty. In addition, it is an ERROR when `source_type` is none of the four values, when `source_type` is `url` but `source_url` does not start with `http`, or when `fetched_at` is not an actual date in `YYYY-MM-DD` form.
 
-### 任意フィールド
+### Optional fields
 
-| フィールド | 型 | 内容 |
+| Field | Type | Content |
 |---|---|---|
-| `employment_type` | 文字列 | 雇用形態（正社員・契約社員等） |
-| `location` | オブジェクト | `work_location`（勤務地）・`remote_policy`（リモート方針） |
-| `salary` | オブジェクト | `min`・`max`・`currency`・`basis`（年収/月給等）・`notes` |
-| `working_hours` | オブジェクト | `scheduled_hours`（所定労働時間）・`break_minutes`（休憩分）・`discretionary`（裁量労働の真偽）・`overtime_notes` |
-| `metrics` | オブジェクト | 後述の4メトリック |
-| `scope_of_change` | オブジェクト | 後述の3項目（schema_version 1.1 以降） |
-| `requirements` | オブジェクト | `must`（必須要件の配列）・`want`（歓迎要件の配列） |
-| `benefits` | 配列 | 各要素は `{name, quote}`。`name` は非空 |
-| `selection_process` | 配列 | 選考段階を順に並べた文字列配列 |
-| `open_questions` | 配列 | 取得できなかった項目・要確認事項 |
+| `employment_type` | String | The employment type (正社員, 契約社員, and so on) — these are field values |
+| `location` | Object | `work_location` (the place of work), `remote_policy` (the remote-work policy) |
+| `salary` | Object | `min`, `max`, `currency`, `basis` (年収/月給 and so on) — field values, `notes` |
+| `working_hours` | Object | `scheduled_hours` (scheduled working hours), `break_minutes` (break minutes), `discretionary` (whether discretionary work applies), `overtime_notes` |
+| `metrics` | Object | The 4 metrics described below |
+| `scope_of_change` | Object | The 3 items described below (schema_version 1.1 and later) |
+| `requirements` | Object | `must` (an array of required qualifications), `want` (an array of preferred qualifications) |
+| `benefits` | Array | Each element is `{name, quote}`. `name` is non-empty |
+| `selection_process` | Array | An array of strings listing the selection stages in order |
+| `open_questions` | Array | Items that could not be fetched, and points to confirm |
 
-任意フィールドは、存在する場合に上表の型に反していれば ERROR となる（オブジェクトであるべきものが配列・スカラー、配列であるべきものがオブジェクト・スカラー等）。存在しなければ検査しない。
+For an optional field, it is an ERROR when it is present and violates the type in the table above (an array or scalar where an object is expected, an object or scalar where an array is expected, and so on). It is not checked when it is absent.
 
-### metrics（オブジェクト・任意）
+### metrics (object, optional)
 
-求人票に明記がある働き方の数値を、機械可読な形で持つ。4つのキーを持ち、各値は `{value, quote}` のオブジェクト、または `null`。
+Holds, in machine-readable form, the numeric work-style figures the job posting states explicitly. It has 4 keys, and each value is an object `{value, quote}`, or `null`.
 
-| キー | 内容 | 単位の目安 |
+| Key | Content | Unit guideline |
 |---|---|---|
-| `annual_holidays` | 年間休日数 | 日 |
-| `monthly_overtime_h` | 月平均の残業時間 | 時間 |
-| `paid_leave_rate` | 有給取得率 | %（求人票の表記に合わせる） |
-| `paid_leave_days_granted` | 有給付与日数（見込） | 日 |
+| `annual_holidays` | Total annual holidays | Days |
+| `monthly_overtime_h` | Average monthly overtime | Hours |
+| `paid_leave_rate` | Paid-leave-taking rate | % (following the job posting's own notation) |
+| `paid_leave_days_granted` | Expected paid-leave days granted | Days |
 
-各メトリックは次のフィールドを持つ。
+Each metric has the following fields.
 
-| フィールド | 必須 | 記入基準 |
+| Field | Required | Entry criteria |
 |---|---|---|
-| `value` | 必須 | 数値。文字列や真偽値は不可 |
-| `quote` | 必須 | 求人票からの引用（非空）。数値の根拠箇所をそのまま転記する |
+| `value` | Required | A number. A string or a boolean is not allowed |
+| `quote` | Required | A quote from the job posting (non-empty). Transcribe the passage that grounds the number, verbatim |
 
-**ルール**: 求人票に明記がある場合のみ `value` と引用 `quote` を入れる。明記が無ければ `null` にする（推定・創作は禁止）。metrics 全体の欠落、および個別メトリックの `null` は正常であり、ERROR も WARN も出さない。metrics が存在してオブジェクトでない、または各メトリックが `null` でも `{value, quote}` でもない・`value` が非数値・`quote` が空の場合は ERROR となる。
+**Rule**: enter `value` and a quote `quote` only when the job posting states them explicitly. Set it to `null` when there is no explicit statement (estimation or invention is prohibited). A missing `metrics` as a whole, and `null` for an individual metric, are both normal and raise neither an ERROR nor a WARN. It is an ERROR when `metrics` is present and is not an object, or when a metric is neither `null` nor `{value, quote}`, or when its `value` is not a number, or when its `quote` is empty.
 
-### scope_of_change（オブジェクト・任意。schema_version 1.1 以降）
+### scope_of_change (object, optional. schema_version 1.1 and later)
 
-2024年4月1日施行の職業安定法施行規則の改正により、求人には次の3項目の明示が義務づけられている（厚生労働省 https://www.mhlw.go.jp/stf/newpage_32105.html ）。転勤・職種転換・雇止めのリスクを見積もる材料であり、下流の適合性評価が使う。3つのキーを持ち、各値は `{stated, unlimited, quote}` のオブジェクト、または `null`。
+Under the April 1, 2024 revision to the Enforcement Regulations of the Employment Security Act, a job posting must disclose the following three items (Ministry of Health, Labour and Welfare, https://www.mhlw.go.jp/stf/newpage_32105.html ). These give material for estimating the risk of a transfer, a change in duties, or non-renewal, and the downstream fit assessment uses them. It has 3 keys, and each value is an object `{stated, unlimited, quote}`, or `null`.
 
-| キー | 対応する明示義務の項目 |
+| Key | The corresponding mandatory-disclosure item |
 |---|---|
-| `duties` | 従事すべき業務の変更の範囲 |
-| `work_location` | 就業場所の変更の範囲 |
-| `contract_renewal_cap` | 有期労働契約を更新する場合の更新上限（通算契約期間または更新回数の上限） |
+| `duties` | The scope of change to the duties an employee is to perform |
+| `work_location` | The scope of change to the place of work |
+| `contract_renewal_cap` | The cap on renewing a fixed-term employment contract (a cap on the total contract period or the number of renewals) |
 
-各項目は次のフィールドを持つ。
+Each item has the following fields.
 
-| フィールド | 型 | 記入基準 |
+| Field | Type | Entry criteria |
 |---|---|---|
-| `stated` | 真偽値 | 求人票にその項目の記載があれば真、無ければ偽 |
-| `unlimited` | 真偽値 | 記載があっても範囲を限定していなければ真。判定基準は後述 |
-| `quote` | 文字列 | 求人票からの引用。`stated` が真のときは非空必須 |
+| `stated` | Boolean | True when the job posting states this item, false when it does not |
+| `unlimited` | Boolean | True when it is stated but the scope is not limited. Judgment criteria are described below |
+| `quote` | String | A quote from the job posting. Required and non-empty when `stated` is true |
 
 ```json
 "scope_of_change": {
@@ -128,51 +128,51 @@
 }
 ```
 
-**ルール**: 求人票を読んで確認できた内容だけを書く。項目そのものを求人票の中に見つけられなかった場合は、その項目を `null` にする。`stated` を偽にするのは、求人票がその項目に触れており、かつ範囲の明示が無いと読み取れた場合（無期雇用のため更新上限が対象外である旨の記載など）に限る。`null` と `stated: false` の違いは、「求人票を読んだが該当箇所が見つからなかった」と「求人票が触れているが範囲を明示していない」の違いである。
+**Rule**: write only content you confirmed by reading the job posting. When you cannot find the item itself in the job posting, set that item to `null`. Set `stated` to false only when the job posting touches on the item but you can read that it discloses no scope (for example, a statement that a renewal cap does not apply because employment is unlimited-term). The difference between `null` and `stated: false` is the difference between "the job posting was read but no relevant passage was found" and "the job posting touches on it but does not state a scope."
 
-**`unlimited` の判定基準**: 記載された範囲を、企業の裁量で後から広げられる書き方であれば真とする。
+**Judgment criteria for `unlimited`**: treat it as true when the stated scope is written so that the company can broaden it later at its own discretion.
 
-| 記載の例 | `unlimited` |
+| Example wording | `unlimited` |
 |---|---|
-| 「変更の範囲: 会社の定める業務」「会社の定める場所」「会社の指示する業務全般」 | 真 |
-| 「変更の範囲: 会社内のすべての業務」「当社の全事業所（将来設置されるものを含む）」 | 真 |
-| 「変更の範囲: バックエンド開発およびこれに関連する業務」 | 偽 |
-| 「変更の範囲: 本社および東京23区内の事業所」「変更なし」 | 偽 |
-| 「更新上限: 通算契約期間5年」「更新回数3回まで」 | 偽 |
+| 「変更の範囲: 会社の定める業務」「会社の定める場所」「会社の指示する業務全般」 | True |
+| 「変更の範囲: 会社内のすべての業務」「当社の全事業所（将来設置されるものを含む）」 | True |
+| 「変更の範囲: バックエンド開発およびこれに関連する業務」 | False |
+| 「変更の範囲: 本社および東京23区内の事業所」「変更なし」 | False |
+| 「更新上限: 通算契約期間5年」「更新回数3回まで」 | False |
 
-判断に迷う書き方（例えば「原則として現在の勤務地」のように、例外の範囲が読み取れないもの）は、`unlimited` を偽にしたうえで、その旨を `open_questions` へ書く。`open_questions` へ回すのは、この種の曖昧な記載に限る。記載内容そのものは `scope_of_change` に入るため、重ねて `open_questions` へ書かない。
+For wording that is hard to judge (for example, 「原則として現在の勤務地」, where the scope of an exception cannot be read), set `unlimited` to false and write that fact into `open_questions`. Route to `open_questions` only this kind of ambiguous wording. The stated content itself goes into `scope_of_change`, so do not write it into `open_questions` again.
 
-3項目とも `null`（および `scope_of_change` 自体の欠落）は WARN となる。2024年4月以降に掲載された求人票には明示義務があり、3項目すべてを取得できていないことは取り込みの不足を疑わせるためである。
+All three items being `null` (including `scope_of_change` itself being absent) is a WARN. A job posting listed since April 2024 carries a disclosure obligation, and not having obtained all three items raises a suspicion that the intake was incomplete.
 
-`schema_version` が `1.0` の場合、`scope_of_change` は検査しない。1.0 にはこのフィールドが無く、既存の成果物をそのまま読めるようにするためである。検査から外すのは 1.0 だけであり、以降のバージョンでは検査する。
+When `schema_version` is `1.0`, `scope_of_change` is not checked. Version 1.0 has no such field, so this keeps an existing deliverable readable as is. Only 1.0 is excluded from the check; every later version is checked.
 
-## 取得できない場合の扱い
+## Handling a page that cannot be fetched
 
-ログイン必須・動的描画・掲載終了などで取得できない場合は、取得できた範囲だけを埋める。欠損した項目は、該当フィールドを `null`（メトリック）にするか省略し、`open_questions` に何が取得できなかったかを記録する。求人票にない数値を推定で埋めない。
+When the page cannot be fetched because it requires login, uses client-side rendering, or is a listing that has closed, fill in only what could be fetched. Set a missing item to `null` (for a metric) or omit it, and record in `open_questions` what could not be fetched. Do not fill in a number the job posting does not state, by estimation.
 
-この扱いは入口によらない。`source_type` が `dialogue` の場合に利用者が答えられなかった項目も、同じ扱いとする。推定で補わず、`open_questions` に書く。
+This handling applies regardless of the entry point. When `source_type` is `dialogue` and the user could not answer an item, treat it the same way. Do not fill it in by estimation; write it into `open_questions`.
 
-## 機械的な検証の規則（validate_job_posting.py）
+## Mechanical validation rules (validate_job_posting.py)
 
-`scripts/validate_job_posting.py` が機械的に検査する。ERROR が1件でもあれば FAIL（終了コード1）、ERROR 0件なら PASS（終了コード0。WARN があっても PASS）。
+`scripts/validate_job_posting.py` performs the mechanical check. Even a single ERROR is a FAIL (exit code 1); zero ERRORs is a PASS (exit code 0, even with WARNs present).
 
-**ERROR（成果物として成立しない・型違反）**
+**ERROR (the deliverable does not hold together, or a type is violated)**
 
-- JSON として読み込めない
-- ルートがオブジェクトでない
-- `schema_version`・`source_type`・`fetched_at`・`company_name`・`title` のいずれかが欠落または空
-- `source_type` が `url` / `text` / `file` / `dialogue` のいずれでもない
-- `source_type` が `url` でありながら `source_url` が `http` で始まらない
-- `fetched_at` が `YYYY-MM-DD` 形式の実在日付でない
-- `metrics` が存在しオブジェクトでない
-- `metrics` の各メトリックが存在し（非 null）、`{value, quote}` のオブジェクトでない・`value` が非数値・`quote` が空のいずれか
-- `schema_version` が `1.0` 以外で、`scope_of_change` が存在しオブジェクトでない
-- `schema_version` が `1.0` 以外で、`scope_of_change` の各項目が存在し（非 null）、オブジェクトでない・`stated` が真偽値でない・`unlimited` が真偽値でない・`stated` が真なのに `quote` が空・`quote` が文字列でないのいずれか
-- `location`・`salary`・`working_hours`・`requirements` が存在しオブジェクトでない
-- `selection_process`・`open_questions`・`benefits` が存在し配列でない
-- `benefits` の要素がオブジェクトでない、または `name` が空
+- It cannot be parsed as JSON
+- The root is not an object
+- Any of `schema_version`, `source_type`, `fetched_at`, `company_name`, or `title` is missing or empty
+- `source_type` is none of `url` / `text` / `file` / `dialogue`
+- `source_type` is `url` but `source_url` does not start with `http`
+- `fetched_at` is not an actual date in `YYYY-MM-DD` form
+- `metrics` is present and is not an object
+- A metric in `metrics` is present (non-null), and is not a `{value, quote}` object, or its `value` is not a number, or its `quote` is empty
+- `schema_version` is not `1.0`, and `scope_of_change` is present and is not an object
+- `schema_version` is not `1.0`, and an item in `scope_of_change` is present (non-null), and is not an object, or its `stated` is not a boolean, or its `unlimited` is not a boolean, or `stated` is true while `quote` is empty, or `quote` is not a string
+- `location`, `salary`, `working_hours`, or `requirements` is present and is not an object
+- `selection_process`, `open_questions`, or `benefits` is present and is not an array
+- An element of `benefits` is not an object, or its `name` is empty
 
-**WARN（成立するが情報が不足する）**
+**WARN (it holds together, but information is insufficient)**
 
-- `schema_version` が既知のバージョン（`1.0` / `1.1`）でない
-- `schema_version` が `1.0` 以外で、`scope_of_change` の3項目がすべて `null`（`scope_of_change` 自体の欠落を含む）
+- `schema_version` is not a known version (`1.0` / `1.1`)
+- `schema_version` is not `1.0`, and all 3 items of `scope_of_change` are `null` (including `scope_of_change` itself being absent)

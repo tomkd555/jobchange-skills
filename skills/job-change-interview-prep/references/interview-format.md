@@ -1,14 +1,14 @@
-# 面接対策の成果物の原本仕様（interview-format）
+# Canonical specification for interview-preparation artifacts (interview-format)
 
-面接対策の成果物 `interview_questions.json`・`interview_answers.json`・`interview_evaluation.json` のフィールド仕様・記入基準・機械的な検証の規則を定める原本である。`scripts/validate_interview_artifacts.py` がこの仕様に照らして機械的に検査する。
+This is the canonical source defining the field specification, entry criteria, and mechanical validation rules for the interview-preparation artifacts `interview_questions.json`, `interview_answers.json`, and `interview_evaluation.json`. `scripts/validate_interview_artifacts.py` checks them mechanically against this specification.
 
-出力先は company モードでは `{DATA_ROOT}/companies/{企業スラッグ}/` である。企業非依存のフォールバックモードでは企業スラッグが無いため、利用者が保存先を指定した場合にのみ書き出す。
+In company mode, the output path is `{DATA_ROOT}/companies/{company slug}/`. In company-independent fallback mode, there is no company slug, so files are written out only when the user specifies a save location.
 
-`interview_questions.json` と `interview_evaluation.json` は、job-change-interview-coach が返した JSON をトップレベルごと保存したものである。`questions`・`evaluations` の配列だけを抽出して保存してはならない。`degraded`・`degraded_reason` が欠落すると、その質問群が企業固有のものか企業非依存のフォールバックかをファイルから判別できなくなり、中断からの再開時に合否ゲートを再確認できない。
+`interview_questions.json` and `interview_evaluation.json` are the JSON returned by job-change-interview-coach, saved with every top-level key intact. Never extract and save only the `questions` or `evaluations` array. Dropping `degraded` or `degraded_reason` would make it impossible to tell from the file alone whether a question set is company-specific or a company-independent fallback, which would in turn make it impossible to recheck the pass gate when resuming after an interruption.
 
-`interview_answers.json` はコーチの出力ではなく、スキル本体が模擬面接（Step 2）で1問ずつ書き足す。
+The skill's main body writes `interview_answers.json`, appending one question at a time during the mock interview (Step 2).
 
-## degraded と degraded_reason（`interview_questions.json`・`interview_evaluation.json` 共通）
+## degraded and degraded_reason (common to `interview_questions.json` and `interview_evaluation.json`)
 
 ```json
 {
@@ -17,12 +17,12 @@
 }
 ```
 
-| フィールド | 必須 | 記入基準 |
+| Field | Required | Entry criteria |
 |---|---|---|
-| `degraded` | 必須 | 真偽値。企業固有の根拠を用いずに生成・評価した場合に `true`。真偽値でない、または欠落は ERROR |
-| `degraded_reason` | 必須 | `degraded` が `true` のときは理由の文字列（空は ERROR）。`false` のときは `null`（`null` 以外は ERROR） |
+| `degraded` | Required | Boolean. `true` when generated or evaluated without company-specific evidence. A non-boolean value or an absence is an ERROR |
+| `degraded_reason` | Required | When `degraded` is `true`, a non-empty string reason (an empty string is an ERROR). When `false`, `null` (anything other than `null` is an ERROR) |
 
-`degraded` を `true` にする条件は SKILL.md の「目的と原則」1 が定める。ここへは複製しない。
+The condition for setting `degraded` to `true` is defined in "Purpose and principles" item 1 of SKILL.md and is not duplicated here.
 
 ## interview_questions.json
 
@@ -45,33 +45,33 @@
 }
 ```
 
-### questions（配列・必須）
+### questions (array, required)
 
-配列でない場合は ERROR。空配列は WARN（想定質問が1件も無い成果物は Step 2 で使えない）。
+An ERROR if not an array. An empty array is a WARN (an artifact with zero expected questions cannot be used in Step 2).
 
-| フィールド | 必須 | 記入基準 |
+| Field | Required | Entry criteria |
 |---|---|---|
-| `id` | 必須 | 質問の識別子。`Q` に続く3桁以上の数字（`Q001` 形式）。欠落・空・形式不一致は ERROR。同一ファイル内での重複は ERROR |
-| `category` | 必須 | 質問類型。欠落・空は ERROR。既知の類型でない値は WARN |
-| `question` | 必須 | 利用者へ提示する質問文。欠落・空は ERROR |
-| `interviewer_intent` | 必須 | 面接官がその質問で確認する評価観点。欠落・空は ERROR |
-| `basis` | 必須 | 根拠。company_research の claim id、interview_intel の id（`RQ`・`FF`・`TH`）、`interview_notes_user.md` の該当箇所、または profile の該当箇所を指す。欠落・空は ERROR |
-| `provenance` | 任意（コーチは必ず付ける） | 出所。`general`（一般の頻出質問）・`reported`（その企業で聞かれたと報告された質問）・`inferred`（企業研究や口コミの傾向から推測した質問）のいずれか。欠落は WARN、3値以外も WARN。古い成果物との互換のため ERROR にしない |
-| `stage` | 任意（コーチは必ず付ける） | 想定される選考段階。`カジュアル面談`・`一次面接`・`二次面接`・`最終面接`・`不明` のいずれか。欠落は WARN、5値以外も WARN |
+| `id` | Required | The question's identifier: `Q` followed by three or more digits (the `Q001` format). An absence, an empty value, or a format mismatch is an ERROR. A duplicate within the same file is an ERROR |
+| `category` | Required | The question category. An absence or an empty value is an ERROR. A value outside the known categories is a WARN |
+| `question` | Required | The question text presented to the user. An absence or an empty value is an ERROR |
+| `interviewer_intent` | Required | The evaluation criterion the interviewer is checking with this question. An absence or an empty value is an ERROR |
+| `basis` | Required | The basis: a claim id from company_research, an id from interview_intel (`RQ`, `FF`, or `TH`), the relevant part of `interview_notes_user.md`, or the relevant part of the profile. An absence or an empty value is an ERROR |
+| `provenance` | Optional (the coach always attaches it) | The provenance: one of `general` (a common general-purpose question), `reported` (a question reported as having been asked at this company), or `inferred` (a question inferred from company research or review-site trends). An absence is a WARN, and a value other than these three is also a WARN. Never an ERROR, to preserve compatibility with older artifacts |
+| `stage` | Optional (the coach always attaches it) | The expected selection stage: one of `カジュアル面談`, `一次面接`, `二次面接`, `最終面接`, or `不明`. An absence is a WARN, and a value other than these five is also a WARN |
 
-`id` は `interview_answers.json` の `question_id` と `interview_evaluation.json` の `question_id` が指す先である。3ファイルを結ぶ唯一の連結キーである。
+`id` is what `interview_answers.json`'s `question_id` and `interview_evaluation.json`'s `question_id` point to. It is the only key linking the three files.
 
-`provenance` と根拠の信頼度は別のものである。`reported` の質問の根拠は口コミ（レベルC）であることが多く、`inferred` の質問の根拠は有価証券報告書（レベルA）であることがある。`reported` の質問は聞かれた言い回しの記録であり、`inferred` の質問は聞かれる保証の無い推測である。模擬面接では `reported` を先に出し、`inferred` は推測である旨を添えて出す。
+Provenance and the confidence of the underlying evidence are separate things. A `reported` question is often backed by review-site content (grade C), while an `inferred` question may be backed by a securities report (grade A). A `reported` question is a record of the wording as it was actually asked; an `inferred` question is a guess with no guarantee of being asked. In the mock interview, `reported` questions are presented first, and `inferred` questions are presented marked as inferences.
 
-既知の質問類型は `自己紹介`・`転職理由`・`志望動機`・`自己PR`・`実績深掘り`・`弱み`・`失敗・挫折`・`マネジメント`・`協働・対立`・`キャリアプラン`・`入社後の貢献`・`カルチャーフィット`・`条件確認`・`空白期間・短期離職`・`逆質問`・`カジュアル面談`・`ビヘイビアラル`・`ケース` である。この一覧が語彙の原本である。`validate_interview_artifacts.py` の既知の類型は、この一覧と一致させる。各類型の意味と `question-bank.md` の質問類型との対応は、同ファイルの「質問類型と job-change-interview-coach のカテゴリの対応」（外資系の2類型は `foreign-interviews.md`）にある。既知の値以外を ERROR ではなく WARN とするのは、類型が増えても成果物としては成立するためである。`interview_intel.json` で `配慮事項` に分類された報告は、`questions[]` には入れず `notes` に列挙する。
+The known question categories are `自己紹介`, `転職理由`, `志望動機`, `自己PR`, `実績深掘り`, `弱み`, `失敗・挫折`, `マネジメント`, `協働・対立`, `キャリアプラン`, `入社後の貢献`, `カルチャーフィット`, `条件確認`, `空白期間・短期離職`, `逆質問`, `カジュアル面談`, `ビヘイビアラル`, `ケース`. This list is the canonical vocabulary. `validate_interview_artifacts.py`'s set of known categories matches this list exactly. The meaning of each category, and its correspondence to `question-bank.md`'s question categories, live in that file's "Correspondence between question categories and job-change-interview-coach's categories" section (the two foreign-affiliated categories live in `foreign-interviews.md`). A value outside the known set is a WARN, because the artifact still holds together even as categories are added. A report interview_intel.json classifies as `配慮事項` is never placed in `questions[]`; it is listed in `notes` instead.
 
-### notes（配列・任意）
+### notes (array, optional)
 
-想定質問ではないが利用者へ伝える事項の配列。文字列の配列であり、配列でない場合は ERROR。次を書く。
+An array of matters to convey to the user alongside the expected questions. It is an array of strings; a non-array value is an ERROR. It records the following.
 
-- 聞かれても答えなくてよい事項（interview_intel.json で `配慮事項` に分類された報告があれば、その旨）。
-- 選考段階の前提（`format_facts` から読んだ段階数と面接官）。
-- 古い出典や新卒選考の記録に基づく質問があれば、その旨。
+- Matters the user is not required to answer (if interview_intel.json reports anything classified as `配慮事項`, that fact).
+- Premises about the selection stage (the number of stages and the interviewers, read from `format_facts`).
+- If any question rests on a stale source or a new-graduate-hiring record, that fact.
 
 ## interview_answers.json
 
@@ -87,17 +87,17 @@
 }
 ```
 
-模擬面接（Step 2）で、回答を受け取るごとに1件ずつ追記する。途中で中断した場合、`interview_questions.json` の `questions[].id` から本ファイルの `answers[].question_id` を差し引いた集合が「残りの質問」である。再開はこの差分だけで決まり、会話の記憶に依存しない。
+During the mock interview (Step 2), one entry is appended each time an answer is received. If the interview is interrupted partway through, the set obtained by subtracting this file's `answers[].question_id` values from `interview_questions.json`'s `questions[].id` values is the "remaining questions." Resumption is determined solely by this difference.
 
-### answers（配列・必須）
+### answers (array, required)
 
-配列でない場合は ERROR。空配列は WARN（1問も回答していない段階の保存を許容する）。
+An ERROR if not an array. An empty array is a WARN (saving a stage where zero questions have been answered is allowed).
 
-| フィールド | 必須 | 記入基準 |
+| Field | Required | Entry criteria |
 |---|---|---|
-| `question_id` | 必須 | `interview_questions.json` の `questions[].id` と同じ値。欠落・空・形式不一致は ERROR。重複は ERROR |
-| `answer` | 必須 | 利用者の回答をそのまま転記する。要約・言い換え・添削をしない。欠落・空は ERROR |
-| `answered_at` | 必須 | 回答した日付（`YYYY-MM-DD`）。欠落・形式不一致は ERROR |
+| `question_id` | Required | The same value as one of `interview_questions.json`'s `questions[].id`. An absence, an empty value, or a format mismatch is an ERROR. A duplicate is an ERROR |
+| `answer` | Required | The user's answer, transcribed verbatim. Never summarized, rephrased, or corrected. An absence or an empty value is an ERROR |
+| `answered_at` | Required | The date the answer was given (`YYYY-MM-DD`). An absence or a format mismatch is an ERROR |
 
 ## interview_evaluation.json
 
@@ -121,40 +121,40 @@
 }
 ```
 
-### evaluations（配列・必須）
+### evaluations (array, required)
 
-配列でない場合は ERROR。空配列は WARN。
+An ERROR if not an array. An empty array is a WARN.
 
-| フィールド | 必須 | 記入基準 |
+| Field | Required | Entry criteria |
 |---|---|---|
-| `question_id` | 必須 | 評価対象の質問の `id`。欠落・空・形式不一致は ERROR。重複は ERROR |
-| `scores` | 必須 | 4観点の判定。オブジェクトでない場合は ERROR。詳細は次節 |
-| `feedback` | 必須 | 評価の説明。根拠の参照先（profile の該当箇所、self_analysis.json の `career_narrative`・`reason_for_change`、または claim id）を含める。欠落・空は ERROR |
-| `improvement` | 必須 | 改善案。同じく根拠参照を含める。欠落・空は ERROR |
+| `question_id` | Required | The `id` of the question being evaluated. An absence, an empty value, or a format mismatch is an ERROR. A duplicate is an ERROR |
+| `scores` | Required | The judgment on the four criteria. A non-object value is an ERROR. Details in the next section |
+| `feedback` | Required | The explanation of the evaluation. Includes an evidence reference (the relevant part of the profile, self_analysis.json's `career_narrative` or `reason_for_change`, or a claim id). An absence or an empty value is an ERROR |
+| `improvement` | Required | The improvement suggestion. Also includes an evidence reference. An absence or an empty value is an ERROR |
 
-### scores（オブジェクト・必須）
+### scores (object, required)
 
-| キー | 観点 | 値 |
+| Key | Criterion | Value |
 |---|---|---|
-| `star` | STAR | `充足` / `一部` / `不足` |
-| `specificity` | 具体性 | `充足` / `一部` / `不足` |
-| `consistency` | 一貫性 | `充足` / `一部` / `不足` |
-| `company_fit` | 企業理解 | `充足` / `一部` / `不足`。`degraded` が `true` のときは `対象外` または欠落 |
+| `star` | STAR | `充足` (met) / `一部` (partial) / `不足` (not met) |
+| `specificity` | Specificity | `充足` / `一部` / `不足` |
+| `consistency` | Consistency | `充足` / `一部` / `不足` |
+| `company_fit` | Company understanding | `充足` / `一部` / `不足`. When `degraded` is `true`, `対象外` (excluded from evaluation) or an absence |
 
-`star`・`specificity`・`consistency` が3値のいずれでもない場合は ERROR。
+If `star`, `specificity`, or `consistency` is not one of the three values, it is an ERROR.
 
-`company_fit` は `degraded` と整合しなければならない。`degraded` が `true`（フォールバックモード）のときは企業理解を評価できないため、`対象外` か欠落のいずれかとし、3段階の値を入れると ERROR とする。`degraded` が `false` のときは3値のいずれかが必須であり、`対象外` は ERROR とする。company_research.json を読んだうえで評価を省いた成果物を、フォールバックと区別できるようにするためである。
+`company_fit` must be consistent with `degraded`. When `degraded` is `true` (fallback mode), company understanding cannot be evaluated, so the value must be either `対象外` or absent; entering one of the three-level values is an ERROR. When `degraded` is `false`, one of the three values is required, and `対象外` is an ERROR. This distinguishes an artifact that read company_research.json but omitted the evaluation from an artifact produced under fallback.
 
-各段階の判定基準（アンカー）の原本は `evaluation-rubric.md` にある。ここへは複製しない。検証スクリプトは値が語彙に収まるかだけを検査し、判定の当否は検査しない。
+The canonical judging anchors for each level live in `evaluation-rubric.md` and are not duplicated here. The validation script checks only that a value falls within the vocabulary.
 
-## 機械的な検証の規則（validate_interview_artifacts.py）
+## Mechanical validation rules (validate_interview_artifacts.py)
 
-`scripts/validate_interview_artifacts.py` が機械的に検査する。ERROR が1件でもあれば FAIL（終了コード1）、ERROR 0件なら PASS（終了コード0。WARN があっても PASS）。
+`scripts/validate_interview_artifacts.py` performs the mechanical checks. One or more ERRORs is a FAIL (exit code 1); zero ERRORs is a PASS (exit code 0, even with WARNs present).
 
 ```
 python validate_interview_artifacts.py <artifact.json> [--json] [--questions <interview_questions.json>]
 ```
 
-検査する成果物の種別は、トップレベルのキーで判別する。`questions`・`answers`・`evaluations` のうち1つだけを持てばその種別とし、1つも持たない場合と2つ以上を持つ場合は ERROR とする。3ファイルは互いに素なキーを持つため、種別を引数で指定させる必要が無い。
+The kind of artifact being checked is determined from its top-level keys. Having exactly one of `questions`, `answers`, or `evaluations` determines the kind; having none of them, or having two or more, is an ERROR. Because the three files use mutually exclusive keys, there is no need to specify the kind as an argument.
 
-`--questions` に `interview_questions.json` のパスを渡すと、`interview_answers.json`・`interview_evaluation.json` の `question_id` が質問側に実在するかを検査する。実在しない場合は ERROR とする。フォールバックモードでは質問ファイルを書き出さない場合があるため、`--questions` は任意とし、渡されないときは相互参照を検査しない。
+Passing the path to `interview_questions.json` in `--questions` checks that every `question_id` in `interview_answers.json` or `interview_evaluation.json` exists on the question side. A `question_id` that does not exist is an ERROR. In fallback mode, a questions file may not be written at all, so `--questions` is optional; when it is not passed, the cross-reference is not checked.

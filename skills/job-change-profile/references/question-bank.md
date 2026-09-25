@@ -1,312 +1,129 @@
-# 構造化質問セット（question-bank）
+# Structured question set (question-bank)
 
-job-change-profile スキルの Step 1〜4 で使う、あらかじめ定めた構造化された問いの原本である。各質問に「埋まるフィールド」を対応づけ、聞き取りの内容と profile.json のフィールドとの対応を一意にする。選択肢を事前に列挙できる質問については、AskUserQuestion へ渡す文言をこのファイルで確定する。想起手がかりと選択式運用の根拠は `elicitation-guide.md`、フィールド仕様の原本は hub の `references/profile-format.md` にある。
+This is the canonical definition of the common rules for the pre-set structured questions job-change-profile's
+elicitation uses, and the correspondence table between questions and sections/fields. Each section's procedure, its
+opening question, and the settled wording passed to AskUserQuestion live in each section's own `sections/{id}.md`
+(the catalogue is `sections.md`). Only Step 0's wording (choosing the mode and the sections) belongs to no section,
+so it is placed in this document. The grounding for recall cues and the choice-format operation lives in
+`elicitation-guide.md`, and the canonical definition of the field specification lives in the hub's
+`references/profile-format.md`.
 
-## 質問文の文体
+## The register of the question text
 
-- 地の文（この文書の記述・SKILL.md の手順）は常体で書く。利用者へ発する質問文と、選択肢のラベル・説明は敬体で書く。相手に向けた文だけが敬体であり、両者を混ぜない。
-- 確認は同意を求める形にしない。「この理解で合っていますか」ではなく「この理解のどこが違いますか」と聞く。同意が既定の答えになる聞き方を避けるためである。
-- 選択肢は誘導しない。望ましい答えを先頭に置かず、「どちらでもよい」「不要である」のような中立・否定の選択肢を落とさない。
-- 利用者の申告に裏取りを求める問いを置かない。「その数値は確認できますか」「証明できますか」「本当に〜ですか」の形は使わない（`elicitation-guide.md` の「利用者の申告を裏取りしない」、聞いてはならない問いの型の一覧は `answer-handling.md`）。
-- 選択式は問いの形であり、答え方を縛らない。自由記述や一括の回答で答えが返った場合は、受け取った内容を項目へ振り分け、答えの無かった項目だけを次に聞く（`answer-handling.md` の「回答の様式への対応」）。
-- 口語や曖昧な言い方は、置き換え案を本人へ示して了承を得てから書類向けの表現にする。案を示す文言は `answer-handling.md` にある。
+- The running text (this document's own description, SKILL.md's procedure) is written in plain Japanese (常体). A
+  question addressed to the user, and a choice's label and description, are written in polite Japanese (敬体). Only
+  text addressed to the other party is polite, and the two registers are never mixed.
+- Confirmation is never phrased as a request for agreement. It is asked as 「この理解のどこが違いますか」 (where does
+  this understanding differ), which avoids a question shaped so that agreement becomes the default answer.
+- A choice never leads the user. The desired answer is never placed first, and a neutral or negative choice such as
+  「どちらでもよい」 (either is fine) or 「不要である」 (not needed) is never dropped.
+- A question never asks the user to corroborate their own statement. A form such as "can that figure be confirmed,"
+  "can you prove it," or "is that really true" is never used (see "Never corroborate a user's statement" in
+  `elicitation-guide.md`; the list of question types never placed lives in `answer-handling.md`).
+- The choice format is the shape of the question, and it never constrains how the user answers. When an answer
+  comes back in free text or covering several items at once, what comes in is sorted into its items, and only the
+  items still unanswered are asked next (see "Handling each answer format" in `answer-handling.md`).
+- Colloquial or vague phrasing is put into document-ready wording only after a reworded candidate is shown to the
+  user and the user approves it. The wording for presenting a candidate lives in `answer-handling.md`.
 
-## 使い方のルール
+## Rules for use
 
-- 質問は AskUserQuestion の選択式を中心に運用する。1回の AskUserQuestion につき最大4問、各質問は最大4択とする。1つの問いで複数の答えを受けたい場合は `multiSelect: true` を使い、問いを分けて回数を増やさない。
-- 選択肢を事前に列挙できる質問は、後述の確定した文言をそのまま使い、その場で言い回しを作らない。列挙できない項目（企業名・在籍期間・担当業務・案件名・実績・数値）は自由記述で聞く。**候補を知らないまま候補を提示しない。**
-- 対応表の「選択式＋自由記述」は、選択肢に無い答えを AskUserQuestion の Other で受けることを指す。選択させたうえで別途自由記述を必須で追記させる形式は使わない。
-- 深掘りでは、利用者を感情の反すうへ陥らせず、問いを事実（いつ・どの場面で・何をしたか）へ向ける。退職理由の建設的言い換え・強みの根拠づけは本スキルの範囲外とし、`job-change-self-analysis` へ誘導する。
-- 聞き取り結果は、聞き取り中に本体セッションが `career-private/profile_interview_notes.md` へ逐次追記する。
+- A question is run centered on AskUserQuestion's choice format. At most 4 questions per AskUserQuestion call, with
+  up to 4 choices per question. When one question should take several answers, use `multiSelect: true` and keep it
+  as one question.
+- For a question whose choices can be enumerated in advance, use the section file's settled wording as it stands,
+  never composing the phrasing on the spot. An item that cannot be enumerated (a company name, a tenure period,
+  responsibilities, a project name, an achievement, a figure) is asked in free text. **No candidate is presented
+  for an item whose candidates are unknown.**
+- "Choice format + free text" in the correspondence table denotes receiving an answer outside the choices through
+  AskUserQuestion's Other. A format that has the user pick a choice and then requires a separate free-text addition
+  is never used.
+- A deep dive never drives the user into ruminating on feelings; the question is aimed at fact (when, in what
+  situation, what was done). Constructive rewording of a reason for leaving, and grounding a strength, fall outside
+  this skill's scope and are directed to `job-change-self-analysis`.
+- The main session appends the elicitation's results to `career-private/profile_interview_notes.md` as elicitation
+  proceeds.
+- Eliciting one section reads only this document's common rules and that section's own `sections/{id}.md`. Another
+  section's file is never read ahead of time.
 
-## 質問とフィールドの対応表
+## Correspondence table between questions and sections/fields
 
-「初回」の列は、初回の範囲（`SKILL.md` の「初回と深掘りの分担」）で聞く問いに `初回`、そこでは飛ばして下流の工程の直前にセクション更新で聞く問いに `深掘り` と記す。
+The "First pass" column marks a question asked within the first-pass scope (`sections.md`'s "Scope of the first
+pass") as `初回` (first pass), and a question skipped there and asked later, at a section update just before the
+downstream process needs it, as `深掘り` (deep dive).
 
-| Step | 問い | 埋まるフィールド | 形式 | 初回 |
-|---|---|---|---|---|
-| 1 | 職務経歴書・履歴書・レジュメのファイルが手元にあるか | （読めた内容を聞き取りメモへ転記する） | 選択式 | 初回 |
-| 1 | 書類から抽出した企業名・在籍期間・役職・担当業務のうち、違うところ | `career_history[]` の各フィールドの訂正 | 自由記述（訂正のあった項目だけ） | 初回 |
-| 1 | 在籍した企業と在籍期間を、古い順（または新しい順）に挙げる | `career_history[].company`, `career_history[].period` | 自由記述（企業名・期間） | 初回 |
-| 1 | 各社での役割・役職 | `career_history[].role` | 自由記述 | 初回 |
-| 1 | 同じ時期に2つ以上の職に在籍していた期間の有無と、その内訳 | 並行する `career_history[]` の要素 | 選択式＋自由記述 | 初回 |
-| 1 | 各社での雇用形態と、雇用主とは別の就業先（常駐先・派遣先・出向先）の有無 | `career_history[].employment_type`, `career_history[].assignment`, `career_history[].note` | 自由記述（該当する場合だけ。記録のしかたの原本は `answer-handling.md` の「定型でない経歴」） | 初回 |
-| 1 | 検出された空白期間（6か月以上）の理由と期間中の活動 | `career_gaps[].period`, `career_gaps[].explanation`, `career_gaps[].activities` | 選択式（活動種別）＋自由記述 | 初回 |
-| 2 | 各職での担当業務 | `career_history[].responsibilities` | 自由記述 | 深掘り |
-| 2 | 主要プロジェクトと、そこでの実績（何を・どの規模で・どう変えたか） | `career_history[].achievements[].description` | 自由記述 | 深掘り |
-| 2 | （並行して回した案件がある場合）その実績はどの案件のものか | `career_history[].achievements[].project` | 自由記述 | 深掘り |
-| 2 | （同上）その案件はいつからいつまでか | `career_history[].achievements[].period` | 自由記述（期間） | 深掘り |
-| 2 | その実績を数値で表せるか（前年度比・件数・規模など） | `career_history[].achievements[].metric` | 自由記述（数値。表せなければ null） | 深掘り |
-| 3 | 職歴から逆引きした保有スキル（言語・フレームワーク・クラウド／業務／語学／資格） | `skills.technical`, `skills.business`, `skills.languages`, `skills.certifications` | 選択式（Step 2 の発話から作った候補）＋自由記述 | 深掘り |
-| 3 | ポータブルスキル9要素のうち発揮した経験があるもの | `skills.portable[].skill`, `skills.portable[].category` | 選択式 | 深掘り |
-| 4 | 転職で次に実現したいこと（転職理由） | `job_change_axis.reasons` | 自由記述（選択肢を事前に列挙できないため） | 初回 |
-| 4 | 譲れない条件・望ましい条件と、その軸・しきい値・確認手段 | `job_change_axis.conditions[]` | 選択式＋自由記述 | 初回は主要な条件だけ。網羅は深掘り |
-| 4 | 8つの作業特性それぞれの希望度 | `job_change_axis.work_character_preferences[]` | 選択式 | 初回 |
-| 4 | 企業スコアの定量候補軸9個のうち重視するものと、数値にならない事柄で重視するもの（定性軸の呼び名・定義・判定条件） | `company_score_axes[].axis`, `company_score_axes[].kind`, `company_score_axes[].label`, `company_score_axes[].definition`, `company_score_axes[].judgment[]` | 選択式＋自由記述 | 深掘り |
-| 4 | 選んだ軸への重みの配分（合計100）と、定量軸で使う基準（1回の AskUserQuestion でまとめて聞く） | `company_score_axes[].weight`, `company_score_axes[].thresholds` | 選択式（配分案・基準の別）＋自由記述（数値）＋選択式（2社比較で検算） | 深掘り |
-| 4 | 必須条件の優先順位・再評価時期 | `job_change_axis.priority_note` | 選択式＋自由記述 | 深掘り |
-| 4 | 志望する業界・職種・企業 | `targets.industries`, `targets.roles`, `targets.companies` | 自由記述（選択肢を事前に列挙できないため） | 深掘り |
-| 4 | 現年収・希望年収 | `salary.current`, `salary.desired` | 自由記述（数値） | 深掘り |
-| 0/1 | 基本情報（現職の役割・経験年数・居住地・学歴） | `basic.current_role`, `basic.years_of_experience`, `basic.location`, `basic.education` | 自由記述（選択肢を事前に列挙できないため） | 初回は現職の役割だけ。他は深掘り |
+| Step | Section | Question | Field it fills | Format | First pass |
+|---|---|---|---|---|---|
+| 1 | `career` | Whether a shokumu-keirekisho (career history document), rirekisho (résumé form), or résumé file is on hand | (transcribe what could be read into the elicitation notes) | Choice format | First pass |
+| 1 | `career` | Where the company name, tenure period, job title, and responsibilities extracted from the document differ | Correction of each field in `career_history[]` | Free text (only for an item that differed) | First pass |
+| 1 | `career` | Listing the companies worked at and their tenure periods, from oldest (or most recent) | `career_history[].company`, `career_history[].period` | Free text (company name, period) | First pass |
+| 1 | `career` | The role and job title at each company | `career_history[].role` | Free text | First pass |
+| 1 | `career` | Whether a period existed with 2 or more concurrent jobs, and its breakdown | Concurrent `career_history[]` elements | Choice format + free text | First pass |
+| 1 | `career` | The employment type at each company, and whether a place of work exists apart from the employer (a client site, a place of dispatch, a place of secondment) | `career_history[].employment_type`, `career_history[].assignment`, `career_history[].note` | Free text (only where applicable; the canonical definition of how to record it is in "A career history with an atypical shape" in `answer-handling.md`) | First pass |
+| 1 | `career` | The reason for a detected employment gap (6 months or more) and the activity during it | `career_gaps[].period`, `career_gaps[].explanation`, `career_gaps[].activities` | Choice format (activity type) + free text | First pass |
+| 1 | `basic` | Basic information (current role, years of experience, place of residence, education) | `basic.current_role`, `basic.years_of_experience`, `basic.location`, `basic.education` | Free text (the choices cannot be enumerated in advance) | First pass for the current role only; the rest is a deep dive |
+| 2 | `achievements` | Responsibilities at each job | `career_history[].responsibilities` | Free text | Deep dive |
+| 2 | `achievements` | A key project and its achievement (what changed, at what scale, and how) | `career_history[].achievements[].description` | Free text | Deep dive |
+| 2 | `achievements` | (When a concurrent project exists) which project this achievement belongs to | `career_history[].achievements[].project` | Free text | Deep dive |
+| 2 | `achievements` | (Same as above) that project's period | `career_history[].achievements[].period` | Free text (period) | Deep dive |
+| 2 | `achievements` | Whether that achievement can be expressed as a figure (year-on-year change, a count, a scale) | `career_history[].achievements[].metric` | Free text (a figure; null when it cannot be expressed) | Deep dive |
+| 3 | `skills` | Skills held, worked out in reverse from the career history (languages, frameworks, cloud platforms / business skills / languages / certifications) | `skills.technical`, `skills.business`, `skills.languages`, `skills.certifications` | Choice format (candidates built from what came up in `achievements`) + free text | Deep dive |
+| 3 | `skills` | Which of the 9 portable-skill elements the user has experience exercising | `skills.portable[].skill`, `skills.portable[].category` | Choice format | Deep dive |
+| 4 | `reasons` | What the user wants to achieve next by changing jobs (reasons for changing jobs) | `job_change_axis.reasons` | Free text (the choices cannot be enumerated in advance) | First pass |
+| 4 | `conditions` | A condition that cannot be given up, a condition that is desirable, and its axis, threshold, and means of verification | `job_change_axis.conditions[]` | Choice format + free text | First pass for key conditions only; full coverage is a deep dive |
+| 4 | `conditions` | The priority and reassessment time of a must-have condition | `job_change_axis.conditions[].priority`, `job_change_axis.priority_note` | Choice format + free text | Deep dive |
+| 4 | `work_character` | The desired level for each of the 8 work-character traits | `job_change_axis.work_character_preferences[]` | Choice format | First pass |
+| 4 | `score_axes` | Which of the 9 quantitative candidate axes for scoring a company matter, and which non-numeric matter carries weight (a qualitative axis's name, definition, and judgment conditions) | `company_score_axes[].axis`, `company_score_axes[].kind`, `company_score_axes[].label`, `company_score_axes[].definition`, `company_score_axes[].judgment[]` | Choice format + free text | Deep dive |
+| 4 | `score_axes` | The weight assigned to each chosen axis (summing to 100), and the criteria used for a quantitative axis (asked together in one AskUserQuestion call) | `company_score_axes[].weight`, `company_score_axes[].thresholds` | Choice format (an allocation candidate, a choice of criteria) + free text (figures) + choice format (a check against 2 companies) | Deep dive |
+| 4 | `targets` | The desired industry, occupation, and company | `targets.industries`, `targets.roles`, `targets.companies` | Free text (the choices cannot be enumerated in advance) | Deep dive |
+| 4 | `salary` | Current and desired annual salary | `salary.current`, `salary.desired` | Free text (a figure) | Deep dive |
 
-`career_history[].role` と `career_history[].responsibilities` を自由記述とするのは、どちらもその職について何も分かっていない時点で聞くためである。候補を先に作れば、聞き取り側が想像した役職名・業務名を提示することになる。`skills.technical` などは Step 2 の発話から候補を作れるため選択式でよい。
+`career_history[].role` and `career_history[].responsibilities` are asked in free text because both are asked
+about before anything is yet known of that job. Building a candidate in advance would mean presenting a job title
+or a task name that elicitation itself imagined. `skills.technical` and the like may use the choice format because
+a candidate can be built from what came up in `achievements`.
 
-## Step 0: モードの確認
+## Step 0: Confirming the mode and the sections
 
-### 確定した文言 — モード
+### Settled wording — mode
 
-| 項目 | 文言 |
+| Item | Wording |
 |---|---|
-| `header` | モード |
-| `question` | 今回はプロファイルをどのように扱いますか。 |
-| 選択肢1 | **初回作成** — まだ profile.json がありません。職歴から転職の軸まで一通り伺います。 |
-| 選択肢2 | **セクション更新** — 既にある profile.json の一部だけを直します。次にどの部分かを伺います。 |
-| 選択肢3 | **全面点検** — 既にある profile.json を最初から見直します。 |
+| `header` | モード (Mode) |
+| `question` | 今回はプロファイルをどのように扱いますか。 (How would you like to handle the profile this time?) |
+| Choice 1 | **初回作成** — まだ profile.json がありません。職歴の骨格から転職の軸まで、まず骨格を伺います。 (First creation — profile.json does not exist yet. We will go through everything from the career skeleton to the job-change axes, starting with the skeleton.) |
+| Choice 2 | **節の更新** — 既にある profile.json の一部だけを作る、または直します。次にどの節かを伺います。 (Section update — Part of an existing profile.json will be built or corrected. Next, we will ask which section.) |
+| Choice 3 | **全面点検** — 既にある profile.json を最初から見直します。 (Full review — An existing profile.json will be reviewed from the start.) |
 
-「セクション更新」を選んだ場合だけ、続けて対象を聞く。
+Only when "section update" is chosen, go on to ask which sections are the target. The 10 sections are split
+across 3 questions, asked in one AskUserQuestion call. Attach the current stage `profile_sections.py` returned to
+the end of each choice's description, in the form 「いまは {段階}」 (currently: {stage}) (write `missing` as 「まだ無い」,
+`skeleton` as 「骨格まで」, and `deep` as 「深掘り済み」).
 
-| 項目 | 文言 |
+| Item | Wording |
 |---|---|
-| `header` | 更新の対象 |
-| `question` | どの部分を更新しますか。 |
+| Question 1 `header` | 経歴 (Career) |
+| Question 1 `question` | どの節を更新しますか。経歴に関する節から選んでください。 (Which section will you update? Choose from the sections about career history.) |
 | `multiSelect` | true |
-| 選択肢1 | **基本情報** — 現職の役割・経験年数・居住地・学歴です。 |
-| 選択肢2 | **職歴と実績** — 在籍した企業・期間・役割・担当業務・実績です。 |
-| 選択肢3 | **スキル** — 技術・業務スキル・語学・資格・ポータブルスキルです。 |
-| 選択肢4 | **転職の軸と志望・年収** — 転職理由・条件・作業特性・企業スコアの軸・志望対象・年収です。 |
-
-## Step 1: 職歴の骨格（時系列）
-
-聞き取りの前に既存書類の有無を1問で聞き、あれば読んで骨格を取り込む。無ければ対話で聞く。書類の提出を求めない（`elicitation-guide.md` の「既存書類の取り込みと初回の軽量化」）。そのうえで、古い順または新しい順に、企業・在籍期間・役割の一覧を確定する。個々の実績を聞く前に、時系列の枠を固めておく。
-
-### 確定した文言 — 既存書類の有無
-
-| 項目 | 文言 |
-|---|---|
-| `header` | 手元の書類 |
-| `question` | 職務経歴書・履歴書・レジュメのファイルはお手元にありますか。あれば読み込んで、伺う項目を減らせます。 |
-| 選択肢1 | **ファイルがあります** — 続けて置き場所をお知らせください。Word・PDF・テキスト・Markdown のいずれでも読めます。 |
-| 選択肢2 | **対話で答えます** — ファイルは使わず、伺いながら進めます。 |
-
-「対話で答えます」を選んだ場合、書類について重ねて聞かない。用意を勧めることもしない。
-
-### 確定した文言 — 抽出結果の確認
-
-読み込んだ書類から抽出した企業名・在籍期間・役職・担当業務を一覧で示し、次の文で確認する。選択肢を作れないため AskUserQuestion は使わず、一覧に添える文として書く。
-
-| 項目 | 文言 |
-|---|---|
-| 前置き | 読み込んだ書類から、次のように読み取りました。**違うところだけ**お知らせください。合っている項目についてのお返事は要りません。 |
-| 長文への注記 | 担当業務の記述は読み違いが起きやすいため、`（要確認）` を付けています。ここだけは目を通していただけますか。 |
-| 読み取れなかった項目 | 書類から読み取れなかった項目は `未取得` と書いています。後ほど伺います。 |
-
-全項目への同意を求めない。「この内容で合っていますか」と聞かない（同意が既定の答えになるため）。訂正のあった項目だけを、聞き取りメモへ `訂正:` の行で足す。
-
-呼び水の問い:
-
-- これまで在籍した企業を、古い順（または新しい順）に挙げてもらう。各社の在籍期間（`YYYY-MM〜YYYY-MM` 形式。在職中は `〜現在`）はいつからいつまでか。
-- 各社での役割・役職は何か（自由記述）。
-- 転職・異動・昇進などの転機はどこにあったか（時系列の手がかりとして使う）。
-- 骨格が出そろったら、同時期に複数の職に在籍していた期間があったかを確かめる（下記の確定した文言を使う）。あった職はそれぞれ `career_history` の1件とし、企業・期間・役割を同じように聞く。在籍期間が重なることを不整合として扱わない。
-- （並行の在籍を含めた骨格の確定後、どの職歴の在籍期間にも含まれない6か月以上の期間が検出された場合）その期間の活動と説明を聞く（下記の確定した文言を使う）。
-
-### 確定した文言 — 並行在籍の有無
-
-| 項目 | 文言 |
-|---|---|
-| `header` | 並行の有無 |
-| `question` | いま挙げていただいた職のうち、同じ時期に2つ以上に在籍していた期間はありますか。 |
+| Choices | **基本情報** — 現職の役割・経験年数・居住地・学歴です。／ **職歴の骨格** — 在籍した企業・期間・役割と、空白期間です。／ **担当業務と実績** — 各職での担当業務・主要プロジェクト・実績の数値です。／ **スキル** — 技術・業務スキル・語学・資格・ポータブルスキルです。 (Basic information — current role, years of experience, place of residence, and education. / Career skeleton — the companies worked at, their periods, roles, and any employment gap. / Responsibilities and achievements — responsibilities, key projects, and achievement figures at each job. / Skills — technical and business skills, languages, certifications, and portable skills.) |
+| Question 2 `header` | 転職の軸 (Job-change axes) |
+| Question 2 `question` | 同じく、転職の軸に関する節から選んでください。 (Likewise, choose from the sections about your job-change axes.) |
 | `multiSelect` | true |
-| 選択肢1 | **副業・業務委託** — 本業と並行して、別の会社や個人で仕事を受けていました。 |
-| 選択肢2 | **出向・兼務** — 籍を置いたまま、別の会社や部門でも働いていました。 |
-| 選択肢3 | **自営・法人の経営** — 勤めのかたわら、自分の事業や会社を持っていました。 |
-| 選択肢4 | **なし** — どの時期も職は1つだけでした。 |
-
-### 確定した文言 — 空白期間の活動
-
-`{期間}` は検出した期間（例「2019-04〜2019-12」）へ読み替える。
-
-| 項目 | 文言 |
-|---|---|
-| `header` | 期間中の活動 |
-| `question` | {期間} は、どのように過ごされましたか。当てはまるものが無ければ Other でお聞かせください。 |
+| Choices | **転職理由** — 転職で次に実現したいことです。／ **条件** — 譲れない条件・望ましい条件と、その優先順位です。／ **作業特性** — 8つの作業特性それぞれの希望度です。／ **企業スコアの採点軸** — 企業を採点する軸と重みです。 (Reasons for changing jobs — what you want to achieve next by changing jobs. / Conditions — a condition you cannot give up, one that is desirable, and their priority. / Work-character preferences — the desired level for each of the 8 work-character traits. / Company scoring axes — the axes and weights for scoring a company.) |
+| Question 3 `header` | 志望と年収 (Targets and salary) |
+| Question 3 `question` | 同じく、志望と年収に関する節から選んでください。 (Likewise, choose from the sections about targets and salary.) |
 | `multiSelect` | true |
-| 選択肢1 | **学習・資格取得** — 勉強や資格の取得に充てていました。 |
-| 選択肢2 | **療養** — ご自身の治療や休養に充てていました。 |
-| 選択肢3 | **家庭の事情・介護** — ご家族の事情や介護に充てていました。 |
-| 選択肢4 | **転職活動** — 次の勤め先を探していました。 |
+| Choices | **志望対象** — 志望する業界・職種・企業です。／ **年収** — 現年収と希望年収です。 (Target companies and roles — the desired industry, occupation, and company. / Annual salary — current and desired annual salary.) |
 
-説明の一文（`career_gaps[].explanation`）は、選んだ活動を受けて自由記述で聞く。
+Question 1's choices correspond in order to `basic`, `career`, `achievements`, `skills`; Question 2's to `reasons`,
+`conditions`, `work_character`, `score_axes`; Question 3's to `targets`, `salary`.
 
-## Step 2: 職務ごとの深掘り（プロジェクト単位）
+When a downstream sub-skill dispatches this skill naming a section it needs, this question is never placed, and
+the named section becomes the target directly.
 
-職歴1件ずつ、担当業務→主要プロジェクト→実績の順で聞く。実績は在籍期間のなかに位置づけて聞く。
+A deep dive into introspection — constructive rewording of an axis, grounding a value in reasons — falls outside
+this skill's scope and is directed to `job-change-self-analysis`. The grounding for keeping must-have conditions to
+a small number and treating them as open to reassessment lives in the must/want section of `profile-methods.md`.
 
-呼び水の問い:
-
-- この職では、主にどんな業務を担当したか（自由記述）。
-- そのなかで、手応えのあった主要プロジェクトは何か。何を・どの規模で・どう変えたか。
-- （複数の案件を並行して担当していた場合）その実績はどの案件のものか。その案件はいつからいつまでか（`project`・`period`。担当した案件が1つだけの職では聞かない）。
-- その実績を数値で表せるか（前年度比・件数・頻度・規模・対応人数・工程削減率など。`quantification-guide.md` の型を手がかりにする）。表せない場合は無理に数値化せず、工夫や評価された点を具体化する（metric は `null`）。
-
-述べられた数値は、そのまま `metric` へ記録する。出所を問う問いを置かない。本人が自分から不確かだと述べた場合にだけ、その旨をメモへ残す。
-
-## Step 3: スキル棚卸し
-
-Step 2 の発話から逆引きで候補を提示し、選ばせる。棚卸しの入口は technical / business / languages / certifications とし、補助分類はポータブルスキル9要素とする。
-
-呼び水の問い:
-
-- Step 2 で挙がった業務から、使用した技術（言語・フレームワーク・クラウド等）はどれか（Step 2 の発話から作った候補を選択肢で提示する）。
-- 業務スキル（マネジメント・要件定義・折衝等）で当てはまるものはどれか。
-- 語学（`{"language","level"}` の形）・保有資格はあるか。名称と取得年は本人の申告のとおりに記録する。有効期限のあるスコア・資格だけ、期限内かを確かめる。
-- ポータブルスキル9要素のうち、発揮した経験があるものはどれか（下記の確定した文言を使う。9要素を3問へ分け、1回の AskUserQuestion で聞く）。
-
-### 確定した文言 — ポータブルスキル9要素
-
-| 項目 | 文言 |
-|---|---|
-| 第1問 `header` | 対課題（1） |
-| 第1問 `question` | 仕事の進め方のうち、実際に発揮した経験があるものを選んでください。 |
-| `multiSelect` | true |
-| 選択肢 | **現状の把握** — 課題を見つけるために状況や情報を集めた経験です。／ **課題の設定** — 何を解くべき問題として立てるかを決めた経験です。／ **計画の立案** — 解決までの段取りと進め方を組み立てた経験です。 |
-| 第2問 `header` | 対課題（2） |
-| 第2問 `question` | 同じく仕事の進め方のうち、発揮した経験があるものを選んでください。 |
-| `multiSelect` | true |
-| 選択肢 | **課題の遂行** — 立てた計画を実行し、やり切った経験です。／ **状況への対応** — 想定が外れたときに、進め方を組み替えた経験です。 |
-| 第3問 `header` | 対人 |
-| 第3問 `question` | 人との関わり方のうち、発揮した経験があるものを選んでください。 |
-| `multiSelect` | true |
-| 選択肢 | **社内対応** — 上司や経営層に働きかけた経験です。／ **社外対応** — 顧客やパートナーと向き合った経験です。／ **上司・部下との連携** — 縦の関係で仕事を回した経験です。／ **部門横断・社外との連携** — 部門や会社をまたいで巻き込んだ経験です。 |
-
-各要素は `skills.portable[]` に `{"skill": 要素名, "category": "対課題"|"対人"}` で記録する。第1問・第2問の選択は「対課題」、第3問の選択は「対人」になる。
-
-要件との対応づけは応募時に応募書類サブスキルが行う。ここでは保有の事実の棚卸しにとどめる（`profile-methods.md` のスキル分類の節）。
-
-## Step 4: 転職の軸・志望対象・年収
-
-reasons → conditions → work_character_preferences → company_score_axes → targets → salary の順で聞く。
-
-呼び水の問い:
-
-- 転職で次に実現したいことは何か（現状の不満ではなく、実現したいことで書く。1件以上必須）。
-- 譲れない条件（勤務地・働き方・技術・年収など）は何か。あれば望ましい条件は何か。
-
-条件を1件挙げるたびに、次の4点を確定して `conditions[]` の1要素にする。軸の語彙は hub の `screening-axes.md` にある。`level`・`axis`・`verification` は下記の確定した文言を使い、`operator`・`value`・`unit` は数値の聞き取りのため自由記述で受ける。
-
-| 確定する項目 | 問い |
-|---|---|
-| `level` | 譲れない条件か、あれば望ましい条件か |
-| `axis` | リモート確度・残業・年間休日・夜間対応・手を動かす比率・調整業務の比率・経験との距離・年収のどれに当たるか。どれにも当たらないか |
-| `operator`・`value`・`unit` | （軸に当たる場合）どの値を境に満たすと言えるか。残業なら1か月あたりの上限時間、年間休日なら年間の下限日数、年収なら下限額 |
-| `verification` | 求人票の記載で判定できるか、企業研究が要るか、面接で聞くしかないか |
-
-### 確定した文言 — 条件の level
-
-| 項目 | 文言 |
-|---|---|
-| `header` | 譲れるか |
-| `question` | この条件は、満たさないなら見送る条件ですか。 |
-| 選択肢1 | **譲れない** — 満たさない求人は見送ります。 |
-| 選択肢2 | **あれば望ましい** — 満たしていれば加点しますが、単独では見送りません。 |
-
-### 確定した文言 — 条件の axis
-
-8軸を2問へ分け、1回の AskUserQuestion で聞く。どれにも当たらない質的条件は Other で受け、`axis` を `null`・`operator` を `qualitative`・`value` を `null` にする。
-
-| 項目 | 文言 |
-|---|---|
-| 第1問 `header` | 条件の軸（働き方） |
-| 第1問 `question` | この条件は、次のどれに当たりますか。当てはまるものが無ければ、第2問を見てからお答えください。 |
-| 選択肢 | **リモート確度** — 出社の要否や、リモートが制度として保証されているかどうかです。／ **残業時間** — 1か月あたりの平均残業時間です。／ **年間休日** — 1年あたりの休日日数です。／ **夜間・休日対応** — 当番・オンコール・障害対応の有無です。 |
-| 第2問 `header` | 条件の軸（仕事の中身） |
-| 第2問 `question` | 第1問に当てはまらない場合、次のどれに当たりますか。どれにも当たらなければ Other で条件をそのままお書きください。 |
-| 選択肢 | **手を動かす業務の比率** — 構築・設定・検証・自動化が占める割合です。／ **調整・管理業務の比率** — 折衝・進捗管理・要員管理が占める割合です。／ **経験との距離** — いまの経験でどこまで対応できるかです。／ **年収条件** — 譲れない年収の下限です。 |
-
-### 確定した文言 — 条件の verification
-
-| 項目 | 文言 |
-|---|---|
-| `header` | 確認手段 |
-| `question` | この条件は、どこで確かめられそうですか。 |
-| 選択肢1 | **求人票で分かる** — 募集要項の記載だけで判定できます。 |
-| 選択肢2 | **企業研究が要る** — 有価証券報告書・決算資料・公式サイトなどを調べて判定します。 |
-| 選択肢3 | **面接で聞くしかない** — 公開情報には出ないため、選考の場で確かめます。 |
-| 選択肢4 | **確かめようがない** — 入社するまで分かりません。 |
-
-選択肢1〜4は、順に `verification` の `posting`・`research`・`interview`・`unverifiable` に対応する（値域の原本は hub の `references/profile-format.md`）。
-
-### 確定した文言 — 作業特性8件の希望度
-
-8特性を4問ずつ、2回の AskUserQuestion で聞く。4つの選択肢はすべての問いで共通である。
-
-| 選択肢 | 文言 |
-|---|---|
-| 選択肢1 | **必須** — 満たさないなら見送ります。 |
-| 選択肢2 | **重視する** — 評価には効きますが、単独では見送りません。 |
-| 選択肢3 | **どちらでもよい** — 判定に使いません。 |
-| 選択肢4 | **不要である** — 判定に使いません。 |
-
-| 回 | `header` | `question` | `trait` |
-|---|---|---|---|
-| 1回目 第1問 | 手を動かせるか | 自分で手を動かせることは、次の職場でどれくらい大事ですか。 | `hands_on` |
-| 1回目 第2問 | 構築の比率 | 構築・設定・検証・自動化が業務の中心であることは、どれくらい大事ですか。 | `build_ops_ratio` |
-| 1回目 第3問 | 調整の少なさ | 顧客折衝・社内調整・管理業務が少ないことは、どれくらい大事ですか。 | `low_coordination` |
-| 1回目 第4問 | リモートの保証 | フルリモートが制度として保証されていることは、どれくらい大事ですか。 | `full_remote_guaranteed` |
-| 2回目 第1問 | 夜間対応の無さ | 夜間・休日の対応が原則ないことは、どれくらい大事ですか。 | `no_oncall` |
-| 2回目 第2問 | 完了条件の明確さ | 何をもって終わりとするかが明確であることは、どれくらい大事ですか。 | `clear_completion` |
-| 2回目 第3問 | 自分で完結できるか | 手順や進め方を自分で決めて完結させられることは、どれくらい大事ですか。 | `solo_completable` |
-| 2回目 第4問 | 結果の見えやすさ | 結果が短期間で確認できることは、どれくらい大事ですか。 | `short_feedback` |
-
-「どちらでもよい」「不要である」も明示して選ばせる。`desire=must` を選んだ特性には、本人の言葉での条件文（`statement`）を1文で聞く。`clear_completion`・`solo_completable`・`short_feedback` に `must` か `important` を選んだ場合、これらは求人票からは判定できない。面接での確認事項になる旨をその場で伝える。
-
-- （必須条件の合計が4件以上になった場合）必須条件のうち、絶対に譲れないものから順に3件を選ぶとどれか。選に漏れたものは望ましい条件へ移す。順位と、次に軸を見直す時期を `priority_note` に残す。
-
-### 企業スコアの採点軸
-
-定量軸の選択・定性軸の作成・重みの配分と基準の確認（同じ AskUserQuestion で扱う）・2社を比べて配分が実感と合うかを確かめる、の順で進める。定量候補軸9個と重みの配分の規則は `job-change-company-research` の `references/company-score-rubric.md` にある。
-
-| 確定する項目 | 問い |
-|---|---|
-| `axis`・`kind` | 定量候補軸9個のうち、企業を選ぶときに重視するものはどれか（下記の確定した文言。3問へ分け、各問が3軸を `multiSelect: true` で受ける。処遇水準は既定で選択済みとする） |
-| `label`・`definition`・`judgment` | （数値にならない事柄で重視するものがある場合）それを何と呼ぶか。何をもってそう言えるか。何が確認できたら100点で、何が確認できたら0点か（3段階程度）。判定条件まで決められない事柄は採点に入れず、面接での確認事項へ回す |
-| `weight`・`thresholds` | （1回の AskUserQuestion の2問で聞く）選んだ軸へ、合計が100になるようどう配分するか。統計に基づく既定の基準を使うか、自分の基準を使うか |
-| `thresholds` の値 | （自分の基準を使う軸だけ、自由記述で）100点となる水準はどこで、0点となる水準はどこか |
-| 検算 | 配分した重みで採点すると点数が高いのはこちらだが、実際にどちらを選ぶか。例:「A社は年収が現職より120万円高いが残業が月30時間、B社は年収が現職と同水準で残業が月5時間」 |
-
-### 確定した文言 — 定量候補軸9個
-
-3問へ分け、1回の AskUserQuestion で聞く。重みの配分案は選んだ軸の数で変わるため、確定した文言を置かず、その場で作る。
-
-| 項目 | 文言 |
-|---|---|
-| 第1問 `header` | 処遇と休み |
-| 第1問 `question` | 企業を採点するとき、次のうち重視するものを選んでください。 |
-| `multiSelect` | true |
-| 選択肢 | **処遇水準** — 年収の水準です（既定で選択済み。外す場合はここで外してください）。／ **年間休日総数** — 1年あたりの休日日数です。／ **月平均の残業時間** — 従業員1人あたりの、ひと月あたり平均の残業時間です。 |
-| 第2問 `header` | 働きやすさ |
-| 第2問 `question` | 同じく、次のうち重視するものを選んでください。 |
-| `multiSelect` | true |
-| 選択肢 | **有給休暇の取得率** — 付与日数に対する取得日数の割合です。／ **離職率** — 1年あたりに辞めた人の割合です。／ **男性の育児休業取得率** — 男性従業員の育児休業の取得割合です。 |
-| 第3問 `header` | 経営の状態 |
-| 第3問 `question` | 同じく、次のうち重視するものを選んでください。 |
-| `multiSelect` | true |
-| 選択肢 | **売上高の成長率** — 前年度からの売上の伸びです。／ **営業利益率** — 売上高に対する営業利益の割合です。／ **自己資本比率** — 総資産に占める自己資本の割合です。 |
-
-### 確定した文言 — 採点の基準
-
-| 項目 | 文言 |
-|---|---|
-| `header` | 採点の基準 |
-| `question` | 定量軸を点数へ直すとき、どちらの基準を使いますか。 |
-| 選択肢1 | **統計に基づく既定の基準** — 公表統計をもとに決めた水準で採点します。 |
-| 選択肢2 | **自分の基準** — 100点と0点に当たる水準をご自身で決めます。処遇水準は既定の基準を持たないため、どちらを選んでも伺います。 |
-
-- （検算の答えと点数の高い側が食い違う場合）配分を見直すか、配分と実際の選択の両方を記録するか。どちらが本当の判断かは、聞き取り側では決めない。
-- （採点軸・重みが必須条件・作業特性の希望度と食い違う場合）この2つが食い違っている。軸や重みを見直すか、必須条件を見直すか、両方このままにするか。どちらが本当かは聞き取り側では決めず、両方を提示して選ばせる。
-- 志望する業界・職種・企業はあるか（`targets`。企業名は企業研究サブスキルの起点になる）。
-- 現年収・希望年収はいくらか（数値。円単位）。譲れない年収下限は `conditions` に、希望額は `salary.desired` に置く。
-
-軸の建設的な言い換え・価値観の根拠づけといった内省の深掘りは本スキルの範囲外とし、`job-change-self-analysis` へ誘導する。必須条件を少数に絞り再評価を前提とする根拠は `profile-methods.md` の must/want の節にある。
-
-出典表記の詳細（DOI・URL）は `elicitation-guide.md`・`quantification-guide.md`・`profile-methods.md` の出典一覧を参照する。
+For the details of source notation (DOI, URL), see the sources sections in `elicitation-guide.md`,
+`quantification-guide.md`, and `profile-methods.md`.

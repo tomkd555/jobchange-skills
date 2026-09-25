@@ -1,79 +1,79 @@
-# キャリア・ナラティブと退職理由の建設的な言い換え
+# Career narrative and constructive reframing of the reason for leaving
 
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
-<!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
+<!-- The [E1] form in the body is the notation for a source ID. This file disables that rule to preserve the half-width square brackets. -->
 
-job-change-self-analysis スキルが自己分析の素材を「一貫したキャリア・ナラティブ」と「退職理由の建設的な言い換え」へ統合するときの、基準の原本である。素材とは、エピソード・他者証言・興味・価値観・career adaptability を指す。writer エージェントが career_narrative と reason_for_change を作成するときに参照する。面接対策・志望動機の深化（interview-prep / documents）が一貫性の根拠として読むときも同様である。エビデンスレベルと DOI 表記は self-analysis-methods.md と同じ規約に従う。
+This is the canonical definition of the criteria the job-change-self-analysis skill uses when integrating self-analysis material into a "consistent career narrative" and a "constructive reframing of the reason for leaving." The material refers to episodes, testimony from others, interests, values, and career adaptability. The writer agent references this file when creating career_narrative and reason_for_change. Job interview preparation and the deepening of statements of motivation (interview-prep / documents) likewise read it as the grounds for consistency. The evidence-level and DOI notation follow the same convention as self-analysis-methods.md.
 
-## なぜナラティブへ接続するのか
+## Why connect to a narrative
 
-自己分析の成果は、面接と志望動機の一貫性を通じて選考の評価に結びつく（確度: 可能性が高い、65%以上80%未満）。
+The result of self-analysis connects to how a candidate is evaluated in the selection process, through consistency across the job interview and the statement of motivation (confidence: likely, 65% or higher and under 80%).
 
-- Career Construction Interview（CCI）は、5〜7問でライフテーマを聞き取る枠組みである[E43]。面接者と相談者は、自己概念と職業役割を結ぶ一貫したキャリアストーリー（narrative identity）を共同で構築する。CCI は、自己分析の結果を志望動機と面接回答の一貫性へつなぐ学術的な枠組みにあたる。
-- 企業は転職理由・志望動機を面接の評価項目に含み、行動の再現性を見極める[E42]。企業は、能力を客観的に評価する基準が欠けていることを課題とするため[E24][E25]、応募者側の一貫した説明は評価の接点になりうる。
+- The Career Construction Interview (CCI) is a framework that elicits a life theme through five to seven questions [E43]. The interviewer and the counselee jointly build a consistent career story (a narrative identity) that connects the self-concept to a professional role. CCI is the academic framework that connects the result of self-analysis to consistency between the statement of motivation and interview answers.
+- Employers include the reason for changing jobs and the statement of motivation among the interview's evaluation criteria, and judge the reproducibility of the candidate's behaviour [E42]. Because employers see the lack of an objective standard for evaluating ability as a challenge [E24][E25], a consistent explanation from the candidate can become a point of contact for that evaluation.
 
-**留保**: ナラティブの一貫性が選考評価（合否・内定率）を高めることを示す国内の実証研究は確認できていない。本スキルは、この接続を「一貫性が評価の接点になりうる」という水準にとどめる。一貫性を合否の保証としては扱わない。
+**Reservation**: no domestic empirical study confirms that the consistency of a narrative raises the selection outcome (a pass, or the offer rate). This skill keeps this connection at the level of "consistency can become a point of contact for evaluation." It never treats consistency as a guarantee of a pass.
 
-## キャリア・ナラティブの構成要素
+## The components of the career narrative
 
-career_narrative を、CCI の枠組み（ライフテーマ・転機・一貫する動機）に沿って構成する。
+Build career_narrative along the CCI framework (the life theme, turning points, consistent motivation).
 
-| 要素 | 内容 |
+| Element | Content |
 |---|---|
-| life_theme（ライフテーマ） | 複数のエピソードを貫く関心の主題。個別の成果を並べるのではなく、複数のエピソードに共通して表れる方向を1文で表す。question-bank.md の CCI 型5問（憧れた人物・雑誌や番組・好きな物語・座右の銘・幼少期の記憶）の答えを素材にする。 |
-| turning_points（転機） | 関心・行動が変わった節目。behavioral_episodes のうち、方向を決めた出来事を選ぶ。 |
-| consistent_motivation（一貫する動機） | 複数の場面で繰り返し表れる動機。エピソードと価値観（values）から、一貫して働いている動機を抽出する。 |
-| future_direction（今後の方向） | 一貫する動機が次に向かう先。reason_for_change の constructive_version と整合させる。 |
+| life_theme (the life theme) | The theme of interest running through multiple episodes. Express in one sentence the direction that appears in common across multiple episodes. Use the answers to question-bank.md's five CCI-style questions (an admired figure, a magazine or programme, a favourite story, a motto, an early childhood memory) as material. |
+| turning_points (turning points) | The junctures where interest or behaviour changed. Select, from behavioral_episodes, the events that set the direction. |
+| consistent_motivation (the consistent motivation) | The motivation that recurs across multiple situations. Extract, from the episodes and the values, the motivation that has been at work consistently. |
+| future_direction (the future direction) | Where the consistent motivation heads next. Align it with reason_for_change's constructive_version. |
 
-構成のルール:
+Rules for building it:
 
-1. ナラティブの各要素は、behavioral_episodes・others_feedback・values のいずれかの素材に裏付けられる範囲で書く。素材にない事実を創作しない。
-2. 感情の将来予測（「この仕事に就けば満たされる」）をナラティブの根拠にしない[E55]。動機は過去の行動から抽出し、将来の感情の予測で代替しない。
+1. Write each element of the narrative only within the range corroborated by material from behavioral_episodes, others_feedback, or values. Never invent a fact not found in the material.
+2. Never ground the narrative in an affective forecast ("I would be fulfilled if I took this job") [E55]. Extract motivation from past behaviour, and never substitute a forecast of future feeling for it.
 
-## 退職理由の建設的な言い換え
+## Constructive reframing of the reason for leaving
 
-reason_for_change では、不満の列挙（raw_reasons）を、発揮したい価値を軸にした説明（constructive_version）へ変換する。
+In reason_for_change, convert a list of complaints (raw_reasons) into an explanation built around the value the person wants to bring to bear (constructive_version).
 
-変換手順:
+The conversion procedure:
 
-1. raw_reasons を加工せずに記録する。現状の不満や、退職を考える元の理由を、飾らずに列挙する。これは変換の出発点であり、そのまま外部へ出す文ではない。
-2. 不満の裏にある「発揮したい価値」を特定する。各不満について、「では何を実現したいのか」を問い、values・career_narrative の consistent_motivation と対応づける。不満（避けたいこと）を、実現したいこと（向かいたいこと）へ言い換える。
-3. constructive_version を、実現したいことを主語にして書く。発揮したい価値を軸に書く。constructive_version は raw_reasons と別の文でなければならない（同一の文字列のままであれば、検証スクリプトが WARN とする）。
-4. consistency_note で profile.json との整合を確認する。profile.json の `job_change_axis.reasons`（次に実現したいことで書かれた転職理由）と、constructive_version の軸が一致するかを確認する。ずれがあれば説明する。
+1. Record raw_reasons without processing them. List, without dressing them up, the present complaints and the original reasons behind considering leaving. This is the starting point of the conversion and stays internal.
+2. Identify the "value the person wants to bring to bear" behind each complaint. For each complaint, ask "then what do I want to achieve," and map it to values and to career_narrative's consistent_motivation. Reframe the complaint (what to avoid) into what the person wants to achieve (what to move toward).
+3. Write constructive_version with what the person wants to achieve as its subject, built around the value the person wants to bring to bear. constructive_version must be a different sentence from raw_reasons (the validation script issues a WARN when it remains the identical string).
+4. Check the alignment with profile.json in consistency_note. Check whether the axis of constructive_version agrees with profile.json's `job_change_axis.reasons` (the reason for changing jobs, written as what the person wants to achieve next). Explain any divergence.
 
-変換の例を次に示す。構造のみを示すものであり、実データは利用者の素材による。
+The example below shows the conversion's structure only; the actual data comes from the user's own material.
 
-- raw_reason（不満）:「今の環境では、運用の設計まで踏み込めない」
-- 特定した価値:「個人の対応を仕組みへ残して再現性を上げたい」
-- constructive_version（実現したいこと）:「個人の対応を仕組みへ残す働き方を、運用の設計まで担える範囲で発揮したい」
+- raw_reason (the complaint): 「今の環境では、運用の設計まで踏み込めない」 (In my current environment, I cannot get involved as far as designing operations)
+- The value identified: 「個人の対応を仕組みへ残して再現性を上げたい」 (I want to raise reproducibility by turning individual responses into a system)
+- constructive_version (what the person wants to achieve): 「個人の対応を仕組みへ残す働き方を、運用の設計まで担える範囲で発揮したい」 (I want to bring to bear a way of working that turns individual responses into a system, in a role that reaches as far as designing operations)
 
-ルール: 不満は隠さない。ただし、不満の列挙で終わらせない。建設的な言い換えは、事実（エピソード・価値観）に裏打ちされた「発揮したい価値」であって、現状を実際より良く見せる誇張ではない。
+Rule: never hide a complaint. Even so, never let it end as a list of complaints. A constructive reframing is "the value the person wants to bring to bear," backed by fact (an episode, a value), and describes the present situation as it is.
 
-## 企業側の評価との接続
+## Connecting to how a company evaluates
 
-自己分析の成果を、企業が評価する観点へ接続する。ただし、志望動機の重みは企業により変わる点を留保する。
+Connect the result of self-analysis to the perspective a company evaluates from. This carries the reservation that the weight given to the statement of motivation varies by company.
 
-- 20代を対象にした経験者採用の面接で、人事担当者が見るポイントとして最も多いのは人柄・社風との相性（86.2%）である。経験・実績（60.8%）、転職理由（55.3%）、志望動機（49.4%）が続く[E40]。**この数値は、母集団を20代に限定した単一の調査に由来する。** 転職理由と志望動機が上位に入る一方で人柄と実績が上回る点は、自己分析を選考へつなぐことの価値と限界を同時に示す。
-- 志望動機の重みは企業により変動する。スキル・経験を重視する企業では志望動機の優先度が低く、面接で聞かれない場合もある[E41]。
-- 中途採用面接では、成果に至る行動プロセス（どの場面でどう考え、どう行動したか）に注目し、環境が変わっても機能する再現性を見極める[E42]。behavioral_episodes の reproducibility は、この再現性の観点へ直接対応する。
+- In interviews for experienced-hire recruitment aimed at people in their twenties, the point HR staff look at most often is character and fit with the company culture (86.2%). Experience and achievements (60.8%), the reason for changing jobs (55.3%), and the statement of motivation (49.4%) follow [E40]. **This figure comes from a single survey whose population was limited to people in their twenties.** The reason for changing jobs and the statement of motivation rank high, and yet character and achievements outrank them — a fact that shows, at once, both the value and the limit of connecting self-analysis to the selection process.
+- The weight given to the statement of motivation varies by company. At a company that emphasises skill and experience, the statement of motivation carries lower priority, and the interview may not even ask about it [E41].
+- A mid-career hiring interview pays attention to the behavioural process leading to a result (in which situation the candidate thought and acted, and how), and judges the reproducibility that keeps functioning when the environment changes [E42]. behavioral_episodes's reproducibility corresponds directly to this perspective on reproducibility.
 
-接続の運用:
+Operating this connection:
 
-1. STAR素材（behavioral_episodes）は、metric（定量値）と reproducibility（再現性）を備えると、企業の「能力を客観的に評価する基準の欠如」[E25]という課題への接点になる。
-2. career_narrative と reason_for_change.constructive_version は、面接の「一貫性」の観点（interview-prep が評価する）の根拠として、また志望動機（documents が書く）の根拠として渡す。
-3. 志望動機を最上位の決め手として扱わない。企業により重みが変動するため、人柄・相性・実績の裏付け（エピソード・他者証言）を併せて用意する。
+1. STAR material (behavioral_episodes), once it carries a metric (a quantitative value) and reproducibility, becomes a point of contact for the employer's challenge of "lacking an objective standard for evaluating ability" [E25].
+2. Pass career_narrative and reason_for_change.constructive_version on as grounds for the interview's "consistency" perspective (which interview-prep evaluates), and as grounds for the statement of motivation (which documents writes).
+3. Never treat the statement of motivation as the top deciding factor. Because its weight varies by company, prepare corroboration for character, fit, and achievements (episodes, testimony from others) alongside it.
 
-## 出典一覧
+## Sources
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. レベル. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+<!-- This section lists sources in bibliographic form (publisher. title. year. level. URL). This section alone disables the rule, so its separating periods and the parts of company names are not judged as Japanese punctuation or synonyms. -->
 
-- [E24] 厚生労働省. 令和2年転職者実態調査の概況（採用時の問題 84.1%）. 2021-12. レベルA. https://www.mhlw.go.jp/toukei/list/dl/6-18c-r02-gaikyo.pdf
-- [E25] 厚生労働省. 令和2年転職者実態調査の概況（問題の内訳）. 2021-12. レベルA. https://www.mhlw.go.jp/toukei/list/6-18c-r02.html
-- [E40] 株式会社学情. 20代経験者採用で面接の際に見ているポイント（人事担当者アンケート 421社）. 2023-05. レベルB. https://prtimes.jp/main/html/rd/p/000001051.000013485.html
-- [E41] Geekly（ギークリー）. 面接で志望動機を聞かれなかったのはなぜ？. 2024-08-30. レベルC. https://www.geekly.co.jp/column/cat-jobsearch/interview/jobinterview_reasons_for_application/
-- [E42] Humanage, Inc.（i-note）. 中途採用で活躍する人材を見極める面接術（再現性）. 2025-05-30. レベルC. https://www.i-note.jp/assessment/tekisei-kensa/articles/028.html
-- [E43] PMC（一次は Savickas 2011, APA Career Counseling）. Career construction theory: tools, interventions（CCI）. 2024. レベルA. https://pmc.ncbi.nlm.nih.gov/articles/PMC11026660/
-- [E55] Current Directions in Psychological Science. Affective forecasting: Knowing what to want. 2005. レベルA. DOI:10.1111/j.0963-7214.2005.00355.x. https://doi.org/10.1111/j.0963-7214.2005.00355.x
+- [E24] Ministry of Health, Labour and Welfare (厚生労働省). Summary of the FY2020 Survey on the Actual Situation of Job Changers (令和2年転職者実態調査の概況), on problems at the time of hiring (84.1%). 2021-12. Level A. https://www.mhlw.go.jp/toukei/list/dl/6-18c-r02-gaikyo.pdf
+- [E25] Ministry of Health, Labour and Welfare (厚生労働省). Summary of the FY2020 Survey on the Actual Situation of Job Changers (令和2年転職者実態調査の概況), breakdown of the problems. 2021-12. Level A. https://www.mhlw.go.jp/toukei/list/6-18c-r02.html
+- [E40] Gakujo Co., Ltd. (株式会社学情). What HR staff look at in interviews when hiring experienced candidates in their twenties (an HR-staff survey of 421 companies). 2023-05. Level B. https://prtimes.jp/main/html/rd/p/000001051.000013485.html
+- [E41] Geekly (ギークリー). Why wasn't I asked about my statement of motivation in the interview? 2024-08-30. Level C. https://www.geekly.co.jp/column/cat-jobsearch/interview/jobinterview_reasons_for_application/
+- [E42] Humanage, Inc. (i-note). Interview techniques for identifying candidates who thrive in mid-career hiring (reproducibility). 2025-05-30. Level C. https://www.i-note.jp/assessment/tekisei-kensa/articles/028.html
+- [E43] PMC (primary source: Savickas 2011, APA Career Counseling). Career construction theory: tools, interventions (CCI). 2024. Level A. https://pmc.ncbi.nlm.nih.gov/articles/PMC11026660/
+- [E55] Current Directions in Psychological Science. Affective forecasting: Knowing what to want. 2005. Level A. DOI:10.1111/j.0963-7214.2005.00355.x. https://doi.org/10.1111/j.0963-7214.2005.00355.x
 
 <!-- textlint-enable -->

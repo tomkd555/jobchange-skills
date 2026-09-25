@@ -1,18 +1,18 @@
-# 適合性評価データの原本（fit-format）
+# Canonical definition of fit-assessment data (fit-format)
 
-適合性評価の成果物 `fit_assessment.json` のフィールド仕様・検証規則・記入例を定める原本である。`job-change-fit-assessment` スキル本体と `job-change-fit-assessor` エージェントがこのファイルを参照する。判定基準（各次元の score の目安・evidence の付け方）の原本は `references/fit-criteria.md` にある。
+This is the canonical definition of the field specification, validation rules, and sample entries for `fit_assessment.json`, the fit-assessment deliverable. The `job-change-fit-assessment` skill body and the `job-change-fit-assessor` agent both refer to this file. The canonical definition of the judgement criteria (score guidance for each dimension, how to attach evidence) lives in `references/fit-criteria.md`.
 
-## 配置
+## Placement
 
-`fit_assessment.json` の出力先は次のとおりである。
+`fit_assessment.json` is written to the following location.
 
 ```
-{DATA_ROOT}/career-private/fit/{企業スラッグ}/fit_assessment.json
+{DATA_ROOT}/career-private/fit/{company slug}/fit_assessment.json
 ```
 
-利用者プロファイル・自己分析に由来する派生値を含むため、非公開ディレクトリ `career-private/` 配下に置く。Web 送信手段（WebSearch・WebFetch）を持つエージェントへ渡さない。企業スラッグは `career-private/company_index.json` で解決済みの値をそのまま使う。形式の原本は job-change-support の `references/company-index-format.md` にある。
+It contains values derived from the user's profile and self-analysis, so it is placed under the non-public directory `career-private/`. It is never handed to an agent holding a web transmission means (WebSearch, WebFetch). The company slug uses the value already resolved in `career-private/company_index.json` as is. The canonical definition of the format lives in job-change-support's `references/company-index-format.md`.
 
-## トップレベルの構造
+## Top-level structure
 
 ```json
 {
@@ -27,33 +27,33 @@
 }
 ```
 
-| フィールド | 型 | 必須 | 内容 |
+| Field | Type | Required | Content |
 |---|---|---|---|
-| `schema_version` | string | 必須 | 現行は `"2.0"`。`"1.0"` も読める（後述「バージョンと移行」） |
-| `slug` | string | 必須 | 企業スラッグ。形式の原本は job-change-support の `references/company-index-format.md` にある |
-| `assessed_at` | string | 必須 | 評価日。`YYYY-MM-DD` |
-| `inputs` | object | 必須 | 各入力の有無を真偽値で記録。2.0 のキーは `job_posting`・`company_research`・`self_analysis`・`time_analysis`・`job_search_screening` の5つ |
-| `screening_source` | object | 任意 | 求人検索のスクリーニング結果への参照。`{search_id, result_index, classification, screened_at}`。後述 |
-| `dimensions` | array | 必須 | 次元の評価。2.0 では過不足なく7件 |
-| `must_condition_results` | array | 必須 | 必須条件の判定。profile の必須条件と1対1 |
-| `company_score` | object | 任意 | 企業スコア（0〜100点）。`{total, coverage, provisional, axes, rationale}` |
-| `overall` | object | 必須 | 総合判定 |
+| `schema_version` | string | required | The current version is `"2.0"`. `"1.0"` can also be read (see "Versions and migration" below) |
+| `slug` | string | required | The company slug. The canonical definition of the format lives in job-change-support's `references/company-index-format.md` |
+| `assessed_at` | string | required | Assessment date, in `YYYY-MM-DD` |
+| `inputs` | object | required | Records whether each input is present, as a boolean. In 2.0 there are five keys: `job_posting`, `company_research`, `self_analysis`, `time_analysis`, `job_search_screening` |
+| `screening_source` | object | optional | A reference to the job-search screening result. `{search_id, result_index, classification, screened_at}`. See below |
+| `dimensions` | array | required | The evaluation of each dimension. In 2.0 there are exactly seven, no more and no fewer |
+| `must_condition_results` | array | required | The judgement of the must-have conditions, one-to-one with profile's must-have conditions |
+| `company_score` | object | optional | The company score (0–100 points). `{total, coverage, provisional, axes, rationale}` |
+| `overall` | object | required | The overall verdict |
 
-## dimensions（7次元）
+## dimensions (seven dimensions)
 
-各次元は次の構造を持つ。2.0 の id は7種で、過不足なくすべて存在する。
+Each dimension has the following structure. In 2.0, there are seven `id` values, and every one of them is present, no more and no fewer.
 
-| id | 評価対象 | 主な入力元 |
+| id | What is evaluated | Main input source |
 |---|---|---|
-| `experience_proximity` | 求人の要件・業務内容と、本人の実務経験の距離。技術要件の不足は `skill_gap` で3段階に表す | job_posting / profile |
-| `aspiration_alignment` | 業務内容が「今後やりたい仕事」に近いか。経験の近さとは独立に評価する | self_analysis / profile / job_posting |
-| `work_character_fit` | 8つの作業特性の希望と、求人・企業の実態の一致 | profile / job_posting / company_research / job_search_screening |
-| `condition_fit` | 望ましい条件（`level=want`）と勤務条件の一致 | job_posting / profile |
-| `culture_fit` | 理念・働き方・評判と、行動証拠・価値観 | company_research / self_analysis |
-| `compensation_fit` | 提示レンジと希望年収・業界水準 | job_posting / profile / company_research |
-| `time_fit` | 年間拘束時間・実質時給と、時間に関する条件 | time_analysis / job_posting |
+| `experience_proximity` | The distance between the posting's requirements and job content, and the person's actual work experience. Missing technical requirements are shown in three stages by `skill_gap` | job_posting / profile |
+| `aspiration_alignment` | Whether the job content is close to "the work the person wants to do going forward." Evaluated independently of experience proximity | self_analysis / profile / job_posting |
+| `work_character_fit` | The match between the eight work-characteristic preferences and the actual conditions at the posting/company | profile / job_posting / company_research / job_search_screening |
+| `condition_fit` | The match between the desired conditions (`level=want`) and the working conditions | job_posting / profile |
+| `culture_fit` | The match between the company's philosophy, way of working, and reputation, and the person's behavioural evidence and values | company_research / self_analysis |
+| `compensation_fit` | The match between the offered range and the desired annual salary / industry level | job_posting / profile / company_research |
+| `time_fit` | The match between the annual committed time / effective hourly wage and the time-related conditions | time_analysis / job_posting |
 
-**経験の近さと志向の一致を別の軸として扱う。** 経験が近くても、調整・管理・顧客折衝が中心で本人の志向と合わない求人を「推奨」へ押し上げないためである。
+**Experience proximity and aspiration match are treated as separate axes.** This keeps a job centred on coordination, management, or client negotiation from being pushed up to "推奨" (recommend) on close experience alone, even when it does not match the person's orientation.
 
 ```json
 {
@@ -68,49 +68,49 @@
 }
 ```
 
-| フィールド | 型 | 内容 |
+| Field | Type | Content |
 |---|---|---|
-| `id` | string | 上表の7種のいずれか |
-| `score` | integer \| null | 1〜5 の整数。判断材料が不足する場合は `null`（判断保留） |
-| `verdict` | string | 判定の要約（非空） |
-| `evidence` | array | 1件以上。各要素は下記 |
-| `skill_gap` | string | `experience_proximity` のみ。後述 |
-| `skill_gap_items` | array | `experience_proximity` のみ。後述 |
+| `id` | string | One of the seven values above |
+| `score` | integer \| null | An integer from 1 to 5. `null` when there is not enough material to judge (hold judgement) |
+| `verdict` | string | A summary of the judgement (non-empty) |
+| `evidence` | array | One or more items. Each element is described below |
+| `skill_gap` | string | Only for `experience_proximity`. See below |
+| `skill_gap_items` | array | Only for `experience_proximity`. See below |
 
-evidence の各要素:
+Each element of `evidence`:
 
-| フィールド | 型 | 内容 |
+| Field | Type | Content |
 |---|---|---|
-| `source` | string | `company_research`・`job_posting`・`profile`・`self_analysis`・`time_analysis`・`job_search_screening` のいずれか（`job_search_screening` は 2.0 のみ） |
-| `ref` | string | 参照子。company_research の claim id（例 `C012`）、job_posting のフィールドパス（例 `salary.min`）、time_analysis のフィールドパス（例 `annual.binding_hours`）など |
-| `note` | string | その evidence が示す内容の説明 |
+| `source` | string | One of `company_research`, `job_posting`, `profile`, `self_analysis`, `time_analysis`, `job_search_screening` (`job_search_screening` only in 2.0) |
+| `ref` | string | A reference locator: a company_research claim id (e.g. `C012`), a job_posting field path (e.g. `salary.min`), a time_analysis field path (e.g. `annual.binding_hours`), and so on |
+| `note` | string | An explanation of what this piece of evidence shows |
 
-### skill_gap（技術要件の不足の3段階）
+### skill_gap (the three stages of missing technical requirements)
 
-`experience_proximity`（経験の近さ）の内訳として持つ。
+Held as a breakdown of `experience_proximity` (experience proximity).
 
-| 値 | 意味 |
+| Value | Meaning |
 |---|---|
-| `none` | 不足が無い |
-| `complementable_within_3m` | 3か月以内に補完できる |
-| `needs_6_12m_study` | 6〜12か月の学習が要る |
-| `not_applicable_now` | 現時点では応募が難しい |
-| `unknown` | 判断材料が不足する |
+| `none` | No shortfall |
+| `complementable_within_3m` | Fillable within three months |
+| `needs_6_12m_study` | Needs six to twelve months of study |
+| `not_applicable_now` | Hard to apply for at present |
+| `unknown` | Not enough material to judge |
 
-`skill_gap_items[]` は不足要件ごとの内訳である。`none`・`unknown` のときは空配列でよい。
+`skill_gap_items[]` is the breakdown per missing requirement. It may be an empty array when the value is `none` or `unknown`.
 
-| フィールド | 型 | 内容 |
+| Field | Type | Content |
 |---|---|---|
-| `requirement` | string | 求人票の必須・歓迎要件の引用文（非空） |
-| `gap_level` | string | `complementable_within_3m`・`needs_6_12m_study`・`not_applicable_now` のいずれか |
-| `basis` | string | 段階を分けた根拠（非空）。隣接技術の保有・学習量の見積もりなど |
-| `evidence` | array | 1件以上 |
+| `requirement` | string | A quoted passage from the posting's must-have or preferred requirements (non-empty) |
+| `gap_level` | string | One of `complementable_within_3m`, `needs_6_12m_study`, `not_applicable_now` |
+| `basis` | string | The grounds for choosing this stage (non-empty): holding an adjacent skill, an estimate of the study load, and so on |
+| `evidence` | array | One or more items |
 
-`skill_gap` は `skill_gap_items[].gap_level` の**最も重い段階と一致させる**（不一致は ERROR）。総合の見栄えを良くするために全体の段階だけを軽くすることを許さない。
+`skill_gap` **must match the heaviest stage among** `skill_gap_items[].gap_level` (a mismatch is an ERROR). Lightening the overall stage alone, to make the total look better, is not allowed.
 
 ## must_condition_results
 
-profile の必須条件（`conditions[level=must]` と `work_character_preferences[desire=must]`）と、`ref` で1対1に対応させる。文字列一致ではなく id 集合の一致で検査する。材料が無い条件を憶測で `yes`・`no` にせず、`unknown` を優先する。
+Corresponds one-to-one, by `ref`, with profile's must-have conditions (`conditions[level=must]` and `work_character_preferences[desire=must]`). Checked by matching the set of ids. A condition with no material is not set to `yes` or `no` by guesswork; `unknown` takes priority.
 
 ```json
 {
@@ -122,21 +122,21 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 }
 ```
 
-| フィールド | 型 | 内容 |
+| Field | Type | Content |
 |---|---|---|
-| `ref` | string | profile の `conditions[].id` または `work_character_preferences[].trait`（2.0 で必須。重複は ERROR） |
-| `condition` | string | 条件の文言（非空）。`statement` のコピーであり、利用者向けの表示に使う |
-| `met` | string | `yes`・`no`・`unknown` のいずれか |
-| `negotiable` | boolean | 任意。`met=no` の条件が交渉・制度運用で解消しうるか。既定は `false`。`true` にするには evidence が1件以上要る |
-| `evidence` | array | 根拠。`met` が `yes`・`no` のときは1件以上必須。`unknown` のときは空でよい |
+| `ref` | string | profile's `conditions[].id` or `work_character_preferences[].trait` (required in 2.0; a duplicate is an ERROR) |
+| `condition` | string | The wording of the condition (non-empty). A copy of `statement`, used for display to the user |
+| `met` | string | One of `yes`, `no`, `unknown` |
+| `negotiable` | boolean | Optional. Whether a condition with `met=no` could be resolved through negotiation or how a policy is operated. Defaults to `false`. Setting it to `true` requires one or more items of evidence |
+| `evidence` | array | Grounds. Required with one or more items when `met` is `yes` or `no`. May be empty when `unknown` |
 
 ## company_score
 
-応募先企業を 0〜100 点で採点した結果である。軸ごとの実測値は、企業研究の担当が `company_research.json` の `company_metrics` へ書く。その実測値を、利用者が `profile.json` の `company_score_axes` で申告した軸と重みで採点した結果は、`profile.json` を読める適合性評価の担当（fit-assessor）が `company_score` へ書く。
+The result of scoring the target company from 0 to 100 points. The measured value for each axis is written into `company_research.json`'s `company_metrics` by the company-research role. The fit-assessment role (fit-assessor), which can read `profile.json`, then scores that measured value against the axes and weights the user declared in `profile.json`'s `company_score_axes`, and writes the result into `company_score`.
 
-算出は `scripts/calculate_company_score.py` が機械的に行う。定量候補軸9個・点数への換算・基準の決め方・重みの配分・総合点の規則の原本は、job-change-company-research の `references/company-score-rubric.md` にある。統計由来の既定基準の原本は `scripts/calculate_company_score.py` の定数 `DEFAULT_THRESHOLDS` である。
+`scripts/calculate_company_score.py` performs the calculation mechanically. The canonical definition of the nine candidate quantitative axes, the conversion to points, how criteria are decided, weight allocation, and the overall-score rule lives in job-change-company-research's `references/company-score-rubric.md`. The canonical definition of the statistics-derived default criteria is the constant `DEFAULT_THRESHOLDS` in `scripts/calculate_company_score.py`.
 
-総合点は、利用者が選んだ軸と配分した重みに基づく数値であり、企業そのものの質の絶対評価ではない。異なる利用者の点数どうしを比べない。比べてよいのは、同じ利用者が同じ軸と重みで採点した企業どうしだけである。
+The overall score is a number based on the axes the user chose and the weights they assigned. It measures the company only against that user's own axes and weights. Scores from different users are never compared against each other. The only valid comparison is between companies the same user scored with the same axes and weights.
 
 ```json
 "company_score": {
@@ -169,34 +169,34 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 }
 ```
 
-| フィールド | 型 | 内容 |
+| Field | Type | Content |
 |---|---|---|
-| `total` | integer \| null | 総合点。判定できた軸だけの加重平均を四捨五入した 0〜100 の整数。判定できた軸が1つも無い場合は `null` とし、軸も重みも仮定して採点しない |
-| `coverage` | integer | 判定できた軸の `weight` の合計（0〜100）。重みの合計が 100 のため、そのまま総合点の裏付けの割合になる |
-| `provisional` | boolean | 暫定の点数であること。`coverage` が `calculate_company_score.py` の定数 `COVERAGE_THRESHOLD` を下回るとき、および `total` が `null` のとき `true` |
-| `axes` | array | 利用者が申告した軸を申告順に並べる。判定できなかった軸も `score` を `null` にして並べる |
-| `rationale` | string | 点数に効いた軸と、判定できなかった軸をその理由とともに書く（非空）。スクリプトが機械的に組み立てる |
+| `total` | integer \| null | The overall score: the weighted average of only the axes that could be judged, rounded to a 0–100 integer. `null` when not a single axis could be judged; the score is never produced by assuming axes or weights |
+| `coverage` | integer | The sum of `weight` over the axes that could be judged (0–100). Because the weights sum to 100, this is directly the proportion of the overall score that is backed by evidence |
+| `provisional` | boolean | Whether the score is provisional. `true` when `coverage` falls below `calculate_company_score.py`'s constant `COVERAGE_THRESHOLD`, and when `total` is `null` |
+| `axes` | array | Lists the axes the user declared, in declaration order. An axis that could not be judged is still listed, with `score` set to `null` |
+| `rationale` | string | States which axes drove the score and which axes could not be judged, with the reason (non-empty). Assembled mechanically by the script |
 
-`axes` の各要素:
+Each element of `axes`:
 
-| フィールド | 型 | 内容 |
+| Field | Type | Content |
 |---|---|---|
-| `axis` | string | 軸の識別子（非空）。profile の `company_score_axes[].axis` をそのまま転記する |
-| `kind` | string | `quantitative`（公表された数値を線形式で点数へ換算する軸）・`qualitative`（利用者が判定条件を決める軸）のいずれか |
-| `weight` | integer | 重み。1〜100 の整数。profile の申告をそのまま転記する |
-| `value` | number \| null | 定量軸の実測値。`company_metrics` の当該軸の `value`。定性軸と、実測値が無い軸は `null` |
-| `unit` | string \| null | 実測値の単位。定性軸は `null` |
-| `score` | integer \| null | その軸の点数（0〜100 の整数）。実測値か基準を欠く定量軸、判定結果を得られない定性軸は `null` |
-| `threshold_source` | string \| null | 点数の基準の出所。`user`（profile の `thresholds`）・`statistic`（`DEFAULT_THRESHOLDS`）のいずれか。基準が無い軸と定性軸は `null` |
-| `thresholds` | object \| null | 適用した基準。`{zero, full}`。基準が無い軸と定性軸は `null` |
-| `grade` | string \| null | 実測値のエビデンスレベル（A〜D）。`company_metrics` の当該軸の `grade` を転記する。定性軸は `null` |
-| `source_url` | string \| null | 実測値の出典 URL。`company_metrics` の当該軸の `source_url` を転記する。定性軸は `null` |
-| `evidence` | string \| null | 定性軸のみ。判定条件のどれに合致したかの説明。fit-assessor の判定結果をそのまま転記する |
-| `reason` | string | 判定できなかった軸のみ。実測値が無い・基準が無い・判定結果が無いのいずれであるかを書く |
+| `axis` | string | The axis identifier (non-empty). Copied directly from profile's `company_score_axes[].axis` |
+| `kind` | string | One of `quantitative` (an axis that converts a published figure to points by a linear formula) or `qualitative` (an axis whose judgement conditions the user sets) |
+| `weight` | integer | The weight, an integer from 1 to 100. Copied directly from profile's declaration |
+| `value` | number \| null | The measured value for a quantitative axis: the `value` of that axis in `company_metrics`. `null` for a qualitative axis or an axis with no measured value |
+| `unit` | string \| null | The unit of the measured value. `null` for a qualitative axis |
+| `score` | integer \| null | The score for that axis (a 0–100 integer). `null` for a quantitative axis lacking a measured value or a criterion, or a qualitative axis with no judgement result |
+| `threshold_source` | string \| null | The origin of the score's criterion: `user` (profile's `thresholds`) or `statistic` (`DEFAULT_THRESHOLDS`). `null` for an axis with no criterion or a qualitative axis |
+| `thresholds` | object \| null | The applied criterion, `{zero, full}`. `null` for an axis with no criterion or a qualitative axis |
+| `grade` | string \| null | The evidence level (A–D) of the measured value. Copied from that axis's `grade` in `company_metrics`. `null` for a qualitative axis |
+| `source_url` | string \| null | The source URL of the measured value. Copied from that axis's `source_url` in `company_metrics`. `null` for a qualitative axis |
+| `evidence` | string \| null | Only for a qualitative axis. An explanation of which judgement condition was matched. Copied directly from fit-assessor's judgement result |
+| `reason` | string | Only for an axis that could not be judged. States whether the measured value, the criterion, or the judgement result is missing |
 
-定量軸の基準は、profile の `thresholds`（`threshold_source` は `user`）を統計由来の既定（同 `statistic`）より優先する。どちらも無い軸は `score` を `null` にし、推測した基準で点数を作らない。実測値が無い軸も 0 点にせず `null` にする。0 点は「低い水準であることを確認した」という意味であり、材料が無いことと区別する。
+A quantitative axis's criterion prefers profile's `thresholds` (`threshold_source` is `user`) over the statistics-derived default (`statistic`). An axis with neither sets `score` to `null`; a score is never produced from a guessed criterion. An axis with no measured value is likewise set to `null`. A score of 0 means "confirmed to be at a low level," and is kept distinct from having no material.
 
-定性軸の点数は、fit-assessor が求人票と企業研究の事実を判定条件（profile の `judgment`）へ当てはめた結果である。どの条件にも合致しない軸は `score` を `null` にし、中間の点数を推測で置かない。
+A qualitative axis's score is the result of fit-assessor applying the facts in the job posting and company research to the judgement conditions (profile's `judgment`). An axis matching no condition has `score` set to `null`; a midpoint score is never placed by guesswork.
 
 ## overall
 
@@ -208,15 +208,15 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 }
 ```
 
-| フィールド | 型 | 内容 |
+| Field | Type | Content |
 |---|---|---|
-| `recommendation` | string | `推奨`・`条件付き推奨`・`非推奨`・`判断保留` のいずれか |
-| `rationale` | string | 総合判定の根拠（非空） |
-| `open_questions` | array | 未確認・未決の論点。空配列でもよい |
+| `recommendation` | string | One of `推奨`, `条件付き推奨`, `非推奨`, `判断保留` |
+| `rationale` | string | The grounds for the overall verdict (non-empty) |
+| `open_questions` | array | Unconfirmed or unsettled points. May be an empty array |
 
 ## screening_source
 
-求人検索（`job-change-job-search`）のスクリーニングを経てこの評価へ来た場合に、そのときの判定の出所を書く。求人検索を経ずに企業研究から入った場合は書かない。
+Written when this assessment was reached through job-search (`job-change-job-search`) screening, giving the source of that judgement. Not written when the case entered from company research without going through job search.
 
 ```json
 {
@@ -227,25 +227,25 @@ profile の必須条件（`conditions[level=must]` と `work_character_preferenc
 }
 ```
 
-| フィールド | 型 | 内容 |
+| Field | Type | Content |
 |---|---|---|
-| `search_id` | string | 参照先の検索実行の識別子。`{DATA_ROOT}/job-search/{検索ID}/job_search_results.json` のトップレベルの `search_id` をそのまま転記する。値はディレクトリ名 `{検索ID}` と同じである。形式と記入基準の原本は job-change-job-search の `references/job-search-format.md` にある |
-| `result_index` | integer | 参照先 `results[]` のうち当該求人を指す添字（0始まり） |
-| `classification` | string | 参照先 `results[result_index].classification` の値 |
-| `screened_at` | string | 参照先 `screening.screened_at`（判定日。`YYYY-MM-DD`） |
+| `search_id` | string | The identifier of the referenced search run. Copied directly from the top-level `search_id` in `{DATA_ROOT}/job-search/{search ID}/job_search_results.json`. The value is the same as the directory name `{search ID}`. The canonical definition of the format and the writing criteria lives in job-change-job-search's `references/job-search-format.md` |
+| `result_index` | integer | The index (0-based) into the referenced `results[]` that points to the job in question |
+| `classification` | string | The value of the referenced `results[result_index].classification` |
+| `screened_at` | string | The referenced `screening.screened_at` (the judgement date, `YYYY-MM-DD`) |
 
-`search_id` と `result_index` の2つで、どのファイルのどの求人を見て判定したかが定まる。求人検索の判定と適合性評価の判定が食い違った軸は、検証スクリプトが `result_index` で参照先を引いて WARN として報告する。
+`search_id` and `result_index` together fix which job in which file the judgement looked at. An axis on which the job-search judgement and the fit-assessment judgement disagree is one the validation script looks up by `result_index` and reports as a WARN.
 
-## 中間成果物（sources.json・qualitative_judgment.json）
+## Intermediate artifacts (sources.json, qualitative_judgment.json)
 
-Step 2 で fit-assessor が作る2つのファイルである。どちらも `fit_assessment.json` と同じ `{DATA_ROOT}/career-private/fit/{企業スラッグ}/` 配下へ置く。定性軸の判定条件は利用者が自分の言葉で書いたものであり、その判定結果も個人情報の派生値であるため、非個人情報ツリー（`companies/` 配下）へは置かない。置き場所を決めない一時ファイルにもしない。中断したあとの再開で、ファイルの有無から Step 2 のどこまで済んでいるかを決めるためである。
+These are the two files fit-assessor creates in Step 2. Both are placed under the same `{DATA_ROOT}/career-private/fit/{company slug}/` directory as `fit_assessment.json`. The qualitative axes' judgement conditions are written by the user in their own words, and the judgement result built from them is likewise a personal-information derived value, so neither file is placed in the non-personal-information tree (under `companies/`). Neither is left as a temporary file with no fixed location, since resuming after an interruption decides how far Step 2 has progressed from the presence of these files.
 
 ### sources.json
 
-拘束時間の算定に使った各数値の出典メタである。`calculate_time_analysis.py` の `--sources-json` へ渡し、スクリプトは各キーのメタを `time_analysis.json` の `inputs` へ転記する。
+The source metadata for each figure used to compute committed time. Passed to `calculate_time_analysis.py`'s `--sources-json`, and the script copies each key's metadata into `time_analysis.json`'s `inputs`.
 
 ```
-{DATA_ROOT}/career-private/fit/{企業スラッグ}/sources.json
+{DATA_ROOT}/career-private/fit/{company slug}/sources.json
 ```
 
 ```json
@@ -256,21 +256,21 @@ Step 2 で fit-assessor が作る2つのファイルである。どちらも `fi
 }
 ```
 
-キーは `calculate_time_analysis.py` の入力の識別子で、`scheduled_hours`・`break_minutes`・`monthly_overtime_h`・`annual_holidays`・`paid_leave_rate`・`paid_leave_granted`・`paid_leave_taken`・`commute_oneway_min`・`salary` を取りうる。CLI 引数で値を渡した項目だけを書く。渡さずに統計フォールバックへ委ねた項目はここへ書かない（スクリプトが `source` を `fallback` として補う）。
+The keys are `calculate_time_analysis.py`'s input identifiers, and can take `scheduled_hours`, `break_minutes`, `monthly_overtime_h`, `annual_holidays`, `paid_leave_rate`, `paid_leave_granted`, `paid_leave_taken`, `commute_oneway_min`, `salary`. Only an item whose value was passed as a CLI argument is written here. An item left unpassed, deferred to the statistical fallback, is not written here (the script fills `source` in as `fallback`).
 
-| フィールド | 型 | 内容 |
+| Field | Type | Content |
 |---|---|---|
-| `value` | number | 抽出した値。CLI 引数へ渡した値と同じものを控えとして書く。点数の算出にはスクリプトが CLI 引数の値を使う |
-| `source` | string | `posting`（求人票 metrics）・`research`（企業研究の指標）・`user`（利用者の申告）・`fallback` のいずれか。既定値以外は `user` として扱われる |
-| `source_url` | string \| null | 出典 URL。利用者の申告など URL が無い場合は `null` |
-| `grade` | string \| null | 出典のエビデンスレベル（A〜D）。原本は job-change-company-research の `references/evidence-grading.md`。利用者の申告など付けられない場合は `null` |
+| `value` | number | The extracted value. Written as a record identical to the value passed as the CLI argument. The score calculation uses the CLI argument's value |
+| `source` | string | One of `posting` (job-posting metrics), `research` (company-research indicators), `user` (the user's declaration), `fallback`. A value other than the defaults is treated as `user` |
+| `source_url` | string \| null | The source URL. `null` when there is no URL, as with the user's own declaration |
+| `grade` | string \| null | The evidence level of the source (A–D). The canonical definition lives in job-change-company-research's `references/evidence-grading.md`. `null` when a level cannot be assigned, as with the user's own declaration |
 
 ### qualitative_judgment.json
 
-profile の `company_score_axes` のうち `kind` が `qualitative` の軸について、判定条件（`judgment`）へ事実を当てはめた結果である。`calculate_company_score.py` の `--qualitative-json` へ渡し、スクリプトは `matched_score` をそのまま `company_score.axes[].score` へ、`evidence` を同 `evidence` へ転記する。
+The result of applying facts to the judgement conditions (`judgment`) for each axis in profile's `company_score_axes` whose `kind` is `qualitative`. Passed to `calculate_company_score.py`'s `--qualitative-json`, and the script copies `matched_score` directly into `company_score.axes[].score`, and `evidence` into its own `evidence`.
 
 ```
-{DATA_ROOT}/career-private/fit/{企業スラッグ}/qualitative_judgment.json
+{DATA_ROOT}/career-private/fit/{company slug}/qualitative_judgment.json
 ```
 
 ```json
@@ -280,69 +280,69 @@ profile の `company_score_axes` のうち `kind` が `qualitative` の軸につ
 }
 ```
 
-キーは profile の `company_score_axes[].axis`（定性軸のみ）である。
+The keys are profile's `company_score_axes[].axis` (qualitative axes only).
 
-| フィールド | 型 | 内容 |
+| Field | Type | Content |
 |---|---|---|
-| `matched_score` | integer \| null | 最初に合致した判定条件の `score`。profile の当該軸の `judgment[].score` に無い値を書くと `calculate_company_score.py` が終了コード 2 で拒む。どの条件にも合致しない軸は `null` とし、中間の点数を推測で置かない |
-| `evidence` | string \| null | どの記載が条件に合致したかの説明。`matched_score` が `null` のときは `null` でよい |
+| `matched_score` | integer \| null | The `score` of the first judgement condition matched. Writing a value absent from that axis's `judgment[].score` in profile makes `calculate_company_score.py` reject it with exit code 2. An axis matching no condition is `null`; a midpoint score is never placed by guesswork |
+| `evidence` | string \| null | An explanation of which statement matched the condition. May be `null` when `matched_score` is `null` |
 
-## 検証規則（validate_fit_assessment.py）
+## Validation rules (validate_fit_assessment.py)
 
-機械的な検証の原本は `scripts/validate_fit_assessment.py` である。終了コードは PASS（ERROR 0件）で 0、FAIL（ERROR 1件以上）で 1。WARN のみは PASS 扱いとする。
+The canonical definition of the mechanical validation is `scripts/validate_fit_assessment.py`. The exit code is 0 for PASS (0 ERRORs) and 1 for FAIL (1 or more ERRORs). WARN alone still counts as PASS.
 
-### ERROR（成立しない）
+### ERROR (fails to hold)
 
-- ルートがオブジェクトでない。
-- `schema_version`・`slug`・`assessed_at` の欠落または空。`slug` が企業スラッグの形式（原本は job-change-support の `references/company-index-format.md`）に一致しない。
-- `inputs` がオブジェクトでない。版に応じたキー（1.0 は4つ、2.0 は5つ）のいずれかの欠落、または真偽値でない。
-- `dimensions` が配列でない。版に応じた id（1.0 は5つ、2.0 は7つ）に過不足がある（欠落・未知 id・重複）。
-- 次元の `score` が 1〜5 の整数でも `null` でもない。`verdict` の欠落または空。
-- 次元の `evidence` が空、または `source` が既定値以外（1.0 は5値、2.0 は6値）。
-- `must_condition_results` が配列でない。`condition` の欠落または空。`met` が `yes`・`no`・`unknown` 以外。`met` が `yes`・`no` なのに `evidence` が空。
-- `overall.recommendation` が既定の4値以外。`overall.rationale` の欠落または空。`overall.open_questions` が配列でない。
-- `company_score` があってオブジェクトでない。`total` が 0〜100 の整数でも `null` でもない。`coverage` が 0〜100 の整数でない。`provisional` が真偽値でない。`axes` が配列でない。`axes[]` の `axis` が空、`kind` が `quantitative`・`qualitative` 以外、`weight` が 1〜100 の整数でない、`score` が 0〜100 の整数でも `null` でもない。`rationale` の欠落または空。
+- The root is not an object.
+- `schema_version`, `slug`, or `assessed_at` is missing or empty. `slug` does not match the company-slug format (canonical definition in job-change-support's `references/company-index-format.md`).
+- `inputs` is not an object. One of the version's keys (four in 1.0, five in 2.0) is missing, or is not a boolean.
+- `dimensions` is not an array. The version's ids (five in 1.0, seven in 2.0) are not exactly matched (missing, an unknown id, or a duplicate).
+- A dimension's `score` is neither an integer from 1 to 5 nor `null`. `verdict` is missing or empty.
+- A dimension's `evidence` is empty, or `source` is outside the defined values (five values in 1.0, six in 2.0).
+- `must_condition_results` is not an array. `condition` is missing or empty. `met` is other than `yes`, `no`, `unknown`. `met` is `yes` or `no` while `evidence` is empty.
+- `overall.recommendation` is outside the four defined values. `overall.rationale` is missing or empty. `overall.open_questions` is not an array.
+- `company_score` is present and is not an object. `total` is neither a 0–100 integer nor `null`. `coverage` is not a 0–100 integer. `provisional` is not a boolean. `axes` is not an array. In `axes[]`: `axis` is empty, `kind` is other than `quantitative`/`qualitative`, `weight` is not a 1–100 integer, or `score` is neither a 0–100 integer nor `null`. `rationale` is missing or empty.
 
-`schema_version` が `2.0` のときは、次も ERROR とする。
+When `schema_version` is `2.0`, the following are also ERRORs.
 
-- `dimensions` の id が7種と一致しない（1.0 の `skill_fit` を使っている場合を含む）。
-- `inputs` に `job_search_screening` が無い、または真偽値でない。
-- `experience_proximity` の `skill_gap` が既定5値以外、`skill_gap_items` が配列でない。
-- `skill_gap_items[]` の `requirement`・`basis` が空、`gap_level` が既定3値以外、`evidence` が空。
-- `skill_gap` が `skill_gap_items[].gap_level` の最も重い段階と一致しない。
-- `must_condition_results[].ref` の欠落・空・重複。
-- `negotiable` が真偽値でない、または `negotiable=true` なのに `evidence` が空。
-- **満たさない必須条件（`met=no`）があるのに `recommendation` が `推奨`。**
-- `met=no` のうち `negotiable` が `true` でないものが残るのに `recommendation` が `条件付き推奨`。
-- `skill_gap` が `not_applicable_now` なのに `recommendation` が `推奨`・`条件付き推奨`。
-- `aspiration_alignment` の `score` が非 null なのに、evidence に `self_analysis` も `profile` も含まれない。
-- `inputs.self_analysis` が `false` なのに `aspiration_alignment.score` が4以上。
-- `--profile` 指定時: `must_condition_results` の `ref` 集合が profile の必須条件の集合と一致しない。
+- `dimensions`' ids do not match the seven values (including the case of using 1.0's `skill_fit`).
+- `inputs` lacks `job_search_screening`, or it is not a boolean.
+- `experience_proximity`'s `skill_gap` is outside the five defined values, or `skill_gap_items` is not an array.
+- In `skill_gap_items[]`: `requirement` or `basis` is empty, `gap_level` is outside the three defined values, or `evidence` is empty.
+- `skill_gap` does not match the heaviest stage among `skill_gap_items[].gap_level`.
+- `must_condition_results[].ref` is missing, empty, or duplicated.
+- `negotiable` is not a boolean, or `negotiable=true` while `evidence` is empty.
+- **An unmet must-have condition (`met=no`) exists while `recommendation` is `推奨`.**
+- A `met=no` condition whose `negotiable` is not `true` still remains, while `recommendation` is `条件付き推奨`.
+- `skill_gap` is `not_applicable_now` while `recommendation` is `推奨` or `条件付き推奨`.
+- `aspiration_alignment`'s `score` is non-null, but its evidence contains neither `self_analysis` nor `profile`.
+- `inputs.self_analysis` is `false` while `aspiration_alignment.score` is 4 or higher.
+- When `--profile` is given: the set of `ref` in `must_condition_results` does not match the set of profile's must-have conditions.
 
-### WARN（成立するが質を下げる）
+### WARN (holds, but lowers quality)
 
-- `schema_version` が既知バージョン（`1.0`／`2.0`）でない。
-- `assessed_at` が `YYYY-MM-DD` 形式でない。
-- 次元の `score` が `null`（判断保留であることの明示）。
-- evidence の `ref` が欠落または空。
-- `inputs` の全キーが `false`（評価の根拠が乏しい）。
-- 満たさない must 条件（`met=no`）があるのに `recommendation` が `推奨`（1.0 のみ。2.0 では ERROR）。
-- `--profile` が指定されていない（必須条件との1対1が未検証である）。
-- `inputs` の3つ以上が `false` なのに `recommendation` が `推奨`。
-- `inputs.self_analysis` が `false`（志向の根拠が弱い）。
-- `company_score.total` が `null`（判定できた軸が無く、総合点を算出できていない）。
-- `company_score.provisional` が `true`（判定できた軸の重みの合計が足りず、少数の軸に引きずられる点数である）。
-- `--screening` 指定時: 求人検索で必須条件を満たすと判定した求人が、求人票の取り込み後に `met=no` になっている。
+- `schema_version` is not a known version (`1.0` / `2.0`).
+- `assessed_at` is not in `YYYY-MM-DD` format.
+- A dimension's `score` is `null` (an explicit hold on judgement).
+- An `evidence` item's `ref` is missing or empty.
+- Every key in `inputs` is `false` (the grounds for the assessment are thin).
+- An unmet must-have condition (`met=no`) exists while `recommendation` is `推奨` (1.0 only; an ERROR in 2.0).
+- `--profile` is not given (the one-to-one correspondence with the must-have conditions is unverified).
+- Three or more keys in `inputs` are `false` while `recommendation` is `推奨`.
+- `inputs.self_analysis` is `false` (the grounds for aspiration are weak).
+- `company_score.total` is `null` (no axis could be judged, so the overall score could not be computed).
+- `company_score.provisional` is `true` (the weight of the judged axes falls short, so the score is pulled by a small number of axes).
+- When `--screening` is given: a job that job-search judged as meeting a must-have condition has become `met=no` after the job posting was taken in.
 
-## バージョンと移行
+## Versions and migration
 
-| `schema_version` | 扱い |
+| `schema_version` | Handling |
 |---|---|
-| `1.0` | 5次元（`skill_fit`・`condition_fit`・`culture_fit`・`compensation_fit`・`time_fit`）。`inputs` は4キー。`must_condition_results` に `ref` を要求しない。従来の規則のみを適用する |
-| `2.0` | 7次元。`inputs` は5キー。上記の 2.0 規則を追加で適用する |
+| `1.0` | Five dimensions (`skill_fit`, `condition_fit`, `culture_fit`, `compensation_fit`, `time_fit`). `inputs` has four keys. `must_condition_results` does not require `ref`. Only the legacy rules apply |
+| `2.0` | Seven dimensions. `inputs` has five keys. The 2.0 rules above apply in addition |
 
-1.0 の成果物はそのまま検証を通る。企業別ディレクトリを恒久的に保存する方針と整合させ、過去の評価を読めない状態にしない。1.0 で7次元の id を使う、2.0 で `skill_fit` を使う、といった混在は ERROR とする。
+A 1.0 deliverable passes validation as it stands. This keeps consistency with the policy of storing each company's directory permanently, and never leaves a past assessment unreadable. Mixing versions, such as using the seven-dimension ids under 1.0 or using `skill_fit` under 2.0, is an ERROR.
 
-## 記入例
+## Sample entry
 
-架空企業の完全な記入例は `assets/fit_assessment_example.json` にある。単体テストはこの記入例が検証を PASS することを確認する。
+A complete sample entry for a fictional company lives in `assets/fit_assessment_example.json`. The unit tests confirm that this sample passes validation.

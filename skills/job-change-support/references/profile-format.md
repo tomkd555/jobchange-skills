@@ -1,15 +1,15 @@
-# profile.json 仕様
+# profile.json specification
 
-job-change-support スキル群における、利用者プロファイル profile.json の原本である。`scripts/validate_profile.py` の実装は、この仕様に厳密に従う。
+This is the canonical definition of profile.json, the user profile, within the job-change-support family of skills. The implementation of `scripts/validate_profile.py` follows this specification exactly.
 
-profile.json は転職支援スキル群の「利用者データの単一の原本」である。経歴・スキル・転職の軸・志望対象を1か所に集約する。後続のサブスキル（企業研究・応募書類作成・面接対策・試験対策）は、すべてこの profile.json を参照する。同じ情報を複数の場所に持たない。
+profile.json is the "single canonical source of user data" for the job-change support family of skills. It gathers career history, skills, job-change axes, and target companies into one place. Every downstream sub-skill (company research, application-document writing, interview preparation, exam preparation) refers to this profile.json. The same information is never held in more than one place.
 
-## 配置
+## Location
 
-- 原本の配置先: `{DATA_ROOT}/career-private/profile.json`
-- スキル本体フォルダ（`skills/job-change-support/`）に利用者データを置かない。`assets/profile_example.json` は記入例であり、実データではない。
+- Where the canonical file lives: `{DATA_ROOT}/career-private/profile.json`
+- User data is never placed in the skill's own folder (`skills/job-change-support/`). `assets/profile_example.json` is a fictitious filled-in example.
 
-## ルート構造
+## Root structure
 
 ```json
 {
@@ -29,120 +29,120 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 }
 ```
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required / optional | Meaning and entry guidance |
 |---|---|---|---|
-| `schema_version` | string | 必須 | 仕様のバージョン。現行は `"2.0"`。`"1.0"`・`"1.1"` も読める（後述「バージョンと移行」）。欠落は ERROR |
-| `updated_at` | string | 任意 | `YYYY-MM-DD` 形式の最終更新日。更新のたびに書き直す。欠落は WARN |
-| `summary` | string | 任意 | 職務要約。3〜4文で経験の全体像を示す |
-| `basic` | object | 必須 | 基本情報。後述 |
-| `career_history` | array | 必須 | 職歴の配列。1件以上必須。後述 |
-| `career_gaps` | array | 任意 | 空白期間の説明の配列。後述 |
-| `skills` | object | 任意 | 保有スキル。全カテゴリが空だと WARN。後述 |
-| `strengths` | array | 任意 | 強みの短文の列挙。応募書類・面接の自己 PR の素材にする。行動証拠・他者フィードバックに基づく根拠付きの深化は `job-change-self-analysis` で行える（原本は同スキルの `self_analysis.json`。ここへは短文のみを反映する） |
-| `job_change_axis` | object | 必須 | 転職の軸。後述 |
-| `company_score_axes` | array | 2.0 のみ任意 | 企業スコアの採点に使う軸と重みの申告。`schema_version` が `2.0` のときにだけ有効。後述 |
-| `targets` | object | 任意 | 志望対象。全カテゴリが空だと WARN。後述 |
-| `salary` | object | 任意 | 年収。後述 |
-| `notes` | string | 任意 | 補足メモ。選考上の留意点など |
+| `schema_version` | string | required | The specification version. The current version is `"2.0"`. `"1.0"` and `"1.1"` can also be read (see "Version and migration" below). Missing is an ERROR |
+| `updated_at` | string | optional | The date of the last update, in `YYYY-MM-DD` format. Rewrite it on every update. Missing is a WARN |
+| `summary` | string | optional | A summary of the work history. Shows the overall picture of the experience in 3 to 4 sentences |
+| `basic` | object | required | Basic information. See below |
+| `career_history` | array | required | An array of work-history entries. At least one entry is required. See below |
+| `career_gaps` | array | optional | An array of explanations for gap periods. See below |
+| `skills` | object | optional | Skills held. A WARN occurs when every category is empty. See below |
+| `strengths` | array | optional | A list of short statements of strength, used as material for self-promotion in application documents and job interviews. Deepening these with grounding in behavioural evidence and feedback from others can be done in `job-change-self-analysis` (the canonical definition is that skill's `self_analysis.json`; only the short statements are reflected back here) |
+| `job_change_axis` | object | required | The job-change axes. See below |
+| `company_score_axes` | array | optional, 2.0 only | A declaration of the axes and weights used to score a company. Valid only when `schema_version` is `2.0`. See below |
+| `targets` | object | optional | Target companies and roles. A WARN occurs when every category is empty. See below |
+| `salary` | object | optional | Salary. See below |
+| `notes` | string | optional | Supplementary notes, such as points to watch during the selection process |
 
 ## basic
 
-基本情報。
+Basic information.
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required / optional | Meaning and entry guidance |
 |---|---|---|---|
-| `current_role` | string | 必須 | 現職の役割・肩書き。欠落は ERROR |
-| `years_of_experience` | number | 任意 | 通算の実務経験年数 |
-| `location` | string | 任意 | 居住地（都道府県レベルで足りる） |
-| `education` | array | 任意 | 学歴の文字列の配列。新しい順に並べる |
+| `current_role` | string | required | The role or title at the current job. Missing is an ERROR |
+| `years_of_experience` | number | optional | Total years of hands-on work experience |
+| `location` | string | optional | Place of residence (prefecture-level detail is sufficient) |
+| `education` | array | optional | An array of education strings, ordered most recent first |
 
 ## career_history
 
-職歴の配列。1件以上必須。新しい職歴を先頭に置く。各要素は次のフィールドを持つ。
+An array of work-history entries. At least one entry is required. Put the most recent job first. Each entry has the following fields.
 
-同じ時期に複数の職に就いていた場合（兼務・出向・副業・自営）は、それぞれを1件の要素として持ち、`period` が重なることを許容する。重なりは不整合ではない。どの立場での在籍かは `role` に書き分ける（例「バックエンドエンジニア」「業務委託（副業）」）。
+When the user held more than one job at the same time (a concurrent post, a secondment, a side business, self-employment), each one is held as its own entry, and an overlap in `period` is allowed. An overlap is valid. Which capacity the user held is distinguished in `role` — for example, 「バックエンドエンジニア」(Backend Engineer) and 「業務委託（副業）」(contract work, side business).
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required / optional | Meaning and entry guidance |
 |---|---|---|---|
-| `company` | string | 必須 | 在籍企業名。欠落は ERROR |
-| `period` | string | 必須 | 在籍期間。`YYYY-MM〜YYYY-MM` 形式。在職中は `〜現在`。欠落は ERROR |
-| `role` | string | 必須 | 担当した役割・役職。欠落は ERROR |
-| `employment_type` | string | 任意 | 雇用形態（正社員・契約社員・派遣・業務委託・役員・自営など）。本人の言葉のまま書く。記録が無ければ書かない |
-| `assignment` | string | 任意 | 常駐先・派遣先・出向先・主な取引先・海外の所在地など、雇用主とは別の就業先。派遣・SES・業務委託・出向で使う。雇用主を `company` に書き、就業先をここへ分ける |
-| `note` | string | 任意 | 在籍中の休業期間、離職の経緯など、本人が語った補足。本人が語っていないことは書かない |
-| `responsibilities` | array | 任意 | 担当業務の文字列の配列 |
-| `achievements` | array | 任意 | 実績の配列。後述 |
+| `company` | string | required | The name of the company the user worked for (the employer). Missing is an ERROR |
+| `period` | string | required | The period of employment, in `YYYY-MM〜YYYY-MM` format. For a current job, use `〜現在` ("to present"). Missing is an ERROR |
+| `role` | string | required | The role or title held. Missing is an ERROR |
+| `employment_type` | string | optional | The employment type (regular employee, contract employee, temporary staffing, contract work, officer, self-employed, and so on). Write it in the user's own words. Leave it out when there is no record of it |
+| `assignment` | string | optional | A place of work separate from the employer — an on-site client, a staffing placement, a secondment destination, a main client, an overseas location, and so on. Used for temporary staffing, SES (system engineering service) contracts, contract work, and secondments. Write the employer in `company`, and separate the place of work into this field |
+| `note` | string | optional | A supplementary note the user stated themselves, such as a leave period during employment or the circumstances of leaving. Never write anything the user did not state |
+| `responsibilities` | array | optional | An array of strings describing the duties held |
+| `achievements` | array | optional | An array of achievements. See below |
 
-`employment_type`・`assignment`・`note` は `validate_profile.py` の検査対象外である。定型でない経歴（派遣・業務委託・出向・休業など）をどう記録するかの原本は `job-change-profile` の `references/answer-handling.md` にある。
+`employment_type`, `assignment`, and `note` fall outside what `validate_profile.py` checks. The canonical definition of how to record a non-standard career history (temporary staffing, contract work, secondment, a leave period, and so on) lives in `references/answer-handling.md` of `job-change-profile`.
 
 ### achievements
 
-各要素は実績1件を表す。
+Each entry represents one achievement.
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required / optional | Meaning and entry guidance |
 |---|---|---|---|
-| `description` | string | 任意 | 実績の説明 |
-| `metric` | string または null | 任意 | 定量値。「応答時間を40%短縮」「売上を年3000万円増」のように、数値・割合・金額で示す。定量化できない実績は `null` にする |
-| `project` | string | 任意 | 案件・プロジェクトの呼び名。1つの職で複数の案件を並行して担当した場合に、どの案件の成果かを区別する。案件が1つだけの職では書かない |
-| `period` | string | 任意 | その案件の期間。`YYYY-MM〜YYYY-MM` 形式。在籍中の案件は `〜現在`。在籍期間の中に収まる。案件が1つだけの職では書かない |
+| `description` | string | optional | A description of the achievement |
+| `metric` | string or null | optional | A quantitative value, shown as a number, a percentage, or a monetary amount, such as 「応答時間を40%短縮」(cut response time by 40%) or 「売上を年3000万円増」(increased sales by 30 million yen a year). An achievement that cannot be quantified is set to `null` |
+| `project` | string | optional | The name of the project or engagement. Used to distinguish which project an achievement belongs to, when more than one project ran in parallel at the same job. Leave it out for a job with only one project |
+| `period` | string | optional | The period of that project, in `YYYY-MM〜YYYY-MM` format. For an ongoing project, use `〜現在`. It falls within the employment period. Leave it out for a job with only one project |
 
-`metric` は可能な限り定量値で埋める。全職歴を通して定量的な `metric` が1件もない場合、`validate_profile.py` は WARN を出す。`metric` には本人が述べた数値をそのまま書く。
+Fill `metric` with a quantitative value wherever possible. `validate_profile.py` issues a WARN when not a single quantitative `metric` exists across the whole work history. Write the number the user stated, exactly as stated, into `metric`.
 
-`project` と `period` は任意であり、`validate_profile.py` は検査しない。聞き取りメモとの一致は監査担当（`job-change-profile-auditor`）が確かめる。
+`project` and `period` are optional, and `validate_profile.py` does not check them. Matching them against the interview notes is confirmed by the auditor (`job-change-profile-auditor`).
 
 ## career_gaps
 
-空白期間（6か月以上、どの職歴の在籍期間にも含まれない期間）の説明の配列。各要素は次のフィールドを持つ。
+An array of explanations for gap periods (6 months or longer, and not covered by any work-history entry's period). Each entry has the following fields.
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required / optional | Meaning and entry guidance |
 |---|---|---|---|
-| `period` | string | 必須 | 空白期間。`YYYY-MM〜YYYY-MM` 形式。形式不一致・欠落は WARN |
-| `explanation` | string | 必須 | 空白期間の理由。欠落・空は WARN |
-| `activities` | array | 任意 | 期間中に行った活動の文字列の配列 |
+| `period` | string | required | The gap period, in `YYYY-MM〜YYYY-MM` format. A format mismatch or a missing value is a WARN |
+| `explanation` | string | required | The reason for the gap period. Missing or empty is a WARN |
+| `activities` | array | optional | An array of strings describing activities carried out during the period |
 
-どの職歴の在籍期間にも含まれない6か月以上の期間があり、対応する `career_gaps` の記載がないと、`validate_profile.py` は WARN を出す。この検査は `career_history[].period` を全件解析できる場合に限って行う。判定は全職歴の在籍期間の和集合に対して行うため、在籍期間の重なる職歴があっても空白を誤検出しない。
+`validate_profile.py` issues a WARN when a period of 6 months or longer falls outside every work-history entry's period, and no corresponding `career_gaps` entry states it. This check runs only when every `career_history[].period` can be parsed. The judgement runs against the union of every work-history period, so an overlap between work-history entries never causes a false gap detection.
 
 ## skills
 
-保有スキル。カテゴリ別に持つ。全カテゴリが空だと WARN。
+Skills held, grouped by category. A WARN occurs when every category is empty.
 
-| フィールド | 型 | 意味・記入基準 |
+| Field | Type | Meaning and entry guidance |
 |---|---|---|
-| `technical` | array | 技術スキルの文字列の配列（言語・フレームワーク・クラウドなど） |
-| `business` | array | 業務スキルの文字列の配列（マネジメント・要件定義など） |
-| `languages` | array | 語学の配列。各要素は `{"language": "英語", "level": "TOEIC 850"}` の形。形式不一致は WARN |
-| `certifications` | array | 保有資格の文字列の配列 |
-| `portable` | array | ポータブルスキルの配列。各要素は `{"skill": string, "category": "対課題" または "対人", "note": string（任意）}` の形。厚生労働省のポータブルスキル9要素（仕事のし方5・人との関わり方4）を補助分類として使う。`category` が「対課題」「対人」以外だと WARN |
+| `technical` | array | An array of technical-skill strings (languages, frameworks, cloud platforms, and so on) |
+| `business` | array | An array of business-skill strings (management, requirements definition, and so on) |
+| `languages` | array | An array of languages. Each entry has the form `{"language": "英語", "level": "TOEIC 850"}`. A format mismatch is a WARN |
+| `certifications` | array | An array of strings listing certifications held |
+| `portable` | array | An array of portable skills. Each entry has the form `{"skill": string, "category": "対課題" または "対人", "note": string（任意）}`. The Ministry of Health, Labour and Welfare's 9 elements of portable skill (5 for how the work is done, 4 for how the person relates to others) are used as an auxiliary classification. A `category` other than "対課題" or "対人" is a WARN |
 
 ## job_change_axis
 
-転職の軸。転職理由・譲れない条件・望ましい条件を分けて持つ。応募書類の志望動機と面接の一貫性の土台になる。
+The job-change axes. Holds the reason for changing jobs, the must-have conditions, and the nice-to-have conditions separately. This is the foundation for consistency between the statement of motivation in the application documents and the job interview.
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required / optional | Meaning and entry guidance |
 |---|---|---|---|
-| `reasons` | array | 必須 | 転職理由の文字列の配列。1件以上必須（空だと ERROR）。現状の不満ではなく、次に実現したいことで書く。建設的な言い換えへの深化は `job-change-self-analysis` で行える（原本は同スキルの `self_analysis.json` の `reason_for_change`。ここへは短文のみを反映する） |
-| `conditions` | array | **2.0 で必須** | 条件の配列。譲れない条件と望ましい条件を、軸・演算子・しきい値の形で構造化して持つ。後述 |
-| `work_character_preferences` | array | **2.0 で必須** | 8つの作業特性それぞれへの希望度。過不足なく8件持つ。後述 |
-| `must_conditions` | array | 1.x のみ | 譲れない条件の自由文の配列。2.0 では `conditions` へ移す。2.0 で非空なら WARN |
-| `want_conditions` | array | 1.x のみ | 望ましい条件の自由文の配列。2.0 では `conditions` へ移す。2.0 で非空なら WARN |
-| `priority_note` | string | 任意 | 必須条件の優先順位と、次に軸を再評価する時期のメモ |
+| `reasons` | array | required | An array of strings giving the reasons for the job change. At least one entry is required (empty is an ERROR). Write these as what the user wants to achieve next. Deepening these into a constructive rephrasing can be done in `job-change-self-analysis` (the canonical definition is `reason_for_change` in that skill's `self_analysis.json`; only the short statements are reflected back here) |
+| `conditions` | array | **required in 2.0** | An array of conditions. Holds must-have and nice-to-have conditions structured as an axis, an operator, and a threshold. See below |
+| `work_character_preferences` | array | **required in 2.0** | The desire level for each of the 8 work characteristics. Holds exactly 8 entries, no more and no fewer. See below |
+| `must_conditions` | array | 1.x only | An array of free-text strings for must-have conditions. Moved into `conditions` in 2.0. Non-empty in 2.0 is a WARN |
+| `want_conditions` | array | 1.x only | An array of free-text strings for nice-to-have conditions. Moved into `conditions` in 2.0. Non-empty in 2.0 is a WARN |
+| `priority_note` | string | optional | A note on the priority among must-have conditions, and when to next re-evaluate the axes |
 
-### conditions（2.0）
+### conditions (2.0)
 
-条件の唯一の置き場所である。自由文と構造化データを並存させると同じ条件が2か所に載るため、1.x の `must_conditions` / `want_conditions` の文言は `statement` へ移し、元の配列は空にする。
+This is the one place conditions are held. Letting free text and structured data coexist would put the same condition in two places, so the wording from 1.x's `must_conditions` / `want_conditions` is moved into `statement`, and the original arrays are emptied.
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required / optional | Meaning and entry guidance |
 |---|---|---|---|
-| `id` | string | 必須 | 条件の識別子。`^[a-z0-9][a-z0-9-]*$`。重複は ERROR。適合性評価の `must_condition_results[].ref` の参照先になる |
-| `level` | string | 必須 | `must`（譲れない）／`want`（あれば望ましい）。他の値は ERROR |
-| `statement` | string | 必須 | 条件の文言。面接・条件交渉で使う言葉で書く。空は ERROR |
-| `axis` | string または null | 必須 | `references/screening-axes.md` の8軸 id のいずれか、または `null`（8軸に当てはまらない質的条件）。他の値は ERROR |
-| `operator` | string | 必須 | `>=` / `<=` / `==` / `in` / `qualitative`。他の値は ERROR |
-| `value` | number / string / array / null | 条件付き必須 | 比較する値。`operator` が `qualitative` 以外なのに `null` なら ERROR |
-| `unit` | string | 任意 | `yen` / `h_month` / `days_year` / `ratio` / `none`。他の値は ERROR |
-| `verification` | string | 必須 | どこで確認できるか。`posting`（求人票）／`research`（企業研究）／`interview`（面接）／`unverifiable`。他の値は ERROR |
-| `priority` | integer | 任意 | 1が最優先。`level=must` の中での順位。欠落・重複は WARN |
-| `note` | string | 任意 | 補足 |
+| `id` | string | required | The condition's identifier, matching `^[a-z0-9][a-z0-9-]*$`. A duplicate is an ERROR. This is the target that `must_condition_results[].ref` in fit assessment refers to |
+| `level` | string | required | `must` (non-negotiable) or `want` (nice to have). Any other value is an ERROR |
+| `statement` | string | required | The wording of the condition. Write it in the words used at a job interview or in condition negotiation. Empty is an ERROR |
+| `axis` | string or null | required | Either one of the 8 axis ids in `references/screening-axes.md`, or `null` (a qualitative condition that fits none of the 8 axes). Any other value is an ERROR |
+| `operator` | string | required | `>=` / `<=` / `==` / `in` / `qualitative`. Any other value is an ERROR |
+| `value` | number / string / array / null | conditionally required | The value to compare against. An ERROR occurs when `operator` is anything other than `qualitative` and `value` is `null` |
+| `unit` | string | optional | `yen` / `h_month` / `days_year` / `ratio` / `none`. Any other value is an ERROR |
+| `verification` | string | required | Where it can be confirmed: `posting` (the job posting), `research` (company research), `interview` (the job interview), or `unverifiable`. Any other value is an ERROR |
+| `priority` | integer | optional | 1 is the highest priority. The ranking within `level=must`. A missing or duplicate value is a WARN |
+| `note` | string | optional | A supplementary note |
 
 ```json
 {
@@ -158,34 +158,34 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 }
 ```
 
-`axis` が `null` の条件は求人票からの機械的な判定ができない。`operator` を `qualitative` にし、`verification` を `research` または `interview` にする。この種の条件は求人検索の分類には用いず、適合性評価と面接での確認へ回す。
+A condition whose `axis` is `null` cannot be judged mechanically from a job posting. Set `operator` to `qualitative`, and set `verification` to `research` or `interview`. This kind of condition is never used in job-search classification; it is passed on to fit assessment and to confirmation at the job interview.
 
-### work_character_preferences（2.0）
+### work_character_preferences (2.0)
 
-8つの作業特性それぞれに希望度を持たせる。**過不足なく8件**必要である（欠落・重複は ERROR）。「不要である」も明示させることで、未記入と無関心を区別する。特性 id の定義は `references/screening-axes.md` にある。
+Gives each of the 8 work characteristics a desire level. **Exactly 8 entries** are required, no more and no fewer (a missing or duplicate entry is an ERROR). Requiring "not needed" to be stated explicitly distinguishes a blank entry from indifference. The definition of the trait ids lives in `references/screening-axes.md`.
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required / optional | Meaning and entry guidance |
 |---|---|---|---|
-| `trait` | string | 必須 | 8特性 id のいずれか。既定値以外・重複・欠落は ERROR |
-| `desire` | string | 必須 | `must`（満たさないなら見送る）／`important`（重視する）／`neutral`（どちらでもよい）／`not_required`（不要である）。他の値は ERROR |
-| `statement` | string | 条件付き必須 | 本人の言葉での補足。`desire=must` のときは必須（適合性評価で必須条件として文言が出るため） |
-| `note` | string | 任意 | 補足 |
+| `trait` | string | required | One of the 8 trait ids. A value outside the defined set, a duplicate, or a missing value is an ERROR |
+| `desire` | string | required | `must` (passes on the job if not met), `important` (given weight), `neutral` (no preference either way), or `not_required` (not needed). Any other value is an ERROR |
+| `statement` | string | conditionally required | A supplementary note in the user's own words. Required when `desire=must`, because fit assessment surfaces the wording as a must-have condition |
+| `note` | string | optional | A supplementary note |
 
-`desire=must` の特性は `conditions[level=must]` と同格の必須条件として扱う。適合性評価の `must_condition_results` はこの両方を対象にするため、同じ条件を2か所へ二重登録しない。
+A trait with `desire=must` is treated as a must-have condition, on equal footing with `conditions[level=must]`. Fit assessment's `must_condition_results` covers both, so the same condition is never registered twice, in two places.
 
-### 必須条件の件数
+### The count of must-have conditions
 
-「必須条件は3件程度まで」というルールでは、`conditions[level=must]` と `work_character_preferences[desire=must]` の**合計**で数える。合計が4件以上なら WARN とする。
+The rule "must-have conditions should stay to around 3" counts the **sum** of `conditions[level=must]` and `work_character_preferences[desire=must]`. A sum of 4 or more is a WARN.
 
-### 年収の扱い
+### Handling of salary
 
-譲れない年収下限は `conditions`（`axis=salary_condition`）に、希望額は `salary.desired` に置く。前者は求人検索がしきい値として使い、後者は適合性評価の報酬次元が使う。下限が希望額を上回る場合は WARN とする。
+A non-negotiable salary floor is placed in `conditions` (`axis=salary_condition`); the desired figure is placed in `salary.desired`. The former is used as a threshold by job search; the latter is used by fit assessment's compensation dimension. A WARN occurs when the floor exceeds the desired figure.
 
-## company_score_axes（2.0）
+## company_score_axes (2.0)
 
-企業スコア（0〜100点）の採点に使う軸と重みの申告である。トップレベルの任意の配列であり、`schema_version` が `2.0` のときにだけ有効である。`1.0` / `1.1` にはこのフィールドが無く、書かれていても検査しない。
+A declaration of the axes and weights used to score a company (0 to 100 points). It is an optional array at the top level, valid only when `schema_version` is `2.0`. `1.0` and `1.1` have no such field, and it is never checked even when present.
 
-定量候補軸9個・点数への換算・重みの配分の規則の原本は `job-change-company-research/references/company-score-rubric.md` にある。企業研究へ渡すのは、`kind` が `quantitative` の軸の識別子の配列だけである。`weight`・`thresholds` と、定性軸の `label`・`definition`・`judgment` は渡さない。定性軸の記述は利用者が自分の言葉で書いたものであり、Web ツールを持つエージェントへ渡さない。
+The canonical definition of the 9 candidate quantitative axes, the conversion to a score, and the rule for distributing weight lives in `job-change-company-research/references/company-score-rubric.md`. What is passed to company research is only the array of identifiers for axes whose `kind` is `quantitative`. `weight`, `thresholds`, and a qualitative axis's `label`, `definition`, and `judgment` are never passed. A qualitative axis's description is written by the user in their own words, and is never passed to an agent that holds a web tool.
 
 ```json
 "company_score_axes": [
@@ -211,124 +211,124 @@ profile.json は転職支援スキル群の「利用者データの単一の原�
 ]
 ```
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required / optional | Meaning and entry guidance |
 |---|---|---|---|
-| `axis` | string | 必須 | 軸の識別子。空は ERROR。同じ軸が2回以上現れるのも ERROR。定量軸では company-score-rubric.md の定量候補軸9個のキーのいずれかであり、他の値は ERROR。定性軸では利用者が付ける識別子（半角英小文字・数字・アンダースコア）であり、他の文字を含むと ERROR |
-| `kind` | string | 必須 | `quantitative`（公表された数値を線形式で点数へ換算する軸）／`qualitative`（利用者が判定条件を決める軸）。他の値は ERROR |
-| `weight` | integer | 必須 | 重み。1以上100以下の整数。他の値は ERROR。全軸の合計が 100 でなければ ERROR |
-| `thresholds` | object | 定量軸のみ任意 | 点数の基準の上書き。`zero`（0点に相当する水準）と `full`（100点に相当する水準）をいずれも数値で持つ。定性軸に付けると ERROR。`zero` と `full` が数値でない場合、および両者が等しい場合は ERROR |
-| `label` | string | 定性軸で必須 | 利用者の言葉での呼び名。空は ERROR |
-| `definition` | string | 定性軸で必須 | 何をもってそう言うかの定義。判断できる粒度まで具体化する。空は ERROR |
-| `judgment` | array | 定性軸で必須 | 判定条件の配列。1件以上必要。後述 |
-| `note` | string | 任意 | その軸を選んだ理由を利用者の言葉で書く |
+| `axis` | string | required | The axis's identifier. Empty is an ERROR. The same axis appearing twice or more is also an ERROR. For a quantitative axis, it must be one of the 9 candidate quantitative axis keys in company-score-rubric.md; any other value is an ERROR. For a qualitative axis, it is an identifier the user assigns (lowercase ASCII letters, digits, underscores); any other character is an ERROR |
+| `kind` | string | required | `quantitative` (an axis that converts a published number into a score with a linear formula) or `qualitative` (an axis whose judgement condition the user decides). Any other value is an ERROR |
+| `weight` | integer | required | The weight, an integer from 1 to 100. Any other value is an ERROR. An ERROR occurs when the sum across every axis is not 100 |
+| `thresholds` | object | optional, quantitative axes only | An override for the scoring standard. Holds both `zero` (the level equivalent to a score of 0) and `full` (the level equivalent to a score of 100) as numbers. Attaching it to a qualitative axis is an ERROR. An ERROR also occurs when `zero` or `full` is not a number, or when the two are equal |
+| `label` | string | required for a qualitative axis | The name in the user's own words. Empty is an ERROR |
+| `definition` | string | required for a qualitative axis | The definition of what counts as satisfying it, made concrete enough to judge. Empty is an ERROR |
+| `judgment` | array | required for a qualitative axis | An array of judgement conditions. At least one entry is required. See below |
+| `note` | string | optional | The reason the axis was chosen, written in the user's own words |
 
-`thresholds` を書かない定量軸には、統計に基づく既定値を使う。既定値の原本は `job-change-fit-assessment/scripts/calculate_company_score.py` の定数であり、本文書は数値を持たない。既定値を持たない軸は、`thresholds` を書くまで採点されない。処遇水準（`compensation_level`）は既定値を持たない。この軸の基準は利用者の現年収と希望年収から決める。
+A quantitative axis with no `thresholds` uses a statistics-based default. The canonical definition of the default lives in a constant in `job-change-fit-assessment/scripts/calculate_company_score.py`; this document holds no number. An axis with no default is never scored until `thresholds` is written. The compensation level (`compensation_level`) has no default; the standard for this axis is decided from the user's current and desired salary.
 
-### judgment（定性軸）
+### judgment (a qualitative axis)
 
-各要素は判定条件1件を表す。
+Each entry represents one judgement condition.
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required / optional | Meaning and entry guidance |
 |---|---|---|---|
-| `score` | integer | 必須 | その条件に合致したときの点数。0以上100以下の整数。他の値は ERROR |
-| `condition` | string | 必須 | 何が確認できたらその点数かを書く。空は ERROR |
+| `score` | integer | required | The score when the condition is met, an integer from 0 to 100. Any other value is an ERROR |
+| `condition` | string | required | States what must be confirmed to earn that score. Empty is an ERROR |
 
-`score` の降順に並べ、上から順に条件を当てはめて最初に合致したものを採用する。降順に並んでいなければ WARN とする。どの条件にも当てはまらない場合の点数は `null`（判定できない）とし、中間の点数を推測で置かない。
+List the entries in descending order of `score`, apply the conditions from the top, and take the first one that is met. A WARN occurs when the list is not in descending order. When no condition is met, the score is `null` (cannot be judged); never place a guessed intermediate score.
 
-定性軸は、`label`・`definition`・`judgment` のすべてがそろって初めて採点に入る。判定条件を書けない事柄は採点に入れず、面接での確認事項へ回す。
+A qualitative axis enters scoring only once `label`, `definition`, and `judgment` are all present. A matter for which a judgement condition cannot be written is never brought into scoring; it is passed on as an item to confirm at the job interview.
 
-重みを配分したあとは、架空2社の比較で検算する。配分した重みで2社を採点し、「実際にどちらを選ぶか」という問いへの答えと点数の高い側が一致するかを確かめる（手順は company-score-rubric.md にある）。
+After distributing the weights, check the result by comparing two hypothetical companies. Score the two companies with the distributed weights, and confirm that the side with the higher score matches the answer to "which would actually be chosen?" (the procedure lives in company-score-rubric.md).
 
-申告した軸が、`job_change_axis` の必須条件（`conditions[level=must]`）や作業特性の希望度（`work_character_preferences`）と食い違うことがある。その場合、どちらが本当かをスキルの側で決めない。両方を利用者へ提示し、本人に選ばせる。
+A declared axis can conflict with a must-have condition in `job_change_axis` (`conditions[level=must]`) or with a work-characteristic desire level (`work_character_preferences`). When this happens, the skill never decides which one is true. Both are presented to the user, and the user chooses.
 
-配列が無い場合は、採点する軸の申告が無いものとして扱う。企業スコアは算出せず、軸と重みを仮定して採点しない。
+When the array is absent, it is treated as no declared scoring axis. No company score is calculated, and scoring never assumes an axis or a weight.
 
 ## targets
 
-志望対象。全カテゴリが空だと WARN。
+Target companies and roles. A WARN occurs when every category is empty.
 
-| フィールド | 型 | 意味・記入基準 |
+| Field | Type | Meaning and entry guidance |
 |---|---|---|
-| `industries` | array | 志望業界の文字列の配列 |
-| `roles` | array | 志望職種・ポジションの文字列の配列 |
-| `companies` | array | 志望企業名の文字列の配列。企業研究サブスキルはここを起点に企業別ディレクトリを作る |
+| `industries` | array | An array of strings naming the target industries |
+| `roles` | array | An array of strings naming the target job types and positions |
+| `companies` | array | An array of strings naming the target companies. The company-research sub-skill uses this as the starting point for creating a per-company directory |
 
 ## salary
 
-年収。単位は円。
+Salary. The unit is yen.
 
-| フィールド | 型 | 意味・記入基準 |
+| Field | Type | Meaning and entry guidance |
 |---|---|---|
-| `current` | number または null | 現年収 |
-| `desired` | number または null | 希望年収 |
+| `current` | number or null | Current salary |
+| `desired` | number or null | Desired salary |
 
-## 検証規則の要約
+## Summary of the validation rules
 
-`validate_profile.py` は次を検査する。ERROR が1件でもあれば FAIL（終了コード 1）、ERROR 0件なら PASS（終了コード 0。WARN は許容）。
+`validate_profile.py` checks the following. A FAIL (exit code 1) occurs when even one ERROR is present; a PASS (exit code 0) occurs when there are zero ERRORs (a WARN is allowed).
 
-### ERROR（プロファイルとして成立しない）
+### ERROR (the profile does not stand as valid)
 
-- JSON として読み込めない
-- `schema_version` の欠落または空
-- `basic.current_role` の欠落または空
-- `career_history` が空、または各要素で `company`・`period`・`role` のいずれかが欠落・空
-- `job_change_axis.reasons` が空（有効な理由が1件もない）
+- Cannot be parsed as JSON
+- `schema_version` is missing or empty
+- `basic.current_role` is missing or empty
+- `career_history` is empty, or any entry is missing or has an empty `company`, `period`, or `role`
+- `job_change_axis.reasons` is empty (not a single valid reason is present)
 
-`schema_version` が `2.0` のときは、次も ERROR とする。
+When `schema_version` is `2.0`, the following are also ERRORs.
 
-- `conditions` が配列でない、または欠落している
-- `conditions[]` の `id` の形式不一致・重複、`level` の値域外、`statement` の空、`axis` の値域外、`operator` の値域外、`verification` の値域外
-- `operator` が `qualitative` 以外なのに `value` が `null`
-- `unit` があるのに `yen`／`h_month`／`days_year`／`ratio`／`none` のいずれでもない
-- `work_character_preferences` が配列でない、または欠落している
-- `work_character_preferences` が8特性を過不足なく持たない（欠落・重複・未知の `trait`）
-- `desire` の値域外、または `desire=must` なのに `statement` が空
-- `company_score_axes` があるのに配列でない、またはその要素がオブジェクトでない
-- `company_score_axes[].axis` の空・重複、`kind` の値域外、`kind` が `quantitative` の軸の `axis` が定量候補軸9個にない
-- `kind` が `qualitative` の軸の `axis` が、半角英小文字・数字・アンダースコア以外の文字を含む
-- `weight` が1以上100以下の整数でない、または `weight` の合計が 100 でない
-- `thresholds` を `kind` が `qualitative` の軸が持つ、`zero`・`full` が数値でない、または `zero` と `full` が等しい
-- `kind` が `qualitative` の軸で、`label`・`definition` が空、`judgment` が1件以上の配列でない、`judgment[].score` の値域外、`judgment[].condition` が空
+- `conditions` is not an array, or is missing
+- In `conditions[]`: a format mismatch or a duplicate in `id`, a `level` outside its value range, an empty `statement`, an `axis` outside its value range, an `operator` outside its value range, or a `verification` outside its value range
+- `operator` is anything other than `qualitative` while `value` is `null`
+- `unit` is present but is none of `yen`, `h_month`, `days_year`, `ratio`, or `none`
+- `work_character_preferences` is not an array, or is missing
+- `work_character_preferences` does not hold exactly the 8 traits (a missing entry, a duplicate, or an unknown `trait`)
+- `desire` is outside its value range, or `desire=must` while `statement` is empty
+- `company_score_axes` is present but is not an array, or an entry in it is not an object
+- `company_score_axes[].axis` is empty or duplicated, `kind` is outside its value range, or the `axis` of an entry whose `kind` is `quantitative` is not one of the 9 candidate quantitative axes
+- The `axis` of an entry whose `kind` is `qualitative` contains a character other than a lowercase ASCII letter, a digit, or an underscore
+- `weight` is not an integer from 1 to 100, or the sum of `weight` is not 100
+- An entry whose `kind` is `qualitative` has `thresholds`, `zero` or `full` is not a number, or `zero` and `full` are equal
+- For an entry whose `kind` is `qualitative`: `label` or `definition` is empty, `judgment` is not an array of at least one entry, `judgment[].score` is outside its value range, or `judgment[].condition` is empty
 
-### WARN（成立するが情報不足で成果物の質を下げる）
+### WARN (the profile stands as valid, but a shortage of information lowers the quality of downstream output)
 
-- 全職歴を通して定量的な `metric`（achievements の metric）が1件もない
-- `skills` の全カテゴリが空
-- `targets` の全カテゴリが空
-- `updated_at` の欠落
-- `schema_version` が既知のバージョン（`1.0`／`1.1`／`2.0`）以外である
-- `schema_version` が `1.0` または `1.1` である（2.0 への移行を推奨する）
-- `career_history[].period` が `YYYY-MM〜YYYY-MM` または `YYYY-MM〜現在` の形式でない
-- `career_history[].period` が全件解析可能な場合に、どの職歴の在籍期間にも含まれない6か月以上の空白があり、対応する `career_gaps`（期間が重なるもの）がない
-- `skills.languages` の要素が `{"language","level"}` を持つオブジェクトでない
-- `salary.current` / `salary.desired` が number でも null でもない
-- 必須条件の件数が4件以上である（1.x では `must_conditions` の件数、2.0 では `conditions[level=must]` と `work_character_preferences[desire=must]` の合計）
-- `career_gaps[].period` の形式不一致、または `explanation` の欠落・空
-- `skills.portable[].category` が「対課題」「対人」以外である
+- Not a single quantitative `metric` (the `metric` of an achievement) exists across the whole work history
+- Every category of `skills` is empty
+- Every category of `targets` is empty
+- `updated_at` is missing
+- `schema_version` is a version other than the known ones (`1.0`, `1.1`, `2.0`)
+- `schema_version` is `1.0` or `1.1` (migration to 2.0 is recommended)
+- `career_history[].period` is not in `YYYY-MM〜YYYY-MM` or `YYYY-MM〜現在` format
+- When every `career_history[].period` can be parsed, a gap of 6 months or longer falls outside every work-history entry's period, and no corresponding `career_gaps` entry (with an overlapping period) exists
+- An entry in `skills.languages` is not an object holding `{"language","level"}`
+- `salary.current` or `salary.desired` is neither a number nor null
+- The count of must-have conditions is 4 or more (the count of `must_conditions` in 1.x; the sum of `conditions[level=must]` and `work_character_preferences[desire=must]` in 2.0)
+- A format mismatch in `career_gaps[].period`, or `explanation` missing or empty
+- `skills.portable[].category` is anything other than "対課題" or "対人"
 
-`schema_version` が `2.0` のときは、次も WARN とする。
+When `schema_version` is `2.0`, the following are also WARNs.
 
-- `conditions` に `level=must` が1件もない（必須条件がないと求人検索の選別が働かない）
-- 同じ `axis` に `level=must` の条件が複数ある（判定では最も厳しいしきい値を採用する）
-- `level=must` の条件に `priority` がない、または `priority` が重複している
-- `must_conditions` / `want_conditions` が空でないまま残っている（移行漏れ）
-- 必須の年収下限が `salary.desired` を上回っている
-- `company_score_axes` が空配列である（採点する軸を1つも選んでいない）
-- `company_score_axes` に `compensation_level` がない（既定で選択済みの軸である）
-- `judgment` が `score` の降順に並んでいない
+- Not a single `level=must` entry exists in `conditions` (with no must-have condition, job-search filtering has nothing to work from)
+- More than one `level=must` condition exists for the same `axis` (judgement adopts the strictest threshold)
+- A `level=must` condition has no `priority`, or `priority` values are duplicated
+- `must_conditions` or `want_conditions` remains non-empty (a migration was missed)
+- The must-have salary floor exceeds `salary.desired`
+- `company_score_axes` is an empty array (not a single scoring axis has been chosen)
+- `company_score_axes` has no `compensation_level` (an axis that is selected by default)
+- `judgment` is not sorted in descending order of `score`
 
-## バージョンと移行
+## Version and migration
 
-| `schema_version` | 扱い |
+| `schema_version` | Handling |
 |---|---|
-| `1.0` / `1.1` | 従来の検査規則だけを適用する。`conditions` / `work_character_preferences` の欠落を検査せず、`company_score_axes` も検査しない。移行を促す WARN を1件出す |
-| `2.0` | 従来の規則に加え、上記の 2.0 規則を適用する |
+| `1.0` / `1.1` | Only the legacy validation rules apply. The absence of `conditions` or `work_character_preferences` is never checked, and `company_score_axes` is never checked either. One WARN urging migration is issued |
+| `2.0` | The 2.0 rules above apply in addition to the legacy rules |
 
-**1.x のプロファイルは、そのままでも検証を PASS する。** ただし 1.x のままでは下流のサブスキルがフォールバック動作になる。
+**A 1.x profile passes validation as it stands.** Staying on 1.x, however, puts downstream sub-skills into fallback behaviour.
 
-| スキル | 1.x のときの動き |
+| Skill | Behaviour under 1.x |
 |---|---|
-| `job-change-job-search` | 求人の観測は通常どおり行うが、8軸の判定ができないため全件を「追加調査候補」とし、総合判定を「判定不能」にする |
-| `job-change-fit-assessment` | 作業特性の一致と志向の一致の score を `null`（判断保留）にし、理由を verdict に書く。採点する軸の申告が無いため、企業スコアも算出しない |
+| `job-change-job-search` | Job observation proceeds as normal, but with the 8-axis judgement unavailable, every posting is classified as `needs_more_research`（追加調査候補）, and the overall judgement is set to 「判定不能」 (cannot be judged) |
+| `job-change-fit-assessment` | Sets the score for work-characteristic match and aspiration match to `null` (「判断保留」, judgement withheld), and writes the reason into `verdict`. With no declared scoring axis, no company score is calculated either |
 
-**自動移行は行わない。** 自由文の条件（例「モダンな技術スタックが整備されていること」）を軸・演算子・しきい値へ機械的に割り付けることは推測であり、事実を創作しないという原則に反する。移行は `job-change-profile` の対話（条件の構造化）で行う。
+**No automatic migration is performed.** Mechanically mapping a free-text condition (for example, 「モダンな技術スタックが整備されていること」— "a modern technology stack is in place") onto an axis, an operator, and a threshold is a guess, and runs against the principle of never fabricating a fact. Migration happens through a conversation in `job-change-profile` (the "Structured conditions" (`conditions`) section; match the label in job-change-profile/references/sections.md).

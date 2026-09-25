@@ -1,44 +1,44 @@
-# Claude Code への導入
+# Installing on Claude Code
 
-## プラグインとして導入する（推奨）
+## Installing as a plugin (recommended)
 
-リポジトリのルートがそのままプラグインであり、マーケットプレイスでもある。次の2行で9スキルと14エージェントを配置できる。
+The repository root is itself a plugin, and also a marketplace. The following two lines deploy 9 skills and 14 agents.
 
 ```
-/plugin marketplace add <このリポジトリの URL またはローカルパス>
+/plugin marketplace add <this repository's URL or local path>
 /plugin install job-change@job-change-skills
 ```
 
-ローカルに clone してある場合は、URL の代わりにそのパスを渡す。
+If you have cloned it locally, pass that path in place of the URL.
 
 ```
 /plugin marketplace add C:/path/to/jobchange_Skills
 /plugin install job-change@job-change-skills
 ```
 
-導入後、`/plugin` で `job-change` が有効になっていることを確認する。スキルの一覧は `/help` またはスラッシュコマンドの補完（`/job-change-` と入力する）で確認できる。
+After installation, confirm with `/plugin` that `job-change` is enabled. The list of skills can be checked with `/help` or by slash-command completion (type `/job-change-`).
 
-更新は次のコマンドで行う。
+Update with the following command.
 
 ```
 /plugin marketplace update job-change-skills
 ```
 
-## 手作業で導入する
+## Installing by hand
 
-プラグインを使わない場合は、次のとおり配置する。
+Without using the plugin mechanism, place the files as follows.
 
-| 置くもの | 置き先 |
+| What to place | Where to place it |
 |---|---|
-| `skills/job-change-*` の9ディレクトリ | `~/.claude/skills/` |
-| `agents/job-change-*.md` の14ファイル | `~/.claude/agents/` |
+| The 9 `skills/job-change-*` directories | `~/.claude/skills/` |
+| The 14 `agents/job-change-*.md` files | `~/.claude/agents/` |
 
-9スキルは相互に参照するため、一括で置く。プロジェクト単位にしたい場合は、`~/.claude/` の代わりに `<プロジェクト>/.claude/` へ置く。
+Because the 9 skills reference each other, place them all together. To scope this per project, place them under `<project>/.claude/`, which takes `~/.claude/`'s place for that project.
 
-コピーの代わりにシンボリックリンクでもよい。Claude Code は `~/.claude/skills/<名前>` のシンボリックリンクをたどる。
+A symbolic link works in place of copying. Claude Code follows a symbolic link placed at `~/.claude/skills/<name>`.
 
 ```powershell
-# Windows（管理者権限または開発者モードが要る）
+# Windows (requires administrator privileges or developer mode)
 New-Item -ItemType SymbolicLink -Path "$HOME\.claude\skills\job-change-support" -Target "C:\path\to\jobchange_Skills\skills\job-change-support"
 ```
 
@@ -47,36 +47,36 @@ New-Item -ItemType SymbolicLink -Path "$HOME\.claude\skills\job-change-support" 
 ln -s /path/to/jobchange_Skills/skills/job-change-support ~/.claude/skills/job-change-support
 ```
 
-## 初回の設定
+## Initial configuration
 
-利用者データの置き場所は設定ファイルの記述だけで決まる。既定の置き場所は無い。
+Where the user's data is stored is decided solely by the configuration file. There is no default location.
 
-導入後に「転職の準備をしたい」と伝えるか `/job-change-support` を実行すると、hub が設定の有無を確認する。未設定なら hub が置き場所を尋ねるので、選択肢から選ぶか、任意の絶対パスを答える。この置き場所には現年収・居住地・在籍企業名を含む個人情報が保存されるため、同期や共有の対象になっていないディレクトリを選ぶ。
+After installation, saying 「転職の準備をしたい」 ("I want to prepare for a job change") or running `/job-change-support` has the hub check whether a configuration exists. If not, the hub asks where to place the data; choose from the offered options or answer with any absolute path. Because this location will store personal information including current salary, place of residence, and current employer's name, choose a directory that stays local and outside any sync or sharing scope.
 
-対話を待たずに作る場合は次を実行する。
+To create the configuration without waiting for the dialogue, run the following.
 
 ```bash
 python ~/.claude/skills/job-change-support/scripts/jc_config.py --init --data-root /absolute/path/to/job-change-data
 ```
 
-プラグインとして導入した場合、スキルの実体はプラグインの導入先にある。パスは `/plugin` の詳細表示で確認できる。
+When installed as a plugin, the skill's actual files live at the plugin's installation location. The path can be checked in `/plugin`'s detail view.
 
-設定の確認は次のとおりである。
+Check the configuration as follows.
 
 ```bash
-python <スキルの配置先>/job-change-support/scripts/jc_config.py --show
+python <installation location of the skills>/job-change-support/scripts/jc_config.py --show
 ```
 
-終了コード 0 で `data_root` と各データの絶対パスが出力されれば導入は完了である。設定の仕様は [configuration.md](configuration.md) にある。
+If exit code 0 is returned along with output showing `data_root` and the absolute path for each data item, the installation is complete. The configuration specification is in [configuration.md](configuration.md).
 
-## 動作確認
+## Verifying it works
 
-1. `/job-change-support` を実行し、hub が設定ゲートを通ること（未設定なら対話が始まること）を確認する。
-2. 「プロファイルを作りたい」と伝え、`job-change-profile` へ振り分けられることを確認する。
-3. 聞き取りを終えたら、`{data_root}/career-private/profile.json` が作られ、`validate_profile.py` が PASS することを確認する。
+1. Run `/job-change-support` and confirm that the hub passes the configuration gate (if unconfigured, that the dialogue starts).
+2. Say 「プロファイルを作りたい」 ("I want to build a profile") and confirm that this routes to `job-change-profile`.
+3. After finishing the interview, confirm that `{data_root}/career-private/profile.json` is created and that `validate_profile.py` PASSes.
 
-## つまずきやすい点
+## Common pitfalls
 
-- **Python が見つからない。** 各スキルは検証スクリプトを `python` コマンドで呼び出す。`python3` でしか呼び出せない環境では、設定ファイルの `python` を `python3` にする。
-- **スキルが一覧に表示されない。** 起動中のセッションで新しくスキルディレクトリを作った場合は、Claude Code の再起動が必要である。既存ディレクトリ内の `SKILL.md` の変更は再起動なしで反映される。
-- **エージェントが見つからない。** `agents/` を置き忘れていないか確認する。プラグインとして導入した場合は自動で配置される。エージェントがなくても、各スキルの「役割の実行（ハーネス別）」に従えば本体だけで進められる。
+- **Python cannot be found.** Each skill invokes the validation scripts through the `python` command. In an environment where only `python3` works, set the configuration file's `python` to `python3`.
+- **A skill does not appear in the list.** If a new skill directory was created during a running session, restarting Claude Code is required. A change to `SKILL.md` inside an existing directory takes effect without a restart.
+- **An agent cannot be found.** Check whether `agents/` was left unplaced. When installed as a plugin, it is placed automatically. Even without the agents, each skill's "Role execution (by harness)" section lets the work proceed with the skill body alone.

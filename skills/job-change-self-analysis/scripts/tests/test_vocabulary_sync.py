@@ -63,7 +63,7 @@ class PersonalityConstructsTest(unittest.TestCase):
     """personality.markers[].construct の識別子。原本は personality-guide.md にある。"""
 
     def setUp(self):
-        self.terms = _table_terms(_PERSONALITY_GUIDE_MD, "## 構成概念の語彙")
+        self.terms = _table_terms(_PERSONALITY_GUIDE_MD, "## Construct vocabulary")
 
     def test_extraction_yields_fifteen_constructs(self):
         # 抽出が壊れたまま空一致で通らないよう、件数そのものを確かめる。

@@ -1,116 +1,116 @@
-# 適性検査カタログ
+# Aptitude test catalog
 
-中途採用で使われる主要な筆記試験・適性検査について、提供元・構成・実施方式・出題形式をまとめる。Step 1 の調査結果（`exam_assessment.json`）の解釈、Step 2 の学習項目設計、Step 3 の出題形式の把握に使う。
+This summarizes the providers, structure, administration method, and question format of the major written tests and aptitude tests used in mid-career hiring. It is used to interpret Step 1's investigation results (`exam_assessment.json`), design Step 2's study items, and understand Step 3's question formats.
 
-## 読み方
+## How to read this
 
-- 各項目に出典 URL を付す。エビデンスレベルは A=一次・公式、B=信頼できる二次、C=口コミ集約・対策媒体、D=個人ブログ・伝聞・未確認とする。C に対策媒体を含めるのは選考試験の文脈での当てはめであり、定義の原本は `job-change-company-research/references/evidence-grading.md` にある。
-- 提供元・対策媒体が公表する完了率・データ件数などの数値は、独立検証を経ていない自己報告値として扱う。断定の根拠にしない。
-- 個別の商用検査（SPI3・玉手箱等）そのものの予測的妥当性を、独立した第三者が日本サンプルで検証した査読研究は、2026年7月時点の追加探索でも確認できていない。知的能力の検査全般と管理者適性検査 NMAT を日本サンプルで検証した査読メタ分析は存在する（`references/prep-methods.md`「妥当性の絶対水準についての注記」）。個別商用検査の妥当性は提供元の非査読資料に依存している可能性が高いため、提供元による妥当性の主張を断定の根拠にしない。
-- 出題科目・時間・方式の細部は、検査のバージョンや導入企業の設定で変わりうる。ここでは代表的な構成を示す。
-- `exam_assessment.json` の `type` に書く名称は、下の2つの一覧表の表記を正とする。`references/exam-assessment-format.md` と `scripts/validate_exam_assessment.py` はこの語彙を参照する。
+- Each item carries a source URL. Evidence levels are A = primary/official, B = reliable secondary, C = review-site aggregation/preparation outlet, D = personal blog/hearsay/unconfirmed. Including preparation outlets under C is how this applies in the context of selection exams; the canonical definition lives in `job-change-company-research/references/evidence-grading.md`.
+- Figures such as completion rates or sample sizes published by a provider or preparation outlet are treated as self-reported figures that have not passed independent verification. They are not used as grounds for an assertion.
+- A peer-reviewed study in which an independent third party verified the predictive validity of an individual commercial test (SPI3, 玉手箱, etc.) itself, on a Japanese sample, has not been found even in the additional search as of July 2026. Peer-reviewed meta-analyses verifying cognitive-ability tests in general and the managerial-aptitude test NMAT on Japanese samples do exist (see "Note on the absolute level of validity" in `references/prep-methods.md`). Because the validity of individual commercial tests is likely to rest on non-peer-reviewed material from their providers, a provider's own validity claims are not used as grounds for an assertion.
+- The details of subjects, time, and method can vary by test version and by the settings the adopting company chooses. What is shown here is the representative structure.
+- The names to write into `exam_assessment.json`'s `type` field follow the notation in the two listing tables below exactly. `references/exam-assessment-format.md` and `scripts/validate_exam_assessment.py` reference this vocabulary.
 
-## 国内主要検査の一覧
+## Catalog of major domestic assessments
 
-| 検査 | 提供元 | 能力検査の科目 | 性格検査 | 主な実施方式 |
+| Assessment | Provider | Ability-test subjects | Personality test | Main administration methods |
 |---|---|---|---|---|
-| SPI3 | リクルートマネジメントソリューションズ | 言語・非言語 | あり | テストセンター／WEB テスティング／ペーパーテスティング／インハウス CBT |
-| 玉手箱 | 日本エス・エイチ・エル（日本 SHL） | 言語・計数・英語 | あり | 自宅受検の WEB 形式が中心 |
-| GAB | 日本 SHL | 言語・計数（論理的思考） | あり | ペーパー／WEB |
-| CAB | 日本 SHL | 四則逆算・法則性・命令表・暗号 | あり | ペーパー／WEB |
-| TG-WEB | ヒューマネージ | 計数・言語（従来型／新型） | あり | WEB／テストセンター |
-| TAL | 人総研 | 文章 36 問＋図形配置 1 問 | 性格特性の測定が主眼 | WEB |
-| 内田クレペリン検査 | 日本・精神技術研究所 | 一桁の連続加算 | 作業特性から判定 | ペーパー中心 |
+| SPI3 | Recruit Management Solutions | Verbal, non-verbal | Yes | Test Center / Web Testing / Paper Testing / In-house CBT |
+| 玉手箱 | Nihon SHL (Japan SHL) | Verbal, quantitative, English | Yes | Mainly the take-at-home web format |
+| GAB | Nihon SHL | Verbal, quantitative (logical reasoning) | Yes | Paper / Web |
+| CAB | Nihon SHL | Four arithmetic operations, rule inference, instruction tables, code-breaking | Yes | Paper / Web |
+| TG-WEB | Humanage | Quantitative, verbal (classic / new type) | Yes | Web / Test Center |
+| TAL | Jinsouken | 36 text questions plus 1 figure-placement question | Measuring personality traits is the main focus | Web |
+| 内田クレペリン検査 | Japan Institute for Psychotechnology | Single-digit continuous addition | Judged from work characteristics | Mainly paper |
 
-## その他の種別の一覧
+## Catalog of other types
 
-上の一覧に収まらない種別を挙げる。性格検査は多くの適性検査に組み込まれている。検査のブランドが判明せず、性格検査の実施だけがわかる場合に「性格検査」という名称を使う。ケース面接・フェルミ推定は面接の形式だが、筆記・オンライン選考の一環として課されるため、区分の列で区別してここに載せる。
+This lists types that do not fit the table above. A personality test is built into many aptitude tests. The name "性格検査" (personality test) is used when only the fact that a personality test is administered is known, without the assessment's brand being identified. Case interviews and Fermi estimation are interview formats, but because they are given as part of written/online selection, they are listed here, distinguished by the "Category" column.
 
-| 種別 | 区分 | 提供元 | 内容 | 対策の方向 |
+| Type | Category | Provider | Content | Direction of preparation |
 |---|---|---|---|---|
-| 性格検査 | 質問紙 | 各適性検査に組み込まれる（単独実施もある） | 行動や志向を問う多数の質問項目 | 望ましく見せる回答をせず、一貫した正直な回答（`references/prep-methods.md`） |
-| HireVue | 録画面接 | HireVue | 動画で提示される質問への録画回答。ゲーム形式の課題を含む場合がある | 制限時間内に結論から述べる練習。機材と通信の確認 |
-| pymetrics | ゲーム型アセスメント | pymetrics（Harver） | 一連のゲーム課題への反応から認知・行動の特性を測る | 知識による対策が効きにくい。操作方法の事前確認にとどめる |
-| 英語オンラインテスト | 能力検査 | 日本 SHL／IBM Kenexa 等 | 英語による言語・計数・論理 | 英語での受検に慣れる |
-| ケース面接 | 面接形式 | 実施企業（コンサルティングファーム等） | 提示された課題を口頭で分析し、結論を述べる | 思考の型（前提確認 → 構造分解 → 仮説 → 結論）の練習 |
-| フェルミ推定 | 面接形式 | 実施企業（コンサルティングファーム等） | 未知の量を、前提の設定と分解から概算する | 同上。思考の過程を整える |
+| 性格検査 | Questionnaire | Built into each aptitude test (also administered standalone) | Numerous questions asking about behavior and inclinations | No answer meant to look favorable; consistent, honest answers (`references/prep-methods.md`) |
+| HireVue | Recorded interview | HireVue | Recorded answers to questions presented on video. May include game-format tasks | Practice stating the conclusion first, within the time limit. Checking equipment and connectivity |
+| pymetrics | Game-based assessment | pymetrics (Harver) | Measures cognitive and behavioral traits from responses to a series of game tasks | Preparation through knowledge has little effect. Limit to checking the operation beforehand |
+| 英語オンラインテスト | Ability test | Nihon SHL / IBM Kenexa, etc. | Verbal, quantitative, and logical reasoning in English | Become accustomed to taking the test in English |
+| ケース面接 | Interview format | The hiring company (consulting firms, etc.) | Analyzing a presented issue aloud and stating a conclusion | Practicing the thinking pattern (confirm premises → structural decomposition → hypothesis → conclusion) |
+| フェルミ推定 | Interview format | The hiring company (consulting firms, etc.) | Estimating an unknown quantity by setting premises and decomposing it | Same as above. Organizing the thinking process |
 
-各種別の詳細と出典は「性格検査の位置づけ」「外資系のオンラインアセスメント」の各節にある。
+Details and sources for each type are in the "Position of the personality test" and "Foreign-affiliated online assessments" sections.
 
-## 各検査の詳細
+## Details of each assessment
 
 ### SPI3
 
-リクルートマネジメントソリューションズが提供する適性検査である。能力検査（言語・非言語）と性格検査で構成される。実施方式は4つある。専用会場で受ける「テストセンター」、自宅等で受ける「WEB テスティング」、応募企業の会場で紙により受ける「ペーパーテスティング」、応募企業のパソコンで受ける「インハウス CBT」である。方式により出題や制限時間の運用が異なる。
+SPI3 is an aptitude test provided by Recruit Management Solutions. It is composed of an ability test (verbal, non-verbal) and a personality test. There are four administration methods: "Test Center," taken at a dedicated venue; "Web Testing," taken at home or elsewhere; "Paper Testing," taken on paper at the applicant company's venue; and "In-house CBT," taken on a computer at the applicant company. The questions and time-limit handling differ by method.
 
-- 出典: リクルートマネジメントソリューションズ「適性検査『SPI』とは？」 https://www.recruit-ms.co.jp/freshers/spi-001.html （レベル B。提供元による説明）
+- Source: Recruit Management Solutions, 「適性検査『SPI』とは？」 ("What Is the Aptitude Test 'SPI'?") https://www.recruit-ms.co.jp/freshers/spi-001.html (Level B. Explanation from the provider)
 
 ### 玉手箱
 
-日本エス・エイチ・エル（日本 SHL）が提供する WEB 適性検査であり、言語・計数・英語の能力検査と性格検査で構成される。短時間で同一形式の問題を連続して出題する点が特徴である。1 問あたりに使える時間が短く、時間管理が要点になる。
+玉手箱 is a web-based aptitude test provided by Nihon SHL (Japan SHL), composed of an ability test (verbal, quantitative, English) and a personality test. It is characterized by presenting many questions of the same format in rapid succession over a short time; the time available per question is short, so time management is key.
 
-- 出典: 日本エス・エイチ・エル「SHL の適性検査（玉手箱 III・GAB・CAB・RAB）を徹底比較」 https://www.shl.co.jp/column/perspective/220617ysato/ （レベル B。提供元による説明）
-- 出典（出題科目の補足）: unistyle「【玉手箱の完全対策】言語・計数・英語の例題や出題企業を掲載」 https://unistyleinc.com/techniques/962 （レベル C。対策媒体）
+- Source: Nihon SHL, 「SHL の適性検査（玉手箱 III・GAB・CAB・RAB）を徹底比較」 ("A Thorough Comparison of SHL's Aptitude Tests (Tamatebako III, GAB, CAB, RAB)") https://www.shl.co.jp/column/perspective/220617ysato/ (Level B. Explanation from the provider)
+- Source (supplement on the question subjects): unistyle, 「【玉手箱の完全対策】言語・計数・英語の例題や出題企業を掲載」 ("The Complete Guide to Tamatebako: Verbal, Quantitative, and English Example Questions and Companies That Use It") https://unistyleinc.com/techniques/962 (Level C. Preparation outlet)
 
 ### GAB・CAB
 
-いずれも日本 SHL が提供する。GAB は総合職向けで言語・計数を通じた論理的思考を測り、CAB はコンピューター職（システムエンジニア・プログラマー等）向けで、四則逆算・法則性・命令表・暗号の各科目で情報処理の適性を測る。
+Both are provided by Nihon SHL. GAB is aimed at the general career track and measures logical reasoning through verbal and quantitative sections; CAB is aimed at computer-related roles (systems engineers, programmers, etc.) and measures aptitude for information processing through subjects covering four arithmetic operations, rule inference, instruction tables, and code-breaking.
 
-- 出典（GAB）: 日本エス・エイチ・エル「SHL の適性検査（玉手箱 III・GAB・CAB・RAB）を徹底比較」 https://www.shl.co.jp/column/perspective/220617ysato/ （レベル B）
-- 出典（CAB）: 日本エス・エイチ・エル「CAB」 https://www.shl.co.jp/service/assessment/cab/ （レベル B。提供元による説明）
+- Source (GAB): Nihon SHL, "A Thorough Comparison of SHL's Aptitude Tests (Tamatebako III, GAB, CAB, RAB)" https://www.shl.co.jp/column/perspective/220617ysato/ (Level B)
+- Source (CAB): Nihon SHL, "CAB" https://www.shl.co.jp/service/assessment/cab/ (Level B. Explanation from the provider)
 
 ### TG-WEB
 
-ヒューマネージが提供する適性検査である。計数・言語の能力検査に、従来型と新型の 2 系統がある。従来型は図形・暗号など難度の高い出題を含む。新型は多数の問題を短時間で処理させる傾向があるとされる。対策媒体は従来型の計数を約 18 分、新型の計数を約 8 分と説明する。中途採用向けには TG-WEB CAREER が用意される。
+TG-WEB is an aptitude test provided by Humanage. Its ability test, covering quantitative and verbal sections, has two lines: a classic type and a new type. The classic type includes higher-difficulty questions such as figures and code-breaking. The new type is said to tend toward processing a large number of questions in a short time. Preparation outlets describe the classic type's quantitative section as about 18 minutes and the new type's as about 8 minutes. For mid-career hiring, TG-WEB CAREER is offered.
 
-- 出典: ヒューマネージ「ヒューマネージの適性検査 TG-WEB」 https://tg-web.humanage.co.jp/ （レベル B。提供元による説明。従来型／新型と TG-WEB CAREER の別）
-- 出典（従来型／新型の時間の目安）: DYM「TG-WEB 対策とは？新型と旧型の見分け方や例題と練習方法」 https://dym.asia/media/recruiting/tgweb/ （レベル C。対策媒体。時間の数値はこの媒体の説明による）
+- Source: Humanage, 「ヒューマネージの適性検査 TG-WEB」 ("Humanage's Aptitude Test TG-WEB") https://tg-web.humanage.co.jp/ (Level B. Explanation from the provider. The classic/new distinction and TG-WEB CAREER)
+- Source (time estimates for classic/new type): DYM, 「TG-WEB 対策とは？新型と旧型の見分け方や例題と練習方法」 ("What Is TG-WEB Preparation? How to Tell New from Old Type, with Example Questions and Practice Methods") https://dym.asia/media/recruiting/tgweb/ (Level C. Preparation outlet. The time figures come from this outlet's explanation)
 
 ### TAL
 
-人総研が提供する適性検査である。文章問題 36 問と、図形を配置する問題 1 問で構成される。公式の練習問題や対策本がほとんどなく、明確な正解を狙う対策が成り立ちにくい。パーソナリティや潜在的な傾向の測定を主眼とするため、本スキルは対策が困難な検査として扱う。
+TAL is an aptitude test provided by Jinsouken. It is composed of 36 text-based questions and 1 question involving placing figures. There are almost no official practice questions or preparation books, so preparation aimed at a clear correct answer does not hold well. Because its main focus is measuring personality and latent tendencies, this skill treats it as an assessment where preparation is difficult.
 
-- 出典: ワンキャリア「適性検査 TAL とは？特徴や対策方法、例題と解答のポイントを解説」 https://www.onecareer.jp/articles/5364 （レベル C。対策媒体）
+- Source: OneCareer, 「適性検査 TAL とは？特徴や対策方法、例題と解答のポイントを解説」 ("What Is the TAL Aptitude Test? Its Characteristics, How to Prepare, and Points on Example Questions and Answers") https://www.onecareer.jp/articles/5364 (Level C. Preparation outlet)
 
 ### 内田クレペリン検査
 
-日本・精神技術研究所が提供する作業検査法である。一桁の数字の連続加算を前半 15 分・後半 15 分の計 30 分行い、作業量（全体の計算量）、作業曲線（1 分ごとの作業量の推移）、誤答の 3 要素から処理能力や作業時の特性を判定する。知識問題ではないため、知識の暗記による対策が効きにくい。
+内田クレペリン検査 is a work-sample test provided by the Japan Institute for Psychotechnology. It involves continuous single-digit addition for a first 15-minute session and a second 15-minute session, 30 minutes in total, and judges processing ability and work-related traits from three factors: the work volume (total amount calculated), the work curve (the minute-by-minute change in work volume), and errors. Because the assessment measures work-sample performance, preparation through memorizing knowledge has little effect.
 
-- 出典: 日本・精神技術研究所「内田クレペリン検査 〜検査について」 https://www.nsgk.co.jp/uk/whatis （レベル B。提供元による説明）
+- Source: Japan Institute for Psychotechnology, 「内田クレペリン検査 〜検査について」 ("About the Uchida-Kraepelin Test") https://www.nsgk.co.jp/uk/whatis (Level B. Explanation from the provider)
 
-## 性格検査の位置づけ
+## Position of the personality test
 
-多くの適性検査は能力検査と性格検査で構成される。中途採用では企業が既存の組織への適合（カルチャーフィット）を重視するため、性格検査の比重は上がる傾向にあるとされる。性格検査の対策方針は `references/prep-methods.md` を原本とする（要点は、望ましく見せる回答ではなく一貫した正直な回答である）。
+Many aptitude tests are composed of an ability test and a personality test. In mid-career hiring, companies place weight on fit with the existing organization (culture fit), so the personality test tends to carry more weight. The canonical definition of the personality test's preparation policy is `references/prep-methods.md` (in short: consistent, honest answers).
 
-- 出典: マイナビ転職「転職の適性検査とは？新卒と中途の違いや目的、種類、対策法」 https://tenshoku.mynavi.jp/knowhow/caripedia/167/ （レベル C。対策媒体。中途で性格検査の比重が上がる傾向）
+- Source: Mynavi Tenshoku (Mynavi Job Change), 「転職の適性検査とは？新卒と中途の違いや目的、種類、対策法」 ("What Is the Aptitude Test for Job Changes? Differences Between New-Graduate and Mid-Career Hiring, Its Purpose, Types, and How to Prepare") https://tenshoku.mynavi.jp/knowhow/caripedia/167/ (Level C. Preparation outlet. The tendency for personality tests to carry more weight in mid-career hiring)
 
-## 外資系のオンラインアセスメント
+## Foreign-affiliated online assessments
 
-外資系の選考では、日本の適性検査とは別系統のオンラインアセスメントが使われることがある。
+Foreign-affiliated selection processes sometimes use a different family of online assessments from Japan's domestic aptitude tests.
 
-### HireVue（録画面接＋ゲーム課題）
+### HireVue (recorded interview plus game tasks)
 
-動画で提示される質問に、応募者が録画で回答する非同期の録画面接である。ゲーム形式の課題を含む場合がある。AI による顔の表情分析は、HireVue が 2021 年初頭に新規のアセスメントから削除した。削除の前には、電子プライバシー情報センター（EPIC）が米連邦取引委員会（FTC）へ、HireVue の顔の表情分析は不公正であり人を欺くものであると申し立てていた。ベンダーが公表する完了率などの数値は自己報告値として扱う。
+HireVue is an asynchronous recorded interview in which the applicant records answers to questions presented on video. It may include game-format tasks. AI-based facial-expression analysis was removed by HireVue from new assessments in early 2021. Before the removal, the Electronic Privacy Information Center (EPIC) had filed a complaint with the U.S. Federal Trade Commission (FTC) alleging that HireVue's facial-expression analysis was unfair and deceptive. Figures such as completion rates published by the vendor are treated as self-reported.
 
-- 出典（概要）: TechTarget「What Is HireVue?」 https://www.techtarget.com/searchhrsoftware/definition/HireVue （レベル C）
-- 出典（顔分析の撤回）: Fortune「HireVue stops using facial expressions to assess job candidates amid audit of its A.I. algorithms」 2021-01-19 https://fortune.com/2021/01/19/hirevue-drops-facial-monitoring-amid-a-i-algorithm-audit/ （レベル C）
+- Source (overview): TechTarget, "What Is HireVue?" https://www.techtarget.com/searchhrsoftware/definition/HireVue (Level C)
+- Source (withdrawal of facial analysis): Fortune, "HireVue stops using facial expressions to assess job candidates amid audit of its A.I. algorithms," 2021-01-19, https://fortune.com/2021/01/19/hirevue-drops-facial-monitoring-amid-a-i-algorithm-audit/ (Level C)
 
-### pymetrics（ゲーム型行動アセスメント）
+### pymetrics (game-based behavioral assessment)
 
-pymetrics は、一連のゲーム課題への反応から認知・行動の特性を測るアセスメントである。ゲーム型アセスメント一般の収束的妥当性は中程度（相関 r≈0.5）にとどまるとする査読研究がある。
+pymetrics is an assessment that measures cognitive and behavioral traits from responses to a series of game tasks. A peer-reviewed study reports that the convergent validity of game-based assessments in general remains moderate (correlation r≈0.5).
 
-- 出典（概要）: Harver / pymetrics「Game-Based Behavioral Assessments」 https://harver.com/gamified-assessments/ （レベル C）
-- 出典（妥当性）: 「Game based assessments of cognitive ability in recruitment: Validity, fairness and test-taking experience」 2023 https://pmc.ncbi.nlm.nih.gov/articles/PMC9891208/ （レベル A。査読論文）
+- Source (overview): Harver / pymetrics, "Game-Based Behavioral Assessments" https://harver.com/gamified-assessments/ (Level C)
+- Source (validity): "Game based assessments of cognitive ability in recruitment: Validity, fairness and test-taking experience," 2023, https://pmc.ncbi.nlm.nih.gov/articles/PMC9891208/ (Level A. Peer-reviewed paper)
 
-### SHL／Kenexa の英語オンラインテスト
+### SHL / Kenexa English online tests
 
-外資系では、SHL や IBM Kenexa の英語によるオンライン適性テスト（言語・計数・論理等）が課されることがある。応募者は英語での受検に慣れておく必要がある。
+Foreign-affiliated selection processes may include an English-language online aptitude test (verbal, quantitative, logical, etc.) from SHL or IBM Kenexa. Applicants need to become accustomed to taking the test in English.
 
-- 出典: GraduatesFirst「IBM Kenexa Assessments — Complete Practice Guide」 https://www.graduatesfirst.com/aptitude-tests-publishers/ibm-kenexa （レベル C。対策媒体）
+- Source: GraduatesFirst, "IBM Kenexa Assessments — Complete Practice Guide" https://www.graduatesfirst.com/aptitude-tests-publishers/ibm-kenexa (Level C. Preparation outlet)
 
-### ケース面接・フェルミ推定
+### Case interviews and Fermi estimation
 
-コンサルティングファーム等はケース面接やフェルミ推定を課し、数値の正確性よりも、前提の置き方・構造への分解・仮説と結論の説明といった思考の過程を評価する。思考の型は `references/prep-methods.md` を原本とする。面接での深掘りへの想定問答は `job-change-interview-prep` が担う。
+Consulting firms and similar companies give case interviews and Fermi estimation, weighting the thinking process (how premises are set, how the problem is decomposed, and how the hypothesis and conclusion are explained) above numerical accuracy. The canonical definition of this thinking pattern is `references/prep-methods.md`. Rehearsed answers for follow-up probing during the interview are handled by `job-change-interview-prep`.
 
-- 出典（ケース面接）: Management Consulted「BCG Case Interview」 https://managementconsulted.com/bcg-case-interview/ （レベル C）
-- 出典（フェルミ推定）: ワンキャリア「フェルミ推定・ケース面接を対策！」 https://www.onecareer.jp/articles/298 （レベル C）
+- Source (case interviews): Management Consulted, "BCG Case Interview" https://managementconsulted.com/bcg-case-interview/ (Level C)
+- Source (Fermi estimation): OneCareer, 「フェルミ推定・ケース面接を対策！」 ("Preparing for Fermi Estimation and Case Interviews!") https://www.onecareer.jp/articles/298 (Level C)

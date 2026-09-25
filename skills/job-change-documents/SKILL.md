@@ -1,11 +1,16 @@
 ---
 name: job-change-documents
 description: >-
-  転職の応募書類（職務経歴書・履歴書・英文レジュメ・志望動機書）を、profile.json の実績と求人要件・
-  企業研究の結果に基づいて作成するサブスキル。求人要件と実績の対応表（アピールマッピング）を作り、
-  書類種別ごとの標準形式で作成し、独立した監査（日本語の文法、誇張・創作の検出、要件との対応、英文レジュメの観点、分量）を通してから納品する。定量値は profile.json の metric と厳密一致させ、記載のない実績を
-  創作しない、という原則を保つ。job-change-support（hub）から振り分けられて動く。個々の作成・監査は
-  専用エージェント（job-change-document-writer / job-change-document-auditor）が担う。
+  A sub-skill that writes job application documents for a career change (shokumu-keirekisho,
+  rirekisho, English resume, statement of motivation) from the achievements in profile.json, the
+  posting requirements, and the results of company research. It builds a correspondence table
+  between the posting requirements and the achievements (an appeal mapping), writes each document
+  type in its standard format, and delivers it only after it passes an independent audit (Japanese
+  grammar, detection of exaggeration and fabrication, correspondence with the requirements, English
+  resume criteria, length). It holds to the principle that a quantified value matches profile.json's
+  metric exactly and that no achievement without a record in the profile is fabricated. It runs when
+  dispatched from job-change-support (the hub). Dedicated agents (job-change-document-writer /
+  job-change-document-auditor) handle the writing and the audit.
   Use when the user writes job application documents for a career change in Japan (including
   foreign-affiliated selection) — a shokumu-keirekisho (work-history CV), rirekisho (resume), English
   resume, or statement of motivation — based on their profile and the target company's requirements.
@@ -15,203 +20,355 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 # job-change-documents
 
-転職の応募書類を作成するとき、このスキル1つで受付から納品までの手順がそろう。求人要件と利用者の実績を対応づけ、書類種別ごとの標準形式で作成し、作成担当とは独立した監査を通してから納品する。日本の中途採用を中心とし、外資系選考向けの英文レジュメにも対応する。
+This single skill covers the full procedure, from intake to delivery, for writing job application
+documents for a career change. It maps posting requirements to the user's achievements, writes each
+document in its standard format by document type, and delivers it only after it passes an audit
+independent of the writer. It centers on mid-career hiring in Japan and also supports the English
+resume used for foreign-affiliated company selection.
 
-作成と監査はそれぞれ専用エージェント（`job-change-document-writer`・`job-change-document-auditor`）が担う。本スキルはその起動・差し戻し・納品を統括する。書類種別ごとの記述基準は `references/` で完結する。
+Dedicated agents (`job-change-document-writer` and `job-change-document-auditor`) handle the writing
+and the audit respectively. This skill governs their launch, rework, and delivery. The writing
+standards for each document type are self-contained in `references/`.
 
-## 目的と原則
+## Purpose and principles
 
-1. **実績は profile.json の範囲内でのみ書く。** 書類に載せる経歴・実績・数値は、すべて `profile.json` に記載のある範囲に限る。記載のない実績・経歴を創作しない（虚偽記載の禁止）。定量値は `profile.json` の `achievements[].metric` と厳密一致させ、丸め・水増しをしない。規模・範囲・主体を表す言葉（大規模・全社・主導など）は、`profile.json` の記述で裏付けられる範囲を超えて用いない。
+1. **Write achievements only within what profile.json records.** Every career history entry,
+   achievement, and figure that appears in a document is limited to what `profile.json` records. Do
+   not fabricate an achievement or a career history entry it does not record (fabrication is
+   prohibited). Match every quantified value exactly to `profile.json`'s `achievements[].metric`; do
+   not round or inflate it. Do not use a word for scale, scope, or ownership (大規模 large-scale, 全社
+   company-wide, 主導 led, and the like) beyond what `profile.json`'s description supports.
 
-2. **求人要件と実績を対応づけてから書く。** 作成の前に、求人要件と `profile.json` の実績を突き合わせたアピールマッピング（要件・対応する実績・裏付け）を作る。訴求点は必ず求人要件に対応づける。要件に対応する実績が profile.json に無い項目は、該当なしとして扱い、創作で埋めない。
+2. **Map the posting requirements to the achievements before writing.** Before writing, build an
+   appeal mapping (a requirement-to-profile map) that matches the posting requirements against
+   `profile.json`'s achievements, listing each requirement, its corresponding achievement, and the
+   supporting evidence. Every selling point maps to a posting requirement. Treat a requirement with
+   no corresponding achievement in profile.json as unmatched, and do not fill it with fabrication.
 
-3. **作成と監査を分離する。** 作成担当の判断理由を渡さない新規コンテキストで監査担当を起動し、成果物そのものに基づいて検査させる。監査は書類を書き換えず、指摘（findings）だけを返す。反映は作成担当が行う。
+3. **Separate the writer from the auditor.** Launch the auditor in a new context that withholds the
+   writer's rationale, so it judges the deliverable on its own terms. The auditor does not rewrite the
+   document; it returns findings only. The writer applies them.
 
-4. **企業固有の調整には企業研究の結果を用いる。** 志望動機・企業別カスタマイズは、対象企業の `company_research.json`（理念・求める人物像など）を根拠とする。`company_research.json` が無い場合は企業固有の調整をせず、簡易対応（企業に依存しない汎用の書式・自己PRの骨子まで）である旨を利用者へ明示する。
+4. **Use company research for company-specific tailoring.** Base the statement of motivation and any
+   company-specific tailoring on the target company's `company_research.json` (its philosophy, the
+   profile of the person it wants, and the like). When `company_research.json` does not exist, skip
+   company-specific tailoring and tell the user explicitly that the output is a reduced version — a
+   generic format and a skeleton self-PR that do not depend on the company.
 
-5. **個人情報を外部へ送信しない。** 利用者の個人情報は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルの job-change-document-writer と job-change-document-auditor はいずれも Web 送信手段を持たない。このため `profile.json`・`self_analysis.json`・`fit_assessment.json` をそのまま渡してよい。この規則は、本スキルと下流のすべての手順で守る。
+5. **Do not send personal information outside the system.** Do not use the user's personal
+   information in any outbound transmission, including a search query, a fetch, or an external API
+   call. The canonical definition of what counts as personal information and which role may handle it
+   lives in the hub's `{HUB_SKILL_DIR}/references/pii-boundary.md`. Neither `job-change-document-writer`
+   nor `job-change-document-auditor` in this skill holds a web transmission tool, so `profile.json`,
+   `self_analysis.json`, and `fit_assessment.json` may be passed to them as they are. This rule holds
+   throughout this skill and every downstream step.
 
-## 範囲外
+## Out of scope
 
-- **求人への応募実行・書類の外部送信。** 応募フォームからの送信、転職エージェントへの提出、スカウトへの返信など、利用者に代わって外部へ送信する操作は行わない。書類の作成までを支援し、送信は本人が行う。
-- **プロファイルの新規作成。** `profile.json` の作成・検証は hub（`job-change-support`）が担う。本スキルは既存の `profile.json` を入力として用いる。
-- **企業研究そのもの。** 企業の理念・事業・評判の調査は `job-change-company-research` が担う。本スキルはその成果物（`company_research.json`）を参照する。
+- **Submitting an application or sending documents outside the system.** This skill does not perform
+  an operation that sends anything outside the system on the user's behalf, such as submitting an
+  application form, delivering documents to a recruiting agency, or replying to a scout. It supports
+  the work through document creation; the user sends the documents.
+- **Creating a new profile.** The hub (`job-change-support`) handles creating and validating
+  `profile.json`. This skill takes an existing `profile.json` as input.
+- **Company research itself.** `job-change-company-research` handles researching a company's
+  philosophy, business, and reputation. This skill references its output (`company_research.json`).
 
-## パスの解決
+## Path resolution
 
-利用者データの置き場所は設定ファイルの記述だけで決まる。既定の置き場所は無い。本文で `{DATA_ROOT}` と書いた箇所は、次のコマンドが返す `data_root` に読み替える。
+The user data location is determined solely by what the configuration file states; there is no
+default location. Wherever this document writes `{DATA_ROOT}`, read it as the `data_root` the
+following command returns.
 
-hub（job-change-support）から振り分けられた場合、本スキルは hub が解決済みの `{DATA_ROOT}` を受け取る。単独で起動された場合は、作業のどの段階よりも先に次を実行する。
+When dispatched from the hub (job-change-support), this skill receives the `{DATA_ROOT}` the hub has
+already resolved. When launched standalone, run the following before any other step.
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 ```
 
-| 終了コード | 状態 | 対応 |
+| Exit code | State | Action |
 |---|---|---|
-| 0 | 設定済み | 出力の `paths` に各データの絶対パスが入る。そのまま作業へ進む |
-| 1 | 設定はあるが内容が不正 | 出力の `errors` を利用者へ示し、利用者が修復するまで作業へ進まない |
-| 2 | 未設定 | Skill ツールで `job-change-support` を起動して設定を作らせ、`{DATA_ROOT}` を解決してから戻る |
+| 0 | configured | The output's `paths` holds the absolute path to each data file. Proceed with the work as is. |
+| 1 | configuration exists but is invalid | Show the user the output's `errors`, and do not proceed until the user fixes it. |
+| 2 | unconfigured | Launch `job-change-support` with the Skill tool to have it create the configuration, resolve `{DATA_ROOT}`, and then return. |
 
-`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。探索順序を含む設定ファイルの仕様は `docs/configuration.md` にある。
+`{SKILL_DIR}` denotes this skill's own absolute path, and `{HUB_SKILL_DIR}` denotes the absolute path
+of `job-change-support` in the same installation. The configuration file's specification, including
+the search order, lives in `docs/configuration.md`.
 
-## データ配置
+## Data layout
 
-利用者データは2か所に分けて置く。非公開ディレクトリ `{DATA_ROOT}/career-private/` には profile.json 等の個人情報を置く。その外側のプロジェクト直下 `{DATA_ROOT}/` には企業別成果物などの非個人情報を置く。本スキルが読み書きするパスは次のとおり。
+User data is split across two locations. The private directory `{DATA_ROOT}/career-private/` holds
+personal information such as profile.json. The project root outside it, `{DATA_ROOT}/`, holds
+non-personal information such as per-company outputs. This skill reads and writes the following
+paths.
 
-| パス | 役割 | 入出力 |
+| Path | Role | I/O |
 |---|---|---|
-| `career-private/profile.json` | 利用者プロファイルの原本 | 入力（読むのみ） |
-| `career-private/self_analysis.json` | 自己分析の成果物（原本は `job-change-self-analysis`） | 入力（任意。あれば志望動機書・自己PRの入力に加える。無くても進行できる） |
-| `career-private/fit/{企業スラッグ}/fit_assessment.json` | 適合性評価の成果物（原本は `job-change-fit-assessment`） | 入力（任意。あればアピールマッピングの訴求点選定に加える。無くても進行できる） |
-| `companies/{企業スラッグ}/company_research.json` | 企業研究の構造化データ | 入力（任意。無ければフォールバック） |
-| `companies/{企業スラッグ}/documents/` | 作成した応募書類の出力先 | 出力 |
-| `companies/{企業スラッグ}/documents/appeal-mapping.md` | アピールマッピング表 | 出力 |
-| `companies/{企業スラッグ}/documents/tailoring-rationale.md` | 調整根拠の説明 | 出力 |
+| `career-private/profile.json` | Canonical user profile | Input (read only) |
+| `career-private/self_analysis.json` | Self-analysis output (canonical definition: `job-change-self-analysis`) | Input (optional; when present, add it to the input for the statement of motivation and the self-PR; the pipeline proceeds without it) |
+| `career-private/fit/{company slug}/fit_assessment.json` | Fit-assessment output (canonical definition: `job-change-fit-assessment`) | Input (optional; when present, add it to selecting the appeal mapping's selling points; the pipeline proceeds without it) |
+| `companies/{company slug}/company_research.json` | Company research's structured data | Input (optional; a fallback applies when absent) |
+| `companies/{company slug}/documents/` | Output location for the application documents produced | Output |
+| `companies/{company slug}/documents/appeal-mapping.md` | Appeal mapping table | Output |
+| `companies/{company slug}/documents/tailoring-rationale.md` | Explanation of the tailoring rationale | Output |
 
-- 企業スラッグは hub と同じ規約に従い、`career-private/company_index.json` で解決する（例: 架空クラウドワークス社 → `kakuu-cloudworks`）。
-- 企業に依存しない汎用書類（対象企業が未定の場合）は、`documents/` の下に置く。
-- 書類ファイルは種別で命名を分ける（例: `shokumu-keirekisho.md`・`rirekisho.md`・`english-resume.md`・`motivation.md`）。
-- アピールマッピング表は `documents/appeal-mapping.md`、調整根拠の説明は `documents/tailoring-rationale.md` へ書き出す。いずれも `profile.json` の実績を引くため個人情報を含むが、応募書類そのものと同じ配置先に置く。本スキルの2役割はいずれも Web 送信手段を持たず、`companies/{企業スラッグ}/documents/` を読む役割も本スキルの外には無い。
+- The company slug follows the same convention as the hub and resolves through
+  `career-private/company_index.json` (example: the fictional Kakuu Cloudworks →
+  `kakuu-cloudworks`).
+- A company-independent generic document (when the target company is undecided) is placed under
+  `documents/`.
+- Document files are named separately by type (for example: `shokumu-keirekisho.md`,
+  `rirekisho.md`, `english-resume.md`, `motivation.md`).
+- Write the appeal mapping table to `documents/appeal-mapping.md` and the tailoring rationale to
+  `documents/tailoring-rationale.md`. Both cite achievements from `profile.json` and so contain
+  personal information, but they are placed alongside the application documents themselves. Neither
+  of this skill's two roles holds a web transmission tool, and no role outside this skill reads
+  `companies/{company slug}/documents/`.
 
-## 中間成果物
+## Intermediate outputs
 
-パイプラインの過程で次を作る。いずれも最終納品物へ含める。
+The pipeline produces the following along the way. Both are included in the final delivery.
 
-| 中間成果物 | 内容 |
+| Intermediate output | Content |
 |---|---|
-| アピールマッピング | 求人要件・対応する実績・裏付けの3列の対応表。作成担当が Step 1 で作り、出力 JSON（`appeal_mapping`）と成果物に載せる。誇張のない訴求の根拠であり、監査担当が求人要件との対応を検査するときに用いる。 |
-| 形式選定の記録 | 書類種別ごとに `references/templates.md` のどのテンプレートを選んだか、その理由（作成担当の出力 JSON の `format`）。 |
+| Appeal mapping | A three-column table of posting requirement, corresponding achievement, and supporting evidence. The writer builds it in Step 1 and carries it into the output JSON (`appeal_mapping`) and the deliverable. It grounds every selling point without exaggeration, and the auditor uses it to check correspondence with the posting requirements. |
+| Format selection record | Which template from `references/templates.md` was chosen for each document type, and why (the writer's output JSON field `format`). |
 
-## パイプライン
+## Pipeline
 
-受付から納品まで Step 0〜4 を順に進める。`{PROFILE}` は `profile.json` の絶対パスに、`{COMPANY_RESEARCH}` は対象企業の `company_research.json` の絶対パスに読み替える。`{SELF_ANALYSIS}` は `career-private/self_analysis.json` の絶対パス（あれば）とする。`{FIT_ASSESSMENT}` は `career-private/fit/{企業スラッグ}/fit_assessment.json` の絶対パス（あれば）とする。`{OUT_DIR}` は書類の出力先ディレクトリに読み替える。
+Proceed through Step 0 to Step 4 in order, from intake to delivery. Read `{PROFILE}` as the absolute
+path to `profile.json`, and `{COMPANY_RESEARCH}` as the absolute path to the target company's
+`company_research.json`. `{SELF_ANALYSIS}` is the absolute path to `career-private/self_analysis.json`
+(when present). `{FIT_ASSESSMENT}` is the absolute path to
+`career-private/fit/{company slug}/fit_assessment.json` (when present). Read `{OUT_DIR}` as the
+document output directory.
 
-### Step 0 受付
+### Step 0: Intake
 
-次を確認する。不明点の確認は AskUserQuestion で選択式を基本とし、1回最大4問・各4択までとする。
+Confirm the following. Ask any unclear point with AskUserQuestion, as a multiple-choice question in
+principle, at most 4 questions per round with up to 4 options each.
 
-| 確認項目 | 内容 |
+| Item to confirm | Content |
 |---|---|
-| 書類種別 | 職務経歴書／履歴書／英文レジュメ／志望動機書のいずれか（複数可）。 |
-| 求人票 | 対象求人の要件。テキストまたはファイルで受け取る。無い場合は汎用の書式作成に範囲を限定する。 |
-| 対象企業 | 企業別カスタマイズの対象。スラッグの解決に入る前に `validate_company_index.py`（hub の scripts）で一覧を検証し、FAIL（ERROR 1件以上）なら指摘内容を利用者へ示し、利用者が修復するまで解決へ進まない。そのうえで企業スラッグを `career-private/company_index.json` で解決し（詳細は hub の `references/company-index-format.md`）、`{OUT_DIR}` を定める。 |
+| Document type | One of shokumu-keirekisho (career history document), rirekisho (résumé form), English résumé, or statement of motivation (multiple allowed). |
+| Job posting | The target posting's requirements, received as text or a file. Without it, limit the scope to producing a generic format. |
+| Target company | The subject of company-specific tailoring. Before resolving the slug, validate the index with `validate_company_index.py` (a hub script); on FAIL (one or more ERROR), show the finding to the user and do not proceed to resolution until the user fixes it. Then resolve the company slug through `career-private/company_index.json` (details in the hub's `references/company-index-format.md`) and set `{OUT_DIR}`. |
 
-profile.json のゲートは必須である。
+The profile.json gate is mandatory.
 
-- 本スキルは、`profile.json` が `validate_profile.py`（hub の scripts）で PASS（ERROR 0件）になることを前提とする。hub 経由で入る場合は、hub がルーティング前に確認済みである。本スキルが単独で起動された場合は、自分で `validate_profile.py` を実行して PASS を確かめる。
-- `profile.json` が未作成の場合は先へ進まない。hub（`job-change-support`）のプロファイル整備へ戻し、作成してから再開する（プロファイルの作成は hub と `job-change-profile` の責務である）。
-- 検証が FAIL（ERROR 1件以上）の場合は、ERROR の内容を利用者へ示し、`job-change-profile` での整備を勧める。ただし、利用者が欠落を承知のうえで着手を希望する場合は、欠けた項目の値を直接引用または前提とする記述を作らないという条件で進めてよい。その場合は、どの項目が欠けたままかを納品時に明記する。hub から振り分けられ、hub がすでにこの選択を利用者へ求めている場合は、再度問わずにその選択に従う。hub と本スキルが同じ選択を2回求めないためである。
+- This skill assumes `profile.json` PASSes `validate_profile.py` (a hub script), meaning zero ERROR.
+  When entered through the hub, the hub has already confirmed this before routing. When this skill is
+  launched standalone, it runs `validate_profile.py` itself and confirms the PASS.
+- When `profile.json` does not exist, do not proceed. Send the user back to the hub's
+  (`job-change-support`) profile setup, and resume once it is created (creating the profile is the
+  responsibility of the hub and `job-change-profile`).
+- When validation FAILs (one or more ERROR), show the user the ERROR content and recommend fixing it
+  in `job-change-profile`. When the user knowingly accepts the gap and wants to proceed anyway, this
+  skill may proceed, on the condition that it writes no statement that directly quotes or presupposes
+  the value of a missing field. In that case, state clearly at delivery which fields remain missing.
+  When dispatched from the hub and the hub has already asked the user this same question, follow that
+  choice without asking again, so the hub and this skill do not ask the user the same question twice.
 
-`profile.json` の `career_history[].achievements` と `skills` が空の場合は、`job-change-profile` のセクション更新（職歴と実績・スキル）で深掘りしてから戻るよう案内する。実績とスキルはここで初めて必要になる項目であり、プロファイルの初回の範囲では既定で飛ばしてある。検証は PASS するため、差し戻しではなく案内である。利用者がそのまま進めることを選んだ場合は、職歴の骨格だけで書ける範囲に限って作成し、実績の記載が無いことを納品時に明記する。
+When `profile.json`'s `career_history[].achievements` and `skills` are empty, guide the user to return
+to `job-change-profile`'s section update (`achievements`, `skills`) to elicit them in depth, then come
+back. Achievements and skills are fields that become necessary only at this stage, and the profile's
+initial scope skips them by default. Since validation still PASSes, treat this as guidance to the
+user. When the user chooses to proceed anyway, write only what the bare career-history skeleton
+supports, and state clearly at delivery that no achievement is recorded.
 
-company_research.json の確認は任意であり、無い場合はフォールバックを明示する。
+Checking company_research.json is optional, and when it is absent, state the fallback explicitly.
 
-- 対象企業の `company_research.json` の有無を確認する。無い場合はエラーとしない。企業固有の調整をしないフォールバック動作とすることを利用者へ明示する。あわせて、企業研究（`job-change-company-research`）を先に実行すれば志望動機・企業別カスタマイズの精度が上がることも伝える。
-- `company_research.json` がある場合は、`check_freshness.py`（hub の scripts）で当該企業の `_manifest.json` を判定する。`stale` のトピックがあれば、その旨と対象トピック名を利用者へ示し、`job-change-company-research` での差分再調査を提案する。利用者が再調査せずに進むことを選んだ場合は、古い情報に基づく旨と対象トピック名を Step 4 の調整根拠の説明へ明記して進む。判定規則と TTL の原本は hub の `references/freshness-policy.md` にある。
+- Check whether the target company's `company_research.json` exists. When it is absent, proceed with
+  a fallback behavior that applies no company-specific tailoring, and tell the user so explicitly.
+  Also tell them that running company research (`job-change-company-research`) first would raise the
+  precision of the statement of motivation and the company-specific tailoring.
+- When `company_research.json` exists, judge that company's `_manifest.json` with `check_freshness.py`
+  (a hub script). When a topic is `stale`, show the user that fact and the topic's name, and suggest a
+  differential re-investigation in `job-change-company-research`. When the user chooses to proceed
+  without re-investigating, state clearly in Step 4's tailoring rationale that the document relies on
+  stale information, naming the topic, and proceed. The canonical definition of the judgment rule and
+  the TTL lives in the hub's `references/freshness-policy.md`.
 
-self_analysis.json も任意の入力である。
+self_analysis.json is likewise an optional input.
 
-- `career-private/self_analysis.json` の有無を確認する。あれば志望動機書・自己PRの入力に加える。無くても進行できるが、自己分析（`job-change-self-analysis`）を先に実行すればキャリア・ナラティブと転職理由の建設的な言語化を反映できることを、利用者へ明示する。
+- Check whether `career-private/self_analysis.json` exists. When present, add it to the input for the
+  statement of motivation and the self-PR. The pipeline proceeds without it, but tell the user
+  explicitly that running self-analysis (`job-change-self-analysis`) first would let the document
+  reflect the career narrative and a constructive framing of the reason for changing jobs.
 
-fit_assessment.json も同じく必須ではない。
+fit_assessment.json is likewise not mandatory.
 
-- `career-private/fit/{企業スラッグ}/fit_assessment.json` の有無を確認する。あればアピールマッピングの訴求点選定に、`dimensions` の `evidence` と `must_condition_results` を判断材料として加える。無くても進行できる（求人要件と `profile.json` の実績の突き合わせのみで進める）。fit_assessment.json は career-private 配下の成果物であり、Web ツールを持つエージェントへは渡さない。
+- Check whether `career-private/fit/{company slug}/fit_assessment.json` exists. When present, add
+  `dimensions`' `evidence` and `must_condition_results` as judgment material for selecting the appeal
+  mapping's selling points. The pipeline proceeds without it, matching only the posting requirements
+  against `profile.json`'s achievements. fit_assessment.json is an output under career-private, and it
+  is not passed to an agent holding a web tool.
 
-### Step 1 作成
+### Step 1: Writing
 
-`job-change-document-writer` エージェント（model: opus）を起動し、Step 1（作成）を指示する。指示書には次を渡す。
+Launch the `job-change-document-writer` agent (model: opus) and instruct it to perform Step 1
+(writing). Pass it the following in its brief.
 
-- 実行するステップ（= 1）・書類種別・`{PROFILE}`・`{COMPANY_RESEARCH}`（あれば）・`{SELF_ANALYSIS}`（あれば）・`{FIT_ASSESSMENT}`（あれば）・求人票（あれば）・出力先 `{OUT_DIR}`。
+- The step to run (= 1), the document type, `{PROFILE}`, `{COMPANY_RESEARCH}` (when present),
+  `{SELF_ANALYSIS}` (when present), `{FIT_ASSESSMENT}` (when present), the job posting (when present),
+  and the output location `{OUT_DIR}`.
 
-作成担当には次を行う責務がある。求人要件と（あれば）企業研究の理念・求める人物像を抽出し、`profile.json` の実績と突き合わせてアピールマッピングを作る。そのうえで、`references/templates.md` の一覧からテンプレートを理由とともに選定し、その構成で作成する。書類は `{OUT_DIR}` の下に書き出す。`company_research.json` が無い場合は企業固有の調整をしない。その旨を成果物と出力 JSON（`company_research_used: false`・`degraded_reason`）に明記する。`fit_assessment.json` がある場合、アピールマッピングの訴求点選定に `dimensions` の `evidence` と `must_condition_results` を判断材料として加える。無い場合は求人要件と `profile.json` の実績の突き合わせのみで進める。
+The writer has the following responsibilities. Extract the posting requirements and, when company
+research exists, its philosophy and the profile of the person it wants, and match them against
+`profile.json`'s achievements to build the appeal mapping. Then select a template from the list in
+`references/templates.md`, with a reason, and write within its structure. Write the document under
+`{OUT_DIR}`. When `company_research.json` does not exist, skip company-specific tailoring and state
+this clearly in the deliverable and the output JSON (`company_research_used: false`,
+`degraded_reason`). When `fit_assessment.json` exists, add `dimensions`' `evidence` and
+`must_condition_results` as judgment material for selecting the appeal mapping's selling points. When
+it does not exist, proceed by matching only the posting requirements against `profile.json`'s
+achievements.
 
-志望動機書・自己PRでは、`self_analysis.json` がある場合、`career_narrative`（ライフテーマ・一貫する動機）を素材に用いる。素材には、根拠付きの `strengths`（episode_id・feedback_id に対応づけられた強み）と `reason_for_change.constructive_version`（発揮したい価値を軸にした転職理由の言い換え）も加える。いずれも profile.json の実績と併せて用いる。`self_analysis.json` が無い場合は profile.json の `strengths`・`job_change_axis.reasons` のみを素材とする。この場合は、企業固有の調整のときとは異なり、フォールバックした旨を明示する必要はない。
+For the statement of motivation and the self-PR, when `self_analysis.json` exists, use
+`career_narrative` (the life theme, the consistent motivation) as material. Add `strengths` grounded
+in evidence (a strength mapped to an `episode_id` or a `feedback_id`) and
+`reason_for_change.constructive_version` (a reframing of the reason for changing jobs around the
+value the user wants to bring) as material as well. Use both together with `profile.json`'s
+achievements. When `self_analysis.json` does not exist, use only `profile.json`'s `strengths` and
+`job_change_axis.reasons` as material. In this case, unlike company-specific tailoring, there is no
+need to state explicitly that a fallback occurred.
 
-### Step 2 独立監査
+### Step 2: Independent audit
 
-`job-change-document-auditor` エージェント（model: sonnet）を、作成担当の判断理由を渡さない新規コンテキストで起動し、Step 2（監査）を指示する。指示書には監査対象の書類ファイルの絶対パス・書類種別・作成担当が選定したテンプレートのファイル名・`{PROFILE}`・求人票（あれば）を渡す。
+Launch the `job-change-document-auditor` agent (model: sonnet) in a new context that withholds the
+writer's rationale, and instruct it to perform Step 2 (audit). Pass it the absolute path to the
+document file under audit, the document type, the file name of the template the writer selected,
+`{PROFILE}`, and the job posting (when present).
 
-監査担当が検査するのは次の4点である。
+The auditor checks the following four points.
 
-- **和文の文法と表記。** 職務経歴書・履歴書・志望動機書を対象に、役割プロンプトの「判断の原本」に挙げた観点（助詞・主述の対応・係り受け・並列・冗長表現・表記揺れ・誤字脱字）で検査する。
-- **誇張・創作。** `profile.json` と突き合わせ、記載のない実績・数値、metric との不一致、裏付けを超えた規模・範囲・主体の言葉を検出する。
-- **求人要件との対応・定量性・分量・テンプレートの構成との一致。**
-- **英文レジュメ。** 英語の文法・時制、アクション動詞（action verb）の適否（動詞始まり・主語省略）、定量性、ATS適合（表・画像・グラフィックの回避、求人票キーワードとの文脈整合）、分量（1〜2枚）を検査する。和文の文法・表記の検査は対象外とする。
+- **Japanese grammar and orthography.** For the shokumu-keirekisho, the rirekisho, and the statement
+  of motivation, check against the criteria the role prompt's "Canonical judgment reference" lists
+  (particle usage, subject-predicate agreement, modifier attachment, parallel structure, redundant
+  phrasing, spelling inconsistency, and typos and omissions).
+- **Exaggeration and fabrication.** Cross-check against `profile.json` and detect an achievement or a
+  figure it does not record, a mismatch with `metric`, and a word for scale, scope, or ownership that
+  exceeds what it supports.
+- **Correspondence with the posting requirements, quantification, length, and conformance to the
+  template's structure.**
+- **English resume.** Check English grammar and tense, the fitness of action verbs (opening with a
+  verb, omitting the subject), quantification, ATS fitness (avoiding tables, images, and graphics;
+  matching the posting's keywords in context), and length (one to two pages). Japanese grammar and
+  orthography checks do not cover it.
 
-判定は `verdict`（BLOCK / CONCERNS / CLEAN）と `findings`（各 finding に `severity` = 重大 / 警告 / 軽微）で返る。
+The judgment returns as `verdict` (BLOCK / CONCERNS / CLEAN) and `findings` (each finding carrying
+`severity` = 重大 / 警告 / 軽微).
 
-### Step 3 監査指摘の反映
+### Step 3: Applying audit findings
 
-`verdict` が CLEAN でなければ、findings を `job-change-document-writer` へ渡し、Step 3（監査指摘の反映）を指示する。指示書には Step 1 と同じ入力に加えて、監査担当の findings を渡す。
+When `verdict` is not CLEAN, pass the findings to `job-change-document-writer` and instruct it to
+perform Step 3 (applying audit findings). Pass it the same input as Step 1, plus the auditor's
+findings.
 
-作成担当は findings を1件ずつ確認し、`profile.json` の範囲内で対応できる指摘を書類へ反映する。反映しなかった指摘は理由を明記する（例: profile.json に裏付けが無く、要求された加筆が創作になる場合）。
+The writer reviews the findings one by one and applies to the document whichever finding it can
+address within what `profile.json` supports. For a finding it leaves unapplied, it states the reason
+clearly (for example, when the requested addition would be fabrication because profile.json provides
+no support).
 
-- `verdict` が BLOCK、または `severity` = 重大 の finding がある場合は、反映後に Step 2 へ戻して再監査する（差し戻しの1回に数える）。
-- `verdict` が CONCERNS で重大 finding が無い場合（警告・軽微のみ）は、指摘を反映し、再監査は任意とする。反映を終えてから、または反映できなかった指摘を調整根拠に記録してから、Step 4 へ進む。
+- When `verdict` is BLOCK, or a finding carries `severity` = 重大, return to Step 2 for a re-audit
+  after applying the findings (this counts as one round of rework).
+- When `verdict` is CONCERNS with no 重大 finding (only 警告 or 軽微), apply the findings, and a
+  re-audit is optional. Proceed to Step 4 once the findings are applied, or once any finding that
+  could not be applied is recorded in the tailoring rationale.
 
-### Step 4 納品
+### Step 4: Delivery
 
-`verdict` が CLEAN になった時点、または重大な finding が解消した時点で納品する。最終納品物は次の3点である。
+Deliver once `verdict` becomes CLEAN, or once every 重大 finding is resolved. The final delivery
+consists of the following three items.
 
-1. **応募書類**（`{OUT_DIR}` 配下のファイル）。
-2. **アピールマッピング表**（求人要件・対応する実績・裏付け）。`{OUT_DIR}/appeal-mapping.md` へ書き出す。
-3. **調整根拠の説明**（選定した形式とその理由、企業別カスタマイズで何をどの `company_research.json` の claim に基づいて調整したか、および監査結果）。フォールバック時は企業固有の調整をしていない旨を書く。監査結果には最終 verdict と、未反映で残した指摘があればその理由を含める。`{OUT_DIR}/tailoring-rationale.md` へ書き出す。
+1. **The application documents** (the files under `{OUT_DIR}`).
+2. **The appeal mapping table** (posting requirement, corresponding achievement, supporting
+   evidence). Written to `{OUT_DIR}/appeal-mapping.md`.
+3. **The tailoring rationale** (the format selected and why, what was tailored in the
+   company-specific customization and which `company_research.json` claim it rests on, and the audit
+   result). In a fallback, state that no company-specific tailoring was applied. The audit result
+   includes the final verdict and, for any finding left unapplied, the reason. Written to
+   `{OUT_DIR}/tailoring-rationale.md`.
 
-最終メッセージには、作成した書類の種別とファイルパス、選定形式、監査の最終 verdict、未解決事項（あれば）を要約する。調整根拠の説明と最終メッセージはいずれも結論から述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
+The final message summarizes the type and file path of each document produced, the format selected,
+the audit's final verdict, and any open issue. Both the tailoring rationale and the final message
+state the conclusion first. Neither contains an empty section, a repeated statement, or a formulaic
+preamble.
 
-## 合否ゲートと差し戻し
+## Pass/fail gates and rework
 
-パイプラインには2つのゲートがある。
+The pipeline has two gates.
 
-| ゲート | 通過条件と差し戻し先 |
+| Gate | Passing condition and where it sends rework |
 |---|---|
-| Step 0 のプロファイルゲート | `profile.json` が `validate_profile.py` で PASS していなければ作成へ進まない。未作成・FAIL は hub のプロファイル整備へ戻す。ただし FAIL の場合は、ERROR の内容を示し、利用者が欠落を承知で着手を希望するなら、欠けた項目の値を直接引用または前提とする記述を作らないという条件で進めてよい。どの項目が欠けたままかを成果物に明記する。hub がすでにこの選択を利用者へ求めている場合は、再度問わずにその選択に従う。 |
-| Step 2 の独立監査ゲート | `job-change-document-auditor` の `verdict` が BLOCK、または `severity` = 重大 の finding があれば Step 3 で作成担当へ差し戻す。差し戻しは同一書類につき最大2回まで行う。 |
+| Step 0's profile gate | Writing does not proceed unless `profile.json` PASSes `validate_profile.py`. When it does not exist, or FAILs, send the user back to the hub's profile setup. On FAIL, however, show the ERROR content, and when the user knowingly accepts the gap and wants to proceed, this may proceed, on the condition that it writes no statement that directly quotes or presupposes the value of a missing field. State clearly in the deliverable which fields remain missing. When the hub has already asked the user this same question, follow that choice without asking again. |
+| Step 2's independent audit gate | When `job-change-document-auditor`'s `verdict` is BLOCK, or a finding carries `severity` = 重大, send it back to the writer at Step 3. Rework runs at most twice for the same document. |
 
-差し戻し時は、監査の findings（target・evidence・fix）をそのまま作成担当へ渡し、反映後に Step 2 から再度通す。2回の差し戻しで解消しない指摘は、未解決事項として調整根拠の説明に明記し、利用者へ判断を委ねてから納品する。例えば「profile.json の実績だけでは求人要件を十分に満たせない」という指摘は、経歴の補強か応募判断の見直しが要るため、利用者の判断事項とする。機械的な検証の ERROR は差し戻しの上限にかかわらず解消してから納品し、未解決が監査の finding だけである場合に限り、未決事項として明記したうえで納品してよい。
+On rework, pass the audit's findings (target, evidence, fix) to the writer as they are, and run it
+through Step 2 again once applied. A finding that two rounds of rework do not resolve is stated
+clearly as an open issue in the tailoring rationale, and delivery follows only after the user has been
+given the decision. For example, a finding such as "profile.json's achievements alone do not
+sufficiently meet the posting requirements" calls for either strengthening the career history or
+reconsidering whether to apply, so it is left to the user's decision. Resolve every ERROR from
+mechanical validation before delivery regardless of the rework limit; delivery is permitted only when
+what remains unresolved is an audit finding, and only after that finding is stated clearly as an open
+issue.
 
-## 役割の実行（ハーネス別）
+## Role execution (by harness)
 
-本スキルのパイプラインは、専門の役割へ作業を委ねる形で書いてある。役割の内容は `references/roles/` に置き、その内容を原本とする。
+This skill's pipeline is written to delegate work to dedicated roles. Each role's content lives in
+`references/roles/`, which is its canonical definition.
 
-| エージェント名 | 役割プロンプトの原本 |
+| Agent name | Canonical role prompt |
 |---|---|
 | `job-change-document-writer` | `{SKILL_DIR}/references/roles/document-writer.md` |
 | `job-change-document-auditor` | `{SKILL_DIR}/references/roles/document-auditor.md` |
 
-ハーネス別の実行手順、起動する数の判断、作成と監査を分ける理由の原本は hub の `{HUB_SKILL_DIR}/references/role-execution.md` にある。
+The canonical definition of the per-harness execution procedure, how many instances to launch, and
+the reason for separating the writer from the auditor lives in the hub's
+`{HUB_SKILL_DIR}/references/role-execution.md`.
 
-## エージェントのモデル方針
+## Agent model policy
 
-| エージェント | model | 責務 |
+| Agent | model | Responsibility |
 |---|---|---|
-| `job-change-document-writer` | opus | アピールマッピング・形式選定・作成（Step 1）と監査指摘の反映（Step 3） |
-| `job-change-document-auditor` | sonnet | 独立コンテキストでの書類監査（Step 2）。和文の文法・表記も自身で検査する |
+| `job-change-document-writer` | opus | Appeal mapping, format selection, and writing (Step 1); applying audit findings (Step 3) |
+| `job-change-document-auditor` | sonnet | Auditing the document in an independent context (Step 2). It checks Japanese grammar and orthography itself as well. |
 
-model は各エージェントの frontmatter に固定済みである。本スキルは起動時に上書きしない。
+The model is fixed in each agent's frontmatter. This skill does not override it at launch.
 
-## スクリプトのCLI使用例
+## Script CLI usage examples
 
-本スキルは固有のスクリプトを持たない。Step 0 で用いる3本はいずれも hub（`job-change-support`）のスクリプトであり、hub 経由で入る場合は hub がルーティング前に実行済みである。単独で起動された場合は本スキルが次を実行する。
+This skill has no scripts of its own. All three scripts used in Step 0 belong to the hub
+(`job-change-support`); when entered through the hub, the hub has already run them before routing.
+When launched standalone, this skill runs the following.
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/profile.json
 python {HUB_SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/profile.json --json
 python {HUB_SKILL_DIR}/scripts/validate_company_index.py {DATA_ROOT}/career-private/company_index.json
-python {HUB_SKILL_DIR}/scripts/check_freshness.py {DATA_ROOT}/companies/{企業スラッグ}/_manifest.json
+python {HUB_SKILL_DIR}/scripts/check_freshness.py {DATA_ROOT}/companies/{company slug}/_manifest.json
 ```
 
-`validate_profile.py`・`validate_company_index.py` の終了コードは PASS で 0、FAIL で 1（WARN のみは PASS 扱い）である。`--json` は結果を JSON 形式（`status`・`error_count`・`warning_count`・`errors`・`warnings`）で出力する。`check_freshness.py` は常に終了コード 0 を返し、`fresh`・`stale`・`missing` の分類を出力する。profile.json のフィールド仕様の原本は hub の `references/profile-format.md` にある。
+`validate_profile.py` and `validate_company_index.py` exit 0 on PASS and 1 on FAIL (WARN alone counts
+as PASS). `--json` outputs the result in JSON form (`status`, `error_count`, `warning_count`,
+`errors`, `warnings`). `check_freshness.py` always exits 0 and outputs a classification of `fresh`,
+`stale`, or `missing`. The canonical definition of profile.json's field specification lives in the
+hub's `references/profile-format.md`.
 
-## references 一覧
+## references index
 
-| ファイル | 何を | いつ読むか |
+| File | What it covers | When to read it |
 |---|---|---|
-| `references/shokumu-keirekisho.md` | 職務経歴書の3形式・使い分け・職務要約・実績の定量化・分量・採用担当者の観点 | 職務経歴書を作成/監査するとき |
-| `references/rirekisho.md` | 履歴書様式の現行事情（厚労省様式例）・手書き/パソコン・使い回しの回避 | 履歴書を作成/監査するとき |
-| `references/english-resume.md` | 英文レジュメの標準構成・記載しない個人情報・定量化・ATS対応 | 英文レジュメを作成/監査するとき |
-| `references/tailoring.md` | 企業別カスタマイズ・志望動機の構成・アピールマッピング・誇張禁止基準 | 志望動機/企業別調整を行うとき、全書類の誇張検査の基準として |
-| `references/templates.md` | 書類種別ごとの複数スタイルのテンプレート一覧・選び方・分量・出典で食い違う点の決定 | 形式を選定するとき、構成の一致を監査するとき |
+| `references/shokumu-keirekisho.md` | The shokumu-keirekisho's three formats and when to use each, the summary section, quantifying achievements, length, and the hiring manager's perspective | When writing or auditing a shokumu-keirekisho |
+| `references/rirekisho.md` | The current state of the rirekisho form (the MHLW's format example), handwritten versus typed, and avoiding reuse | When writing or auditing a rirekisho |
+| `references/english-resume.md` | The English resume's standard structure, the personal information to omit, quantification, and ATS handling | When writing or auditing an English resume |
+| `references/tailoring.md` | Company-specific tailoring, the statement of motivation's structure, the appeal mapping, and the anti-exaggeration standard | When working on the statement of motivation or company-specific tailoring, and as the standard for the exaggeration check across every document |
+| `references/templates.md` | The list of multiple-style templates for each document type, how to choose among them, length, and the decisions made where sources disagree | When selecting a format, and when auditing conformance to the structure |
 
-テンプレート本体は `assets/templates/` にある（職務経歴書4種・履歴書2種・英文レジュメ3種・志望動機2種・自己PR1種）。作成担当は `references/templates.md` の一覧から1つを選び、その構成で作成する。
+The templates themselves live in `assets/templates/` (four for the shokumu-keirekisho, two for the
+rirekisho, three for the English resume, two for the statement of motivation, and one for the
+self-PR). The writer selects one from the list in `references/templates.md` and writes within its
+structure.

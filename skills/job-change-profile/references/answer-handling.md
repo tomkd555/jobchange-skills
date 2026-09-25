@@ -1,210 +1,263 @@
-# 回答の受け止め方（申告の扱い・具体化・数値化・表現の置き換え）
+# How to receive an answer (handling a statement, making it concrete, quantification, rewording)
 
-job-change-profile スキルの聞き取りで、利用者の回答をどう受け止め、どこまで手を加えてよいかを定める原本である。SKILL.md の原則2・原則3、`question-bank.md` の質問設計、エージェント2体（writer / auditor）がこのファイルを参照する。想起手がかりと聞き取りメモの記載形式は `elicitation-guide.md`、定量化の型は `quantification-guide.md` にあり、ここへは複製しない。
+This is the canonical definition of how job-change-profile's elicitation receives a user's answer, and how far it
+may go in shaping it. SKILL.md's Principles 2 and 3, question-bank.md's question design, and both agents (writer
+and auditor) reference this file. The grounding for recall cues and the elicitation notes' recording format lives
+in `elicitation-guide.md`, and the patterns for quantification live in `quantification-guide.md`; neither is
+duplicated here.
 
-## 申告は事実である
+## A statement is a fact
 
-利用者が述べた経歴・役割・実績・数値・期間は、そのまま事実として記録する。聞き取り側がそれを疑う問いを置くことはない。聞き取り側に許されるのは、後述の3つの操作（表現の具体化・数値化の支援・転職市場で通る表現への置き換え）だけである。
+The career history, role, achievement, figure, and period a user states are recorded as fact, as stated.
+Elicitation never places a question that doubts them. Elicitation may perform only the three operations described
+below — making a statement concrete, supporting quantification, and rewording into language the job market
+accepts.
 
-次の型の問いは、内容を問わず置かない。
+The following types of question are never placed, whatever their content.
 
-| 置かない問い | 理由 |
+| Question never placed | Reason |
 |---|---|
-| 「本当に〜ですか」「実際には〜ではないですか」 | 申告の真偽を問う形である |
-| 「それは確認できますか」「証明できますか」「根拠はありますか」 | 物証を求める形である |
-| 「その数値はどこから出ましたか」「社内資料の数値ですか」 | 数値の出所を問う形である |
-| 「〜のはずですが」「一般には〜ですが」 | 聞き取り側の知識で申告を上書きする形である |
-| 「珍しいですね」「本当ですか、すごいですね」 | 驚きを口にすると、疑いとして伝わる |
+| "Is that really the case?" "Isn't it actually...?" | It questions the truth of the statement |
+| "Can you confirm that?" "Can you prove it?" "Do you have grounds for that?" | It demands documentary proof |
+| "Where did that figure come from?" "Is that an internal company figure?" | It questions the figure's source |
+| "It should be..." "Generally speaking..." | It overwrites the statement with elicitation's own knowledge |
+| 「珍しいですね」「本当ですか、すごいですね」 (That's unusual. / Really? That's impressive.) | Voicing surprise reads as doubt |
 
-数値の出所は問わない。本人が自ら「だいたい」「概算で」「うろ覚えだが」と述べたときに限り、その旨をメモへ `（本人が不確かとした）` の形で残す（記載形式の原本は `elicitation-guide.md`）。聞き取り側から確度を問い詰めない。
+A figure's source is never asked. Only when the user has said on their own "roughly," "approximately," or "I'm not
+sure," is that noted in the elicitation notes as `（本人が不確かとした）` (the recording format's canonical
+definition is in `elicitation-guide.md`). Elicitation never presses for confidence on its own.
 
-申告どうしが食い違って見える場合（在籍期間の重なり、役職の前後、同じ実績の数値の差）も、誤りの指摘として扱わない。食い違う2点をそのまま並べて示し、どちらが正しいかを本人に決めさせる。示すのは2点だけであり、聞き取り側の推測を添えない。在籍期間の重なりは並行在籍（`elicitation-guide.md`）でありうるため、食い違いとしてすら扱わない。
+When statements appear to conflict (an overlap in tenure periods, a job title out of order, a different figure for
+the same achievement), this is never treated as an error to point out. The two conflicting points are laid out as
+they stand, and the user decides which is correct. Only the two points are presented, with no guess of elicitation's
+own added. An overlap in tenure periods can be concurrent employment (`elicitation-guide.md`), so it is not even
+treated as a conflict.
 
-## 聞き取り側に許される3つの操作
+## The three operations elicitation may perform
 
-### 表現の具体化
+### Making a statement concrete
 
-「何を・いつ・どこで・どの規模で・どう変えたか」のうち欠けている要素を、1回に1つずつ聞く。「もう少し詳しく」という開放型の問いは置かず、欠けている要素を明記して聞く。答えが出ない要素はそのまま空にし、聞き取り側が埋めない。
+Of the elements "what, when, where, at what scale, and how something changed," ask about one missing element at a
+time. Never place an open-ended question such as "could you tell me more" — name the missing element explicitly
+when asking. Leave an element with no answer empty; elicitation never fills it in.
 
-| 欠けている要素 | 問いの例（敬体） |
+| Missing element | Example question (polite form) |
 |---|---|
-| 対象 | 「その改善は、どのシステム（または業務）に対するものでしたか」 |
-| 時期 | 「それはいつごろのことでしたか。年と、分かれば月をお願いします」 |
-| 規模 | 「関わった人数、扱った件数、金額のうち、覚えているものはありますか」 |
-| 役割 | 「その中でご自身が受け持ったのは、どの部分でしたか」 |
-| 変化 | 「それを行う前と後で、何がどう変わりましたか」 |
-| 方法 | 「そのとき、具体的にはどのような手を打ちましたか」 |
-| 期間・予算 | 「その取り組みはどれくらいの期間でしたか。予算の規模は分かりますか」 |
-| 本人の受け持ち | 「そのプロジェクトのうち、ご自身が受け持った部分はどこでしたか」 |
+| Object | 「その改善は、どのシステム（または業務）に対するものでしたか」 (Which system (or task) was that improvement for?) |
+| Time | 「それはいつごろのことでしたか。年と、分かれば月をお願いします」 (Roughly when was that? A year, and a month if you recall it, please.) |
+| Scale | 「関わった人数、扱った件数、金額のうち、覚えているものはありますか」 (Do you recall the number of people involved, the number of cases handled, or the amount of money?) |
+| Role | 「その中でご自身が受け持ったのは、どの部分でしたか」 (Which part of it did you personally handle?) |
+| Change | 「それを行う前と後で、何がどう変わりましたか」 (What changed, and how, before and after you did this?) |
+| Method | 「そのとき、具体的にはどのような手を打ちましたか」 (Specifically, what steps did you take at that time?) |
+| Period/budget | 「その取り組みはどれくらいの期間でしたか。予算の規模は分かりますか」 (About how long did that effort take? Do you know the scale of the budget?) |
+| The user's own share | 「そのプロジェクトのうち、ご自身が受け持った部分はどこでしたか」 (Of that project, which part did you personally handle?) |
 
-回答が「私たちは」「チームで」「〜が行われた」のように、主語が本人でない形で語られたときは、本人の受け持ちを1回だけ聞く。これは関与の範囲を分ける問いであり、関与の有無を疑う問いではない。答えが「全体を自分が」であれば、そのまま記録する。
+When an answer is phrased with a subject other than the user themselves — "we," "the team," "it was done" — ask
+once about the user's own share. This question separates the scope of the user's involvement. When the answer is "I
+did the whole thing myself," record it as stated.
 
-具体化は事実を足す操作ではない。本人が語った内容を、後続の工程（応募書類・面接対策）が使える粒度へ分けるだけである。
+Making a statement concrete only breaks down what the user said into a granularity the downstream processes
+(application documents, job interview preparation) can use.
 
-### 数値化の支援
+### Supporting quantification
 
-`quantification-guide.md` の型を選択肢として示し、当てはまる型があるかを本人に選ばせる。数値そのものを聞き取り側から提案しない。「20%くらいですか」「10件ほどでしょうか」という誘導は、本人の申告を聞き取り側の推測で置き換える。
+Present the patterns in `quantification-guide.md` as choices and let the user pick whichever pattern fits.
+Elicitation never proposes a figure itself. A leading question such as "would that be around 20%?" or "about 10
+cases?" replaces the user's own statement with elicitation's own guess.
 
-| 本人の答え方 | 記録 |
+| How the user answers | Recording |
 |---|---|
-| 単一の数値（「40%短縮」） | そのまま `metric` へ。単位と時点を添える |
-| 幅（「10〜15件」「月に2、3回」） | 幅のまま記録する。中央値へ丸めない |
-| 概算（「だいたい半分」「体感で3割」） | 本人の言葉のまま記録し `（本人が概算とした）` を付ける |
-| 記録が無く、活動量なら覚えている（「1日30件は架電していた」） | 本人が活動量から概算した値を、概算である旨を添えて記録する。掛け算は本人に任せ、聞き取り側が計算して提示しない |
-| 数値が出ない | `metric` を `null` にし、工夫した点と評価された点を `description` へ具体化する |
-| 数値の代わりに比較（「以前は徹夜が常態だったが、定時で終わるようになった」） | 比較の文をそのまま記録する。時間数へ換算しない |
+| A single figure ("cut it by 40%") | Write it to `metric` as it stands. Add the unit and the point in time |
+| A range ("10-15 cases," "2 or 3 times a month") | Record the range as it stands. Never round it to a median |
+| An approximation ("roughly half," "felt like about 30%") | Record the user's own words as stated, with `（本人が概算とした）` (the user called it an approximation) attached |
+| No record, but an activity volume is remembered ("I was making about 30 calls a day") | Record the value the user approximates from the activity volume, with a note that it is an approximation. Leave the multiplication to the user; elicitation never computes it and presents the result |
+| No figure available | Set `metric` to `null`, and make the point that was worked on and the point that was evaluated concrete in `description` |
+| A comparison in place of a figure ("it used to mean working through the night, but now it finishes on time") | Record the comparison as stated. Never convert it into a number of hours |
 
-数値が出ないときの問いは次の文言にとどめ、数字が前提であるかのように聞かない。
+When no figure is available, keep the question to the wording below, and never ask as if a number were assumed.
 
-| 項目 | 文言 |
+| Item | Wording |
 |---|---|
-| 数値化の問い | その成果は数字で表せそうですか。難しければ、前後の変化や、覚えている活動量（1日の件数など）からの概算でも構いません。 |
-| 年収の問い | 年収は、直近1年の額面（賞与を含み、残業代を含む）でお答えください。別の数え方であれば、その旨を添えてください。 |
+| Quantification question | その成果は数字で表せそうですか。難しければ、前後の変化や、覚えている活動量（1日の件数など）からの概算でも構いません。 (Can that result be expressed as a number? If that is difficult, an approximation from the change before and after, or from an activity volume you recall, such as a daily count, is fine too.) |
+| Annual salary question | 年収は、直近1年の額面（賞与を含み、残業代を含む）でお答えください。別の数え方であれば、その旨を添えてください。 (For annual salary, please answer with the gross figure for the most recent year, including bonus and overtime pay. If you count it a different way, please note that as well.) |
 
-年収は、額面か手取りか、賞与や残業代を含むか、見込みか実績かで値が変わる。定義を問いの側で1つに決めて聞き、本人が別の数え方で答えたときはその数え方をメモに添える。聞き取り側で換算しない。
+Annual salary changes in value depending on whether it is gross or net, whether it includes bonus or overtime pay,
+and whether it is a projection or an actual figure. Ask with the definition fixed on the question's side to one
+meaning, and when the user answers by a different reckoning, add that reckoning to the notes. Elicitation never
+converts it itself.
 
-聞き取り側が計算で置いた値（卒業年から逆算した取得年など）は、本人の申告と区別して推定値である旨を明示する（`elicitation-guide.md`）。
+A value elicitation places by calculation (a qualification's year obtained, back-calculated from the graduation
+year, for example) is marked as distinct from the user's own statement, as an estimate (`elicitation-guide.md`).
 
-### 転職市場で通る表現への置き換え
+### Rewording into language the job market accepts
 
-口語や曖昧な言い方を、応募書類と面接で通る言い方へ置き換える。置き換え案は必ず本人へ示し、了承された文だけをメモへ `言い換え（本人了承）:` の行で残す。原文の行は消さない。本人が原文のままを望めば、原文のままとする。
+Colloquial or vague phrasing is reworded into language that reads well in an application document and a job
+interview. A reworded candidate is always shown to the user, and only a sentence the user approves is kept in the
+notes with a `言い換え（本人了承）:` (reworded, user-approved) line. The original line is never deleted. When the
+user wants to keep the original wording, the original wording stands.
 
-置き換えで守ること。
+What to keep in mind when rewording:
 
-- 役割の表現を、本人が申告した関与の範囲を超えて上げない。関与の範囲と表現の対応は後述の「役割の表現の段階」に従う。
-- 数値・規模・範囲・主体を、置き換えの過程で足さない。「担当した」を「全社の〜を主導した」にしない。
-- 評価語（頑張った・工夫した・大変だった）は書類に載せない。代わりに、何をしたかの事実を書く。
-- 否定的な事実（解雇・降格・失敗）は隠さない。本人が語った範囲で、書類で通る言い方に直す。語っていない理由を補わない。
+- Never raise a role's phrasing above the scope of involvement the user stated. The correspondence between the
+  scope of involvement and the phrasing follows "The scale of role phrasing" below.
+- Never add a figure, a scale, a scope, or an acting subject in the course of rewording. Never turn "was in charge
+  of" into "led the company-wide 〜."
+- An evaluative word (worked hard, put in effort, it was tough) is never placed in the document. Write the fact of
+  what was done instead.
+- A negative fact (a dismissal, a demotion, a failure) is never hidden. It is put into document-ready phrasing
+  within the range the user stated. A reason the user did not state is never filled in.
 
-言い換え案を示すときの文言は次のとおりである。
+The wording for presenting a reworded candidate is as follows.
 
-| 項目 | 文言 |
+| Item | Wording |
 |---|---|
-| 前置き | 書類で通る言い方に直すと、次のようになります。**違うところ**があれば元の言い方のままにします。 |
-| 確認 | 「{原文}」→「{言い換え}」。この言い方で合っていますか。関与の範囲が実際より広く見えるなら、そのままお知らせください。 |
+| Preamble | 書類で通る言い方に直すと、次のようになります。**違うところ**があれば元の言い方のままにします。 (Put into language that reads well in a document, this becomes as follows. If anything is different, it stays as originally phrased.) |
+| Confirmation | 「{原文}」→「{言い換え}」。この言い方で合っていますか。関与の範囲が実際より広く見えるなら、そのままお知らせください。 ("{original}" → "{reworded}". Does this phrasing match? If the scope of involvement looks wider than it actually was, please say so.) |
 
-## 役割の表現の段階
+## The scale of role phrasing
 
-役割を表す言葉は、本人の申告に含まれる関与の範囲で決まる。申告に無い関与を表現で足さない。
+The word for a role is decided by the scope of involvement in the user's own statement. Elicitation never adds
+involvement the statement lacks through phrasing.
 
-| 本人の申告に含まれる関与 | 使ってよい表現 | 申告が無ければ使わない表現 |
+| Involvement in the user's statement | Phrasing that may be used | Phrasing not used without a corresponding statement |
 |---|---|---|
-| 指示を受けて一部を受け持った | 担当、参画、従事 | 主導、推進、リード、統括 |
-| 一つの領域を自分の裁量で受け持った | 主担当、〜を一貫して担当、専任 | 統括、責任者 |
-| 複数人の作業を割り振り、進捗を管理した | リード、進行管理、取りまとめ | 責任者（決裁権の申告が無い場合） |
-| 企画から実行まで自分が起点だった | 企画、立ち上げ、推進 | 統括（他の担当者の管理を申告していない場合） |
-| 決裁・人事・予算の権限を持った | 責任者、統括、マネジメント | — |
+| Took on part of the work under instruction | 担当、参画、従事 (in charge of, participated in, engaged in) | 主導、推進、リード、統括 (led, drove, headed, oversaw) |
+| Took on one area at their own discretion | 主担当、〜を一貫して担当、専任 (principal owner, consistently in charge of 〜, sole owner) | 統括、責任者 (oversaw, responsible for) |
+| Assigned work to several people and managed progress | リード、進行管理、取りまとめ (led, managed progress of, coordinated) | 責任者（決裁権の申告が無い場合）(responsible for, with no statement of decision-making authority) |
+| Was the starting point from planning through execution | 企画、立ち上げ、推進 (planned, launched, drove) | 統括（他の担当者の管理を申告していない場合）(oversaw, when not stating management of other staff) |
+| Held decision-making, personnel, or budget authority | 責任者、統括、マネジメント (responsible for, oversaw, managed) | — |
 
-同じ言葉でも、企業や職種によって重みが変わる（例: 「リード」は小規模チームでは実務の中心を、大企業では役職を指す）。本人の使った言葉が段階のどこに当たるかは、関与の範囲を聞いて決め、言葉の響きで決めない。
+The same word carries a different weight depending on the company or occupation (for example, 「リード」 (lead)
+points to the center of hands-on work at a small team, and to a title at a large company). Which rung a user's own word falls on
+is decided by asking about the scope of involvement, never by the sound of the word.
 
-## 動詞・名詞の置き換え表
+## Verb and noun replacement table
 
-置き換えは表現だけを変え、事実を足さない。「注意」の列は、置き換えの前に本人へ確かめる要素である。
+Rewording changes only the phrasing, never adding a fact. The "Caution" column lists what to confirm with the user
+before making the replacement.
 
-| 本人の言い方 | 書類で通る言い方 | 注意 |
+| The user's own wording | Document-ready phrasing | Caution |
 |---|---|---|
-| 手伝った | 〜の一部を担当した、サポートした | 何を手伝ったかを先に具体化する |
-| やった、やりました | 担当した、実施した、実行した | |
-| 作った | 開発した、構築した、作成した、設計した | 設計まで担ったかを確かめる |
-| 直した | 改修した、修正した、改善した | 何を直したか |
-| 見た、見ていた | 監視した、レビューした、管理した | 何を見たか |
-| まとめた | 取りまとめた、整理した、集約した | |
-| 話した、話をつけた | 折衝した、調整した、提案した | 相手（顧客・社内・経営層） |
-| 教えた | 指導した、育成した、OJT を担当した | 人数と期間 |
-| 売った | 販売した、受注した、獲得した | 金額・件数は本人の申告の範囲で |
-| 決めた | 選定した、決定した、策定した | 決裁権の有無 |
-| 考えた | 企画した、立案した、設計した | |
-| 手を動かした | 実装した、構築した、運用した | |
-| 一人で | 単独で、専任で | |
-| みんなで、チームで | チーム（N名）で | 人数は本人の申告の範囲で |
-| 偉い人、上の人 | 経営層、部門長、上長 | 相手の役職を確かめる |
-| お客さん | 顧客、取引先、エンドユーザー | |
-| バイト、パート | アルバイト、パートタイム（雇用形態として記録） | |
-| クビになった、リストラ | 会社都合により退職 | 本人が語った範囲で書く。理由を問わない |
-| 辞めた | 退職した、退任した、契約満了 | 契約満了か自己都合かは本人の言葉のまま |
-| 頑張った、しっかりやった | （削る） | 何をしたかの事実に置き換える |
-| いろいろ、とか | （列挙する） | 列挙できない場合は削る |
+| helped out (手伝った) | 〜の一部を担当した、サポートした (took on part of 〜, supported) | first make concrete what was helped with |
+| did it (やった, やりました) | 担当した、実施した、実行した (was in charge of, carried out, executed) | |
+| made (作った) | 開発した、構築した、作成した、設計した (developed, built, created, designed) | confirm whether design was included |
+| fixed (直した) | 改修した、修正した、改善した (improved, corrected, resolved) | what was fixed |
+| watched, was watching (見た, 見ていた) | 監視した、レビューした、管理した (monitored, reviewed, managed) | what was watched |
+| pulled together (まとめた) | 取りまとめた、整理した、集約した (consolidated, organized, aggregated) | |
+| talked, negotiated (話した, 話をつけた) | 折衝した、調整した、提案した (negotiated, coordinated, proposed) | the other party (client, in-house, executives) |
+| taught (教えた) | 指導した、育成した、OJT を担当した (instructed, trained, provided OJT, on-the-job training) | number of people and duration |
+| sold (売った) | 販売した、受注した、獲得した (sold, took orders for, won) | amount and count within the user's own statement |
+| decided (決めた) | 選定した、決定した、策定した (selected, decided, formulated) | whether decision-making authority existed |
+| thought about (考えた) | 企画した、立案した、設計した (planned, drafted, designed) | |
+| did it by hand (手を動かした) | 実装した、構築した、運用した (implemented, built, operated) | |
+| alone (一人で) | 単独で、専任で (solo, as the sole owner) | |
+| all together, as a team (みんなで, チームで) | チーム（N名）で (as a team, of N members) | headcount within the user's own statement |
+| the higher-ups, the person above (偉い人, 上の人) | 経営層、部門長、上長 (executives, department head, superior) | confirm the party's title |
+| the customer (お客さん) | 顧客、取引先、エンドユーザー (client, business partner, end user) | |
+| part-time, temp job (バイト, パート) | アルバイト、パートタイム（雇用形態として記録）(part-time work, recorded as an employment type) | |
+| was let go, was laid off (クビになった, リストラ) | 会社都合により退職 (left for reasons on the company's side) | write within the range the user stated. Never ask the reason |
+| quit (辞めた) | 退職した、退任した、契約満了 (resigned, retired from the position, contract completed) | whether it was a completed contract or a personal choice, in the user's own words |
+| worked hard, gave it my all (頑張った, しっかりやった) | （削る）(cut) | replace with the fact of what was done |
+| various things, and so on (いろいろ, とか) | （列挙する）(enumerate) | cut it when it cannot be enumerated |
 
-## 回答の様式への対応
+## Handling each answer format
 
-回答の様式は利用者が決める。利用者が、選択式で聞いた問いに自由記述で答えても、複数の問いへ一度に答えても、聞き取り側はその答え方を直さない。
+The user decides the form of the answer. Elicitation never corrects how the user answers — whether the user
+answers a choice-format question in free text, or answers several questions at once.
 
-| 回答の様式 | 対応 |
+| Answer format | Response |
 |---|---|
-| 複数の問いへ一度に答える | 受け取った内容を項目ごとに振り分けてメモへ書き、答えの無かった項目だけを次に聞く。答えの出た項目を聞き直さない |
-| 経歴を長い自由記述で一気に語る | 選択式へ戻さない。読み取った項目（企業・期間・役割・担当・実績）の一覧を示し、「違うところだけ」を聞く。書類から読み込んだときと同じ扱いである（`elicitation-guide.md`） |
-| 順序が前後する | メモを時系列へ並べ直してよい。内容は変えない |
-| 後から訂正する | 最新の見出しの下へ `訂正:` の行を足す。訂正の理由を聞かない |
-| 「覚えていない」 | `本人が不明とした` と記録する。幅や時期の目安で答えられないかを1度だけ聞き、それでも出なければそのまま空にする。重ねて聞かない |
-| 幅や目安で答える | そのまま記録する。単一の値へ丸めない |
-| 答えたくない | `未回答（本人の意向）` と記録する。理由を聞かず、その項目へ戻らない。年収・退職理由・空白期間の事情はとくにこの扱いを守る |
-| 「それは重要ではない」 | 本人の判断に従い、深掘りしない。作業特性や条件についてこう述べた場合は、それ自体が答えであり、希望度 `not_required` として記録する。ただし profile.json の必須項目（現職の役割・企業名・在籍期間・役職・転職理由）に限り、必須である旨と、無い場合に後続の工程で何ができないかを1度だけ伝える |
-| 質問の意図を聞き返す | 何のために聞くか（どの後続の工程が使うか）を1文で答える |
-| 選択肢に無い答え | Other でそのまま受ける。近い選択肢へ寄せない |
-| 質問の順序を変えたいと言う | 従う。聞き取りメモの見出しと項目名で対応づけられるため、順序は結果に影響しない |
+| Answering several questions at once | Sort what comes in by item into the notes, and ask next only about the items still unanswered. Never ask again about an item already answered |
+| Narrating a career history in one long stretch of free text | Never return to the choice format. Present the list of items read off (company, period, role, responsibilities, achievements) and ask only "where it is different." This is the same handling as when reading from a document (`elicitation-guide.md`) |
+| Answering out of order | The notes may be reordered chronologically. The content is never changed |
+| Correcting a later answer | Add a `訂正:` (correction) line under the latest heading. Never ask the reason for the correction |
+| "I don't remember" | Record it as `本人が不明とした` (the user called it unknown). Ask once whether a range or a rough time can be given, and leave it empty if none comes, without asking again |
+| Answering with a range or an approximation | Record it as stated. Never round it to a single value |
+| "I'd rather not say" | Record it as `未回答（本人の意向）` (unanswered, at the user's own wish). Never ask the reason, and never return to that item. This handling is kept especially for annual salary, reasons for leaving, and the circumstances of an employment gap |
+| "That's not important" | Follow the user's own judgment and do not deep-dive. When said about a work-character preference or a condition, this is itself the answer, and is recorded as a desired level of `not_required`. This holds except for profile.json's required items (current role, company name, tenure period, job title, reasons for changing jobs); for those alone, state once that the item is required and what a downstream process cannot do without it |
+| Asking back what a question is for | Answer in one sentence which downstream process uses it and for what |
+| An answer outside the choices | Take it as stated through Other. Never round it to the nearest choice |
+| Asking to change the order of questions | Follow it. Because the elicitation notes' headings and item names allow the answers to be matched up regardless of order, the order does not affect the result |
 
-## 定型でない経歴
+## A career history with an atypical shape
 
-次の経歴はいずれも珍しいものとして扱わず、下の表のとおり記録する。「聞かないこと」の列にある事柄は、本人が自分から語った場合にだけ記録する。
+None of the following career histories are treated as unusual; each is recorded as the table below states. An
+item in the "Never ask" column is recorded only when the user brings it up unprompted.
 
-| 経歴の型 | 記録のしかた | 聞かないこと |
+| Type of career history | How to record it | Never ask |
 |---|---|---|
-| 派遣・SES・客先常駐 | `company` は雇用主（派遣元・所属会社）、`assignment` に常駐先・派遣先、`employment_type` に「派遣」「正社員（客先常駐）」など | 常駐先の社名を出したくない場合は「大手製造業」のような書き方でよい |
-| 契約社員・嘱託・パートタイム | `employment_type` に雇用形態を書く。正社員と同じ1件として扱う | 正社員にならなかった理由 |
-| 業務委託・フリーランス・個人事業 | `company` は屋号か「個人事業」、主な取引先は `assignment` か `responsibilities` に書く | 収入の内訳 |
-| 出向・転籍 | 出向は出向元と出向先を別の1件にし、期間の重なりを残す（並行在籍）。転籍は転籍先を新しい1件にする | 出向の経緯 |
-| 起業・経営・家業 | `role` に「代表取締役」「共同創業者」など本人の言葉のまま。売上や従業員数は本人の申告の範囲で | 事業をやめた理由 |
-| 公務員・教員・医療・士業 | 官職名・職名を本人の言葉のまま。民間の役職へ言い換えない | |
-| 育児休業・介護休業・病気休職 | 在籍中の休業は在籍期間に含める（空白ではない）。本人が触れた場合に限り `career_history[].note` に休業の期間を書く | 休業の理由・病名 |
-| 学び直し（大学院・職業訓練・留学） | 在籍していない期間なら `career_gaps[].activities` に、学位なら `basic.education` にも書く | |
-| 海外勤務・海外の企業 | 企業名・役職は原語のままでよい。所在地を `assignment` か `note` に書く | |
-| 未経験の職種への転換を望む | 経歴は事実のまま書く。望む職種は `targets.roles` に書き、経歴の側を寄せない | |
-| 短期での離職（数か月） | 事実のまま1件として書く | 離職の理由（本人が語れば `note`） |
-| 転職回数が多い | 特別な扱いをしない。件数を減らすために職歴をまとめない | |
-| 副業・複業 | 並行在籍として `elicitation-guide.md` の規則に従う | 副業の収入 |
-| 定年後の再雇用・シニアの転職 | 再雇用は同じ企業の新しい1件とし、`employment_type` に「再雇用（嘱託）」など本人の言葉を書く | 年齢 |
-| 外国籍・在留資格 | 本人が触れた場合に限り `notes`（ルート）に在留資格の種別を書く。聞き取り側から国籍を聞かない | 国籍・在留資格の詳細 |
-| 障害者手帳・配慮の希望 | 本人が触れた場合に限り `notes`（ルート）に希望する配慮を書く。手帳の有無を聞き取り側から聞かない | 診断名・等級 |
+| Temporary staffing, SES (system engineering service), client-site assignment | `company` is the employer (the staffing agency or the employing company), `assignment` is the client site or place of dispatch, `employment_type` is 「派遣」「正社員（客先常駐）」(temporary staffing, permanent employee — client-site assignment), and the like | When the user would rather not name the client site, a description such as 「大手製造業」 (a major manufacturer) is fine |
+| Contract employee, advisory position, part-time work | Write the employment type into `employment_type`. Treat it as one entry, the same as a permanent position | Why the user did not become a permanent employee |
+| Contract work, freelance, sole proprietorship | `company` is the trade name or 「個人事業」 (sole proprietorship); write the main client into `assignment` or `responsibilities` | The breakdown of income |
+| Secondment, transfer | For a secondment, make the seconding company and the receiving company two separate entries and keep the overlap in periods (concurrent employment). For a transfer, make the destination company a new entry | The circumstances of the secondment |
+| Founding a company, management, a family business | Write `role` in the user's own words, such as 「代表取締役」 (representative director) or 「共同創業者」 (co-founder). Record revenue and headcount within the user's own statement | Why the business was closed |
+| Public servant, teacher, medical, licensed professional | Write the official or professional title in the user's own words. Never reword it into a private-sector title | |
+| Childcare leave, family-care leave, medical leave of absence | A leave taken while still employed counts within the tenure period (it stays part of employment). Write the leave's period into `career_history[].note` only when the user brings it up | The reason for the leave, the diagnosis |
+| Returning to study (graduate school, vocational training, study abroad) | For a period not employed, write it into `career_gaps[].activities`; for a degree, also write it into `basic.education` | |
+| Working overseas, a foreign company | The company name and job title may stand in the original language. Write the location into `assignment` or `note` | |
+| Wanting to move into an unfamiliar occupation | Write the career history as fact, as it stands. Write the desired occupation into `targets.roles`, without bending the career history toward it | |
+| A short tenure (a few months) | Write it as fact, as one entry | The reason for leaving (write it to `note` only if the user states it) |
+| Many job changes | No special handling. Never merge career-history entries to reduce the count | |
+| A side job, holding multiple jobs | Follow `elicitation-guide.md`'s rule for concurrent employment | The income from the side job |
+| Re-employment after retirement, a senior job change | Re-employment is a new entry at the same company; write the user's own words, such as 「再雇用（嘱託）」 (re-employment, advisory position), into `employment_type` | Age |
+| Foreign nationality, residence status | Write the type of residence status into `notes` (root) only when the user brings it up. Elicitation never asks about nationality | Details of nationality or residence status |
+| A disability certificate, a request for accommodation | Write the requested accommodation into `notes` (root) only when the user brings it up. Elicitation never asks whether a certificate exists | The diagnosis or its grade |
 
-`assignment`・`employment_type`・`note` は `career_history[]` の任意フィールドである（仕様は hub の `references/profile-format.md`）。本人の申告に無い項目は書かない。
+`assignment`, `employment_type`, and `note` are optional fields of `career_history[]` (the specification is in the
+hub's `references/profile-format.md`). An item absent from the user's statement is never written.
 
-療養・介護・障害・国籍のように、法令上とくに配慮を要する事柄は、本人が語った範囲だけを記録する。空白期間の活動を選択式で聞くときは、何のために聞くか（書類で空白をどう説明するかを決めるため）を1文添え、答えない選択があることを示す。
+For a matter that calls for particular legal care, such as medical treatment, caregiving, disability, or
+nationality, only what the user states is recorded. When asking a choice-format question about
+activities during a gap period, add one sentence on what it is for (to decide how the document will explain the
+gap), and show that declining to answer is an option.
 
-## 聞き取り側の禁止事項
+## Prohibitions for elicitation
 
-- 申告の真偽・出所・根拠を問うこと。
-- 数値・時期・役職・規模を聞き取り側の推測で提案し、本人に是認させること。
-- 置き換え案を本人へ示さずにメモへ書くこと。
-- 置き換えで、本人が申告した関与の範囲より強い役割の表現を使うこと。数値・規模・範囲・主体を足すこと。
-- 答えたくないと述べた項目へ戻ること。理由を聞くこと。
-- 本人が「重要でない」と述べた項目を、必須項目でないのに深掘りすること。
-- 定型でない経歴を、定型に合わせて書き換えること（派遣先を雇用主として書く、休業を空白として書く、複数の職歴を1件へまとめる）。
+- Questioning the truth, source, or grounds of a statement.
+- Proposing a figure, a time, a job title, or a scale from elicitation's own guess and having the user affirm it.
+- Writing a reworded candidate into the notes without showing it to the user.
+- Using, in a rewording, a role's phrasing stronger than the scope of involvement the user stated. Adding a figure,
+  a scale, a scope, or an acting subject.
+- Returning to an item the user said they would rather not answer. Asking the reason.
+- Deep-diving into an item the user called "not important," when it is not a required item.
+- Reshaping a career history with an atypical shape into a typical form (writing the place of assignment as the
+  employer, writing a leave of absence as a gap, merging several career-history entries into one).
 
-## 聞き取りメモへの記載
+## Recording in the elicitation notes
 
-`profile_interview_notes.md` の記載形式は `elicitation-guide.md` が定める。本ファイルで加わるのは次の行の型である。
+The recording format of `profile_interview_notes.md` is set by `elicitation-guide.md`. What this file adds is the
+following line formats.
 
-| 行の型 | 書き方 |
+| Line type | How to write it |
 |---|---|
-| 原文 | `- {項目}: {利用者の言葉のまま}` |
-| 言い換え | 原文の直下に `  - 言い換え（本人了承）: {了承された文}` |
-| 不確か・概算の申告 | 数値の後ろに `（本人が不確かとした）`（`elicitation-guide.md` と同じ印） |
-| 不明の申告 | `- {項目}: 本人が不明とした` |
-| 辞退 | `- {項目}: 未回答（本人の意向）` |
-| 食い違いの提示 | `- 確認: {記述A}／{記述B} → 本人の選択: {A または B}` |
+| Original statement | `- {item}: {the user's own words, as stated}` |
+| Rewording | Directly under the original, `  - 言い換え（本人了承）: {the approved sentence}` |
+| An uncertain or approximate statement | `（本人が不確かとした）` appended after the figure (the same mark as `elicitation-guide.md`) |
+| A statement of "unknown" | `- {item}: 本人が不明とした` |
+| Declining to answer | `- {item}: 未回答（本人の意向）` |
+| Presenting a conflict | `- 確認: {statement A}／{statement B} → 本人の選択: {A or B}` |
 
-作成担当（writer）は、言い換えの行がある項目ではその言い換えを使い、原文の役割・規模を超えないことを確かめる。監査担当（auditor）は、言い換えの行が無い項目に書類向けの表現が使われていないか、言い換えが原文の関与の範囲を超えていないかを検査する。申告そのものの真偽は、どちらも検査しない。
+The writer uses the reworded sentence for an item that carries a rewording line, and confirms that it never
+exceeds the original's role or scale. The auditor checks whether an item with no rewording line carries
+document-ready phrasing, and whether a rewording exceeds the original's scope of involvement. Neither checks the
+truth of the statement itself.
 
-## 根拠と限界
+## Grounding and limits
 
-「役割の表現の段階」と「動詞・名詞の置き換え表」は本スキルの運用上の取り決めであり、置き換える言葉ごとに出典があるわけではない。裏付けがあるのは、避けるべき失敗の2つの型である。実際には補助だけだった業務を「プロジェクトリーダー経験あり」と書く型[E1]と、チームの成果を個人の成果として書く型[E2]である。後者の出典は、役割と関与の度合い（「チームリーダーとして」「〜を担当し」）を明示することを対策として挙げている。「役割の表現の段階」は、その対策を本人の言葉で段階に分けたものである。いずれもレベルCの実務記事であり、置き換えが選考結果に与える影響を測った研究は特定できていない。
+"The scale of role phrasing" and the "Verb and noun replacement table" are this skill's own operating convention;
+citations cover the two failure types below, and the individual replacement words carry none. The two types are writing
+"project leader experience" for work that was in fact only supporting [E1], and writing a team's achievement as an
+individual's achievement [E2]. The latter source names, as a countermeasure, making the role and the degree of
+involvement explicit ("as team leader," "was in charge of 〜, and 〜"). "The scale of role phrasing" is that
+countermeasure broken into rungs in the user's own words. Both sources are level-C practitioner articles, and no
+study measuring a rewording's effect on a selection outcome could be identified.
 
-## 出典一覧
+## Sources
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. レベル. URL）で出典を並べる節である。区切りのピリオドを和文の句読点として判定させないため、この節だけ無効化する。 -->
+<!-- This section lists sources in a bibliographic format (publisher. Title. Level. URL). This section alone disables the rule so the separating periods are not judged as Japanese punctuation. -->
 
-- [E1] 応募書類マスター（keireki.net）. 【履歴書の「盛る」はNG？】適切なアピール方法と注意点を解説！. レベルC. https://keireki.net/rrsmoru/
-- [E2] lekky.jp. 職務経歴書の「営業成績」は盛るとバレる？リスクと正しい書き方を解説. レベルC（本スキルのツールからは 403 で読めず、検索結果の索引文で内容を確認した）. https://lekky.jp/articles/1030/
+- [E1] 応募書類マスター（keireki.net）. 【履歴書の「盛る」はNG？】適切なアピール方法と注意点を解説！. Level C. https://keireki.net/rrsmoru/
+- [E2] lekky.jp. 職務経歴書の「営業成績」は盛るとバレる？リスクと正しい書き方を解説. Level C (this skill's tools returned 403; content was confirmed from the search result's own index text). https://lekky.jp/articles/1030/
 
 <!-- textlint-enable -->

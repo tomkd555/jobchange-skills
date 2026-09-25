@@ -1,118 +1,118 @@
-# 企業スコアの原本仕様（company-score-rubric）
+# Canonical company score specification (company-score-rubric)
 
-応募先企業を 0〜100 点で採点する仕組みの原本である。点数化に使う軸の定義・点数への換算・重みの与え方・総合点の算出規則を定める。軸ごとの実測値は企業研究担当エージェント（job-change-company-researcher）が `company_research.json` の `company_metrics` へ出典付きで書く。総合点は適合性評価スキル（job-change-fit-assessment）が `scripts/calculate_company_score.py` で機械的に算出する。
+This is the canonical specification of the system that scores a target company on a 0-to-100 scale. It defines the axes used for scoring, their conversion to a score, how weight is assigned, and the rule for calculating the overall score. The company researcher agent (job-change-company-researcher) writes the measured figure for each axis, with its source, into `company_metrics` in `company_research.json`. The fit assessment skill (job-change-fit-assessment) mechanically calculates the overall score with `scripts/calculate_company_score.py`.
 
-## 採点を利用者ごとに組み立てる理由
+## Why scoring is built per user
 
-企業のどの側面を重んじるかは利用者によって異なる。日本の標本によるポリシー・キャプチャリング法では、給与と社風の順位が自己効力感の高低や性別で入れ替わり、勤務医の離散選択実験では夜間業務を避ける傾向が既婚女性と50歳以上で強い。豪州のポリシー・キャプチャリング法では、企業魅力度の評価の分散の40%が回答者間の差に帰属する。全利用者へ同じ軸と同じ重みを当てはめる根拠は無い（根拠と限界は `job-change-fit-assessment/references/fit-methods.md`）。
+Which aspect of a company matters most differs by user. In a policy-capturing study on a Japanese sample, the ranking between salary and workplace culture flips depending on the level of self-efficacy and on sex, and a discrete-choice experiment on hospital physicians finds a stronger tendency to avoid night duty among married women and those aged 50 and over. In an Australian policy-capturing study, 40% of the variance in ratings of company attractiveness is attributable to differences between respondents. There is no basis for applying the same axes and the same weights to every user (the grounds and limits are in `job-change-fit-assessment/references/fit-methods.md`).
 
-そこで担い手を次のように分ける。
+The work is therefore divided as follows.
 
-| 対象 | 内容 | 担い手 |
+| Object | Content | Owner |
 |---|---|---|
-| 軸の実測値 | 企業側の事実。誰が見ても同じ | 企業研究（`company_research.json` の `company_metrics`） |
-| 軸の選択・重み・点数の基準 | 利用者の判断 | プロファイル（`profile.json` の `company_score_axes`） |
-| 総合点 | 上記2つから決まる | 適合性評価（`fit_assessment.json` の `company_score`） |
+| An axis's measured figure | A fact about the company. The same for anyone who looks | Company research (`company_metrics` in `company_research.json`) |
+| The choice of axes, their weights, and scoring criteria | The user's judgment | The profile (`company_score_axes` in `profile.json`) |
+| The overall score | Determined from the two items above | Fit assessment (`company_score` in `fit_assessment.json`) |
 
-企業研究担当は WebSearch・WebFetch を持つため、`profile.json` を渡してはならない。渡すのは、実測値を集める定量軸の識別子の配列だけである。定性軸の `label`・`definition`・`judgment` は利用者が自分の言葉で書いたものであり、本人の状況を映すため渡さない。定性軸の判定は、企業研究が集めた事実と求人票を材料に、Web ツールを持たない適合性評価が行う。
+The company research role holds WebSearch and WebFetch, so `profile.json` must never be passed to it. What is passed is only the array of identifiers for the quantitative axes whose measured figures are to be collected. A qualitative axis's `label`, `definition`, and `judgment` are written by the user in their own words and reflect their own situation, so they are not passed. Judging a qualitative axis is the work of the fit assessment, which holds no web tool, using the facts company research has collected and the job posting as material.
 
-## 軸の2種類
+## The two kinds of axis
 
-| 種類 | `kind` | 内容 |
+| Kind | `kind` | Content |
 |---|---|---|
-| 定量軸 | `quantitative` | 数値で公表され、出所をたどれる指標。候補の一覧から利用者が選ぶ |
-| 定性軸 | `qualitative` | 数値にならない事柄。ラベル・定義・判定条件のすべてを利用者がヒアリングで決める |
+| Quantitative axis | `quantitative` | A metric published as a number, traceable to its source. The user picks it from a list of candidates |
+| Qualitative axis | `qualitative` | Something that does not become a number. The user decides its label, definition, and judgment criteria entirely, through an interview |
 
-定量軸のうち既定で選択済みなのは `compensation_level`（処遇水準）だけである。他の軸は、利用者が選んだときにだけ採点の対象になる。
+Of the quantitative axes, `compensation_level` (compensation level) is the only one selected by default. Another axis becomes a scoring target only when the user selects it.
 
-## 定量候補軸
+## Quantitative candidate axes
 
-いずれも数値であり、出所は有価証券報告書・公的統計サイト・就職四季報・求人票のいずれかである。「方向」は、値が大きいほど点数が高い（`higher_is_better`）か、小さいほど高い（`lower_is_better`）かを表す。
+Every one of these is numeric, and its source is one of a securities report, a public-statistics site, Shushoku Shikiho, or a job posting. "Direction" states whether a higher value scores higher (`higher_is_better`) or a lower value scores higher (`lower_is_better`).
 
-| 軸キー | 指標 | 単位 | 方向 | 主な出所 |
+| Axis key | Metric | Unit | Direction | Main source |
 |---|---|---|---|---|
-| `compensation_level` | 平均年間給与 | 円 | 大きいほど高い | 有価証券報告書「従業員の状況」 |
-| `annual_holidays` | 年間休日総数 | 日 | 大きいほど高い | 求人票・しょくばらぼ・就職四季報 |
-| `monthly_overtime` | 月平均の残業時間 | 時間 | 小さいほど高い | しょくばらぼ・就職四季報・求人票 |
-| `paid_leave_rate` | 年次有給休暇の取得率 | % | 大きいほど高い | しょくばらぼ・就職四季報 |
-| `turnover_rate` | 離職率 | % | 小さいほど高い | しょくばらぼ・就職四季報 |
-| `male_childcare_leave_rate` | 男性の育児休業取得率 | % | 大きいほど高い | 有価証券報告書・しょくばらぼ |
-| `revenue_growth` | 売上高の成長率（年率） | % | 大きいほど高い | 有価証券報告書・決算資料 |
-| `operating_margin` | 営業利益率 | % | 大きいほど高い | 有価証券報告書・決算資料 |
-| `equity_ratio` | 自己資本比率 | % | 大きいほど高い | 有価証券報告書・決算資料 |
+| `compensation_level` | Average annual salary | 円 | Higher is better | The securities report's "Status of Employees" |
+| `annual_holidays` | Total annual holidays | 日 | Higher is better | The job posting, Shokuba Labo, Shushoku Shikiho |
+| `monthly_overtime` | Average monthly overtime | 時間 | Lower is better | Shokuba Labo, Shushoku Shikiho, the job posting |
+| `paid_leave_rate` | Annual paid-leave-taking rate | % | Higher is better | Shokuba Labo, Shushoku Shikiho |
+| `turnover_rate` | Turnover rate | % | Lower is better | Shokuba Labo, Shushoku Shikiho |
+| `male_childcare_leave_rate` | Male childcare-leave-taking rate | % | Higher is better | The securities report, Shokuba Labo |
+| `revenue_growth` | Revenue growth rate (annualized) | % | Higher is better | The securities report, earnings materials |
+| `operating_margin` | Operating margin | % | Higher is better | The securities report, earnings materials |
+| `equity_ratio` | Equity ratio | % | Higher is better | The securities report, earnings materials |
 
-軸を増やすときは、次の3つをすべて満たすことを条件とする。数値で公表されていること、出所が一次資料または信頼できる二次資料であること、値が高いか低いかの方向が一意に定まること。「成長性」「技術先進性」のように、何を測るかが定まらない言葉は軸にしない。測りたい内容を定量指標で表せないなら、定性軸として利用者が定義する。
+Adding an axis is conditioned on satisfying all three of the following: it is published as a number, its source is a primary source or a reliable secondary source, and the direction of high versus low is uniquely determined. A word whose measurement target is unsettled, such as "growth potential" or "technical sophistication," does not become an axis. When what should be measured cannot be expressed as a quantitative metric, the user defines it as a qualitative axis.
 
-## 点数への換算
+## Conversion to a score
 
-各軸の実測値を、次の線形式で 0〜100 点へ換算する。
+Each axis's measured figure is converted to a 0-to-100 score by the following linear formula.
 
 ```
 score = 100 × (実測値 − p0) ÷ (p100 − p0)
 ```
 
-`p0` は 0 点に相当する水準、`p100` は 100 点に相当する水準である。方向が `lower_is_better` の軸では `p0 > p100` になる（残業時間が長いほど 0 点に近い）。算出値は 0 未満を 0 に、100 超を 100 に収め、整数へ四捨五入する。
+`p0` is the level corresponding to a score of 0, and `p100` is the level corresponding to a score of 100. For an axis whose direction is `lower_is_better`, `p0 > p100` (a longer overtime level sits closer to a score of 0). Clamp the computed value to 0 when it falls below 0 and to 100 when it exceeds 100, and round it to an integer.
 
-実測値が無い軸は 0 点にせず、`score` を `null`（判定できない）にする。0 点は「低い水準であることを確認した」という意味であり、材料が無いことと区別する。
+Set `score` to `null` (undeterminable) for an axis with no measured figure. A score of 0 means "confirmed to be at a low level," which is distinguished from having no material at all.
 
-## 基準（p0・p100）の決め方
+## How the thresholds (p0, p100) are decided
 
-基準は次の優先順で決める。決定した出所を軸ごとに `threshold_source`（`user` / `statistic`）として記録する。
+The thresholds are decided in the following priority order. Record the decided source, per axis, as `threshold_source` (`user` / `statistic`).
 
-| 優先度 | 出所 | 内容 |
+| Priority | Source | Content |
 |---|---|---|
-| 1 | 利用者（`user`） | `profile.json` の `company_score_axes[].thresholds` に `zero` と `full` が書かれていれば、それを使う |
-| 2 | 統計の既定（`statistic`） | 上書きが無ければ、公的統計の分布に基づく既定値を使う |
+| 1 | The user (`user`) | Use `zero` and `full` from `profile.json`'s `company_score_axes[].thresholds`, when they are written |
+| 2 | The statistical default (`statistic`) | When there is no override, use the default based on the distribution of public statistics |
 
-既定値の原本は `job-change-fit-assessment/scripts/calculate_company_score.py` の定数 `DEFAULT_THRESHOLDS` である。本文書には数値を重複して書かない。各項目は `{p0, p100, unit, direction, survey, survey_year, source_url, coverage}` を持ち、値は官公庁ドメインの一次統計から裏取りして設定する。
+The canonical source for the default values is the constant `DEFAULT_THRESHOLDS` in `job-change-fit-assessment/scripts/calculate_company_score.py`. This document does not duplicate the numbers. Each entry holds `{p0, p100, unit, direction, survey, survey_year, source_url, coverage}`, and its values are set after being corroborated against a primary statistic from a government domain.
 
-統計の既定値を持たない軸は、利用者が基準を書くまで採点しない。`score` を `null` にし、基準の申告を促す。推測した基準で点数を作らない。既定を持たないのは、統計の分布を企業の値へ当てはめると水準がずれる軸である。処遇水準がこれにあたり、企業単位の年収分布を持つ公的統計が無いため、利用者の現年収と希望年収から基準を決める。
+An axis with no statistical default is not scored until the user states a threshold. Set `score` to `null` and prompt the user to state a threshold. Do not manufacture a score from a guessed threshold. An axis has no default when applying a statistical distribution to the company's value would shift its level. Compensation level falls under this, because no public statistic gives a company-level annual-salary distribution; its threshold is decided from the user's current salary and desired salary.
 
-利用者が基準を上書きした軸は、その旨を報告に残す。基準が本人の判断そのものであるため、その軸の点数は他者の点数と比べられない。
+Record, in the report, when the user has overridden an axis's threshold. Because the threshold is itself the user's own judgment there, that axis's score cannot be compared against another person's score.
 
-## 定性軸の作り方
+## How to build a qualitative axis
 
-定性軸は、利用者がラベル・定義・判定条件のすべてを決める。決まっていない定性軸は採点に入れない。
+For a qualitative axis, the user decides the label, definition, and judgment criteria in full. An undecided qualitative axis is not included in scoring.
 
-| 項目 | 内容 |
+| Item | Content |
 |---|---|
-| `axis` | 軸の識別子。半角英小文字・数字・下線で利用者が付ける。定量候補軸のキーと重複させない |
-| `label` | 利用者の言葉での名称。例「裁量の大きさ」 |
-| `definition` | 何をもってそう言うかの定義。判断できる粒度まで具体化する。例「設計方針を自分で決められること」 |
-| `judgment` | 判定条件の配列。各要素は `{score, condition}` を持ち、`score` は 0〜100 の整数、`condition` は「何が確認できたらその点数か」を書く |
+| `axis` | The axis's identifier. The user assigns it, in lowercase ASCII letters, digits, and underscores. It must not duplicate a quantitative candidate axis's key |
+| `label` | A name in the user's own words. Example: 「裁量の大きさ」 |
+| `definition` | The definition of what grounds that label. Make it concrete enough to be judged. Example: 「設計方針を自分で決められること」 |
+| `judgment` | An array of judgment criteria. Each element holds `{score, condition}`; `score` is an integer from 0 to 100, and `condition` states "what must be confirmed for that score" |
 
-`judgment` は点数の高い順に並べ、上から順に条件を当てはめて最初に合致したものを採用する。どの条件にも当てはまらない場合、`score` は `null`（判定できない）にする。中間の点数を推測で置かない。
+Sort `judgment` from the highest score down, and apply the conditions from the top, adopting the first one that matches. When no condition matches, set `score` to `null` (undeterminable). Do not place a guessed value in between.
 
-定性軸のラベルと定義は、ヒアリングで作る。「働きやすさ」「風通しの良さ」のように、判定条件を書けない粒度にとどめない。判定条件を書けないなら、その事柄は採点に入れず、面接での確認事項として `overall.open_questions` へ回す。
+Build a qualitative axis's label and definition through an interview. Do not stop at a granularity where a judgment condition cannot be written, such as "ease of working" or "openness of communication." When a judgment condition cannot be written for something, leave that matter out of scoring, and route it to `overall.open_questions` as a point to confirm at interview.
 
-## 重みの配分
+## Weight allocation
 
-利用者は、選んだ軸へ合計 100 になるよう重みを配分する。重みは整数とし、0 の軸は置かない（採点に入れないなら軸ごと外す）。
+The user allocates weight, in integers summing to 100, across the axes chosen. An axis with a weight of 0 is not placed (to leave an axis out of scoring, remove the axis entirely).
 
-配分の後、架空2社の比較で検算する。配分した重みで2社を採点し、「実際にどちらを選ぶか」という問いへの答えと点数の高い側が一致するかを確かめる。食い違った場合は、配分を見直すか、配分と実際の選択の両方を記録して利用者へ提示する。どちらが本当の判断かをスキルの側で決めない。自己申告した重みが実際の選択から推定した重みとずれることは、複数の実証研究が繰り返し確かめている。そのため、この検算を省かない。
+After the allocation, check it with a comparison between two fictional companies. Score the two companies with the allocated weights, and check whether the answer to "which would actually be chosen" agrees with the side that scores higher. When there is a mismatch, either revisit the allocation, or record both the allocation and the actual choice and present them to the user. The skill itself does not decide which one is the true judgment. Multiple empirical studies repeatedly confirm that a self-reported weight diverges from a weight inferred from an actual choice. This check is therefore never skipped.
 
-## 総合点の算出
+## Calculating the overall score
 
-判定できた軸（`score` が `null` でない軸）だけで加重平均を取る。
+Take the weighted average using only the axes that could be judged (whose `score` is not `null`).
 
 ```
 total = Σ(score × weight) ÷ Σ(weight)      （judged な軸のみ）
 coverage = Σ(judged な軸の weight)          （申告した重みの合計は 100 のため、そのまま割合になる）
 ```
 
-`total` は整数へ四捨五入する。判定できた軸が1つも無い場合、`total` は `null` にする。
+Round `total` to an integer. When not one axis could be judged, set `total` to `null`.
 
-`coverage` が `COVERAGE_THRESHOLD`（`calculate_company_score.py` の定数）を下回る場合、`provisional` を `true` にする。判定できなかった軸の重みが大きいほど、総合点は少数の軸だけで決まるためである。
+When `coverage` falls below `COVERAGE_THRESHOLD` (a constant in `calculate_company_score.py`), set `provisional` to `true`. The larger the weight of the axes that could not be judged, the more the overall score is determined by only a small number of axes.
 
-総合点は、利用者が選んだ軸と配分した重みに基づく数値であり、企業そのものの質の絶対評価ではない。異なる利用者の総合点どうしを比べない。同じ利用者が同じ軸と重みで採点した企業どうしだけを比べる。
+The overall score reflects the axes the user chose and the weights they allocated, and holds only relative to that user's own choices. Do not compare overall scores between different users. Compare only companies the same user scored with the same axes and weights.
 
-## 記入形式
+## Entry format
 
-### company_research.json の `company_metrics`
+### `company_metrics` in company_research.json
 
-企業研究が、定量候補軸の実測値を出典付きで書く。指示された軸に対応する指標を優先して集め、確認できなかった項目は `null` にする。
+Company research writes the measured figure for each quantitative candidate axis, with its source, here. Prioritize collecting the metrics for the instructed axes, and set an item that could not be confirmed to `null`.
 
-キーは定量候補軸の軸キーと同じにする。採点には使わないが拘束時間の算定に必要な補助指標（`avg_paid_leave_days_taken`）だけは、軸キー以外のキーとして置いてよい。
+Use the same keys as the quantitative candidate axes' axis keys. The only key allowed besides an axis key is the auxiliary metric needed for calculating binding hours (`avg_paid_leave_days_taken`), which is not used in scoring.
 
 ```json
 "company_metrics": {
@@ -123,30 +123,30 @@ coverage = Σ(judged な軸の weight)          （申告した重みの合計�
 }
 ```
 
-| フィールド | 必須 | 記入基準 |
+| Field | Required | Entry criteria |
 |---|---|---|
-| `value` | 必須 | 数値。確認できなければ `null`。推定値を入れない |
-| `unit` | 必須 | 上の候補軸の表の単位に合わせる |
-| `source_url` | `value` が非 null なら必須 | 実在する出典 URL |
-| `grade` | `value` が非 null なら必須 | エビデンスレベル（A〜D）。原本は `references/evidence-grading.md` |
-| `as_of` | 推奨 | その値が指す時点（`YYYY-MM` または `YYYY`） |
+| `value` | Required | A number. `null` when it could not be confirmed. Do not enter an estimate |
+| `unit` | Required | Matches the unit in the candidate-axis table above |
+| `source_url` | Required when `value` is non-null | An existing source URL |
+| `grade` | Required when `value` is non-null | The evidence level (A through D). Canonically defined in `references/evidence-grading.md` |
+| `as_of` | Recommended | The point in time the value refers to (`YYYY-MM` or `YYYY`) |
 
-定性軸については、企業研究は点数を付けない。利用者が重点観点として指示した事柄について、確認できた事実と出典を `claims` へ書き、判定は適合性評価が行う。
+For a qualitative axis, company research assigns no score. It writes the confirmed facts and their sources into `claims` for whatever the user instructed as an area of emphasis, and the fit assessment makes the judgment.
 
-### profile.json の `company_score_axes`
+### `company_score_axes` in profile.json
 
-軸の選択・重み・基準の上書き・定性軸の定義を持つ。形式の原本は `job-change-support/references/profile-format.md` にある。
+Holds the choice of axes, the weights, threshold overrides, and qualitative-axis definitions. The canonical format is in `job-change-support/references/profile-format.md`.
 
-### fit_assessment.json の `company_score`
+### `company_score` in fit_assessment.json
 
-総合点・軸ごとの内訳・`coverage`・`provisional`・根拠を持つ。形式の原本は `job-change-fit-assessment/references/fit-format.md` にある。
+Holds the overall score, the breakdown per axis, `coverage`, `provisional`, and the grounds. The canonical format is in `job-change-fit-assessment/references/fit-format.md`.
 
-## 機械的な検証と監査の分業
+## Division of labor between mechanical validation and audit
 
-| 担い手 | 検査する範囲 |
+| Owner | Scope of check |
 |---|---|
-| 機械的な検証（validate_company_research.py） | `company_metrics` の構造・単位・`value` が数値または `null` であること・`value` が非 null のときの `source_url` と `grade` の有無を検査する。値そのものの正しさは判定しない。 |
-| 独立監査（job-change-research-auditor） | 実測値が出典の記載と一致するか、エビデンスレベルの付与が妥当か、指示された軸の指標を過不足なく集めているかを検査する。 |
-| 機械的な算出（calculate_company_score.py） | 点数化・加重平均・`coverage`・`provisional` を、本文書の規則どおりに機械的に算出する。 |
+| Mechanical validation (validate_company_research.py) | Checks `company_metrics`'s structure, units, whether `value` is a number or `null`, and whether `source_url` and `grade` are present when `value` is non-null. It does not judge the correctness of the value itself. |
+| Independent audit (job-change-research-auditor) | Checks whether the measured figure agrees with what its source states, whether the assigned evidence level is appropriate, and whether the metrics for the instructed axes have been collected completely, with nothing missing and nothing extra. |
+| Mechanical calculation (calculate_company_score.py) | Mechanically calculates the scoring, the weighted average, `coverage`, and `provisional`, following this document's rules. |
 
-規則を変えるときは、本文書・`calculate_company_score.py`・単体テスト・記入例をそろえて変える。
+When changing a rule, change this document, `calculate_company_score.py`, the unit tests, and the worked example together.

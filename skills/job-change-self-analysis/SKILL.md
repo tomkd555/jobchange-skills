@@ -1,13 +1,18 @@
 ---
 name: job-change-self-analysis
 description: >-
-  転職の自己分析を担うサブスキル。profile.json を土台に、行動エピソード（STAR素材）と他者フィードバックを
-  内省と対等の必須要素として集め、興味・価値観・career adaptability の4次元・過去の行動の4軸で構造化し、
-  根拠づけた強み、キャリア・ナラティブ、退職理由の建設的な言い換えの3点を持つ self_analysis.json を作る。
-  面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が読める成果物にする。
-  強みは行動証拠または他者証言への対応づけを必須とし、内省だけに重きを置かない。質問をあらかじめ定めた構造化された問いに限って反すうを防ぎ、診断結果を確定した判定として扱わず、事実の創作・誇張をせず、metric を厳密に一致させる。
-  作成と独立監査は専用エージェント（job-change-self-analysis-writer / job-change-self-analysis-auditor）が担う。
-  job-change-support（hub）から振り分けられて動く。
+  Sub-skill for self-analysis in a job change. Building on profile.json, it collects behavioural
+  episodes (STAR material) and feedback from others as required elements on equal footing with
+  introspection, structures them along interests, values, the four dimensions of career adaptability,
+  and four axes of past behaviour, and produces a self_analysis.json holding three elements: grounded
+  strengths, a career narrative, and a constructive reframing of the reason for leaving. It makes a
+  deliverable that job interview preparation (job-change-interview-prep) and the deepening of statements
+  of motivation (job-change-documents) can read. A strength must map to behavioural evidence or feedback
+  from others; weight is never placed on introspection alone. Questions are limited to a fixed set of structured
+  questions to prevent rumination, diagnostic results are never treated as a final verdict, facts are
+  never fabricated or exaggerated, and metric values match exactly. A dedicated agent handles writing,
+  and a separate dedicated agent handles independent auditing (job-change-self-analysis-writer /
+  job-change-self-analysis-auditor). It runs when routed from job-change-support (the hub).
   Use when the user does self-analysis for a job change in Japan — organizing strengths, taking stock of
   their career, deepening their reasons for changing jobs, or building a consistent career narrative for
   interviews and statements of motivation.
@@ -18,152 +23,152 @@ allowed-tools: Read, Write, Glob, Grep, Bash, AskUserQuestion, Agent, Skill
 
 # job-change-self-analysis
 
-転職の自己分析に取り組むとき、このスキル1つで棚卸しから成果物の納品までの手順がそろう。profile.json を土台に、行動エピソード（STAR素材）と他者フィードバックを内省と対等に集め、興味・価値観・career adaptability の4次元・過去の行動の4軸で構造化する。そのうえで、根拠づけた強み、キャリア・ナラティブ、退職理由の建設的な言い換えの3点を持つ self_analysis.json を作る。成果物は面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が入力として読む。
+When working on self-analysis for a job change, this single skill covers every step from taking stock to delivering the finished output. Building on profile.json, it collects behavioural episodes (STAR material) and feedback from others on equal footing with introspection, and structures them along interests, values, the four dimensions of career adaptability, and four axes of past behaviour. From there, it produces a self_analysis.json holding three elements: grounded strengths, a career narrative, and a constructive reframing of the reason for leaving. Job interview preparation (job-change-interview-prep) and the deepening of statements of motivation (job-change-documents) read the deliverable as input.
 
-本スキルは、行動証拠と他者視点を内省と併用する（根拠は `references/self-analysis-methods.md`）。作成と独立監査はそれぞれ専用エージェント（`job-change-self-analysis-writer`・`job-change-self-analysis-auditor`）が担う。本スキルは、作成と独立監査の起動・差し戻し・納品を統括する。
+This skill uses behavioural evidence and the perspective of others alongside introspection (the grounds are in `references/self-analysis-methods.md`). A dedicated agent handles writing, and a separate dedicated agent handles independent auditing (`job-change-self-analysis-writer` and `job-change-self-analysis-auditor`). This skill oversees launching writing and independent auditing, sending work back for revision, and delivering the result.
 
-## 目的と原則
+## Purpose and principles
 
-1. **他者視点と行動証拠を内省と併用する。** 強み（strengths）は、行動エピソード（behavioral_episodes）または他者証言（others_feedback）への対応づけを必須とする。内省単独の強みは認めない（検証スクリプトが ERROR とする）。他者フィードバックの受け取りは課題志向で行い、人格評価としてではなく行動と結果への対応づけとして記録する。
+1. **Use the perspective of others and behavioural evidence alongside introspection.** Every strength must map to a behavioural episode (behavioral_episodes) or feedback from others (others_feedback). A strength grounded in introspection alone is not accepted (the validation script reports it as an ERROR). Take in feedback from others with a task-oriented focus, and record it as a mapping between actions and results.
 
-2. **あらかじめ定めた構造化された問いに限る（反すう防止）。** 質問は `references/question-bank.md` のあらかじめ定めた問いに限定し、無制限の「なぜ」の反復を促さない。深掘りでは、利用者を感情の反すうへ陥らせず、質問を必ず行動・事実（エピソード）へ対応づける。感情の将来予測（「転職すれば幸せになれる」）を確信・断定の根拠にしない。
+2. **Limit questions to a fixed set of structured questions (to prevent rumination).** Questions are limited to the fixed set in `references/question-bank.md`, and unlimited repetition of "why" is never encouraged. When probing further, questions always map to an action or a fact (an episode) and never lead the user into an emotional rumination. An affective forecast ("changing jobs will make me happy") is never used as grounds for a firm conclusion.
 
-3. **診断結果を確定した判定として扱わない。** 妥当性の弱い枠組み（Schein のキャリア・アンカー、商用の strengths ツール、RIASEC 自己診断ツール）は、内省を促す呼び水として限定的に使う。結果を「確定した自分」として扱わない。実務手法（Will-Can-Must・モチベーショングラフ・他己分析・ジョハリの窓）は聞き取りを進めるために使い、その手法で得られた結果は内省・行動・他者証言で裏付けてから成果物へ取り入れる。
+3. **Never treat a diagnostic result as a final verdict.** Frameworks with weak validity (Schein's career anchors, commercial strengths tools, RIASEC self-diagnosis tools) are used only in a limited way, as a prompt for introspection. A result is never treated as a settled picture of the self. Practical methods (Will-Can-Must, the motivation graph, feedback from others, the Johari window) are used to move the elicitation interview forward, and any result obtained through them is corroborated with introspection, behaviour and testimony from others before it enters the deliverable.
 
-3-2. **性格・行動傾向は、公開された枠組みの二者択一で聞き、型に分類しない。** 性格の自己申告は、公開された項目群（IPIP のビッグファイブ・誠実さ謙虚さ）、構成概念だけを借りる2つ（やり抜く力・自己効力感。尺度は使わない）、本スキルの行動傾向7項目に限り、行動に根ざした二者択一で聞く。MBTI・16Personalities・企業側の適性検査・各社の無償診断は出さない。自己申告は本人の自己像の記録であって特性の証拠ではないため、エピソードか他者証言へ対応づけて初めて強みの根拠に数える。結果は型やタイプの名称でなく描写文で書き、数値を付けない（`references/personality-guide.md`）。
+3-2. **Ask about personality and behavioural tendencies as a forced choice between options drawn from published frameworks, and never sort a person into a type.** Self-reported personality is limited to published item sets (the Big Five and honesty-humility from IPIP), two whose construct alone is borrowed (grit and self-efficacy; their scales are not used), and this skill's own seven behavioural-tendency items, asked as a forced choice grounded in behaviour. MBTI, 16Personalities, employer-side aptitude tests, and any company's free diagnostic tool are never offered. A self-report records the person's self-image, so it counts toward a strength only once it maps to an episode or feedback from others. Write the result as a descriptive passage, and attach no numeric score (`references/personality-guide.md`).
 
-4. **事実を創作・誇張しない。** 成果物に載せる経歴・実績・数値は profile.json に記載のある範囲に限る。behavioral_episodes の `metric`（定量値）は profile.json の実績と厳密に一致させ、丸め・水増しをしない。規模・範囲・主体を表す言葉（大規模・全社・主導など）は、profile.json の記述で裏付けられる範囲を超えて用いない。
+4. **Never fabricate or exaggerate a fact.** The career history, achievements, and figures that enter the deliverable stay within the range profile.json records. Match a behavioral_episodes `metric` (a quantitative value) exactly to profile.json's achievements, with no rounding or inflating. Keep a word denoting scale, scope, or agency (large-scale, company-wide, led, and the like) within the range profile.json's description corroborates.
 
-5. **個人情報を外部へ送信しない。** `profile.json`・`self_analysis.json` に含まれる個人情報は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルは境界の内側にある `self_analysis.json` を作る側である。writer（job-change-self-analysis-writer）と auditor（job-change-self-analysis-auditor）はいずれも Web 送信手段を持たないため、`profile.json` と `self_analysis.json` のパスを渡してよい。
+5. **Never send personal information outward.** Never use the personal information held in `profile.json` or `self_analysis.json` in any external transmission, including a search query, a fetch, or an external API. The canonical enumeration of the scope and each role's permission is in the hub's `{HUB_SKILL_DIR}/references/pii-boundary.md`. This skill sits inside that boundary, building `self_analysis.json`. Because neither the writer (`job-change-self-analysis-writer`) nor the auditor (`job-change-self-analysis-auditor`) holds a means of sending data to the web, the paths of `profile.json` and `self_analysis.json` may be passed to them.
 
-## 範囲外
+## Out of scope
 
-次は本スキルの範囲外とする。依頼された場合は、対応できない旨と、代わりの担当・行動を伝える。
+The following fall outside this skill's scope. When asked for one of these, state that the skill cannot handle it and name the alternative owner or action.
 
-- **適性検査の受検代行。** 心理検査・適性検査を利用者に代わって受検しない。検査対策は `job-change-exam-prep` が担う。
-- **心理療法的な内省支援・メンタルヘルスの相談。** 本スキルは転職のための自己分析に限る。抑うつ・強い不安などメンタルヘルス不調は範囲外とし、専門家（医師・臨床心理士・カウンセラー等）への相談を促す。過度な内省（反すう）は有害であるため、質問はあらかじめ定めた構造化された問いに限る。キャリアの方向そのものに迷いが残る場合は、国家資格のキャリアコンサルタントへの相談を案内する。ハローワークの窓口・地域若者サポートステーション・ジョブカフェでは無償または低額で相談できる（厚生労働省 https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/jinzaikaihatsu/career_consultant01.html ）。
-- **企業研究。** 企業の理念・事業・評判の調査は `job-change-company-research` が担う。本スキルは利用者自身の分析に限る。
-- **応募書類の執筆。** 職務経歴書・志望動機書などの執筆は `job-change-documents` が担う。本スキルは応募書類の素材（根拠づけた強み・ナラティブ・退職理由）を作り、`job-change-documents` へ渡す。
+- **Taking an aptitude test on the user's behalf.** This skill never sits a psychological or aptitude test in the user's place. Test preparation is handled by `job-change-exam-prep`.
+- **Psychotherapeutic support for introspection, and mental-health counselling.** This skill is limited to self-analysis for a job change. A mental-health condition such as depression or severe anxiety falls outside its scope, and the skill encourages consulting a professional (a physician, a clinical psychologist, a counsellor, and the like). Because excessive introspection (rumination) is harmful, questions stay limited to the fixed set of structured questions. When uncertainty remains about the direction of the person's career itself, the skill points to a nationally certified career consultant (国家資格のキャリアコンサルタント). Free or low-cost consultation is available at a Hello Work office (ハローワーク, the public employment service), a regional youth support station (地域若者サポートステーション), or a job café (ジョブカフェ) (Ministry of Health, Labour and Welfare, https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/jinzaikaihatsu/career_consultant01.html).
+- **Company research.** Research into a company's philosophy, business and reputation is handled by `job-change-company-research`. This skill is limited to analysis of the user.
+- **Writing application documents.** Writing a work history document, a statement of motivation, and the like is handled by `job-change-documents`. This skill produces the material for application documents — grounded strengths, the narrative, and the reason for leaving — and hands it to `job-change-documents`.
 
-## パスの解決
+## Path resolution
 
-利用者データの置き場所は設定ファイルの記述だけで決まる。既定の置き場所は無い。本文で `{DATA_ROOT}` と書いた箇所は、次のコマンドが返す `data_root` に読み替える。
+Where user data is stored is decided solely by what the configuration file states. There is no default location. Wherever this document writes `{DATA_ROOT}`, read it as the `data_root` that the following command returns.
 
-hub（job-change-support）から振り分けられた場合は、解決済みの `{DATA_ROOT}` を hub から受け取る。単独で起動された場合は、作業のどの段階よりも先に次を実行する。
+When routed from the hub (job-change-support), this skill receives an already-resolved `{DATA_ROOT}` from the hub. When launched standalone, run the following before any other step of the work.
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 ```
 
-| 終了コード | 状態 | 対応 |
+| Exit code | State | Response |
 |---|---|---|
-| 0 | 設定済み | 出力の `paths` に各データの絶対パスが入る。そのまま作業へ進む |
-| 1 | 設定はあるが内容が不正 | 出力の `errors` を利用者へ示し、修復されるまで作業へ進まない |
-| 2 | 未設定 | Skill ツールで `job-change-support` を起動して設定を作らせ、`{DATA_ROOT}` を解決してから戻る |
+| 0 | Configured | The `paths` field in the output holds the absolute path for each data item. Proceed with the work as is. |
+| 1 | Configuration exists but is invalid | Show the user the `errors` field in the output, and do not proceed until it is fixed. |
+| 2 | Not configured | Launch `job-change-support` with the Skill tool to have it create the configuration, resolve `{DATA_ROOT}`, and then return. |
 
-`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。探索順序を含む設定ファイルの仕様は `docs/configuration.md` にある。
+`{SKILL_DIR}` refers to this skill's own absolute path, and `{HUB_SKILL_DIR}` refers to the absolute path of `job-change-support`, installed alongside it. The configuration file's specification, including its lookup order, is in `docs/configuration.md`.
 
-## データ配置
+## Data layout
 
-利用者データは、非公開ディレクトリ `{DATA_ROOT}/career-private/` に置く。本スキルが読み書きするパスは次のとおり。
+User data lives in the private directory `{DATA_ROOT}/career-private/`. The paths this skill reads and writes are as follows.
 
-| パス | 役割 | 入出力 |
+| Path | Role | I/O |
 |---|---|---|
-| `career-private/profile.json` | 利用者プロファイルの原本（hub が管理） | 入力（初期値として読む。Step 6 で値のみ反映） |
-| `career-private/self_analysis.json` | 自己分析の成果物の原本 | 出力（素材部は Step 1〜3 で逐次追記し、統合部は Step 4 で書く） |
+| `career-private/profile.json` | The canonical definition of the user profile (managed by the hub) | Input (read as the starting values; only values are reflected back in Step 6) |
+| `career-private/self_analysis.json` | The canonical self-analysis deliverable | Output (the material sections are appended incrementally in Steps 1–3, and the integrated sections are written in Step 4) |
 
-- 素材部は `behavioral_episodes`・`others_feedback`・`interests`・`values`・`career_adaptability`・`personality.markers` を指す。統合部は `strengths`・`career_narrative`・`reason_for_change`・`personality.presentation` を指す。統合部が未作成のあいだは `validate_self_analysis.py` が FAIL するため、検証は Step 5 で行う。
-- `self_analysis.json` のフィールド仕様・記入基準・検証規則の原本は `references/self-analysis-format.md` にある。記入例は `assets/self_analysis_example.json`（架空の人物）にある。
-- スキル本体フォルダー（`skills/job-change-self-analysis/`）に利用者データを置かない。
-- `career-private/` が未作成の場合は、必要になった時点で本スキルが作る。
+- The material sections refer to `behavioral_episodes`, `others_feedback`, `interests`, `values`, `career_adaptability`, and `personality.markers`. The integrated sections refer to `strengths`, `career_narrative`, `reason_for_change`, and `personality.presentation`. `validate_self_analysis.py` fails while the integrated sections remain unwritten, so validation happens in Step 5.
+- The canonical definition of `self_analysis.json`'s field specification, entry criteria, and validation rules is in `references/self-analysis-format.md`. A worked example (a fictional person) is in `assets/self_analysis_example.json`.
+- Never place user data inside the skill's own folder (`skills/job-change-self-analysis/`).
+- When `career-private/` does not yet exist, this skill creates it once it is needed.
 
-## パイプライン
+## Pipeline
 
-受付から納品まで Step 0〜6 を順に進める。Step 1〜3 では、聞き取った内容を各 Step の終わりに `{SELF}` へ書き出す。中断しても、済んだ Step を聞き直さずに再開するためである。`{SKILL_DIR}` は本スキルの絶対パス、`{PROFILE}` は `profile.json` の絶対パス、`{SELF}` は `self_analysis.json` の絶対パスに読み替える。
+Proceed through Steps 0–6 in order, from intake to delivery. In Steps 1–3, write what was elicited to `{SELF}` at the end of each step. This lets the work resume, after an interruption, without asking again about a step already completed. Read `{SKILL_DIR}` as this skill's own absolute path, `{PROFILE}` as the absolute path of `profile.json`, and `{SELF}` as the absolute path of `self_analysis.json`.
 
-### Step 0 前提確認
+### Step 0: Preconditions
 
-- `profile.json` の有無を確認する。無ければ、自己分析は profile.json を土台にするため、hub（`job-change-support`）経由で `job-change-profile` サブスキルへ先に誘導する。
-- `profile.json` を hub の `validate_profile.py` で検証する。FAIL（ERROR 1件以上）の場合の扱いは「合否ゲートと差し戻し」の表に従う。
-- 既存の `self_analysis.json` があれば更新モードとし、既存の内容を初期値として読み、差分を追記・修正する。
-- 既存の `self_analysis.json` の素材部が一部だけ埋まっている場合は、中断からの再開とみなす。埋まっている段階（Step 1〜3 のどれか）を飛ばして続きから進めることを利用者へ提案し、聞き直すかどうかは利用者に選ばせる。
+- Check whether `profile.json` exists. If it does not, direct the user first to the `job-change-profile` sub-skill through the hub (`job-change-support`), since self-analysis builds on profile.json.
+- Validate `profile.json` with the hub's `validate_profile.py`. When it fails (one or more ERRORs), follow the table under "Pass/fail gates and rework" for how to proceed.
+- When a `self_analysis.json` already exists, treat this as an update: read its existing content as the starting values, and append or revise the difference.
+- When the material sections of an existing `self_analysis.json` are only partly filled in, treat this as resuming from an interruption. Propose to the user that the already-completed steps (whichever of Steps 1–3 are filled in) be skipped and the work continue from there, and let the user decide whether to be asked again.
 
-### Step 1 行動エピソードの棚卸し
+### Step 1: Taking stock of behavioural episodes
 
-`profile.json` の `career_history`・`achievements` を素材として提示する。AskUserQuestion は選択式を中心に（1回最大4問・各最大4択、自由記述は具体値のみ）使い、STAR 形式（Situation / Task / Action / Result）へ構造化する。質問は `references/question-bank.md` の Step 1 の問いを使う。モチベーショングラフの考え方（時系列＋感情の起伏）は任意の補助とする。各エピソードに、可能なら `metric`（定量値。profile.json の実績と厳密に一致させる）と `reproducibility`（再現性）を添える。聞き取った内容は、この Step の終わりに `{SELF}` の `behavioral_episodes` へ書き出す（形式の原本は `references/self-analysis-format.md`）。
+Present `career_history` and `achievements` from `profile.json` as material. Use AskUserQuestion mainly in its choice form (at most 4 questions per call, at most 4 options each; free text is limited to concrete values), and structure the answers into the STAR format (Situation / Task / Action / Result). Use the Step 1 questions in `references/question-bank.md`. Treat the idea of a motivation graph (a timeline plus the rise and fall of feelings) as an optional aid. Attach a `metric` (a quantitative value, matching profile.json's achievements exactly) and a `reproducibility` note to each episode where possible. At the end of this step, write what was elicited to `behavioral_episodes` in `{SELF}` (the canonical definition of the format is in `references/self-analysis-format.md`).
 
-### Step 2 他者フィードバックの取り込み
+### Step 2: Incorporating feedback from others
 
-過去の評価面談での指摘や、他者から言われたことを `others_feedback` として記録する（他己分析・ジョハリの窓）。question-bank.md の Step 2 の問いを使う。フィードバックは課題志向で受け取り、どの行動がどの結果につながったかの形で記録する。`linked_episode_ids` でエピソードへ対応づける。この場で他者フィードバックが入手できない場合は、成果物を WARN のまま先へ進める。今後の課題として、他者フィードバックの収集を利用者へ示す。依頼文は `assets/feedback_request_template.md` を使う。聞き取った内容は、この Step の終わりに `{SELF}` の `others_feedback` へ書き出す。
+Record points raised in past performance reviews, and things others have said, as `others_feedback` (feedback from others, and the Johari window). Use the Step 2 questions in question-bank.md. Take in feedback with a task-oriented focus, and record it in the form of which action led to which result. Map it to an episode with `linked_episode_ids`. When feedback from others cannot be obtained on the spot, proceed with the deliverable left in a WARN state, and show the user that collecting feedback from others remains an open task. Use `assets/feedback_request_template.md` for the request text. At the end of this step, write what was elicited to `others_feedback` in `{SELF}`.
 
-### Step 3 興味・価値観・career adaptability の構造化質問
+### Step 3: Structured questions on interests, values, and career adaptability
 
-`references/question-bank.md` の Step 3 のあらかじめ定めた問いだけを使う。興味（RIASEC の枠組み）・価値観（エピソードへ対応づける）・career adaptability の4次元（concern / control / curiosity / confidence）を構造化する。無制限の「なぜ」の反復を禁じ、深掘りは必ずエピソード（事実）へ対応づける。Schein の8分類・CCI 型5問は呼び水として使い、結果を確定した判定にしない。聞き取った内容は、この Step の終わりに `{SELF}` の `interests`・`values`・`career_adaptability` へ書き出す。
+Use only the fixed set of Step 3 questions in `references/question-bank.md`. Structure interests (the RIASEC framework), values (mapped to episodes), and the four dimensions of career adaptability (concern / control / curiosity / confidence). Unlimited repetition of "why" is forbidden, and probing further always maps to an episode (a fact). Use Schein's eight categories and the five CCI-style questions as a prompt, and never treat the result as a final verdict. At the end of this step, write what was elicited to `interests`, `values`, and `career_adaptability` in `{SELF}`.
 
-### Step 3.5 性格・行動傾向の自己申告
+### Step 3.5: Self-reported personality and behavioural tendencies
 
-`references/question-bank.md` の Step 3.5 の16問（15の構成概念。問数の内訳は同ファイルにある）を、行動に根ざした二者択一で聞く（1回の AskUserQuestion で4問、4回）。1項目に答えるたびに、その傾向が表れたエピソードを1つ選ばせ、`linked_episode_ids` で対応づける。他者証言に同じ傾向の記述があれば `feedback_ids` で対応づける。エピソードが挙がらなければ `linked_episode_ids` を空のままにする。利用者が省略を望めば Step 3.5 全体を飛ばしてよく、その場合は `personality` を書かない。聞き取った内容は、この Step の終わりに `{SELF}` の `personality.markers` へ書き出す。語彙・聞き方・書き方の原本は `references/personality-guide.md` にある。
+Ask the 16 Step 3.5 questions in `references/question-bank.md` (covering 15 constructs; the breakdown of question counts is in that file) as a forced choice grounded in behaviour (4 questions per AskUserQuestion call, across 4 calls). After each item is answered, have the user pick one episode where that tendency showed up, and map it with `linked_episode_ids`. When feedback from others describes the same tendency, map it with `feedback_ids`. When no episode comes to mind, leave `linked_episode_ids` empty. When the user wants to skip this, the whole of Step 3.5 may be skipped, in which case `personality` is not written. At the end of this step, write what was elicited to `personality.markers` in `{SELF}`. The canonical definition of the vocabulary, the way of asking, and the way of writing is in `references/personality-guide.md`.
 
-### Step 4 統合（作成）
+### Step 4: Integration (writing)
 
-`job-change-self-analysis-writer` エージェント（model: opus）を起動する。Step 1〜3.5 で素材部を書き込んだ `{SELF}` と `{PROFILE}`・出力先 `{SELF}` を渡して、素材部を読ませる。作成担当は、strengths の根拠づけ（episode / feedback への対応づけ必須）、career_narrative の作成（ライフテーマ・転機・一貫する動機）、reason_for_change.constructive_version の作成（不満の列挙でなく発揮したい価値を軸に）を行う。`personality.markers` がある場合は、自己申告とエピソード・他者証言の一致と不一致を `personality.presentation` に文章で描写する（型やタイプの名称と数値を付けない）。戻り値を利用者へ提示し、AskUserQuestion の選択式で修正点を確認する。
+Launch the `job-change-self-analysis-writer` agent (model: opus). Pass it `{SELF}`, with its material sections written in Steps 1–3.5, along with `{PROFILE}` and the output destination `{SELF}`, and have it read the material sections. The writer grounds the strengths (a mapping to an episode or feedback is mandatory), creates the career_narrative (the life theme, turning points, consistent motivation), and creates reason_for_change.constructive_version (built around the value the user wants to bring to bear). When `personality.markers` exists, the writer describes, in prose, the agreement and disagreement between the self-report and the episodes and feedback from others, in `personality.presentation` (attaching no name of a type or category and no numeric score). Present the returned result to the user, and confirm the points to revise through AskUserQuestion's choice form.
 
-### Step 5 機械的な検証＋独立監査
+### Step 5: Mechanical validation and independent audit
 
-`validate_self_analysis.py` で `{SELF}` を検証し、PASS（ERROR 0件）を確認する。続いて `job-change-self-analysis-auditor` エージェント（model: opus、作成担当の判断理由を渡さない新規コンテキスト）を起動する。誇張・創作、記述の一貫性、内省だけを根拠にした断定、反すうや感情の将来予測に頼る記述、型やタイプの名称と誰にでも当てはまる描写、自己申告だけを根拠にした強みを監査する。指摘は Step 4 へ差し戻す（最大2回。以降は利用者の判断による）。
+Validate `{SELF}` with `validate_self_analysis.py` and confirm it PASSes (zero ERRORs). Then launch the `job-change-self-analysis-auditor` agent (model: opus, in a fresh context that withholds the writer's rationale). It audits for exaggeration and fabrication, consistency of the description, a firm claim grounded in introspection alone, a description that relies on rumination or an affective forecast, the name of a type or category, a description that fits anyone, and a strength grounded in a self-report alone. Send its findings back to Step 4 (at most twice; beyond that, the decision belongs to the user).
 
-### Step 6 反映と接続案内
+### Step 6: Reflecting values back and pointing to what connects downstream
 
-`profile.json` へ、`strengths`（self_analysis の strengths.statement の短文）と `job_change_axis.reasons`（constructive_version に基づく文言）を値のみ反映する。profile.json のスキーマは変更しない。`personality.markers` の申告が profile.json の `work_character_preferences` の希望度と食い違う場合（対応の原本は `references/personality-guide.md` の「下流への接続」）は、食い違いを利用者へ示し、どちらを直すかを利用者に選ばせる（スキルの側で決めない）。反映は `job-change-profile` のセクション更新で行う。反映後に hub の `validate_profile.py` を再実行して PASS を確認する。profile.json の `updated_at` は当日の日付へ書き換える。`self_analysis.json` は下流のサブスキルの入力であって単体の読み物ではないため、整形したファイルは作らない。代わりに、何が書かれたか（強み・価値観・関心・キャリアの物語・転職理由の建設的な言い換え）を利用者へ要約して示す。最後に、`self_analysis.json` を入力に使える下流の作業（`job-change-documents` の志望動機の深化、`job-change-interview-prep` の一貫性ある回答）を案内する。最終メッセージは結論から述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
+Reflect only the values of `strengths` (a short sentence drawn from self_analysis's strengths.statement) and `job_change_axis.reasons` (wording based on constructive_version) back into `profile.json`. Never change profile.json's schema. When a `personality.markers` self-report disagrees with the preference level in profile.json's `work_character_preferences` (the canonical definition of how they correspond is in "Connecting downstream" in `references/personality-guide.md`), show the user the disagreement and let the user decide which one to correct — this skill never decides on its own. Make the reflection through the update of `job-change-profile`'s section (`reasons`, `work_character`). After reflecting, re-run the hub's `validate_profile.py` and confirm it PASSes. Rewrite profile.json's `updated_at` to today's date. `self_analysis.json` is input for downstream sub-skills, so this step never produces a separately formatted file. Instead, show the user a summary of what was written — the strengths, values, interests, career narrative, and the constructive reframing of the reason for changing jobs. Finally, point to the downstream work that can use `self_analysis.json` as input: the deepening of the statement of motivation (`job-change-documents`) and consistent answers in job interview preparation (`job-change-interview-prep`). Open the final message with the conclusion. Never include an empty section, a repetition of the same content, or a stock preamble.
 
-## 合否ゲートと差し戻し
+## Pass/fail gates and rework
 
-パイプラインには2つのゲートがある。
+The pipeline has two gates.
 
-| ゲート | 通過条件と差し戻し先 |
+| Gate | Passing condition and where it is sent back |
 |---|---|
-| Step 0 のプロファイルゲート | `profile.json` が `validate_profile.py` で PASS していなければ着手しない。未作成・FAIL は hub（`job-change-support`）経由で `job-change-profile` サブスキルへ戻す。ただし FAIL の場合は、ERROR の内容を示す。利用者が欠落を承知で着手を希望するなら、欠けた項目の値を直接引用する記述も、その値を前提とする記述も作らないという条件で進めてよい。どの項目が欠けたままかを成果物に明記する。 |
-| Step 5 の検証・監査ゲート | `validate_self_analysis.py` が FAIL（ERROR 1件以上）の場合、または `job-change-self-analysis-auditor` の `verdict` が BLOCK の場合、または `severity` = must_fix の finding がある場合は、Step 4 で作成担当へ差し戻す。差し戻しは同一成果物につき最大2回まで行う。 |
+| The profile gate in Step 0 | Do not start unless `profile.json` PASSes `validate_profile.py`. When it is missing or FAILs, send it back to the `job-change-profile` sub-skill through the hub (`job-change-support`). When it FAILs, show the content of the ERROR. When the user wants to proceed while accepting the gap, proceeding is allowed on the condition that no description directly quotes the value of a missing item and no description assumes that value. State plainly, in the deliverable, which items remain missing. |
+| The validation and audit gate in Step 5 | Send it back to the writer at Step 4 when `validate_self_analysis.py` FAILs (one or more ERRORs), when `job-change-self-analysis-auditor`'s `verdict` is BLOCK, or when a finding has `severity` = must_fix. Rework happens at most twice for the same deliverable. |
 
-差し戻し時は、監査の findings（target・evidence・fix）をそのまま作成担当へ渡し、反映後に Step 5 から再度通す。2回の差し戻しで解消しない指摘は、未決事項として利用者へ判断を委ねてから納品する。例えば、profile.json の実績だけでは強みの裏付けが足りないという指摘は、他者フィードバックの追加収集か、強みの示し方の見直しが必要になるため、利用者の判断事項とする。機械的な検証の ERROR は、差し戻しの上限にかかわらず解消してから納品する。未解決が監査の finding だけである場合に限り、未決事項として明記したうえで納品してよい。
+When sending work back, pass the audit's findings (target, evidence, fix) to the writer as they are, and run it through Step 5 again once they have been reflected. A finding that two rounds of rework fail to resolve is left as an open item, delivered only after the user's judgment has been sought. For example, a finding that profile.json's achievements alone do not sufficiently ground a strength is left to the user's judgment, because it calls for collecting more feedback from others or reconsidering how the strength is presented. An ERROR from mechanical validation is always resolved before delivery, regardless of the rework limit. Delivery with an open item is allowed only when the sole thing left unresolved is a finding from the audit, and only once that item has been clearly stated.
 
-## 役割の実行（ハーネス別）
+## Running the role (by harness)
 
-本スキルのパイプラインは、専門の役割へ作業を委ねる形で書いてある。役割の内容は `references/roles/` に置き、そこに置いたファイルを原本とする。
+This skill's pipeline is written as work delegated to specialised roles. The content of each role lives in `references/roles/`, and the file placed there is the canonical definition.
 
-| エージェント名 | 役割プロンプトの原本 |
+| Agent name | Canonical definition of the role prompt |
 |---|---|
 | `job-change-self-analysis-writer` | `{SKILL_DIR}/references/roles/self-analysis-writer.md` |
 | `job-change-self-analysis-auditor` | `{SKILL_DIR}/references/roles/self-analysis-auditor.md` |
 
-ハーネス別の実行手順、起動する数の判断、作成と監査を分ける理由の原本は hub の `{HUB_SKILL_DIR}/references/role-execution.md` にある。
+The canonical definition of the execution procedure per harness, the judgment of how many instances to launch, and the reason for separating writing from auditing is in the hub's `{HUB_SKILL_DIR}/references/role-execution.md`.
 
-## エージェントのモデル方針
+## Agent model policy
 
-| エージェント | model | 責務 |
+| Agent | model | Responsibility |
 |---|---|---|
-| `job-change-self-analysis-writer` | opus | strengths の根拠づけ・career_narrative の作成・reason_for_change の建設的言い換え（Step 4）と監査指摘の反映 |
-| `job-change-self-analysis-auditor` | opus | 独立コンテキストでの誇張・一貫性・内省単独の重み・反すうや感情の将来予測に頼る記述の監査、検証スクリプトの再実行（Step 5） |
+| `job-change-self-analysis-writer` | opus | Grounding the strengths, creating the career_narrative, and the constructive reframing of reason_for_change (Step 4), and reflecting audit findings |
+| `job-change-self-analysis-auditor` | opus | Auditing, in an independent context, for exaggeration, consistency, weight given to introspection alone, and a description that relies on rumination or an affective forecast, and re-running the validation script (Step 5) |
 
-機械的な検証は `validate_self_analysis.py` が担う。model は各エージェントの frontmatter に固定済みであり、起動時に上書きしない。
+Mechanical validation is handled by `validate_self_analysis.py`. Each agent's `model` is fixed in its frontmatter, and it is never overridden at launch.
 
-## スクリプトのCLI使用例
+## Script CLI usage examples
 
-自己分析の成果物の検証（終了コードは PASS で 0、FAIL で 1。WARN のみは PASS 扱い）。`{SKILL_DIR}` は本スキルの絶対パス、末尾のパスは検証対象の self_analysis.json のパスに読み替える。
+Validating the self-analysis deliverable (the exit code is 0 on PASS, 1 on FAIL; a result with only WARNs counts as a PASS). Read `{SKILL_DIR}` as this skill's own absolute path, and the trailing path as the path of the self_analysis.json under validation.
 
 ```bash
 python {SKILL_DIR}/scripts/validate_self_analysis.py {DATA_ROOT}/career-private/self_analysis.json
 python {SKILL_DIR}/scripts/validate_self_analysis.py {DATA_ROOT}/career-private/self_analysis.json --json
 ```
 
-`--json` は結果を JSON 形式（`status`・`error_count`・`warning_count`・`errors`・`warnings`）で出力する。記入例は `assets/self_analysis_example.json`、フィールド仕様と検証規則の原本は `references/self-analysis-format.md` にある。Step 0 のプロファイルゲートで用いる `validate_profile.py` は hub（`job-change-support`）のスクリプトである。
+`--json` outputs the result in JSON form (`status`, `error_count`, `warning_count`, `errors`, `warnings`). A worked example is in `assets/self_analysis_example.json`, and the canonical definition of the field specification and validation rules is in `references/self-analysis-format.md`. `validate_profile.py`, used at the profile gate in Step 0, is a script belonging to the hub (`job-change-support`).
 
-## references 一覧
+## References list
 
-| ファイル | 何を | いつ読むか |
+| File | What it holds | When to read it |
 |---|---|---|
-| `references/self-analysis-methods.md` | 採用する4つの分析軸の実証的裏付けと限界、内省の限界と他者視点併用の根拠、反すう防止の運用規則、論争点の両論併記、DOI 付き出典 | 原則の根拠を確認するとき、監査の観点を定めるとき |
-| `references/self-analysis-format.md` | self_analysis.json のフィールド仕様・記入基準・検証規則（ERROR/WARN 一覧） | 成果物を作る/更新する/検証する全段階 |
-| `references/question-bank.md` | Step 1〜3.5 で使うあらかじめ定めた構造化質問（STAR 棚卸し・他己分析・興味/価値観/adaptability・性格と行動傾向の二者択一・強みの呼び名の候補・Schein 呼び水・CCI 型5問） | ヒアリングの各 Step で質問を選ぶとき |
-| `references/personality-guide.md` | 性格・行動傾向の自己申告の位置づけ、出題してよい道具と使わない道具（利用条件付き）、構成概念の語彙、二者択一の聞き方、型やタイプの名称を使わない書き方、下流への接続、効果量の限界、DOI 付き出典 | Step 3.5 の聞き取り、Step 4 の `personality.presentation` の作成、Step 5 の監査、Step 6 の作業特性との突き合わせ |
-| `references/narrative-guide.md` | キャリア・ナラティブの構成、退職理由の建設的言い換え手順、企業側評価との接続と留保、DOI 付き出典 | career_narrative・reason_for_change を作成/監査するとき |
+| `references/self-analysis-methods.md` | The empirical grounding and limits of the four analytical axes adopted, the limits of introspection and the grounds for using the perspective of others alongside it, the operating rules for preventing rumination, both sides of contested points, and sources with DOIs | When checking the grounds for a principle, when setting the audit's perspective |
+| `references/self-analysis-format.md` | self_analysis.json's field specification, entry criteria, and validation rules (the list of ERRORs/WARNs) | At every stage of creating, updating, or validating the deliverable |
+| `references/question-bank.md` | The fixed structured questions used in Steps 1–3.5 (the STAR stock-taking, feedback from others, interests/values/adaptability, the forced choice on personality and behavioural tendencies, candidate names for a strength, Schein as a prompt, the five CCI-style questions) | When selecting a question at each step of the elicitation interview |
+| `references/personality-guide.md` | The place of self-reported personality and behavioural tendencies, which instruments may and may not be used for questions (with conditions of use), the construct vocabulary, how to ask a forced choice, how to write without the name of a type or category, the connection downstream, the limits of effect size, and sources with DOIs | The Step 3.5 elicitation, creating Step 4's `personality.presentation`, the Step 5 audit, and matching against work characteristics in Step 6 |
+| `references/narrative-guide.md` | The structure of the career narrative, the procedure for a constructive reframing of the reason for leaving, the connection to and reservations about how a company evaluates it, and sources with DOIs | When creating or auditing career_narrative and reason_for_change |

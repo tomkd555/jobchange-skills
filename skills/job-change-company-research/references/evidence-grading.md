@@ -1,77 +1,77 @@
-# エビデンスレベルの原本（evidence-grading）
+# Canonical definition of evidence levels (evidence-grading)
 
-企業情報のエビデンスレベル（A〜D）の定義・判定基準・運用ルールを定める原本である。転職支援スキル群のうち、hub（job-change-support）、企業研究担当エージェント（job-change-company-researcher）、企業研究の監査担当エージェント（job-change-research-auditor）、選考試験の調査担当エージェント（job-change-exam-scout）がこのファイルを参照する。
+This is the canonical definition of the definition, assignment criteria, and operating rules for evidence levels (A through D) on company information. Among the job-change support skills, the hub (job-change-support), the company researcher agent (job-change-company-researcher), the company research auditor agent (job-change-research-auditor), and the selection-exam investigator agent (job-change-exam-scout) reference this file.
 
-## レベルの定義
+## Definition of the levels
 
-企業情報の各証拠には、出所の性質に応じて次の4段階のいずれかを付す。
+Every piece of evidence about a company carries one of the following four grades, according to the nature of its source.
 
-| レベル | 区分 | 具体例 |
+| Level | Category | Examples |
 |---|---|---|
-| **A** | 一次・公式 | EDINET 有価証券報告書、決算説明資料、企業公式サイト、統合報告書、公的統計・政府の認定制度データベース、査読済みの学術研究 |
-| **B** | 信頼できる二次 | 大手報道機関、就職四季報、業界レポート、公的機関の解説ページ（一次資料を編集した二次情報） |
-| **C** | 口コミ・集計サイト | OpenWork・Glassdoor 等の口コミ集計、選考体験記の集計サイト |
-| **D** | 個人ブログ・伝聞・未確認 | 個人ブログ、SNS の伝聞、出所不明の転載、単発の匿名投稿 |
+| **A** | Primary/official | EDINET securities reports, earnings briefing materials, the company's official site, integrated reports, public statistics and government certification-scheme databases, peer-reviewed academic research |
+| **B** | Reliable secondary | Major news outlets, Shushoku Shikiho, industry reports, explanatory pages from public institutions (secondary information edited from primary material) |
+| **C** | Review-aggregation sites | Aggregated posts from OpenWork, Glassdoor, and similar sites; sites that aggregate selection-process accounts |
+| **D** | Personal blog, hearsay, unconfirmed | Personal blogs, hearsay on social media, reposts of unknown origin, a single anonymous post |
 
-## 判定基準
+## Assignment criteria
 
-- **出所が一次かどうかで判定する。** 誰が発信したかで決める。政府・取引所・企業自身が法令または制度に基づき発信した情報は A、報道機関や独自調査の刊行物が編集した情報は B とする。
-- **A のうち自社を良く見せる主張は内容の真偽を担保しない。** 企業が自社を良く見せるために発信する主張（採用サイトの「風通しが良い」「働きやすい」「成長できる」など）は、出所が一次・公式であっても、その内容の真偽は担保されない。この種の主張は当該企業が所有するページ由来である旨を出典に明示し、confidence を high にしない（B 相当として扱う）。事実（認定の有無、開示された数値、制度の存在）と、評価（社風の良し悪し）を分けて扱う。
-- **C・D は事実の断定に使わない。** 口コミ・伝聞のみを根拠に事実を断定しない。C・D を根拠とする記述は、限定表現で書く（後述）。
-- **集計サイトの総合スコアと個票を区別する。** 口コミサイトは、多数を集約した総合スコアと、個別の投稿（個票）で信頼性が異なる（後述の「集約総合スコアの条件付き妥当性」を参照）。
+- **Judge by whether the source is primary.** Decide by who sent the information out. Information a government, an exchange, or the company itself sends out under a law or a scheme is A; information a news outlet or a publication's own survey has edited is B.
+- **Within A, a claim that presents the company favorably does not have its truth guaranteed.** A claim a company sends out to present itself favorably (such as "open communication," "an easy place to work," or "an environment for growth" on its recruiting site) does not have its content's truth guaranteed, even when the source is primary/official. State in the source that this kind of claim comes from a page the company itself owns, and do not set confidence to high (treat it as B-equivalent). Treat the fact (whether a certification exists, a disclosed figure, whether a program exists) separately from the evaluation (whether the culture is good or bad).
+- **Do not use C or D to assert a fact.** Do not assert a fact on review-site posts or hearsay alone. Write a statement based on C or D with a hedge (described below).
+- **Distinguish an aggregation site's overall score from an individual post.** A review-aggregation site differs in reliability between a multi-response aggregated overall score and an individual post (described below in "The conditional validity of an aggregated overall score").
 
-## C・D を根拠とする記述の書き方
+## How to write a statement based on C or D
 
-C・D を根拠とする記述は、断定形にせず、出所と限定を明示する。
+Write a statement based on C or D without an assertive form, stating the source and its limits explicitly.
 
-- 悪い例（断定）:「この企業は残業が多い。」
-- 良い例（限定）:「口コミ集計サイトでは、残業が多いという声がある（回答 N 件）。在籍者の自己選択による偏りがあり、傾向の傍証にとどめる。」
+- Bad example (an assertion): 「この企業は残業が多い。」
+- Good example (hedged): 「口コミ集計サイトでは、残業が多いという声がある（回答 N 件）。在籍者の自己選択による偏りがあり、傾向の傍証にとどめる。」
 
-限定表現の要素は次の3つである。（1）出所を示す（「口コミでは」「選考体験記では」）、（2）件数など根拠の量を示す、（3）偏りの限界を添える。
+A hedged statement has three elements: (1) it states the source (「口コミでは」「選考体験記では」), (2) it states the quantity behind it, such as a response count, and (3) it adds the limit from bias.
 
-## 出所を突き合わせる原則
+## The principle of cross-checking sources
 
-同一の論点について、A > B > C の階層で複数の出所を突き合わせる。
+For a single point, cross-check multiple sources in the hierarchy A > B > C.
 
-- A の一次情報を中心に置き、B・C はそれと整合するかを確認する傍証として使う。
-- A と C が食い違う場合、A を優先する。C 側の食い違いは open_questions に記録する。
-- C のみで A・B の裏付けが無い論点は、confidence を high にしない。トピック全体が C・D のみで構成される場合は、一次・二次の裏付けの追加を検討する（`validate_company_research.py` がこの状態を WARN として検出する）。
+- Center on primary information at level A, and use B and C as supporting evidence to confirm agreement with it.
+- When A and C disagree, prioritize A. Record the discrepancy on the C side in open_questions.
+- Do not set confidence to high for a point backed by C alone, with no support from A or B. When an entire topic is made up of only C and D, consider adding primary or secondary backing (`validate_company_research.py` detects this state as a WARN).
 
-## 裏取り済みの知見（根拠）
+## Corroborated findings (grounds)
 
-エビデンスレベル階層と口コミの扱いの根拠を、出典とともに示す。学術研究には DOI を記す。
+The grounds for the evidence-level hierarchy and the treatment of review-site posts, with their sources. A DOI is given for academic research.
 
-### 口コミの選択バイアス（個票は極端化する）
+### The selection bias of review-site posts (an individual post skews to the extreme)
 
-オンラインの口コミには自己選択バイアスがあり、極端な意見を持つ人ほど投稿しやすいため、評価の分布が極端側へ偏る（Marinescu, Klein, Chamberlain & Smart 2021、観察研究とランダム化実験の複合、査読済み。DOI:10.1037/xap0000342 https://doi.org/10.1037/xap0000342 ）。この選択バイアスは、口コミの個票・少件数・ファセット単位（個別項目）の指標を事実の断定に使えない根拠である。
+An online review carries a self-selection bias: a person holding a more extreme opinion is more likely to post, so the distribution of ratings skews toward the extremes (Marinescu, Klein, Chamberlain & Smart 2021, a combination of observational research and a randomized experiment, peer-reviewed. DOI:10.1037/xap0000342 https://doi.org/10.1037/xap0000342 ). This selection bias is the grounds for not using an individual review-site post, a small-sample aggregate, or a facet-level metric (an individual item) to assert a fact.
 
-補強として、オンラインレビューは取得バイアスと過少報告バイアスにより平均評価が品質の偏った推定量となり、分布が J 字型（正のゆがみ・非対称・二峰性）になる（MIS Quarterly 2017、DOI:10.25300/misq/2017/41.2.06 https://doi.org/10.25300/misq/2017/41.2.06 ）。また企業には偏ったレビューを人為的に作り出す誘因がある（American Economic Review 2014、DOI:10.1257/aer.104.8.2421 https://doi.org/10.1257/aer.104.8.2421 ）。
+As reinforcing evidence, an online review's average rating becomes a biased estimator of quality because of acquisition bias and underreporting bias, and its distribution becomes J-shaped (positively skewed, asymmetric, bimodal) (MIS Quarterly 2017, DOI:10.25300/misq/2017/41.2.06 https://doi.org/10.25300/misq/2017/41.2.06 ). A company also has an incentive to artificially manufacture biased reviews (American Economic Review 2014, DOI:10.1257/aer.104.8.2421 https://doi.org/10.1257/aer.104.8.2421 ).
 
-### 集約総合スコアの条件付き妥当性（両論併記）
+### The conditional validity of an aggregated overall score (both sides stated)
 
-選択バイアスがあっても、口コミには使える範囲がある。多数を集約した総合スコアは外部指標と中程度に相関する条件付きの妥当性を持つ。米連邦機関の集約レベルで、Glassdoor の総合満足度スコアは政府の従業員調査（FEVS）の総合評価と中程度に相関する（**r=.516。この数値は Landers 2019 の単一研究に由来する**。Personnel Assessment and Decisions 2019、DOI:10.25035/pad.2019.03.006 https://doi.org/10.25035/pad.2019.03.006 ）。ただし同研究でファセット単位（個別項目）の妥当性は十分に支持されない。また従業員満足度スコアが高い企業ほど COVID-19 下の株式市場パフォーマンスが良好で、満足度は将来の営業業績も予測する（Review of Finance 2022、DOI:10.1093/rof/rfac055 https://doi.org/10.1093/rof/rfac055 ）。
+Even with selection bias present, review posts have a usable range. An overall score aggregated across a large number of responses has a conditional validity that correlates moderately with an external measure. At the aggregate level of US federal agencies, Glassdoor's overall satisfaction score correlates moderately with the overall rating from a government employee survey (FEVS) (**r=.516. This figure comes from the single study by Landers 2019**. Personnel Assessment and Decisions 2019, DOI:10.25035/pad.2019.03.006 https://doi.org/10.25035/pad.2019.03.006 ). The same study, however, does not sufficiently support the validity of facet-level (individual-item) metrics. A company with a higher employee-satisfaction score also had better stock market performance under COVID-19, and satisfaction predicts future operating performance as well (Review of Finance 2022, DOI:10.1093/rof/rfac055 https://doi.org/10.1093/rof/rfac055 ).
 
 <!-- textlint-disable jtf-style/2.1.2.漢字 -->
-<!-- 出典の著者名に常用漢字表外の字を含むため、この範囲だけ当該規則を無効化する。 -->
+<!-- This source's author names contain characters outside the joyo kanji list, so this rule is disabled for this range only. -->
 
-日本語圏でも、集約したクチコミ本文から生成したスコアが企業指標を予測することを示す査読研究がある。従業員クチコミサイト OpenWork の 306,392 件（2007 年 7 月〜2019 年 3 月）のクチコミ本文から生成した「働きがい」「働きやすさ」の時系列スコアが、企業業績および株式パフォーマンスと関連する（改善×改善ポートフォリオが約 12か月後に時価総額加重で年率 8.481% の統計的に有意な超過リターンを示す。西家宏典・長尾智晴「従業員口コミを用いた働きがいと働きやすさの企業業績との関係」ジャフィー・ジャーナル 19:79-96, 2021、DOI:10.32212/jafee.19.0_79 https://doi.org/10.32212/jafee.19.0_79 、レベルA・査読済み）。この件数・超過リターンの数値は当該の単一研究に由来する。同研究は集約スコアの予測的妥当性（情報価値）を日本語圏で示すが、投稿者が退職者・離職検討者へ偏る選択バイアスの大きさそのものを否定するものではない。加えて著者は OpenWork が共同開発したインデックスに関与しており、独立性に留保がある。
+There is peer-reviewed research in the Japanese-language sphere too, showing that a score generated from aggregated review text predicts a company's indicators. A time series of "job satisfaction" and "ease of working" scores generated from 306,392 reviews (July 2007 to March 2019) on the employee review site OpenWork relates to company performance and stock performance (an "improved x improved" portfolio shows a statistically significant excess return of an annualized 8.481% on a market-cap-weighted basis about 12 months later. 西家宏典・長尾智晴「従業員口コミを用いた働きがいと働きやすさの企業業績との関係」ジャフィー・ジャーナル 19:79-96, 2021, DOI:10.32212/jafee.19.0_79 https://doi.org/10.32212/jafee.19.0_79 , level A, peer-reviewed). The response count and the excess-return figure come from this single study. This study demonstrates the aggregated score's predictive validity (its information value) in the Japanese-language sphere, but it does not negate the size of the selection bias toward posters who have left or are considering leaving. In addition, one author was involved in an index OpenWork co-developed, leaving a reservation about independence.
 
 <!-- textlint-enable jtf-style/2.1.2.漢字 -->
 
-結論は「口コミは、集約総合スコアかつ十分な件数かつ複数照合を条件に、傍証として有用」となる。件数の少ない集計や評価項目ごとの個別スコアでは、選択バイアスで極端化・J 字化し、企業に操作の誘因もあるため、事実の断定には使わない。この r=.516 は単一研究由来であり、独立した研究による同じ値の再現は未確認である点に留意する。
+The conclusion is: "a review post is useful as supporting evidence on the conditions of an aggregated overall score, a sufficient response count, and cross-corroboration." A small-sample aggregate or a per-item score skews to the extreme and becomes J-shaped from selection bias, and the company also has an incentive to manipulate it, so do not use either to assert a fact. Note that this r=.516 comes from a single study, and reproduction of the same value by an independent study remains unconfirmed.
 
-### OpenWork の在籍証明と目視審査（口コミサイトの品質差）
+### OpenWork's proof-of-employment requirement and manual screening (a quality difference among review sites)
 
-口コミサイトの間にも品質差がある。OpenWork は口コミの投稿・閲覧に在籍を証明する情報（社員証・社用メール等）の提出を求め、専任担当が目視審査する（一次情報の裏付けあり）。一方で、不満を持つ退職者が投稿しやすい「退職者バイアス」がスコアに影響する（就活ハンドブック 2024、レベルC。 https://jo-katsu.com/campus/10412/ ）。この在籍証明・目視審査は他サイトより投稿者の実在性が高いことを意味するが、退職者バイアスと選択バイアスは残るため、集計サイトである以上はレベルCとして扱い、総合スコアを傍証に用いる原則は変えない。
+There is a quality difference among review sites as well. OpenWork requires proof of employment (an employee ID, a company email, and so on) to post or view a review, and a dedicated staff screens it manually (there is primary-source backing for this). On the other hand, a "leaver bias," in which a dissatisfied former employee is more likely to post, affects the score (Job-Hunting Handbook 2024, level C. https://jo-katsu.com/campus/10412/ ). This proof-of-employment requirement and manual screening mean a poster's authenticity is comparatively higher than on other sites, but a leaver bias and a selection bias remain, so treat it as level C as long as it is an aggregation site, and keep the principle of using the overall score as supporting evidence.
 
-日本語圏の口コミサイト（OpenWork・転職会議等）の退職者バイアス・選択バイアスの大きさそのものを直接計量した査読研究は、2026年7月時点の追加探索（J-STAGE・CiNii・OpenAlex の横断）でも確認できていない。日本語圏でのバイアスの指摘はレベルCの HR・転職ブログに留まる。英語圏には Glassdoor の集約評価の妥当性を扱う研究（前掲 Landers 2019, Personnel Assessment and Decisions 2019）が存在するが、日本の標本を用いた研究ではない。したがって、日本語圏では前掲の西家・長尾 2021 が集約スコアの予測的妥当性を示す一方、バイアスの大きさは査読レベルで未定量である点に留意する。
+No peer-reviewed study directly measuring the size of the leaver bias and selection bias on a Japanese-language review site (OpenWork, 転職会議 (Tenshoku Kaigi), and so on) could be confirmed as of an additional search in July 2026 (a cross-search of J-STAGE, CiNii, and OpenAlex). A pointer to bias in the Japanese-language sphere stays at the level of level-C HR and job-change blogs. In the English-language sphere, research exists that addresses the validity of Glassdoor's aggregated rating (the Landers 2019 study cited above, Personnel Assessment and Decisions 2019), but it does not use a Japanese sample. Note, therefore, that in the Japanese-language sphere, Nishiie and Nagao 2021 (cited above) demonstrates the aggregated score's predictive validity, while the size of the bias remains unquantified at the peer-reviewed level.
 
-### 有報の平均年間給与の算出裁量と比較可能性の限界（A も万能ではない）
+### The discretion in calculating a securities report's average annual salary, and the limits of comparability (even A has limits)
 
-一次情報（レベルA）も万能ではない。有価証券報告書の平均年間給与は、開示府令により賞与を含み役員・臨時従業員を除く点は法定で統一されている。しかし基準外賃金（残業代・手当）やパートの扱いは各社の裁量であり、全従業員平均のため職種別・雇用形態別の内訳を欠く。したがって企業間の単純比較には限界がある（金融庁 EDINET https://www.fsa.go.jp/search/20130917.html を一次に、算出方法の解説は株式総務 2023、レベルC https://kabushikisoumu.com/annual-income-4 ）。レベルAの数値であっても、代表性・比較可能性の限界を statement または open_questions に明示する。
+Primary information (level A) has limits too. A securities report's average annual salary is uniformly defined by law under the disclosure ordinance to include bonuses and exclude officers and temporary employees. Non-scheduled wages (overtime pay, allowances) and the treatment of part-time workers, however, are each company's own discretion, and the figure is a company-wide average lacking a breakdown by job type or employment type. A simple comparison between companies therefore has limits (primary source: the Financial Services Agency's EDINET https://www.fsa.go.jp/search/20130917.html ; a commentary on the calculation method: Kabushiki Soumu 2023, level C https://kabushikisoumu.com/annual-income-4 ). Even for a level-A figure, state its limits on representativeness and comparability in the statement or in open_questions.
 
-## エージェント・スクリプトとの関係
+## Relationship with the agents and the script
 
-- 企業研究担当（job-change-company-researcher）は、各主張に本ファイルのルールでレベルと confidence を付す。
-- 企業研究の監査担当（job-change-research-auditor）は、本ファイルのルールに照らして、レベル付与の妥当性、C・D 単独断定の有無、自社を良く見せる主張への confidence high 付与の有無を検査する。
-- `scripts/validate_company_research.py` は、レベル値の正当性（A〜D）、C・D のみを根拠とする claim の confidence=high、トピックがすべて C・D の状態を機械的に検査する。ただし「口コミをA・Bへ格上げしていないか」「一次情報をCへ格下げしていないか」のようなレベル付与の妥当性そのものは、機械では判定できず監査エージェントの領分である。
+- The company researcher (job-change-company-researcher) assigns a level and a confidence to each claim, following this file's rules.
+- The company research auditor (job-change-research-auditor) checks the validity of the assigned levels, whether a fact is asserted on C or D alone, and whether confidence high has been given to a claim that presents the company favorably, against this file's rules.
+- `scripts/validate_company_research.py` mechanically checks the legitimacy of level values (A through D), confidence=high on a claim based on C or D alone, and a topic made up entirely of C and D. The validity of a level assignment itself, however — such as whether a review-site post has been upgraded to A or B, or a primary source downgraded to C — cannot be judged mechanically, and is the audit agent's territory.

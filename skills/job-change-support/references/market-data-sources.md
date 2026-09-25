@@ -1,62 +1,62 @@
-# 転職市場データの参照先（market-data-sources）
+# Job-change market data sources (market-data-sources)
 
-転職市場の需給・賃金・転職者の動向を調べるときに引く公開データの一覧と、その使い分けを定める原本である。企業単位の情報源は `job-change-company-research` スキルの `references/source-catalog.md` が原本である。本ファイルは職種・産業・市場全体の集計値だけを扱う。エビデンスレベル（A〜D）の定義は同スキルの `references/evidence-grading.md` に従う。
+The canonical reference defining the list of public data drawn on to research job-market supply and demand, wages, and job-changer trends, and how to use each. The canonical source for a company-level source lives in the `job-change-company-research` skill's `references/source-catalog.md`. This file covers only aggregate figures for an occupation, an industry, or the market as a whole. The definition of evidence levels (A through D) follows that same skill's `references/evidence-grading.md`.
 
-URL と更新頻度は2026年8月時点で確認した内容である。
+The URLs and update frequencies were confirmed as of August 2026.
 
-## 需給と市場全体
+## Supply, demand, and the market as a whole
 
-| 名称 | URL | 更新頻度 | 使いどころ | レベル |
+| Name | URL | Update frequency | Where to use it | Level |
 |---|---|---|---|---|
-| 厚生労働省 一般職業紹介状況 | https://www.mhlw.go.jp/toukei/list/114-1.html | 月次 | 市場全体の需給（ハローワーク基準の有効求人倍率） | A |
-| 総務省 労働力調査（詳細集計） | https://www.stat.go.jp/data/roudou/sokuhou/nen/dt/index.html | 四半期・年 | 転職者数・転職希望者数 | A |
-| doda 転職求人倍率レポート | https://www.saiyo-doda.jp/report/ | 月次 | 職種別・業種別・地域別の求人倍率 | B |
-| リクルート JBRC 転職市場インサイト | https://jbrc.recruit.co.jp/ | 四半期 | 決定賃金の前年比 | B |
-| リクルートワークス研究所 中途採用実態調査 | https://www.works-i.com/surveys/ | 年2回 | 企業の採用見通し DI | B |
-| マイナビ キャリアリサーチ Lab | https://career-research.mynavi.jp/ | 年次・月次 | 転職理由・年収変化・採用基準 | B |
-| JILPT ビジネス・レーバー・トレンド | https://www.jil.go.jp/kokunai/blt/ | 月次 | 統計の解釈の補助 | B |
+| MHLW General Employment Placement Status (一般職業紹介状況) | https://www.mhlw.go.jp/toukei/list/114-1.html | Monthly | Market-wide supply and demand (the Hello Work job-openings-to-applicants ratio) | A |
+| MIC Labour Force Survey, detailed tabulation (労働力調査 詳細集計) | https://www.stat.go.jp/data/roudou/sokuhou/nen/dt/index.html | Quarterly/annual | The number of job changers and of those wanting to change jobs | A |
+| doda Job-Change Job-Openings-Ratio Report | https://www.saiyo-doda.jp/report/ | Monthly | The job-openings ratio by occupation, industry, and region | B |
+| Recruit JBRC Job-Change Market Insight | https://jbrc.recruit.co.jp/ | Quarterly | The year-on-year change in decided wages | B |
+| Recruit Works Institute Mid-Career Hiring Survey | https://www.works-i.com/surveys/ | Twice a year | The corporate hiring-outlook diffusion index | B |
+| Mynavi Career Research Lab | https://career-research.mynavi.jp/ | Annual/monthly | Reasons for changing jobs, changes in annual salary, hiring criteria | B |
+| JILPT Business Labor Trend | https://www.jil.go.jp/kokunai/blt/ | Monthly | Support for interpreting the statistics | B |
 
-## 賃金と処遇
+## Wages and treatment
 
-| 名称 | URL | 更新頻度 | 使いどころ | レベル |
+| Name | URL | Update frequency | Where to use it | Level |
 |---|---|---|---|---|
-| 厚生労働省 賃金構造基本統計調査 | https://www.e-stat.go.jp/stat-search/files?tstat=000001011429 | 年次 | 職種×年齢×地域の賃金分布。提示年収の相場判定の公的な基準線 | A |
-| 厚生労働省 雇用動向調査 | https://www.mhlw.go.jp/toukei/list/9-23-1.html | 年次 | 転職入職者の賃金変動（増加・変わらない・減少の割合） | A |
-| 厚生労働省 転職者実態調査 | https://www.e-stat.go.jp/surveyplan/p00450074001 | 約5年ごと | 離職理由・転職後の満足度の構造 | A |
-| doda 平均年収ランキング | https://doda.jp/guide/heikin/syokusyu/ | 年次 | 登録者の実年収に基づく職種別平均 | B |
-| 求人ボックス 給料ナビ | https://xn--pckua2a7gp15o89zb.com/ | 随時 | 職種別の提示額の中央値 | C |
-| OpenWork 年収・給与の口コミ | https://www.openwork.jp/ | 随時 | 在籍者・退職者の申告に基づく企業別の年収の分布 | C |
+| MHLW Basic Survey on Wage Structure (賃金構造基本統計調査) | https://www.e-stat.go.jp/stat-search/files?tstat=000001011429 | Annual | The wage distribution by occupation × age × region. The official baseline for judging whether an offered salary is at the going rate | A |
+| MHLW Employment Trend Survey (雇用動向調査) | https://www.mhlw.go.jp/toukei/list/9-23-1.html | Annual | The change in wages for those who changed jobs (the share that increased, stayed the same, or decreased) | A |
+| MHLW Survey on Employment Trends of Job Changers (転職者実態調査) | https://www.e-stat.go.jp/surveyplan/p00450074001 | Roughly every 5 years | The structure of reasons for leaving and post-change satisfaction | A |
+| doda Average Annual Salary Ranking | https://doda.jp/guide/heikin/syokusyu/ | Annual | The average by occupation, based on registrants' actual annual salary | B |
+| Kyujin Box Salary Navi | https://xn--pckua2a7gp15o89zb.com/ | As available | The median offered amount by occupation | C |
+| OpenWork Salary and Pay Reviews | https://www.openwork.jp/ | As available | The annual-salary distribution by company, based on self-reported figures from current and former employees | C |
 
-転職者実態調査の最新版は令和2年調査であり、令和7年調査の結果は2026年8月時点で未公表である。求人ボックス 給料ナビは同サイト自身が「独自試算の参考値」と明記しているため、この値だけで相場を断定しない。OpenWork の年収は本人申告の集計であり、給料ナビと同じく参考値として併記する。口コミの本文はログインが必要なため、ログインなしで読める集計値だけを使う（robots.txt の確認は2026-09-04。企業ページは禁止対象外だが、クエリ文字列付きの一部のパスは禁止されている）。
+The latest edition of the Survey on Employment Trends of Job Changers is the Reiwa 2 survey; the results of the Reiwa 7 survey are not yet published as of August 2026. Kyujin Box Salary Navi itself states that its figures are "a reference value from its own independent estimate," so this alone does not settle the going rate. OpenWork's annual-salary figures are an aggregate of self-reported values and, like Salary Navi, are cited alongside it as a reference value. Because the review text itself requires a login, only the aggregate figures readable without one are used (robots.txt was checked on 2026-09-04; company pages are allowed, though some paths carrying a query string are disallowed).
 
-## 企業を横断して比べる公的データベース
+## Public databases that compare companies
 
-企業単位の値を持つが、いずれも職種別・産業別の分布としても読める。企業1社の調査で引く場合は `job-change-company-research` の `references/source-catalog.md` に従う。
+These hold company-level values, but each can also be read as a distribution by occupation or industry. For research into a single company, follow the `job-change-company-research` skill's `references/source-catalog.md`.
 
-| 名称 | URL | 更新頻度 | 使いどころ | レベル |
+| Name | URL | Update frequency | Where to use it | Level |
 |---|---|---|---|---|
-| EDINET | https://disclosure2.edinet-fsa.go.jp/ | 随時 | 有価証券報告書の人的資本開示 | A |
-| 職場情報総合サイト しょくばらぼ | https://shokuba.mhlw.go.jp/ | 随時 | 勤続年数・残業時間・有給取得率の企業横断比較 | A |
-| 女性の活躍推進企業データベース | https://positive-ryouritsu.mhlw.go.jp/positivedb/ | 随時 | 女性管理職の比率・男女別の平均勤続年数 | A |
-| えるぼし認定状況 | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000129028.html | 随時 | 女性活躍推進法に基づく認定企業の一覧 | A |
-| くるみん（両立支援のひろば） | https://ryouritsu.mhlw.go.jp/ | 随時 | 次世代育成支援対策推進法に基づく認定企業の一覧 | A |
-| 職業情報提供サイト job tag | https://shigoto.mhlw.go.jp/User/ | 随時 | 職務の分解・スキルの語彙 | A |
-| 国税庁 法人番号公表サイト | https://www.houjin-bangou.nta.go.jp/ | 随時 | 法人名から登記上の所在地と法人番号の指定年月日を引く | A |
-| 健康経営優良法人（ACTION!健康経営） | https://kenko-keiei.jp/ | 年次 | 認定法人の一覧 | A |
-| ユースエール認定企業 | 都道府県労働局ごとの一覧ページ | 随時 | 若者雇用促進法に基づく認定企業の一覧 | A |
+| EDINET | https://disclosure2.edinet-fsa.go.jp/ | As available | Human-capital disclosure in the Annual Securities Report (有価証券報告書) | A |
+| Shokubaraboo (職場情報総合サイト しょくばらぼ) | https://shokuba.mhlw.go.jp/ | As available | Cross-company comparison of years of continuous employment, overtime hours, and paid-leave uptake | A |
+| Database of Companies Advancing Women's Participation | https://positive-ryouritsu.mhlw.go.jp/positivedb/ | As available | The share of female managers, and the average years of continuous employment by gender | A |
+| Eruboshi (えるぼし) certification status | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000129028.html | As available | The list of companies certified under the Act on Promotion of Women's Active Engagement | A |
+| Kurumin (くるみん, Work-Life Balance Support Plaza) | https://ryouritsu.mhlw.go.jp/ | As available | The list of companies certified under the Act on Advancement of Measures to Support Raising Next-Generation Children | A |
+| Job Tag (職業情報提供サイト job tag) | https://shigoto.mhlw.go.jp/User/ | As available | Job decomposition and skill vocabulary | A |
+| National Tax Agency Corporate Number Publication Site | https://www.houjin-bangou.nta.go.jp/ | As available | Looking up the registered address and the corporate-number assignment date from a corporate name | A |
+| Excellent Health and Productivity Management Corporation (ACTION! 健康経営) | https://kenko-keiei.jp/ | Annual | The list of certified corporations | A |
+| Youth Yell (ユースエール) certified companies | Per-prefecture labour bureau listing pages | As available | The list of companies certified under the Act on Promotion of Employment of Young People | A |
 
-法人番号公表サイトで引ける指定年月日は法人番号の指定日であり、会社概要に書かれた設立年と一致しないことがある（持株会社化や商号変更を経た企業）。両者を同じものとして扱わず、食い違う場合は両方を併記する。健康経営優良法人とユースエール認定の一覧は、本スキル群のツールで取得できるかどうかを確かめていない（2026-09-04 時点）。ユースエール認定は全国一覧が無く、都道府県労働局ごとの PDF に分かれている。いずれも利用者が自分で参照した結果を受け取る扱いにとどめ、取得できなかったことを「認定がない」と解釈しない。
+The assignment date obtainable from the Corporate Number Publication Site is the date the corporate number was assigned, and it does not always match the founding year stated in the company profile (for a company that went through a holding-company reorganization or a trade-name change). Do not treat the two as the same; when they diverge, state both. Whether the Excellent Health and Productivity Management Corporation list and the Youth Yell certification list can be obtained with this skill group's tools has not been confirmed (as of 2026-09-04). The Youth Yell certification list has no nationwide listing; it is split across PDFs per prefectural labour bureau. Both are treated as a source the user checks themselves and hands over the result for; failing to obtain one is never read as "not certified."
 
-この表のうち、しょくばらぼ・女性の活躍推進企業データベース・両立支援のひろば・job tag の4件は、Web 取得（WebFetch・WebSearch）では引けない。理由と実測は `job-change-company-research` の `references/source-catalog.md` の「自動で取得できない情報源」が原本であり、ここへは複製しない。いずれも利用者が自分で参照した結果を受け取る情報源であり、エージェントの調査手順には入れない。**取得できなかったことを「掲載がない」と解釈しない。**
+Of this table, the four — Shokubaraboo, the Database of Companies Advancing Women's Participation, the Work-Life Balance Support Plaza, and Job Tag — cannot be obtained through web fetching (WebFetch, WebSearch). The reason and the measurement are canonically defined in the `job-change-company-research` skill's `references/source-catalog.md`, under "Sources that cannot be fetched automatically," and are not duplicated here. Each is a source whose result the user checks themselves and hands over; none of them enter an agent's investigation procedure. **Failing to obtain one is never read as "not listed."**
 
-## 利用規則
+## Rules of use
 
-1. **求人倍率は出所ごとに別の指標である。** ハローワーク基準（一般職業紹介状況、2026年6月 1.18倍。 https://www.mhlw.go.jp/toukei/list/114-1.html ）と doda 基準（同月 2.55倍。 https://www.saiyo-doda.jp/report/ ）は母集団が異なる。前者はハローワークが扱う求人と求職者だけを、後者は同社サービスの求人と登録者だけを数える。両者を比較したり混ぜたりしてはならない。倍率を書くときは必ず出所を併記する。
+1. **A job-openings ratio is a different indicator depending on its source.** The Hello Work basis (General Employment Placement Status, 1.18x in June 2026; https://www.mhlw.go.jp/toukei/list/114-1.html) and the doda basis (2.55x in the same month; https://www.saiyo-doda.jp/report/) draw from different populations. The former counts only the postings and job seekers Hello Work handles; the latter counts only the postings and registrants of that one company's service. Do not compare or mix the two. Always state the source alongside a ratio.
 
-2. **求人倍率が高いことを「受かりやすい」と読み替えない。** 企業側は質を重視した選別採用を続けている。マイナビ中途採用状況調査2026年版では、採用要件に満たない人材を「採用しない」と答えた企業が 62.1%（前年比 +7.7ポイント）である（https://career-research.mynavi.jp/reserch/20260327_109053/ ）。求人数の多さは、要件を満たさない応募者が通ることを意味しない。
+2. **Do not read a high job-openings ratio as "easy to pass."** Companies keep a quality-focused, selective hiring stance. In Mynavi's 2026 Mid-Career Hiring Status Survey, 62.1% of companies (up 7.7 points year on year) answered that they "do not hire" a candidate who falls short of the requirements (https://career-research.mynavi.jp/reserch/20260327_109053/). A large number of postings does not mean an applicant who falls short of the requirements gets through.
 
-3. **提示年収を相場に位置づける公的な基準線には賃金構造基本統計調査を使う。** 職種別の賃金分布を年齢階級・企業規模などと掛け合わせて引ける公的統計であり、本スキル群はこれを基準線にする。国税庁の民間給与実態統計調査は業種別・年齢別の集計であり、職種別の分布を持たないため基準線には使わない。実際に引ける集計の軸は e-Stat の表ごとに異なるため、引いた表の名前を出典に添える。求人ボックス 給料ナビはあくまで補助であり、参照するときは「同サイトの独自試算の参考値」であることを併記する。
+3. **Use the Basic Survey on Wage Structure as the official baseline for placing an offered salary against the going rate.** It is a public statistic that can cross a wage distribution by occupation against factors such as age bracket and company size, and this skill group uses it as the baseline. The National Tax Agency's Statistical Survey of Actual Status for Salary is an aggregate by industry and age, and holds no distribution by occupation, so it is never used as the baseline. The axes actually obtainable differ by e-Stat table, so cite the name of the table drawn from alongside the source. Kyujin Box Salary Navi remains an auxiliary only; when it is cited, state alongside it that it is "that site's own independent-estimate reference value."
 
-4. **転職で年収が上がるかどうかは年齢で変わる。** 転職者全体では上がる側が多い。令和6年の雇用動向調査では、転職入職者の賃金が前職と比べて「増加」した割合が 40.5%、「減少」が 29.4%、「変わらない」が 28.4% である（結果の概要 表6 https://www.mhlw.go.jp/toukei/itiran/roudou/koyou/doukou/25-2/dl/kekka_gaiyo-03.pdf ）。ただし同じ表を年齢階級別に見ると、「増加」が「減少」を上回る幅は19歳以下の 36.9ポイントが最大で、年齢が上がるにつれ概ね縮む。25〜29歳の 17.1ポイントと45〜49歳の 22.6ポイントのように、途中で上下はする。50〜54歳で 10.8ポイント、55〜59歳では -9.2ポイントと符号が反転する。金額で見ても同じ傾向が出ている。マイナビ転職動向調査2026年版（2025年12月調査、有効回答1,446名）では、転職前後の平均年収が 514.5万円→533.7万円（+19.2万円）である。一方、年代別の増減額は30代の +32.4万円が最大で、50代のみ -4.5万円と減少する（https://career-research.mynavi.jp/reserch/20260323_108572/ ）。
+4. **Whether a job change raises annual salary depends on age.** Across job changers as a whole, more see it rise than fall. In the Reiwa 6 Employment Trend Survey, the share of job changers whose wage "increased" against their previous job was 40.5%, "decreased" 29.4%, and "unchanged" 28.4% (Summary of Results, Table 6, https://www.mhlw.go.jp/toukei/itiran/roudou/koyou/doukou/25-2/dl/kekka_gaiyo-03.pdf). Reading the same table by age bracket, however, the margin by which "increased" exceeds "decreased" is largest at 36.9 points for age 19 and under, and generally narrows as age rises. It also moves up and down along the way, as with 17.1 points at ages 25 to 29 and 22.6 points at ages 45 to 49. At ages 50 to 54 it is 10.8 points, and at ages 55 to 59 the sign reverses to -9.2 points. The amounts show the same tendency. In Mynavi's 2026 Job-Change Trend Survey (surveyed December 2025, 1,446 valid responses), the average annual salary before and after changing jobs moved from 5.145 million yen to 5.337 million yen (+192,000 yen). By age bracket, however, the increase is largest in the thirties at +324,000 yen, while only those in their fifties see a decrease, of -45,000 yen (https://career-research.mynavi.jp/reserch/20260323_108572/).
 
-   したがって「転職で年収が上がる」を年齢によらない既定の前提に置かない。ただし境界は調査によって異なるため、年齢の区切りごとに分けて扱う。割合で見ると、「増加」が「減少」を下回るのは 55〜59歳からであり、50〜54歳は「増加」が 39.0% で最も多い区分のままである。金額で見ると、マイナビの年代別では50代のみが減少する。50代の利用者へ年収の増減を伝えるときは、調査による境界の違いも併せて示す。上の2つは母集団も測り方も異なる（雇用動向調査は事業所を通じた全国調査で増減の分布を、マイナビは転職者本人への調査で金額を測る）ため、割合と金額を1つの主張へ混ぜない。
+   Do not, therefore, place "a job change raises annual salary" as a default premise regardless of age. The boundary differs by survey, however, so treat each age bracket separately. By share, "increased" falls below "decreased" only from ages 55 to 59; at ages 50 to 54, "increased" remains the largest category at 39.0%. By amount, in Mynavi's breakdown by age bracket, only those in their fifties see a decrease. When telling a user in their fifties about the rise or fall in annual salary, present the difference in where this boundary falls across surveys as well. The two draw from different populations and measure differently (the Employment Trend Survey is a nationwide survey through establishments, measuring the distribution of increase and decrease; Mynavi surveys job changers themselves, measuring the amount), so do not mix a share and an amount into a single claim.

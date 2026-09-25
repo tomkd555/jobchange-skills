@@ -1,82 +1,82 @@
-# 給与・福利厚生・働き方の調査原本（compensation-benefits）
+# Canonical investigation procedure for compensation, benefits, and work style (compensation-benefits)
 
-給与（topic=compensation）・福利厚生（topic=benefits）・働き方（topic=workstyle）を調査するときの観点と情報源カタログを定める原本である。エビデンスレベル（A〜D）の定義・判定基準・運用ルールは `references/evidence-grading.md` に従い、本ファイルでは重複定義しない。各情報源には、そのレベルの目安を付す。
+This is the canonical procedure defining the investigation perspectives and source catalog for investigating compensation (topic=compensation), benefits (topic=benefits), and work style (topic=workstyle). Follow `references/evidence-grading.md` for the definition, assignment criteria, and operating rules of evidence levels (A through D); this file does not duplicate that definition. Each source below carries a rough indication of its level.
 
-収集した数値（年間休日・月平均の残業時間・有給取得率・有給休暇の平均取得日数・平均年間給与）は、文章の claim に埋めるだけでなく、必ず `company_research.json` の `company_metrics` へ構造化して格納する。形式は `references/company-research-format.md` にあり、単位・出典URL・レベルを併記する。確認できなければ value を null にする。
+Collected figures (annual holidays, average monthly overtime, paid-leave-taking rate, average number of paid-leave days taken, average annual salary) must be structured into `company_metrics` in `company_research.json`, in addition to being embedded in a prose claim. The format is in `references/company-research-format.md`, noting the unit, source URL, and level together. Set value to null when it cannot be confirmed.
 
-## 調査観点
+## Investigation perspectives
 
-### 給与（compensation）
+### Compensation
 
-| 観点 | 内容 |
+| Perspective | Content |
 |---|---|
-| 報酬制度の構造 | 等級・グレード制の有無、給与レンジ、賞与の回数と算定方式（業績連動か固定か）、昇給の仕組み、各種手当。採用サイトの報酬制度ページ・募集要項が一次情報（レベルA。ただし評価的表現は内容の真偽を担保しない）。 |
-| 平均年間給与の水準 | 有価証券報告書「従業員の状況」の平均年間給与（レベルA）。全従業員平均であり職種別・雇用形態別の内訳を欠く点を statement または open_questions に明示する（限界は `references/source-catalog.md` と `references/evidence-grading.md` を参照）。 |
-| 求人票レンジとの照合 | 求人票（job_posting.json）の提示レンジと、有報の平均年間給与・公的統計の職種別水準を突き合わせる。開きがあれば open_questions に残す。 |
-| 口コミの年収集計 | 口コミ集計サイトの年収データ（レベルC）は、十分な件数の集計値に限って傍証に用いる。個票・少件数は断定に使わない。 |
+| Compensation structure | Whether a grade system exists, salary ranges, the frequency and basis of bonuses (performance-linked or fixed), the raise mechanism, and various allowances. The recruiting site's compensation-system page and the job posting are primary sources (level A, though an evaluative expression does not guarantee its truth). |
+| Average annual salary level | The average annual salary in the securities report's "Status of Employees" section (level A). State in the statement or open_questions that it is a company-wide average lacking a breakdown by job type or employment type (the limits are in `references/source-catalog.md` and `references/evidence-grading.md`). |
+| Cross-checking against the job posting's range | Cross-check the range the job posting (job_posting.json) states against the securities report's average annual salary and public statistics' job-type-level figures. Leave a discrepancy in open_questions. |
+| Aggregated annual-salary figures from review sites | Use an aggregated annual-salary figure from a review-aggregation site (level C) as supporting evidence, limited to an aggregate resting on a sufficient number of responses. Do not use an individual post or a small-sample aggregate to assert a fact. |
 
-### 福利厚生（benefits）
+### Benefits
 
-| 観点 | 内容 |
+| Perspective | Content |
 |---|---|
-| 制度の有無（事実） | 社会保険・退職金・住宅補助・育児/介護支援・カフェテリアプラン等。採用サイト・福利厚生ページが一次情報（レベルA）。 |
-| 認定の有無（事実） | くるみん・えるぼし・健康経営優良法人・ユースエール等の認定は、根拠法と所管が明確な一次情報（レベルA）。ただし認定は最低基準の充足を示すもので、働きやすさ全体を保証しない。認定を根拠に「働きやすい」と断定しない。 |
-| 制度と運用の区別 | 制度が「ある」ことと「使われている」ことは別である。育休取得率・有給取得率などの運用実績（workstyle）と突き合わせる。 |
+| Whether a program exists (fact) | Social insurance, retirement benefits, housing assistance, childcare/caregiving support, a cafeteria plan, and so on. The recruiting site and the benefits page are primary sources (level A). |
+| Whether a certification exists (fact) | Certifications such as Kurumin, Eruboshi, Health and Productivity Management Outstanding Organization, and Youth Yell are primary information with a clear basis in law and a clear supervising authority (level A). A certification shows only that a minimum standard is met and does not guarantee overall ease of working. Do not assert "an easy place to work" on the grounds of a certification alone. |
+| Distinguishing a program from its use | A program's "existing" and its "being used" are different things. Cross-check it against actual-use figures (workstyle) such as the childcare-leave-taking rate and the paid-leave-taking rate. |
 
-### 働き方（workstyle）
+### Work style
 
-| 観点 | 内容 |
+| Perspective | Content |
 |---|---|
-| 労働時間・残業 | 所定労働時間、月平均の所定外労働時間、裁量労働・フレックス・リモートの方針。しょくばらぼの自主開示（レベルA）、求人票、就職四季報（レベルB）。 |
-| 休暇 | 年間休日数、有給取得率、有給休暇の平均取得日数。しょくばらぼ・就職四季報・求人票。 |
-| 定着率 | 3年後定着率・平均勤続年数。就職四季報（レベルB）・有報の平均勤続年数（レベルA）。 |
-| 口コミの働き方評価 | 残業実態・休暇取得のしやすさの口コミ（レベルC）は、集約総合スコアに限って条件付きの傍証に用いる。個票は選択バイアスで極端化するため断定に使わない。 |
+| Working hours and overtime | Scheduled working hours, average monthly hours of overtime, and the policy on discretionary work, flextime, and remote work. Shokuba Labo's voluntary disclosure (level A), the job posting, Shushoku Shikiho (level B). |
+| Leave | Annual holidays, paid-leave-taking rate, average number of paid-leave days taken. Shokuba Labo, Shushoku Shikiho, the job posting. |
+| Retention | The 3-year retention rate, average years of service. Shushoku Shikiho (level B), the securities report's average years of service (level A). |
+| Review-site evaluations of work style | Reviews of actual overtime and ease of taking leave (level C) are usable as conditional supporting evidence, limited to an aggregated overall score. An individual post is not used to assert a fact, because it is skewed to the extreme by selection bias. |
 
-## 情報源カタログ
+## Source catalog
 
-### 一次・公式（レベルA）
+### Primary and official (level A)
 
-| 情報源 | 主に分かること | topic | 出典URL |
+| Source | Mainly reveals | topic | Source URL |
 |---|---|---|---|
-| EDINET 有価証券報告書「従業員の状況」 | 平均年間給与・平均勤続年数・平均年齢・従業員数 | compensation/financials/workstyle | 閲覧サイト https://disclosure2.edinet-fsa.go.jp/WEEK0010.aspx （EDINETについて https://www.fsa.go.jp/search/20130917.html ） |
-| 厚生労働省「しょくばらぼ」 | 中途採用比率・定着率・月平均の所定外労働時間・有給取得率（企業の自主開示） | workstyle/benefits | https://shokuba.mhlw.go.jp/ |
-| 採用サイト 報酬制度・福利厚生ページ | 等級・給与レンジ・賞与算定式・手当・福利厚生制度 | compensation/benefits | 各企業ドメイン（当該企業が所有するページ。評価的表現は confidence を high にしない） |
-| くるみん／プラチナくるみん／トライくるみん | 次世代育成支援（子育て支援）の認定 | benefits | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kodomo/shokuba_kosodate/kurumin/index.html |
-| えるぼし／プラチナえるぼし | 女性活躍推進（5基準）の認定 | benefits/workstyle | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000091025_00002.html |
-| 健康経営優良法人（ホワイト500） | 健康経営の顕彰 | benefits | https://www.meti.go.jp/policy/mono_info_service/healthcare/kenkoukeiei_yuryouhouzin.html |
-| ユースエール | 若者の採用・育成に積極的な中小企業の認定 | benefits/workstyle | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000100266.html |
+| EDINET securities report, "Status of Employees" | Average annual salary, average years of service, average age, employee count | compensation/financials/workstyle | Viewing site https://disclosure2.edinet-fsa.go.jp/WEEK0010.aspx (About EDINET https://www.fsa.go.jp/search/20130917.html ) |
+| Ministry of Health, Labour and Welfare's "Shokuba Labo" | Mid-career hiring ratio, retention rate, average monthly hours of scheduled-outside labour, paid-leave-taking rate (the company's own voluntary disclosure) | workstyle/benefits | https://shokuba.mhlw.go.jp/ |
+| The recruiting site's compensation-system and benefits pages | Grade system, salary range, bonus formula, allowances, benefit programs | compensation/benefits | Each company's own domain (a page the company itself owns; do not set confidence to high for an evaluative expression) |
+| Kurumin / Platinum Kurumin / Try Kurumin | Certification for next-generation child-rearing support | benefits | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kodomo/shokuba_kosodate/kurumin/index.html |
+| Eruboshi / Platinum Eruboshi | Certification for promoting women's active participation (5 criteria) | benefits/workstyle | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000091025_00002.html |
+| Health and Productivity Management Outstanding Organization (White 500) | Recognition for health and productivity management | benefits | https://www.meti.go.jp/policy/mono_info_service/healthcare/kenkoukeiei_yuryouhouzin.html |
+| Youth Yell | Certification for small and mid-sized enterprises active in hiring and developing young workers | benefits/workstyle | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000100266.html |
 
-認定の有無は事実（レベルA）だが、認定は最低基準の充足を示すものであり、企業の働きやすさ全体を保証しない。
+Whether a certification exists is a fact (level A), but a certification shows only that a minimum standard is met and does not guarantee the company's overall ease of working.
 
-### 信頼できる二次（レベルB）
+### Reliable secondary (level B)
 
-| 情報源 | 主に分かること | topic | 出典URL |
+| Source | Mainly reveals | topic | Source URL |
 |---|---|---|---|
-| 就職四季報（東洋経済新報社） | 3年後定着率・平均年収・残業時間・有給取得（掲載料無償の独自調査） | workstyle/compensation/reputation | https://str.toyokeizai.net/magazine/shushoku_all/ |
+| Shushoku Shikiho (Toyo Keizai Inc.) | 3-year retention rate, average annual salary, overtime hours, paid-leave-taking (an independent survey published free of charge) | workstyle/compensation/reputation | https://str.toyokeizai.net/magazine/shushoku_all/ |
 
-大手報道機関の記事・業界団体のレポートも、一次資料を編集した二次情報としてレベルBとする。
+A major news outlet's reporting and an industry association's report are also treated as level-B secondary information, being secondary information edited from primary material.
 
-### 口コミ・集計サイト（レベルC）
+### Review and aggregation sites (level C)
 
-| 情報源 | 主に分かること | topic | 出典URL |
+| Source | Mainly reveals | topic | Source URL |
 |---|---|---|---|
-| OpenWork | 年収集計・残業実態・有給取得・待遇面の総合評価（在籍証明の提出と目視審査あり） | compensation/workstyle/reputation | https://www.openwork.jp/ |
+| OpenWork | Aggregated annual-salary figures, actual overtime, paid-leave-taking, and an overall evaluation of treatment (submission of proof of employment and manual screening required) | compensation/workstyle/reputation | https://www.openwork.jp/ |
 
-口コミは、多数を集約した総合スコアであること、十分な件数があること、複数の情報源で照合できることの3つを条件に、傍証として用いる。個票、件数の少ない集計、評価項目ごとの個別スコアは、事実の断定に使わない（根拠と限界は `references/evidence-grading.md` の「集約総合スコアの条件付き妥当性」「口コミの選択バイアス」を参照）。
+Use a review-site post as supporting evidence on three conditions: it is an aggregated overall score across many respondents, it rests on a sufficient number of responses, and it can be corroborated across multiple sources. Do not use an individual post, a small-sample aggregate, or a per-facet score to assert a fact (the grounds and limits are in "The conditional validity of an aggregated overall score" and "The selection bias of review-site posts" in `references/evidence-grading.md`).
 
-## 年収水準の比較のための公的統計（対照）
+## Public statistics for comparing salary levels (a reference point)
 
-企業単体の平均年間給与（有報）を、業界・職種・年齢の水準と比較して位置づけるために、公的統計を対照として使う。いずれも公的統計であり、事実としてレベルAで扱う。
+Public statistics serve as a reference point for placing a single company's average annual salary (from its securities report) against industry, occupation, and age-group levels. Both are public statistics and are treated as fact at level A.
 
-| 統計 | 所管 | 主に分かること | 出典URL |
+| Statistic | Supervising authority | Mainly reveals | Source URL |
 |---|---|---|---|
-| 賃金構造基本統計調査 | 厚生労働省 | 職種別・年齢別・企業規模別・産業別の賃金（所定内給与・年間賞与） | 案内 https://www.mhlw.go.jp/toukei/list/chinginkouzou.html ／ データ（e-Stat）https://www.e-stat.go.jp/statistics/00450091 |
-| 民間給与実態統計調査 | 国税庁 | 給与所得者の平均給与（性別・雇用形態別・企業規模別・業種別） | https://www.nta.go.jp/publication/statistics/kokuzeicho/minkan/top.htm |
+| Basic Survey on Wage Structure | Ministry of Health, Labour and Welfare | Wages by occupation, age group, company size, and industry (scheduled cash earnings, annual special cash earnings) | Overview https://www.mhlw.go.jp/toukei/list/chinginkouzou.html / Data (e-Stat) https://www.e-stat.go.jp/statistics/00450091 |
+| Statistical Survey of Actual Status for Salary in the Private Sector | National Tax Agency | Average salary of salaried workers (by sex, employment type, company size, industry) | https://www.nta.go.jp/publication/statistics/kokuzeicho/minkan/top.htm |
 
-比較の限界: 有報の平均年間給与は全従業員平均で職種別内訳を欠くため、公的統計の職種別・年齢別水準との比較は厳密な同一条件の対照ではない。比較はあくまで水準の把握にとどめ、単純な優劣の断定はしない。この限界を open_questions に残す。
+Limits of the comparison: a securities report's average annual salary is a company-wide average lacking a breakdown by job type, so a comparison against public statistics' job-type-level and age-group-level figures is an approximate comparison across differing conditions. Keep the comparison to grasping a level, and do not assert a simple ranking of superiority. Leave this limit in open_questions.
 
-## claim・company_metrics への反映
+## Reflecting this in claims and company_metrics
 
-- 数値（年間休日・残業・有給取得率・有給休暇の平均取得日数・平均年間給与）を収集したら、対応する claim を作り、加えて `company_metrics` へ構造化して格納する（value・unit・source_url・grade・as_of）。
-- 制度の「有無」は事実の claim にする（例:「健康経営優良法人2026に認定されている」grade=A。認定制度の公表データは認定機関が出す一次情報である）。制度の「良し悪し」は評価であり、断定しない。
-- 求人票レンジと、有報の平均年間給与・公的統計との食い違いは open_questions に残す。
+- Once you collect a figure (annual holidays, overtime, paid-leave-taking rate, average number of paid-leave days taken, average annual salary), build the corresponding claim, and in addition structure it into `company_metrics` (value, unit, source_url, grade, as_of).
+- Make a program's "existence" a factual claim (example: 「健康経営優良法人2026に認定されている」 grade=A; a certification scheme's published data is primary information from the certifying body). A program's "merit" is an evaluation; do not assert it.
+- Leave a discrepancy between the job posting's range and the securities report's average annual salary or public statistics in open_questions.

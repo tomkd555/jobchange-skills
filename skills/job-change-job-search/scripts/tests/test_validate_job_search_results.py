@@ -1873,5 +1873,571 @@ class ExampleAssetTest(unittest.TestCase):
         self.assertEqual(result.warnings, [])
 
 
+# --- schema_version 2.3（派生レーンと企業プロフィール）の検査 -----------------
+
+
+def _null_metric(unit: str, note: str = "ログイン必須の一次情報のため未取得") -> dict:
+    return {"value": None, "unit": unit, "source_url": None, "grade": None, "as_of": None, "note": note}
+
+
+def _real_metric(value, unit: str, as_of: str = "2026-03") -> dict:
+    return {
+        "value": value,
+        "unit": unit,
+        "source_url": "https://example.com/ir/yuho.pdf",
+        "grade": "A",
+        "as_of": as_of,
+    }
+
+
+def _valid_company_profile(name: str) -> dict:
+    """ERROR 0件・WARN 0件になる company_profiles[key] を返す。metrics は9軸すべて持ち、
+    2軸（compensation_level・annual_holidays）だけ実測値、残り7軸は null＋note とする。"""
+    metrics = {key: _null_metric(unit) for key, unit in vj.COMPANY_METRIC_UNITS.items()}
+    metrics["compensation_level"] = _real_metric(6800000, "円")
+    metrics["annual_holidays"] = _real_metric(125, "日")
+
+    return {
+        "name": name,
+        "aliases": [],
+        "official_url": "https://example.com",
+        "careers_url": "https://example.com/careers",
+        "hq_location": "東京都",
+        "industry": "SaaS",
+        "business_summary": {
+            "text": "SaaS型の業務システムを開発する企業である。",
+            "quote": "当社はSaaS型の業務システムを開発しています。",
+            "source_url": "https://example.com/about",
+            "grade": "A",
+        },
+        "basics": {
+            key: {"value": None, "source_url": None, "grade": None, "as_of": None, "note": "未取得"}
+            for key in vj.COMPANY_BASICS_KEYS
+        },
+        "metrics": metrics,
+        "negative_checks": {
+            "labor_law_violation_list": {
+                "checked": True,
+                "hit": False,
+                "source_url": "https://www.mhlw.go.jp/kinkyu/151106.html",
+                "as_of": "2026-07-01",
+            }
+        },
+        "recent_news": [
+            {
+                "headline": "新オフィス開設のお知らせ",
+                "date": "2026-06-01",
+                "source_url": "https://example.com/news/1",
+                "grade": "A",
+            }
+        ],
+        "open_questions": [],
+    }
+
+
+def _derivation(lane: str = "better_salary", salary_min: int = 7500000, **overrides) -> dict:
+    entry = {
+        "lane": lane,
+        "roles": ["インフラエンジニア"],
+        "industries": None,
+        "salary_min": salary_min,
+        "location": None,
+        "remote_policy": None,
+        "employment_type": None,
+        "changed_conditions": ["salary_min"],
+        "rationale": "年収を優先して条件を緩めた派生レーン",
+    }
+    entry.update(overrides)
+    return entry
+
+
+def _v23_search_sets(primary_salary_min: int = 6000000, derivations: list[dict] | None = None) -> dict:
+    return {
+        "primary": {"roles": ["インフラエンジニア"], "salary_min": primary_salary_min},
+        "derivations": [_derivation()] if derivations is None else derivations,
+    }
+
+
+def _v23_search_log() -> list[dict]:
+    return [
+        {
+            "query": "インフラエンジニア 東京都 フルリモート",
+            "url": "https://example.com/search/1",
+            "fetched_at": "2026-07-25",
+            "hit_count": 42,
+            "adopted_count": 1,
+            "source": "求人ボックス",
+            "search_set": "primary",
+        },
+        {
+            "query": "インフラエンジニア 年収800万円以上",
+            "url": "https://example.com/search/2",
+            "fetched_at": "2026-07-25",
+            "hit_count": 18,
+            "adopted_count": 1,
+            "source": "求人ボックス",
+            "search_set": "derived",
+            "lane": "better_salary",
+        },
+    ]
+
+
+def _v23_result_item(
+    search_set: str = "primary",
+    lane: str | None = None,
+    role_match: str = "same",
+    company_name: str = "架空アトラス株式会社",
+    **overrides,
+) -> dict:
+    item = _result_item(**overrides)
+    item["company_name"] = company_name
+    item["search_set"] = search_set
+    item["role_match"] = role_match
+    item["company_key"] = vj.normalize_company_key(company_name)
+    if lane is not None:
+        item["lane"] = lane
+    return item
+
+
+def _v23_screening_derivations(items: list[dict]) -> dict:
+    lanes: dict[str, dict[str, int]] = {}
+    for item in items:
+        if item.get("search_set") == "derived" and item.get("lane"):
+            counts = lanes.setdefault(item["lane"], {"result_count": 0, "apply_candidate_count": 0})
+            counts["result_count"] += 1
+            if item.get("classification") == "apply_candidate":
+                counts["apply_candidate_count"] += 1
+    return {
+        "performed": bool(lanes),
+        "lanes": [
+            {
+                "lane": lane,
+                "result_count": counts["result_count"],
+                "apply_candidate_count": counts["apply_candidate_count"],
+            }
+            for lane, counts in lanes.items()
+        ],
+    }
+
+
+def _valid_v23(items: list[dict] | None = None, recommendation: str = "応募推奨あり") -> dict:
+    """ERROR 0件・WARN 0件になる 2.3 の結果を返す。primary 1件＋better_salary レーンの derived 1件を持つ。"""
+    if items is None:
+        items = [
+            _v23_result_item(company_name="架空アトラス株式会社"),
+            _v23_result_item(
+                search_set="derived",
+                lane="better_salary",
+                role_match="adjacent",
+                company_name="架空クラウド株式会社",
+            ),
+        ]
+
+    document = _valid_v21(items, recommendation)
+    document["schema_version"] = "2.3"
+    document["search_sets"] = _v23_search_sets()
+    document["search_log"] = _v23_search_log()
+    company_names = sorted({item["company_name"] for item in items if isinstance(item, dict)})
+    document["company_profiles"] = {
+        vj.normalize_company_key(name): _valid_company_profile(name) for name in company_names
+    }
+    document["screening"]["derivations"] = _v23_screening_derivations(items)
+    document["screening"].pop("exploration", None)
+    return document
+
+
+class V23BackwardCompatTest(unittest.TestCase):
+    def test_v22_document_still_passes_after_refactor(self):
+        result = vj.validate(_valid_v22(), pii_terms=[])
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+    def test_valid_v23_passes_without_warnings(self):
+        result = vj.validate(_valid_v23(), pii_terms=[])
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+
+class V23DerivationsTest(unittest.TestCase):
+    def test_missing_derivations_is_error(self):
+        document = _valid_v23()
+        del document["search_sets"]["derivations"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("search_sets.derivations" in e for e in result.errors))
+
+    def test_exploration_present_is_error(self):
+        document = _valid_v23()
+        document["search_sets"]["exploration"] = {"roles": []}
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("2.3 では derivations を使う" in e for e in result.errors))
+
+    def test_duplicate_lane_is_error(self):
+        document = _valid_v23()
+        document["search_sets"]["derivations"].append(_derivation())
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("重複している" in e for e in result.errors))
+
+    def test_salary_min_below_primary_is_error(self):
+        document = _valid_v23()
+        document["search_sets"]["derivations"][0]["salary_min"] = 1000000
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("salary_min" in e for e in result.errors))
+
+    def test_empty_changed_conditions_is_error(self):
+        document = _valid_v23()
+        document["search_sets"]["derivations"][0]["changed_conditions"] = []
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("changed_conditions" in e for e in result.errors))
+
+    def test_empty_derivations_in_fuzzy_warns(self):
+        document = _valid_v23(items=[_v23_result_item(company_name="架空アトラス株式会社")])
+        document["search_sets"]["derivations"] = []
+        document["search_log"] = [e for e in document["search_log"] if e.get("search_set") == "primary"]
+        document["screening"]["derivations"] = {"performed": False, "lanes": []}
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("派生レーンを検索していない" in w for w in result.warnings))
+
+
+class V23ResultLaneTest(unittest.TestCase):
+    def test_derived_result_without_lane_is_error(self):
+        document = _valid_v23()
+        del document["results"][1]["lane"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("results[1].lane" in e for e in result.errors))
+
+    def test_derived_result_with_unknown_lane_is_error(self):
+        document = _valid_v23()
+        document["results"][1]["lane"] = "not-a-real-lane"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("results[1].lane" in e for e in result.errors))
+
+    def test_primary_result_with_lane_is_error(self):
+        document = _valid_v23()
+        document["results"][0]["lane"] = "better_salary"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("results[0].lane" in e for e in result.errors))
+
+    def test_invalid_search_set_is_error(self):
+        document = _valid_v23()
+        document["results"][0]["search_set"] = "exploration"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("results[0].search_set" in e for e in result.errors))
+
+    def test_missing_lane_search_log_entry_triggers_error(self):
+        document = _valid_v23()
+        document["search_log"] = [e for e in document["search_log"] if e.get("search_set") != "derived"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any(e.startswith("[ERROR] search_log:") for e in result.errors))
+
+    def test_too_many_queries_per_lane_warns(self):
+        document = _valid_v23()
+        extra = document["search_log"][1]
+        document["search_log"] += [dict(extra) for _ in range(3)]
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("を超えている" in w for w in result.warnings))
+
+
+class V23CompanyKeyTest(unittest.TestCase):
+    def test_missing_company_key_is_error(self):
+        document = _valid_v23()
+        del document["results"][0]["company_key"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("company_key" in e for e in result.errors))
+
+    def test_company_key_not_in_profiles_is_error(self):
+        document = _valid_v23()
+        document["results"][0]["company_key"] = "no-such-company"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("company_profiles に存在するキー" in e for e in result.errors))
+
+    def test_company_name_mismatch_warns(self):
+        document = _valid_v23()
+        document["results"][0]["company_name"] = "別の会社株式会社"
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("company_key" in w for w in result.warnings))
+
+
+class NormalizeCompanyKeyTest(unittest.TestCase):
+    def test_strips_leading_and_trailing_legal_entity_tokens(self):
+        self.assertEqual(vj.normalize_company_key("株式会社架空テック"), "架空テック")
+        self.assertEqual(vj.normalize_company_key("架空テック株式会社"), "架空テック")
+
+    def test_removes_whitespace(self):
+        self.assertEqual(vj.normalize_company_key("架空 テック 株式会社"), "架空テック")
+
+    def test_lowercases_ascii(self):
+        self.assertEqual(vj.normalize_company_key("ACME Corp 株式会社"), "acmecorp")
+
+    def test_full_width_parentheses_are_normalized_then_stripped(self):
+        self.assertEqual(vj.normalize_company_key("架空テック（株）"), "架空テック")
+
+    def test_only_legal_entity_name_is_empty(self):
+        self.assertEqual(vj.normalize_company_key("株式会社"), "")
+
+    def test_non_string_input_is_empty(self):
+        self.assertEqual(vj.normalize_company_key(None), "")
+
+
+class V23CompanyProfileTest(unittest.TestCase):
+    def test_key_must_equal_normalized_name(self):
+        document = _valid_v23()
+        key = vj.normalize_company_key("架空アトラス株式会社")
+        document["company_profiles"][key]["name"] = "別会社株式会社"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("キーは name または aliases" in e for e in result.errors))
+
+    def test_key_may_match_an_alias(self):
+        document = _valid_v23()
+        key = vj.normalize_company_key("架空アトラス株式会社")
+        profile = document["company_profiles"][key]
+        profile["name"] = "株式会社架空アトラスホールディングス"
+        profile["aliases"] = ["架空アトラス株式会社"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertEqual(result.errors, [])
+
+    def test_basics_null_value_without_note_warns(self):
+        document = _valid_v23()
+        key = vj.normalize_company_key("架空アトラス株式会社")
+        document["company_profiles"][key]["basics"]["founded_year"] = {
+            "value": None, "source_url": None, "grade": None, "as_of": None, "note": ""
+        }
+        result = vj.validate(document, pii_terms=[])
+        self.assertEqual(result.errors, [])
+        self.assertTrue(any("basics.founded_year.note" in w for w in result.warnings))
+
+    def test_v22_document_rejects_derived_search_set(self):
+        document = _valid_v22()
+        document["results"][0]["search_set"] = "derived"
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(any("results[0].search_set" in e for e in result.errors))
+
+    def test_missing_metric_key_is_error(self):
+        document = _valid_v23()
+        key = vj.normalize_company_key("架空アトラス株式会社")
+        del document["company_profiles"][key]["metrics"]["equity_ratio"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("metrics.equity_ratio" in e for e in result.errors))
+
+    def test_unknown_metric_key_is_error(self):
+        document = _valid_v23()
+        key = vj.normalize_company_key("架空アトラス株式会社")
+        document["company_profiles"][key]["metrics"]["headcount_growth"] = {
+            "value": 1, "unit": "%", "source_url": "https://example.com", "grade": "A", "as_of": "2026",
+        }
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("metrics.headcount_growth" in e for e in result.errors))
+
+    def test_wrong_unit_is_error(self):
+        document = _valid_v23()
+        key = vj.normalize_company_key("架空アトラス株式会社")
+        document["company_profiles"][key]["metrics"]["annual_holidays"]["unit"] = "件"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("metrics.annual_holidays.unit" in e for e in result.errors))
+
+    def test_negative_value_on_unsigned_metric_is_error(self):
+        document = _valid_v23()
+        key = vj.normalize_company_key("架空アトラス株式会社")
+        document["company_profiles"][key]["metrics"]["annual_holidays"]["value"] = -1
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("負の値" in e for e in result.errors))
+
+    def test_negative_value_on_signed_metric_is_allowed(self):
+        document = _valid_v23()
+        key = vj.normalize_company_key("架空アトラス株式会社")
+        document["company_profiles"][key]["metrics"]["revenue_growth"] = {
+            "value": -5.5,
+            "unit": "%",
+            "source_url": "https://example.com/ir",
+            "grade": "A",
+            "as_of": "2026",
+        }
+        result = vj.validate(document, pii_terms=[])
+        self.assertEqual(result.errors, [])
+
+    def test_rate_metric_above_100_is_error(self):
+        document = _valid_v23()
+        key = vj.normalize_company_key("架空アトラス株式会社")
+        document["company_profiles"][key]["metrics"]["paid_leave_rate"] = {
+            "value": 120,
+            "unit": "%",
+            "source_url": "https://example.com",
+            "grade": "A",
+            "as_of": "2026",
+        }
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("0〜100の範囲" in e for e in result.errors))
+
+    def test_compensation_level_below_10000_warns(self):
+        document = _valid_v23()
+        key = vj.normalize_company_key("架空アトラス株式会社")
+        document["company_profiles"][key]["metrics"]["compensation_level"]["value"] = 680
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("万円単位" in w for w in result.warnings))
+
+    def test_null_metric_value_without_note_warns(self):
+        document = _valid_v23()
+        key = vj.normalize_company_key("架空アトラス株式会社")
+        document["company_profiles"][key]["metrics"]["turnover_rate"]["note"] = ""
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("metrics.turnover_rate.note" in w for w in result.warnings))
+
+    def test_labor_check_hit_true_without_note_is_error(self):
+        document = _valid_v23()
+        key = vj.normalize_company_key("架空アトラス株式会社")
+        llv = document["company_profiles"][key]["negative_checks"]["labor_law_violation_list"]
+        llv["hit"] = True
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("note" in e for e in result.errors))
+
+    def test_labor_check_not_checked_with_hit_is_error(self):
+        document = _valid_v23()
+        key = vj.normalize_company_key("架空アトラス株式会社")
+        llv = document["company_profiles"][key]["negative_checks"]["labor_law_violation_list"]
+        llv["checked"] = False
+        llv["hit"] = False
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("hit" in e for e in result.errors))
+
+    def test_recent_news_bad_date_is_error(self):
+        document = _valid_v23()
+        key = vj.normalize_company_key("架空アトラス株式会社")
+        document["company_profiles"][key]["recent_news"][0]["date"] = "2026/06/01"
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("recent_news" in e for e in result.errors))
+
+    def test_orphan_profile_warns(self):
+        document = _valid_v23()
+        document["company_profiles"]["架空未参照"] = _valid_company_profile("架空未参照")
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("参照する result が無い" in w for w in result.warnings))
+
+    def test_missing_company_profiles_is_error(self):
+        document = _valid_v23()
+        del document["company_profiles"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("company_profiles" in e for e in result.errors))
+
+
+class V23RelatedInfoTest(unittest.TestCase):
+    def test_company_basics_key_in_related_info_warns(self):
+        document = _valid_v23()
+        document["results"][0]["related_info"] = {
+            "employee_count": {
+                "value": 300,
+                "source_url": "https://example.com/company",
+                "grade": "A",
+                "as_of": "2026",
+            }
+        }
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("company_profiles[].basics" in w for w in result.warnings))
+
+    def test_posting_related_info_key_passes_without_warning(self):
+        document = _valid_v23()
+        document["results"][0]["related_info"] = {
+            "posting_age": {
+                "value": 3,
+                "source_url": "https://example.com/jobs/1",
+                "grade": "A",
+                "as_of": "2026-07",
+            }
+        }
+        result = vj.validate(document, pii_terms=[])
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+
+
+class V23ScreeningDerivationsTest(unittest.TestCase):
+    def test_missing_derivations_object_is_error(self):
+        document = _valid_v23()
+        del document["screening"]["derivations"]
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("screening.derivations" in e for e in result.errors))
+
+    def test_lane_count_mismatch_is_error(self):
+        document = _valid_v23()
+        document["screening"]["derivations"]["lanes"][0]["result_count"] = 9
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("result_count" in e for e in result.errors))
+
+    def test_missing_lane_is_error(self):
+        document = _valid_v23()
+        document["screening"]["derivations"]["lanes"] = []
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("レーンが欠落している" in e for e in result.errors))
+
+    def test_performed_true_with_no_lanes_in_search_sets_is_error(self):
+        document = _valid_v23(items=[_v23_result_item(company_name="架空アトラス株式会社")])
+        document["search_sets"]["derivations"] = []
+        document["search_log"] = [e for e in document["search_log"] if e.get("search_set") == "primary"]
+        document["screening"]["derivations"] = {"performed": True, "lanes": []}
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("performed が true だが派生レーンが無い" in e for e in result.errors))
+
+    def test_performed_false_with_lanes_present_is_error(self):
+        document = _valid_v23()
+        document["screening"]["derivations"]["performed"] = False
+        result = vj.validate(document, pii_terms=[])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("performed が false" in e for e in result.errors))
+
+    def test_screening_exploration_present_warns(self):
+        document = _valid_v23()
+        document["screening"]["exploration"] = {
+            "performed": False,
+            "result_count": None,
+            "apply_candidate_count": None,
+        }
+        result = vj.validate(document, pii_terms=[])
+        self.assertTrue(result.ok)
+        self.assertTrue(any("2.3 では exploration は無視される" in w for w in result.warnings))
+
+
+class V23PiiLintTest(unittest.TestCase):
+    def test_pii_in_company_profile_open_questions_is_detected(self):
+        document = _valid_v23()
+        key = vj.normalize_company_key("架空アトラス株式会社")
+        document["company_profiles"][key]["open_questions"] = [
+            "架空プロダクツ株式会社より条件が良いか未確認"
+        ]
+        terms = vj.collect_pii_terms(_profile_with_pii())
+        result = vj.validate(document, pii_terms=terms)
+        self.assertFalse(result.ok)
+        self.assertTrue(any("現勤務先名" in e for e in result.errors))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,16 +1,16 @@
-# self_analysis.json 仕様
+# self_analysis.json specification
 
-job-change-self-analysis スキルにおける、自己分析の成果物 self_analysis.json の原本である。`scripts/validate_self_analysis.py` の実装は、この仕様に厳密に従う。
+This is the canonical definition, in the job-change-self-analysis skill, of self_analysis.json, the deliverable of self-analysis. The implementation of `scripts/validate_self_analysis.py` follows this specification exactly.
 
-self_analysis.json は、profile.json（利用者データの原本。hub が管理）を土台に、強み・キャリアの軸を行動証拠と他者視点で根拠づけて深化させた成果物である。面接対策（job-change-interview-prep）と志望動機の深化（job-change-documents）が入力として読む。profile.json のスキーマは変更しない。自己分析の結果は profile.json の `strengths`（短文）と `job_change_axis.reasons`（constructive_version に基づく文言）へ値のみ反映する。
+self_analysis.json is a deliverable that builds on profile.json (the canonical definition of user data, managed by the hub), and deepens strengths and the career axis by grounding them in behavioural evidence and the perspective of others. Job interview preparation (job-change-interview-prep) and the deepening of the statement of motivation (job-change-documents) read it as input. The schema of profile.json is never changed. The result of self-analysis reflects only values into profile.json's `strengths` (a short sentence) and `job_change_axis.reasons` (wording based on constructive_version).
 
-## 配置
+## Placement
 
-- 原本の配置先: `{DATA_ROOT}/career-private/self_analysis.json`（非公開ディレクトリ）。
-- career-private 配下のパスは、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ渡さない。本スキルの writer・auditor は Web 送信手段を持たないため、渡してよい。
-- スキル本体フォルダーに利用者データを置かない。`assets/self_analysis_example.json` は記入例であり、実データではない。
+- The canonical file is placed at `{DATA_ROOT}/career-private/self_analysis.json` (a private directory).
+- A path under career-private/ is never passed to an agent holding a means of sending to the web (WebSearch, WebFetch). This skill's writer and auditor hold no such means, so it may be passed to them.
+- User data is never placed inside the skill's own folder. `assets/self_analysis_example.json` is a worked example, and holds no real data.
 
-## ルート構造
+## Root structure
 
 ```json
 {
@@ -29,93 +29,93 @@ self_analysis.json は、profile.json（利用者データの原本。hub が管
 }
 ```
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required/Optional | Meaning and entry criteria |
 |---|---|---|---|
-| `schema_version` | string | 必須 | 仕様のバージョン。現行は `"1.1"`。`"1.0"` も読める。欠落・空は ERROR。既知の2値以外は WARN |
-| `updated_at` | string | 任意 | `YYYY-MM-DD` 形式の最終更新日。欠落は WARN |
-| `behavioral_episodes` | array | 必須 | 行動エピソード（STAR素材）の配列。1件以上必須。後述 |
-| `others_feedback` | array | 任意 | 他者から受け取ったフィードバックの配列。0件は WARN。後述 |
-| `interests` | object | 任意 | 興味。空は WARN。後述 |
-| `values` | array | 任意 | 価値観の配列。空は WARN。後述 |
-| `career_adaptability` | object | 任意 | career adaptability の4次元。後述 |
-| `personality` | object または null | 任意（1.1） | 性格・行動傾向の自己申告と、その描写。`null` は未記入として扱う。後述。原本は `references/personality-guide.md` |
-| `strengths` | array | 任意 | 根拠づけた強みの配列。後述 |
-| `career_narrative` | object | 必須 | キャリア・ナラティブ。後述 |
-| `reason_for_change` | object | 必須 | 退職・転職理由。後述 |
-| `notes` | string | 任意 | 補足メモ |
+| `schema_version` | string | Required | The specification's version. The current one is `"1.1"`. `"1.0"` can also be read. A missing or empty value is an ERROR. A value other than these two known ones is a WARN |
+| `updated_at` | string | Optional | The date last updated, in `YYYY-MM-DD` form. A missing value is a WARN |
+| `behavioral_episodes` | array | Required | An array of behavioural episodes (STAR material). At least one entry is required. Described below |
+| `others_feedback` | array | Optional | An array of feedback received from others. Zero entries is a WARN. Described below |
+| `interests` | object | Optional | Interests. An empty value is a WARN. Described below |
+| `values` | array | Optional | An array of values. An empty array is a WARN. Described below |
+| `career_adaptability` | object | Optional | The four dimensions of career adaptability. Described below |
+| `personality` | object or null | Optional (1.1) | The self-report of personality and behavioural tendencies, and its description. `null` is treated as not yet filled in. Described below. The canonical definition is in `references/personality-guide.md` |
+| `strengths` | array | Optional | An array of grounded strengths. Described below |
+| `career_narrative` | object | Required | The career narrative. Described below |
+| `reason_for_change` | object | Required | The reason for leaving and for changing jobs. Described below |
+| `notes` | string | Optional | A supplementary note |
 
 ## behavioral_episodes
 
-行動エピソード（STAR素材）の配列。1件以上必須。強み・価値観・career adaptability は、ここへ対応づけて裏付ける。
+An array of behavioural episodes (STAR material). At least one entry is required. Strengths, values, and career adaptability are all grounded by mapping to this array.
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required/Optional | Meaning and entry criteria |
 |---|---|---|---|
-| `id` | string | 必須 | エピソードの識別子（例 `ep-1`）。他フィールドの参照先になる |
-| `period` | string | 任意 | 時期。`YYYY-MM〜YYYY-MM` 形式 |
-| `situation` | string | 必須 | 状況。欠落・空は ERROR |
-| `task` | string | 任意 | 担った課題・役割 |
-| `action` | string | 必須 | 実際に取った行動。欠落・空は ERROR |
-| `result` | string | 必須 | 結果。欠落・空は ERROR |
-| `metric` | string または null | 任意 | 定量値（例「応答時間を62%短縮」）。定量化できない場合は `null` |
-| `reproducibility` | string または null | 任意 | 環境が変わっても機能する根拠（再現性）。企業は行動プロセスの再現性を見極める。このため、可能な範囲で書く |
-| `emotion_note` | string または null | 任意 | 当時のモチベーション・感情の記録。将来の感情の予測は書かない |
+| `id` | string | Required | The episode's identifier (for example, `ep-1`). It becomes the reference target of other fields |
+| `period` | string | Optional | The period, in `YYYY-MM〜YYYY-MM` form |
+| `situation` | string | Required | The situation. A missing or empty value is an ERROR |
+| `task` | string | Optional | The task or role taken on |
+| `action` | string | Required | The action actually taken. A missing or empty value is an ERROR |
+| `result` | string | Required | The result. A missing or empty value is an ERROR |
+| `metric` | string or null | Optional | A quantitative value (for example, 「応答時間を62%短縮」). `null` when it cannot be quantified |
+| `reproducibility` | string or null | Optional | The grounds for the approach working even when the environment changes (reproducibility). An employer judges whether a behavioural process reproduces, so this is written wherever possible |
+| `emotion_note` | string or null | Optional | A record of the motivation and feeling at the time. Never write a forecast of a future feeling |
 
-- `metric` は可能な限り定量値で埋める。全エピソードを通して `metric` が1件もない場合、検証スクリプトは WARN を出す。
-- `situation`・`action`・`result` の3つはエピソードの骨格であり、いずれかが欠けるとエピソードとして成立しないため ERROR とする。
+- `metric` is filled with a quantitative value wherever possible. When no episode across the whole array has a `metric`, the validation script reports a WARN.
+- `situation`, `action`, and `result` form the skeleton of an episode; when any one of them is missing, the episode does not stand, so this is an ERROR.
 
 ## others_feedback
 
-他者から受け取ったフィードバックの配列。0件は WARN（他者視点の収集を推奨）。
+An array of feedback received from others. Zero entries is a WARN (collecting the perspective of others is recommended).
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required/Optional | Meaning and entry criteria |
 |---|---|---|---|
-| `id` | string | 必須 | フィードバックの識別子（例 `fb-1`）。strengths の参照先になる |
-| `source_type` | string | 任意 | 出所。`上司`／`同僚`／`部下`／`顧客`／`友人・家族`／`評価面談` のいずれか |
-| `content` | string | 任意 | 受け取った内容。人格評価ではなく、行動と結果への対応づけで記録する |
-| `context` | string | 任意 | いつ・どの場面で受け取ったか |
-| `linked_episode_ids` | array | 任意 | 関連する behavioral_episodes の id の配列 |
+| `id` | string | Required | The feedback's identifier (for example, `fb-1`). It becomes a reference target for strengths |
+| `source_type` | string | Optional | The source: one of `上司` (manager), `同僚` (colleague), `部下` (subordinate), `顧客` (client), `友人・家族` (friend or family), or `評価面談` (performance review) |
+| `content` | string | Optional | The content received. Record it as a mapping between an action and a result |
+| `context` | string | Optional | When and in what situation it was received |
+| `linked_episode_ids` | array | Optional | An array of the ids of related behavioral_episodes |
 
-- フィードバックの受け取りは課題志向で行う。
+- Feedback is taken in with a task-oriented focus.
 
 ## interests
 
-興味。空（domains と concrete_topics がともに空）は WARN。
+Interests. An empty value (both `domains` and `concrete_topics` empty) is a WARN.
 
-| フィールド | 型 | 意味・記入基準 |
+| Field | Type | Meaning and entry criteria |
 |---|---|---|
-| `domains` | array | 興味領域の文字列の配列。RIASEC の6領域名（Realistic・Investigative・Artistic・Social・Enterprising・Conventional）を軸名として使う |
-| `concrete_topics` | array | 具体的な関心事の文字列の配列 |
+| `domains` | array | An array of interest-domain strings. The six RIASEC domain names (Realistic, Investigative, Artistic, Social, Enterprising, Conventional) are used as axis names |
+| `concrete_topics` | array | An array of concrete interest strings |
 
 ## values
 
-価値観の配列。空は WARN。各要素は価値観1件を表す。
+An array of values. An empty array is a WARN. Each element represents one value.
 
-| フィールド | 型 | 意味・記入基準 |
+| Field | Type | Meaning and entry criteria |
 |---|---|---|
-| `value` | string | 価値観の記述 |
-| `evidence_episode_ids` | array | 裏付けとなる behavioral_episodes の id の配列。内省だけに重きを置かないため、可能な限りエピソードへ対応づける |
+| `value` | string | A description of the value |
+| `evidence_episode_ids` | array | An array of the ids of the supporting behavioral_episodes. To avoid resting weight on introspection alone, map it to an episode wherever possible |
 
 ## career_adaptability
 
-career adaptability の4次元。次元名の枠組みのみを用い、尺度の項目文は転載しない。各次元は同じ構造を持つ。
+The four dimensions of career adaptability. Only the framework of dimension names is used, and no scale item text is reproduced. Each dimension has the same structure.
 
-| 次元 | 意味 |
+| Dimension | Meaning |
 |---|---|
-| `concern` | 関心（将来のキャリアへの関心・準備） |
-| `control` | 統制（自らの選択でキャリアを方向づける） |
-| `curiosity` | 好奇心（可能性の探索） |
-| `confidence` | 自信（課題を乗り越えられる自己効力） |
+| `concern` | Concern (interest in and preparation for the future career) |
+| `control` | Control (directing one's career by one's own choice) |
+| `curiosity` | Curiosity (exploring possibilities) |
+| `confidence` | Confidence (self-efficacy for getting through a challenge) |
 
-各次元のオブジェクトは次を持つ。
+Each dimension's object holds the following.
 
-| フィールド | 型 | 意味・記入基準 |
+| Field | Type | Meaning and entry criteria |
 |---|---|---|
-| `self_note` | string | その次元についての自己記述 |
-| `evidence_episode_ids` | array | 裏付けとなる behavioral_episodes の id の配列 |
+| `self_note` | string | A self-description for that dimension |
+| `evidence_episode_ids` | array | An array of the ids of the supporting behavioral_episodes |
 
-## personality（1.1）
+## personality (1.1)
 
-性格・行動傾向の自己申告と、その描写を持つ。任意であり、無くても成果物は成立する。自己申告は本人の自己像の記録であって特性の証拠ではないため、`strengths` の根拠には数えない。聞き方・語彙・書き方の原本は `references/personality-guide.md` にある。
+Holds the self-report of personality and behavioural tendencies, and its description. It is optional, and the deliverable stands without it. A self-report is a record of the person's own self-image, and carries no evidence of a trait, so it never counts as grounds for `strengths`. The canonical definition of how to ask, the vocabulary, and how to write is in `references/personality-guide.md`.
 
 ```json
 "personality": {
@@ -134,98 +134,98 @@ career adaptability の4次元。次元名の枠組みのみを用い、尺度�
 }
 ```
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required/Optional | Meaning and entry criteria |
 |---|---|---|---|
-| `markers` | array | 必須 | 自己申告の配列。0件でもよい。後述 |
-| `presentation` | string または null | 任意 | 自己申告と証拠を突き合わせた描写文。型やタイプの名称で分類しない。過去形でエピソードへ対応づけて書く |
+| `markers` | array | Required | An array of self-reports. Zero entries is allowed. Described below |
+| `presentation` | string or null | Optional | A descriptive passage that checks the self-report against the evidence. Never sorted by the name of a type or category. Written in the past tense, mapped to an episode |
 
 ### markers
 
-各要素は自己申告1件を表す。
+Each element represents one self-report.
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required/Optional | Meaning and entry criteria |
 |---|---|---|---|
-| `id` | string | 必須 | 識別子（例 `pm-1`）。欠落・空は ERROR。重複は WARN |
-| `construct` | string | 必須 | 構成概念の識別子。`references/personality-guide.md` の「構成概念の語彙」の表にある識別子のいずれか。他の値は ERROR |
-| `options` | array | 任意 | 提示した選択肢をそのまま記録した文字列の配列（2〜4件。二者択一の質問では4件、提示した選択肢の全文言を含む）。あれば `response` はこの中のいずれかでなければならない（不一致は ERROR）。Other を選んで自由記述に置き換えた場合は `options` を省く |
-| `response` | string | 必須 | 本人が選んだ選択肢の文。欠落・空は ERROR |
-| `linked_episode_ids` | array | 任意 | その傾向が表れた behavioral_episodes の id の配列。実在しない id は ERROR |
-| `feedback_ids` | array | 任意 | 同じ傾向についての others_feedback の id の配列。実在しない id は ERROR |
-| `note` | string または null | 任意 | 自己申告と他者証言の食い違いなど、補足 |
+| `id` | string | Required | The identifier (for example, `pm-1`). A missing or empty value is an ERROR. A duplicate is a WARN |
+| `construct` | string | Required | The construct's identifier. One of the identifiers in the "Construct vocabulary" table in `references/personality-guide.md`. Any other value is an ERROR |
+| `options` | array | Optional | An array of strings recording the presented options as they stand (2-4 entries; a forced-choice question has 4, holding the full wording of every presented option). When present, `response` must be one of these (a mismatch is an ERROR). When Other is chosen and replaced with free text, `options` is omitted |
+| `response` | string | Required | The sentence of the option the person chose. A missing or empty value is an ERROR |
+| `linked_episode_ids` | array | Optional | An array of the ids of the behavioral_episodes where that tendency showed up. An id that does not exist is an ERROR |
+| `feedback_ids` | array | Optional | An array of the ids of the others_feedback about the same tendency. An id that does not exist is an ERROR |
+| `note` | string or null | Optional | A supplementary note, such as a disagreement between the self-report and feedback from others |
 
-- `linked_episode_ids` と `feedback_ids` が両方とも空の自己申告には、検証スクリプトが WARN を出す（自己申告だけの記録）。成果物としては成立する。
-- `presentation` に型やタイプの名称（「〜型です」「〜タイプです」「〜型である」など）が含まれる場合は WARN とする。
+- When a self-report has both `linked_episode_ids` and `feedback_ids` empty, the validation script reports a WARN (a record grounded in the self-report alone). The deliverable still stands.
+- When `presentation` contains the name of a type or category (such as 「〜型です」「〜タイプです」「〜型である」), this is a WARN.
 
 ## strengths
 
-根拠づけた強みの配列。**内省単独の強みは認めない。** 各要素は、行動証拠（episode_ids）または他者証言（feedback_ids）の少なくとも一方へ対応づける。
+An array of grounded strengths. **A strength grounded in introspection alone is never accepted.** Each element maps to at least one of behavioural evidence (`episode_ids`) or feedback from others (`feedback_ids`).
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required/Optional | Meaning and entry criteria |
 |---|---|---|---|
-| `statement` | string | 必須 | 強みの短文。欠落・空は ERROR。profile.json の strengths へ反映する短文の素材になる |
-| `episode_ids` | array | 条件付き必須 | 裏付けとなる behavioral_episodes の id の配列 |
-| `feedback_ids` | array | 条件付き必須 | 裏付けとなる others_feedback の id の配列 |
-| `constructs` | array | 任意（1.1） | その強みに関わる構成概念の識別子の配列。語彙は `personality.markers[].construct` と同じ。表に無い識別子は ERROR |
+| `statement` | string | Required | A short sentence stating the strength. A missing or empty value is an ERROR. It becomes the material for the short sentence reflected into profile.json's `strengths` |
+| `episode_ids` | array | Conditionally required | An array of the ids of the supporting behavioral_episodes |
+| `feedback_ids` | array | Conditionally required | An array of the ids of the supporting others_feedback |
+| `constructs` | array | Optional (1.1) | An array of the identifiers of the constructs involved in that strength. The vocabulary is the same as `personality.markers[].construct`. An identifier absent from the table is an ERROR |
 
-- `episode_ids` と `feedback_ids` が両方とも空（有効な id が1件もない）の場合は ERROR（内省単独の強み）。少なくとも一方に実在する id を1件以上持つ。
-- `episode_ids`・`feedback_ids` が参照する id は、実在する behavioral_episodes / others_feedback の id でなければならない（参照整合）。実在しない id の参照は ERROR とする。
-- `constructs` に挙げた構成概念について、`personality.markers` の該当する自己申告がエピソードにも他者証言にも対応づいていない場合は WARN とする（自己申告が強みの根拠に紛れ込んでいないかを確かめる）。
+- When both `episode_ids` and `feedback_ids` are empty (no valid id at all), this is an ERROR (a strength grounded in introspection alone). At least one of them must hold at least one existing id.
+- An id referenced by `episode_ids` or `feedback_ids` must be an id that exists in behavioral_episodes / others_feedback (referential integrity). A reference to an id that does not exist is an ERROR.
+- For a construct named in `constructs`, when the matching self-report in `personality.markers` maps to neither an episode nor feedback from others, this is a WARN (it checks whether a self-report has slipped into the grounds for a strength).
 
 ## career_narrative
 
-キャリア・ナラティブ。Career Construction Interview（CCI）の枠組み（ライフテーマ・転機・一貫する動機）に沿う。narrative-guide.md を参照する。
+The career narrative. It follows the framework of the Career Construction Interview (CCI) — life theme, turning points, consistent motivation. See narrative-guide.md.
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required/Optional | Meaning and entry criteria |
 |---|---|---|---|
-| `life_theme` | string | 必須 | ライフテーマ。欠落・空は ERROR |
-| `turning_points` | array | 任意 | 転機の文字列の配列 |
-| `consistent_motivation` | string | 必須 | 一貫する動機。欠落・空は ERROR |
-| `future_direction` | string | 任意 | 今後の方向 |
+| `life_theme` | string | Required | The life theme. A missing or empty value is an ERROR |
+| `turning_points` | array | Optional | An array of turning-point strings |
+| `consistent_motivation` | string | Required | The consistent motivation. A missing or empty value is an ERROR |
+| `future_direction` | string | Optional | The future direction |
 
 ## reason_for_change
 
-退職・転職理由。不満の列挙を、発揮したい価値を軸にした建設的な言い換えへ変換する。narrative-guide.md を参照する。
+The reason for leaving and for changing jobs. It converts a list of complaints into a constructive reframing built around the value the person wants to bring to bear. See narrative-guide.md.
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required/Optional | Meaning and entry criteria |
 |---|---|---|---|
-| `raw_reasons` | array | 必須 | 元の理由（不満を含む、加工していない理由）の配列。1件以上必須（空は ERROR） |
-| `constructive_version` | string | 必須 | 発揮したい価値を軸にした説明。欠落・空は ERROR |
-| `consistency_note` | string | 任意 | profile.json の `job_change_axis.reasons` との整合の説明 |
+| `raw_reasons` | array | Required | An array of the original reasons (unprocessed reasons, including complaints). At least one entry is required (an empty array is an ERROR) |
+| `constructive_version` | string | Required | An explanation built around the value the person wants to bring to bear. A missing or empty value is an ERROR |
+| `consistency_note` | string | Optional | An explanation of consistency with profile.json's `job_change_axis.reasons` |
 
-- `constructive_version` が `raw_reasons` のいずれかと同一文字列のままの場合は WARN（建設的な言い換えができていない）。
+- When `constructive_version` remains an identical string to one of the `raw_reasons`, this is a WARN (the constructive reframing has not been done).
 
-## 検証規則の要約
+## Summary of the validation rules
 
-`validate_self_analysis.py` は次を検査する。ERROR が1件でもあれば FAIL（終了コード 1）、ERROR 0件なら PASS（終了コード 0。WARN は許容）。読込は BOM 付き UTF-8（`utf-8-sig`）に対応する。
+`validate_self_analysis.py` checks the following. Even one ERROR makes it FAIL (exit code 1); zero ERRORs makes it PASS (exit code 0; a WARN is allowed). Reading supports UTF-8 with a BOM (`utf-8-sig`).
 
-### ERROR（成果物として成立しない）
+### ERROR (the deliverable does not stand)
 
-- JSON として読み込めない
-- `schema_version` の欠落または空
-- `behavioral_episodes` が空、または各要素で `id`・`situation`・`action`・`result` のいずれかが欠落・空
-- `others_feedback` の要素で `id` が欠落・空
-- `strengths` の要素で `statement` が欠落・空
-- `strengths` の要素で `episode_ids` と `feedback_ids` が両方とも空（内省単独の強み）
-- `strengths`・`values`・`career_adaptability`・`personality.markers` が参照する `episode_id` / `feedback_id` が実在しない（参照整合エラー）
-- `personality` がオブジェクトでない、`personality.markers` が配列でない、または各要素がオブジェクトでない
-- `personality.markers` の要素で `id`・`response` が欠落・空、`construct` が語彙表にない、`options` があるのに `response` がその中にない
-- `personality.markers` の要素で `options` があるのに2〜4件の非空文字列の配列でない
-- `personality.presentation` が文字列でも null でもない
-- `strengths[].constructs` が配列でない、または語彙表にない識別子を含む
-- `career_narrative.life_theme` または `consistent_motivation` の欠落・空
-- `reason_for_change.raw_reasons` が空、または `constructive_version` の欠落・空
+- Cannot be read as JSON
+- `schema_version` is missing or empty
+- `behavioral_episodes` is empty, or an element has `id`, `situation`, `action`, or `result` missing or empty
+- An element of `others_feedback` has `id` missing or empty
+- An element of `strengths` has `statement` missing or empty
+- An element of `strengths` has both `episode_ids` and `feedback_ids` empty (a strength grounded in introspection alone)
+- An `episode_id` / `feedback_id` referenced by `strengths`, `values`, `career_adaptability`, or `personality.markers` does not exist (a referential-integrity error)
+- `personality` is not an object, `personality.markers` is not an array, or an element is not an object
+- An element of `personality.markers` has `id` or `response` missing or empty, `construct` absent from the vocabulary table, or `options` present while `response` is not among them
+- An element of `personality.markers` has `options` present, but not as an array of 2-4 non-empty strings
+- `personality.presentation` is neither a string nor null
+- `strengths[].constructs` is not an array, or contains an identifier absent from the vocabulary table
+- `career_narrative.life_theme` or `consistent_motivation` is missing or empty
+- `reason_for_change.raw_reasons` is empty, or `constructive_version` is missing or empty
 
-### WARN（成立するが情報不足で成果物の質を下げる）
+### WARN (the deliverable stands, but a lack of information lowers its quality)
 
-- `others_feedback` が0件（他者視点の欠落）
-- `behavioral_episodes`・`others_feedback`・`personality.markers` の中で `id` が重複している
-- `others_feedback` の要素の `source_type` が上表の値域にない
-- 全エピソードを通して `metric` が1件もない
-- `updated_at` の欠落
-- `schema_version` が既知の2値（`1.0`・`1.1`）以外
-- `interests` が空（domains・concrete_topics がともに空）
-- `values` が空
-- `personality.markers` の要素で `linked_episode_ids` と `feedback_ids` が両方とも空（自己申告だけの記録）
-- `personality.presentation` に型やタイプの名称が含まれる
-- `strengths[].constructs` に挙げた構成概念の自己申告が、エピソードにも他者証言にも対応づいていない
-- `constructive_version` が `raw_reasons` と同一文字列のまま
+- `others_feedback` has zero entries (the perspective of others is missing)
+- An `id` is duplicated within `behavioral_episodes`, `others_feedback`, or `personality.markers`
+- An element of `others_feedback` has a `source_type` outside the value domain in the table above
+- No episode across the whole array has a `metric`
+- `updated_at` is missing
+- `schema_version` is other than the two known values (`1.0`, `1.1`)
+- `interests` is empty (`domains` and `concrete_topics` both empty)
+- `values` is empty
+- An element of `personality.markers` has both `linked_episode_ids` and `feedback_ids` empty (a record grounded in the self-report alone)
+- `personality.presentation` contains the name of a type or category
+- A self-report for a construct named in `strengths[].constructs` maps to neither an episode nor feedback from others
+- `constructive_version` remains an identical string to `raw_reasons`

@@ -1,171 +1,171 @@
-# 情報源カタログ（source-catalog）
+# Source catalog (source-catalog)
 
-日本企業の企業研究で用いる情報源を、種別・記載内容・限界・出典URLとともに整理した原本である。エビデンスレベル（A〜D）の定義は `references/evidence-grading.md` に従う。各情報源の記載内容は claim の topic に対応する。
+This is the canonical catalog organizing the sources used in researching a Japanese company, together with their category, content, limits, and source URL. Follow `references/evidence-grading.md` for the definition of evidence levels (A through D). Each source's content corresponds to a claim's topic.
 
-## 一次・公式（レベルA）
+## Primary and official (level A)
 
-### EDINET 有価証券報告書「従業員の状況」
+### EDINET securities report, "Status of Employees"
 
-| 観点 | 内容 |
+| Perspective | Content |
 |---|---|
-| 所在 | 金融庁 EDINET で閲覧できる（料金はかからない）。 https://www.fsa.go.jp/search/20130917.html （EDINET について）。 |
-| 記載内容 | 「第一部 企業情報／第1 企業の概況／5 従業員の状況」に、提出会社の従業員数・平均年齢・平均勤続年数・平均年間給与が記載される（topic=financials）。定量候補軸の `compensation_level` の出所である。 |
-| 平均年間給与の定義と限界 | 開示府令により賞与を含み、役員・臨時従業員を除く点は法定で統一されている。しかし基準外賃金（残業代・手当）やパートの扱いは各社裁量であり、全従業員平均のため職種別・雇用形態別の内訳を欠く。企業間の単純比較には限界があるため、その旨を statement または open_questions に明示する（算出方法の解説: 株式総務 2023、レベルC https://kabushikisoumu.com/annual-income-4 ）。 |
-| 人的資本の3指標 | 2023年3月期以降の有価証券報告書では、開示府令の改正により、女性活躍推進法・育児介護休業法で公表義務のある提出会社は「従業員の状況」へ女性管理職比率・男性の育児休業取得率・男女の賃金差異を記載する（金融庁 https://www.fsa.go.jp/policy/kaiji/sustainability-kaiji.html ）。定量候補軸の `male_childcare_leave_rate` の出所である（topic=workstyle/benefits）。 |
-| 2026年3月期以降の追加項目 | 2026年2月20日公布の開示府令改正により、2026年3月期以降（提出は2026年6月頃から）の有価証券報告書には、人材戦略・従業員の給与等の決定方針・提出会社の従業員の平均給与の対前年比増減率が加わる（金融庁 https://www.fsa.go.jp/news/r7/shouken/20260220/20260220.html ）。平均給与の増減率は `compensation_level` の推移を、決定方針は topic=compensation を、人材戦略は topic=business/philosophy を裏づける。 |
-| 特定方法 | EDINET の書類は書類管理番号で一意に特定できる。有報を出典とする claim では、書類管理番号・提出日を記録すると監査時の照合が容易になる。 |
+| Location | Viewable at the Financial Services Agency's EDINET (no charge). https://www.fsa.go.jp/search/20130917.html (About EDINET). |
+| Content | "Part I: Company Information / 1. Company Overview / 5. Status of Employees" states the filing company's employee count, average age, average years of service, and average annual salary (topic=financials). This is the source of the quantitative candidate axis `compensation_level`. |
+| Definition and limits of the average annual salary | Under the disclosure ordinance, it is uniformly defined by law to include bonuses and exclude officers and temporary employees. Non-scheduled wages (overtime pay, allowances), however, and the treatment of part-time workers are each company's own discretion, and the figure is a company-wide average lacking a breakdown by job type or employment type. A simple comparison between companies has limits, so state this fact in the statement or in open_questions (a commentary on the calculation method: Kabushiki Soumu 2023, level C https://kabushikisoumu.com/annual-income-4 ). |
+| The 3 human-capital indicators | Starting with securities reports for fiscal years ending March 2023 and later, under the revised disclosure ordinance, a filing company subject to a publication obligation under the Act on Promotion of Women's Active Engagement in Professional Life or the Child Care and Family Care Leave Act states the female-manager ratio, the male childcare-leave-taking rate, and the gender wage gap in "Status of Employees" (Financial Services Agency https://www.fsa.go.jp/policy/kaiji/sustainability-kaiji.html ). This is the source of the quantitative candidate axis `male_childcare_leave_rate` (topic=workstyle/benefits). |
+| Items added from fiscal years ending March 2026 and later | Under the disclosure-ordinance revision promulgated February 20, 2026, a securities report for a fiscal year ending March 2026 or later (to be filed from around June 2026) adds a human-resources strategy, the policy for determining employee compensation and similar, and the filing company's year-over-year rate of change in average employee compensation (Financial Services Agency https://www.fsa.go.jp/news/r7/shouken/20260220/20260220.html ). The rate of change in average compensation supports the trend of `compensation_level`; the determination policy supports topic=compensation; the human-resources strategy supports topic=business/philosophy. |
+| How to identify a document | An EDINET document can be uniquely identified by its document management number. For a claim sourced from a securities report, recording the document management number and the filing date makes it easier to cross-check at audit time. |
 
-上場企業を調べるときは、上記の人的資本開示を確認対象に含める。いずれも法定記載であり、レベルAの数値として扱え、後から同じ有報を開いて照合できる。記載が見当たらない場合は、提出会社が公表義務の対象外である可能性と、単に見落としである可能性を分けられないため、`open_questions` に「有報の当該箇所を確認したが記載を見つけられなかった」と記録する。
+When researching a listed company, include the human-capital disclosures above among what you check. All are statutory disclosures and can be treated as level-A figures, and can later be corroborated by opening the same securities report again. When you cannot find the disclosure, you cannot distinguish between the filing company being exempt from the publication obligation and a simple oversight, so record in `open_questions` that "the relevant part of the securities report was checked but the disclosure could not be found."
 
-### 中途採用比率の公表義務
+### The obligation to publish the mid-career hiring ratio
 
-労働施策総合推進法により、常時雇用する労働者が301人以上の企業は、中途採用比率（正規雇用労働者の採用数に占める中途採用の割合）を直近3事業年度分、おおむね年1回公表する義務がある（2021年4月施行。厚生労働省 https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/koyou/jakunen/index_00003.html ）。公表先は自社サイト・しょくばらぼのいずれでもよい。
+Under the Act on Comprehensive Promotion of Labor Measures, a company that regularly employs 301 or more workers has an obligation to publish its mid-career hiring ratio (the share of mid-career hires among the hires of regular employees) for the most recent 3 fiscal years, roughly once a year (effective April 2021. Ministry of Health, Labour and Welfare https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/koyou/jakunen/index_00003.html ). The publication location may be either the company's own site or Shokuba Labo.
 
-公表値を見つけた場合はレベルAの事実として claim にする（topic=workstyle）。301人以上の規模でありながら公表値を見つけられなかった場合は、その事実そのものを `open_questions` に記録する。**未公表と断定はしない。** 公表場所が法令で1か所に定まっておらず、探索の網羅性を担保できないためである。
+When you find a published figure, make it a level-A factual claim (topic=workstyle). When the company has 301 or more employees but you could not find a published figure, record that fact itself in `open_questions`. **Do not assert that it is unpublished.** The law does not fix a single publication location, and this means the search's completeness cannot be guaranteed.
 
-有価証券報告書の「第一部 企業情報／第1 企業の概況／1 主要な経営指標等の推移」は、直近5事業年度の売上高・自己資本比率を並べて示す。定量候補軸の `revenue_growth` はこの売上高の推移から算出し、`equity_ratio` はこの表の値をそのまま使う。`operating_margin` は「経理の状況」の連結損益計算書の営業利益と売上高から算出する。算出した値は、算出の元にした期と数値を statement に書き、出典を有報の当該箇所にする。
+The securities report's "Part I: Company Information / 1. Company Overview / 1. Trends in Major Management Indicators" lists revenue and the equity ratio across the most recent 5 fiscal years side by side. The quantitative candidate axis `revenue_growth` is calculated from this revenue trend, and `equity_ratio` uses the value in this table directly. `operating_margin` is calculated from the consolidated income statement's operating profit and revenue in "Status of Accounting." For a calculated value, write the fiscal period and figures used in the calculation into the statement, and set the source to the relevant part of the securities report.
 
-### 決算説明資料・統合報告書・中期経営計画・コーポレート・ガバナンス報告書
+### Earnings briefing materials, integrated reports, medium-term management plans, corporate governance reports
 
-企業の開示は、法定開示・適時開示・任意開示の3類型に分かれる（Funda Navi 2024、レベルC https://navi.funda.jp/article/disclosure ）。
+A company's disclosure falls into three categories: statutory disclosure, timely disclosure, and voluntary disclosure (Funda Navi 2024, level C https://navi.funda.jp/article/disclosure ).
 
-| 資料 | 内容 |
+| Material | Content |
 |---|---|
-| 決算説明資料・統合報告書・中期経営計画・アニュアルレポート | 任意開示（IR情報）である。事業内容・業績・戦略・理念（topic=business/financials/philosophy）の根拠になる。発信者が当事者であるため、自社を良く見せる方向へ記述が偏りうる点に留意する。 |
-| コーポレート・ガバナンス報告書 | 上場会社が東京証券取引所へコンプライ・オア・エクスプレインで提出する（日本取引所グループ、レベルB https://www.jpx.co.jp/equities/listing/cg/index.html ）。取締役会構成・ガバナンス体制の根拠になる。 |
+| Earnings briefing materials, integrated reports, medium-term management plans, annual reports | Voluntary disclosure (IR information). Grounds for the business description, results, strategy, and philosophy (topic=business/financials/philosophy). Note that, because the speaker is the party itself, the description can be biased toward presenting the company favorably. |
+| Corporate governance report | A listed company submits this to the Tokyo Stock Exchange on a comply-or-explain basis (Japan Exchange Group, level B https://www.jpx.co.jp/equities/listing/cg/index.html ). Grounds for board composition and the governance structure. |
 
-これらは企業自身の一次情報であり、事実（数値・体制・制度の有無）はレベルAとして扱う。一方、理念・パーパスの「実現度」や社風の自賛は評価的主張であり、confidence を high にしない（`references/evidence-grading.md` を参照）。
+These are primary information from the company itself, and a fact (a number, a structure, whether a program exists) is treated as level A. On the other hand, how far a philosophy or purpose has been "realized," and self-praise about company culture, are evaluative claims, and confidence is not set to high on them (see `references/evidence-grading.md`).
 
-### 厚生労働省「しょくばらぼ」
+### Ministry of Health, Labour and Welfare's "Shokuba Labo"
 
-| 観点 | 内容 |
+| Perspective | Content |
 |---|---|
-| 所在 | https://shokuba.mhlw.go.jp/ （職場情報総合サイト）。 |
-| 記載内容 | 中途採用比率・定着率・残業時間・有給取得率等（topic=workstyle）。定量候補軸の `turnover_rate`・`monthly_overtime`・`paid_leave_rate` の出所である。 |
-| 限界 | 掲載内容は企業の自主開示に依存する。未開示の項目は判別できない。開示されている数値は一次情報として扱う。 |
-| 取得のしかた | 検索フォームの操作を要するため、Web 取得だけでは引けない（後述「自動で取得できない情報源」）。利用者が参照した結果を受け取る。 |
+| Location | https://shokuba.mhlw.go.jp/ (the Comprehensive Workplace Information Site). |
+| Content | The mid-career hiring ratio, retention rate, overtime hours, paid-leave-taking rate, and similar (topic=workstyle). This is the source of the quantitative candidate axes `turnover_rate`, `monthly_overtime`, and `paid_leave_rate`. |
+| Limits | The listed content depends on the company's own voluntary disclosure. An undisclosed item cannot be determined. A disclosed figure is treated as primary information. |
+| How to obtain it | It requires operating a search form, so it cannot be pulled by a web fetch alone (see "Sources that cannot be fetched automatically" below). The result is received from the user, who consulted it themselves. |
 
-### 認定制度（根拠法と所管が明確な一次情報）
+### Certification schemes (primary information with a clear basis in law and a clear supervising authority)
 
-いずれも根拠法と所管官庁が明確で、認定の有無自体はレベルAの事実である（topic=benefits/workstyle）。
+Every one has a clear basis in law and a clear supervising authority, and whether a certification exists is itself a level-A fact (topic=benefits/workstyle).
 
 <!-- textlint-disable ja-technical-writing/max-kanji-continuous-len -->
-<!-- 法令名を原文のまま載せる表である。「次世代育成支援対策推進法」の漢字連続はこの表でのみ許容する。 -->
+<!-- This table carries law names in their original Japanese; the long kanji run in "次世代育成支援対策推進法" (Act on Advancement of Measures to Support Raising Next-Generation Children) is allowed only in this table. -->
 
-| 認定 | 根拠法・所管 | 出典URL |
+| Certification | Legal basis and supervising authority | Source URL |
 |---|---|---|
-| くるみん／プラチナくるみん／トライくるみん | 次世代育成支援対策推進法・厚生労働省 | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kodomo/shokuba_kosodate/kurumin/index.html |
-| えるぼし／プラチナえるぼし | 女性活躍推進法（5基準）・厚生労働省 | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000091025_00002.html |
-| 健康経営優良法人（ホワイト500） | 経済産業省・日本健康会議（2016年度創設、大規模法人部門の上位500社がホワイト500） | https://www.meti.go.jp/policy/mono_info_service/healthcare/kenkoukeiei_yuryouhouzin.html |
-| ユースエール | 若者雇用促進法・厚生労働省（中小企業対象） | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000100266.html |
+| Kurumin / Platinum Kurumin / Try Kurumin | Act on Advancement of Measures to Support Raising Next-Generation Children, Ministry of Health, Labour and Welfare | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kodomo/shokuba_kosodate/kurumin/index.html |
+| Eruboshi / Platinum Eruboshi | Act on Promotion of Women's Active Engagement in Professional Life (5 criteria), Ministry of Health, Labour and Welfare | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000091025_00002.html |
+| Health and Productivity Management Outstanding Organization (White 500) | Ministry of Economy, Trade and Industry and the Japan Health Council (established fiscal 2016; the top 500 in the large-enterprise category are "White 500") | https://www.meti.go.jp/policy/mono_info_service/healthcare/kenkoukeiei_yuryouhouzin.html |
+| Youth Yell | Act on Promotion of Employment of Young People, Ministry of Health, Labour and Welfare (for small and mid-sized enterprises) | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000100266.html |
 
 <!-- textlint-enable ja-technical-writing/max-kanji-continuous-len -->
 
-認定の有無は事実だが、認定は最低基準の充足を示すもので、企業の働きやすさ全体を保証するものではない。認定を根拠に「働きやすい」と断定しない。
+Whether a certification exists is a fact, but a certification shows only that a minimum standard is met; it does not guarantee the company's overall ease of working. Do not assert "an easy place to work" on the grounds of a certification alone.
 
-個別企業の認定の有無と、認定の根拠になった数値は、次のデータベースが持つ。うち両立支援のひろばと女性の活躍推進企業データベースは、エージェントが Web 取得だけでは引けない（後述「自動で取得できない情報源」）。利用者が自分で参照した結果を受け取る情報源であり、調査手順には入れない。
+The following databases hold whether an individual company is certified, and the figures behind the certification. Among these, "Ryoritsu Support Plaza" and the "Database of Companies Promoting Women's Active Participation" cannot be pulled by an agent through a web fetch alone (see "Sources that cannot be fetched automatically" below). They are sources whose result the user consults themselves and hands over, and they are not included in the investigation procedure.
 
-| データベース | 記載内容 | 出典URL |
+| Database | Content | Source URL |
 |---|---|---|
-| えるぼし認定状況 | えるぼし・プラチナえるぼしの認定企業一覧（topic=workstyle/benefits） | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000129028.html |
-| 両立支援のひろば | くるみん認定企業と、企業ごとの両立支援の取組の一般事業主行動計画（topic=benefits） | https://ryouritsu.mhlw.go.jp/ |
-| 女性の活躍推進企業データベース | 女性管理職比率・男女別の平均勤続年数・採用者に占める女性比率（topic=workstyle） | https://positive-ryouritsu.mhlw.go.jp/positivedb/ |
+| Eruboshi certification status | A list of companies certified Eruboshi or Platinum Eruboshi (topic=workstyle/benefits) | https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000129028.html |
+| Ryoritsu Support Plaza | Kurumin-certified companies and each company's general employer action plan for work-life balance support (topic=benefits) | https://ryouritsu.mhlw.go.jp/ |
+| Database of Companies Promoting Women's Active Participation | The female-manager ratio, average years of service by sex, and the female share among new hires (topic=workstyle) | https://positive-ryouritsu.mhlw.go.jp/positivedb/ |
 
-えるぼし認定状況は厚生労働省の通常のページであり、Web 取得で引ける。
+The Eruboshi certification status page is an ordinary Ministry of Health, Labour and Welfare page, and it can be pulled by a web fetch.
 
-### 負の情報を探す理由
+### Why negative information is sought
 
-企業の自己開示と採用広報だけを集めると、良い面に偏った像ができる。日本の転職経験者を対象にした調査でも、入社前の期待と入社後の現実の落差が定着を損なうことを確かめている。片山と藤（2023）は転職経験者412名の調査で、転職時のリアリティショックがワークエンゲイジメントを下げ、離転職意思を高めることを示した（DOI:10.4992/jjpsy.93.20062）。企業側の施策としての現実的職務予告については Phillips（1998）のメタ分析があるが、これは企業が応募者へ情報を与える場面を扱うものであり、応募者側の情報収集へそのまま当てはめられない。効果量については原典の本文を入手できておらず、本カタログは二次資料に依拠している。
+Collecting only a company's self-disclosure and recruiting communications produces a picture skewed toward the favorable. A study of Japanese job changers, too, confirms that a gap between pre-hire expectations and post-hire reality undermines retention. 片山と藤 (2023), in a survey of 412 job changers, showed that a reality shock at the time of a job change lowers work engagement and raises turnover intention (DOI:10.4992/jjpsy.93.20062). On the company-side measure of a realistic job preview, there is a meta-analysis by Phillips (1998), but this addresses the scene where a company gives information to an applicant, and does not directly transfer to the applicant's own side of information-gathering. The original text's effect size could not be obtained, and this catalog relies on a secondary source for it.
 
-したがって、否定的な情報も肯定的な情報と同じ手順で探す。次の情報源はそのために用いる。
+Negative information is therefore sought through the same procedure as positive information. The following sources serve that purpose.
 
-### 厚生労働省「労働基準関係法令違反に係る公表事案」
+### Ministry of Health, Labour and Welfare's "Published cases of violations of labor-standards laws"
 
-| 観点 | 内容 |
+| Perspective | Content |
 |---|---|
-| 所在 | 都道府県労働局が公表し、本省が全国分を月次でとりまとめる。起点ページ https://www.mhlw.go.jp/kinkyu/151106.html 。本省とりまとめは PDF で公開される。 |
-| 記載内容 | 企業・事業場名称、所在地、公表日、違反法条、事案概要（topic=workstyle/reputation）。送検事案と局長指導事案を対象とする。 |
-| 掲載期間の限界 | 根拠通達（基発0330第11号）により、掲載期間は公表日からおおむね1年であり、1年が経過した後、最初に到来する月末に削除される。1年より前の事案は掲載されていない。 |
-| 検索の限界 | 企業名で絞り込む検索機能がサイトにも PDF にも無い。月次の全国 PDF を取得して探す。HTML には表データが無く、PDF の取得が必要である。 |
-| 使い方 | 該当が見つかった場合はレベルAの事実として扱う。**該当が見つからないことを、法令違反がない証拠として使わない。** 上記2つの限界により、掲載されていないことと違反がないことは同じではない。 |
+| Location | Published by the prefectural labour bureaus, and compiled nationally on a monthly basis by the ministry. The starting page is https://www.mhlw.go.jp/kinkyu/151106.html . The ministry's compilation is published as a PDF. |
+| Content | The company or workplace's name, its location, the publication date, the violated provision, and a summary of the case (topic=workstyle/reputation). Covers cases referred for prosecution and cases with a director's instruction. |
+| Limit on the listing period | Under the governing notice (基発0330第11号), the listing period is roughly 1 year from the publication date, and a case is removed at the end of the first month after 1 year has passed. A case from more than 1 year ago is not listed. |
+| Limit on searching | Neither the site nor the PDF has a function to filter by company name. You must fetch the monthly national PDF and search it. There is no table data in the HTML, and fetching the PDF is required. |
+| How to use it | When a match is found, treat it as a level-A fact. **Do not use the absence of a match as evidence that no legal violation exists.** Because of the two limits above, a violation can exist even when the company is unlisted. |
 
-### 公的統計（賃金構造基本統計調査・雇用動向調査・job tag）
+### Public statistics (Basic Survey on Wage Structure, Employment Trend Survey, job tag)
 
-企業単位ではなく職種別・産業別の集計値を与える情報源である。個別企業の提示条件が、同じ職種や産業の水準からどの程度離れているかを見る参照点として使う。出所・更新頻度・取得の可否・利用規則の原本は hub の `{HUB_SKILL_DIR}/references/market-data-sources.md` にあり、ここへは複製しない。
+These sources give aggregate values by occupation and by industry. Use them as a reference point for seeing how far an individual company's offered terms are from the level for the same occupation or industry. The canonical source for their origin, update frequency, whether they can be fetched, and their usage rules is the hub's `{HUB_SKILL_DIR}/references/market-data-sources.md`; it is not duplicated here.
 
-これらは企業についての主張ではないため、`claims` には入れない。報酬や働き方の水準を評価するときの参照点として、statement の中で比較の基準に用いる。job tag では IT 系の複数職種が同じ年収を示すため、職種名の一致だけを根拠に個別の求人の提示額を評価しない。
+These are occupation-level and industry-level statistics, so they stay out of `claims`. Use them within a statement as the baseline for comparison when evaluating a level of compensation or work style. Because job tag shows the same annual-salary figure for several IT occupations, do not evaluate an individual job posting's offered amount on the grounds of a matching occupation name alone.
 
-## 自動で取得できない情報源
+## Sources that cannot be fetched automatically
 
-企業単位の情報を持ちながら、Web 取得だけでは引けない情報源がある。実際に確認した結果は次のとおりである。
+Some sources hold company-level information but cannot be pulled by a web fetch alone. What was actually confirmed is as follows.
 
-| 情報源 | 引けない理由 |
+| Source | Why it cannot be pulled |
 |---|---|
-| しょくばらぼ | 検索フォームが GET パラメータでは動かない。加えて、個別企業ページへの直接アクセスを禁じている。 |
-| 女性の活躍推進企業データベース | 全パスが 403 を返し、本文を取得できない。 |
-| 両立支援のひろば | 同上。 |
-| job tag（職業情報提供サイト） | 本文もダウンロードページも JavaScript で描画され、取得結果が空になる。CSV の取得は利用者の手動ダウンロードによる。 |
+| Shokuba Labo | Its search form does not work with GET parameters. It also forbids direct access to an individual company's page. |
+| Database of Companies Promoting Women's Active Participation | Every path returns 403, and the body cannot be fetched. |
+| Ryoritsu Support Plaza | Same as above. |
+| job tag (the Occupational Information Provision Site) | Both the body and the download page are rendered with JavaScript, and the fetch result comes back empty. Obtaining the CSV requires a manual download by the user. |
 
-これらは企業研究担当エージェントが自力で引ける情報源ではない。利用者が自分で参照し、その結果をエージェントへ渡す情報源として扱う。エージェントの調査手順からは外す。**取得できなかったことを「掲載がない」と解釈しない。**
+Treat these as sources the user consults personally and hands to the agent, and leave them out of the agent's investigation procedure. **Do not interpret an inability to fetch as "nothing is listed."**
 
-## 信頼できる二次（レベルB）
+## Reliable secondary (level B)
 
-### 就職四季報
+### Shushoku Shikiho
 
-| 観点 | 内容 |
+| Perspective | Content |
 |---|---|
-| 所在 | 東洋経済新報社。 https://str.toyokeizai.net/magazine/shushoku_all/ 。 |
-| 特性 | 掲載料を取らず独自調査で約1300社を扱う（3年後定着率・平均年収・残業時間・有給取得等）。掲載料無償・独自調査という編集方針から、企業の広報とは独立した二次情報として扱う（topic=reputation/workstyle/financials）。 |
-| 限界 | 調査項目に企業が回答しない（NA）場合がある。掲載社数に限りがあり、非掲載の企業は補えない。 |
+| Location | Toyo Keizai Inc. https://str.toyokeizai.net/magazine/shushoku_all/ . |
+| Character | Covers roughly 1,300 companies through its own survey, charging no listing fee (3-year retention rate, average annual salary, overtime hours, paid-leave-taking, and so on). Its editorial policy of a free listing fee and its own independent survey lead to treating it as secondary information independent of the company's own public relations (topic=reputation/workstyle/financials). |
+| Limits | A company may decline to answer a survey item, leaving it blank. The number of companies listed is limited, and an unlisted company cannot be supplemented. |
 
-年間休日総数（定量候補軸の `annual_holidays`）は求人票の記載が主な出所であり、就職四季報の休日・休暇の欄でも確認できる。求人票の値は募集職種の条件であり、企業全体の平均ではない点を statement に明示する。
+Total annual holidays (the quantitative candidate axis `annual_holidays`) is mainly sourced from the job posting, and can also be confirmed in Shushoku Shikiho's holidays-and-leave column. State in the statement that the job posting's value is the condition for the recruited job type alone.
 
-### 大手報道・業界レポート
+### Major reporting, industry reports
 
-大手報道機関の記事、業界団体・調査会社のレポートは、一次資料を編集した二次情報としてレベルBとする。個人ブログ・匿名転載はレベルDとし、これらとは区別する。
+An article from a major news outlet, and a report from an industry association or a research firm, are treated as level-B secondary information, being secondary information edited from primary material. A personal blog or an anonymous repost is treated as level D, distinguished from these.
 
-## 口コミ・集計サイト（レベルC）
+## Review-aggregation sites (level C)
 
-| 観点 | 内容 |
+| Perspective | Content |
 |---|---|
-| 代表例 | OpenWork、Glassdoor、選考体験記の集計サイト。 |
-| 特性と限界 | 投稿するかどうかを投稿者自身が決めるため、極端な意見が投稿されやすい（選択バイアス）。個票、件数の少ない指標、ファセット単位の指標は事実の断定に使わない。多数を集約した総合スコアは、十分な件数があり、他の情報源と照合できることを条件に傾向の傍証として使える（`references/evidence-grading.md` の「集約総合スコアの条件付き妥当性」を参照。r=.516 は Landers 2019 の単一研究由来）。 |
-| サイト間の品質差 | OpenWork は在籍証明の提出と目視審査を課すため投稿者の実在性が比較的高いが、退職者バイアスは残る。いずれの集計サイトもレベルCとして扱い、総合スコアを傍証に用いる原則は変えない（就活ハンドブック 2024 https://jo-katsu.com/campus/10412/ ）。 |
-| 書き方 | C を根拠とする記述は限定表現で書く。「口コミでは〜という声がある（回答 N 件）。選択バイアスがあり傍証にとどめる。」 |
+| Representative examples | OpenWork, Glassdoor, and sites aggregating selection-process accounts. |
+| Character and limits | Because whether to post is the poster's own decision, an extreme opinion is more likely to be posted (selection bias). An individual post, a metric with a small response count, or a facet-level metric is not used to assert a fact. An overall score aggregated across many respondents can be used as supporting evidence for a trend, on the condition that it rests on a sufficient number of responses and can be cross-checked against another source (see "The conditional validity of an aggregated overall score" in `references/evidence-grading.md`; the r=.516 figure comes from the single study by Landers 2019). |
+| Quality differences among sites | OpenWork requires submission of proof of employment and manual screening, so a poster's authenticity is comparatively higher, though a leaver bias remains. Treat every aggregation site as level C, and keep the principle of using the overall score as supporting evidence (Job-Hunting Handbook 2024 https://jo-katsu.com/campus/10412/ ). |
+| How to write it | Write a statement based on C with a hedge. 「口コミでは〜という声がある（回答 N 件）。選択バイアスがあり傍証にとどめる。」 |
 
-## 個人ブログ・伝聞・未確認（レベルD）
+## Personal blog, hearsay, unconfirmed (level D)
 
-個人ブログ・SNS の伝聞・出所不明の転載・単発の匿名投稿はレベルDとする。D 単独では事実を断定しない。他のレベルA・Bの出所で裏が取れる場合に限り、補足として言及する。
+A personal blog, hearsay on social media, a repost of unknown origin, and a single anonymous post are level D. Do not assert a fact on D alone. Mention it only as a supplement, limited to cases where another level-A or level-B source corroborates it.
 
-## トピックと情報源の対応
+## Correspondence between topic and source
 
-| topic | 主な一次・二次情報源 |
+| topic | Main primary and secondary sources |
 |---|---|
-| `philosophy` | 企業公式サイト理念ページ・統合報告書・社長メッセージ（`references/philosophy-analysis.md`） |
-| `business` | 有価証券報告書・決算説明資料・統合報告書 |
-| `financials` | 有価証券報告書「従業員の状況」・決算資料 |
-| `compensation` | 採用サイト報酬制度・有価証券報告書の平均年間給与・口コミ集計（傍証） |
-| `benefits` | 認定制度DB・しょくばらぼ・福利厚生ページ |
-| `workstyle` | 有価証券報告書の人的資本開示・中途採用比率の公表値・しょくばらぼ・就職四季報・女性の活躍推進企業データベース・コーポレート・ガバナンス報告書・労働基準関係法令違反に係る公表事案 |
-| `reputation` | 就職四季報・大手報道・労働基準関係法令違反に係る公表事案・口コミ集計（傍証） |
-| `selection_process` | 採用サイト選考フロー・選考体験記の集計・口コミ（サイトごとの取得の可否は次節） |
+| `philosophy` | The company's official-site philosophy page, the integrated report, messages from the president (`references/philosophy-analysis.md`) |
+| `business` | The securities report, earnings briefing materials, the integrated report |
+| `financials` | The securities report's "Status of Employees," earnings materials |
+| `compensation` | The recruiting site's compensation system, the securities report's average annual salary, review-site aggregates (supporting evidence) |
+| `benefits` | Certification-scheme databases, Shokuba Labo, the benefits page |
+| `workstyle` | The securities report's human-capital disclosures, the published mid-career hiring ratio, Shokuba Labo, Shushoku Shikiho, the Database of Companies Promoting Women's Active Participation, the corporate governance report, published cases of labour-standards violations |
+| `reputation` | Shushoku Shikiho, major reporting, published cases of labour-standards violations, review-site aggregates (supporting evidence) |
+| `selection_process` | The recruiting site's selection flow, aggregated selection-process accounts, reviews (whether each site can be fetched is in the next section) |
 
-## 選考プロセスの情報源（selection_process）
+## Sources for the selection process (selection_process)
 
-面接で聞かれた質問と選考の形式を集めるサイトでは、ログインなしで読める範囲と robots.txt が自動取得を認める範囲が大きく異なる。企業研究担当の Step 4 と、面接情報の調査担当（`job-change-interview-scout`）が同じ表に従う。確認日は 2026-09-04 であり、180日を過ぎたら robots.txt を読み直す。
+Among sites that collect the questions asked at interview and the selection format, the range readable without login and the range robots.txt allows to be fetched automatically differ greatly. The company research role's Step 4 and the interview-information investigator (`job-change-interview-scout`) follow the same table. It was checked on 2026-09-04, and robots.txt should be re-read once 180 days have passed.
 
-| サイト | 面接の質問の有無 | ログインなしで読める範囲 | robots.txt（2026-09-04） | レベル | 取得 |
+| Site | Whether interview questions exist | Range readable without login | robots.txt (as of 2026-09-04) | Level | Fetching |
 |---|---|---|---|---|---|
-| 転職会議（`jobtalk.jp`） | あり。`/companies/{ID}/answers?question_codes=examination` が面接・試験の区分 | 質問文の断片は読める。面接の雰囲気・対策・結果の本文は会員登録が必要 | `User-agent: *` に `Allow: /`。Disallow は `/company_archives/`・`/jobs/p*` と画像プロキシのパスだけ。AIクローラーを挙げた記述は無い | C | 可 |
-| キャリコネ（`careerconnection.jp`） | あり。`/review/{ID}/interview/` | 企業ごとに1件程度が読め、残りは会員登録が必要。古い投稿（2010年代）が多い | `User-agent: ClaudeBot` に `Crawl-delay: 3` だけがあり、Disallow は無い。`User-agent: *` の Disallow は投票・通報・求人詳細などのパス | C | 可（取得の間隔を3秒以上空ける） |
-| OpenWork（`openwork.jp`） | **無い**。9つの区分（組織体制・企業文化／年収・給与／入社理由と入社後ギャップ／働きがい・成長／女性の働きやすさ／ワーク・ライフ・バランス／退職検討理由／企業分析／経営者への提言）に面接の区分は無い | 区分名と区分ごとの件数。本文は会員登録が必要 | 企業ページは禁止対象外。クエリ文字列付きの一部のパスと `/landing/` は Disallow。AIクローラーを挙げた記述は無い | C（働きがい研究所の集計レポートは B） | 可。`themes`（傾向）の根拠と、入社後ギャップ・退職検討理由の件数に限る |
-| エン Lighthouse（`en-hyouban.com`） | あり（検索結果の断片から推定。本体は未確認） | 未確認 | **`User-agent: ClaudeBot` / `Disallow: /`**。サイト全体を名前を挙げて拒んでいる | C | **不可**。`site:` 検索でも取りにいかない |
-| Glassdoor 日本（`glassdoor.co.jp`） | あり。ただし国内企業の件数は少ない | 未確認 | `/robots.txt` が HTTP 530 を返し読めない | C | 不可（方針を読めないサイトを許可されたものとして扱わない） |
-| Indeed 企業クチコミ（`jp.indeed.com/cmp/`） | あり。ただし件数は少ない | 未確認 | ファイルが大きく、ツールでは原文を確かめられなかった。`ClaudeBot` は学習用クローラーの一覧に入っている | C | 不可（原文を確かめられるまで） |
-| 就活会議（`syukatsu-kaigi.jp`）・ONE CAREER（`onecareer.jp`） | あり。**新卒採用**の体験記 | 要約は読める。本文は会員登録が必要 | ONE CAREER は `User-agent: *` に実質の制限なし。就活会議は未確認 | C | 可。ただし選考の段階数・面接官の役職のように、選考の形式についての事実に限り、中途固有の質問の根拠にしない。ONE CAREER PLUS（中途向け。`plus.onecareer.jp`）は未確認 |
-| JobQ Town、note・はてなブログの選考体験記、X の投稿 | 単発・匿名 | 読める | 各種 | D | 手順には入れない。他の出所で裏が取れる場合の補足に限る |
-| YouTube の面接対策の動画 | 一般的な答え方の解説が中心で、企業固有の質問はほぼ無い | 読める | — | C（転職エージェントの公式チャンネルは B） | 企業固有の情報源としては使わない。一般の質問類型の原本（`job-change-interview-prep` の `question-bank.md`）の出典候補にとどめる |
+| Tenshoku Kaigi (`jobtalk.jp`) | Yes. `/companies/{ID}/answers?question_codes=examination` is the interview/exam category | Fragments of question text can be read. The body on interview atmosphere, preparation, and outcome requires registration | `User-agent: *` has `Allow: /`. Disallow covers only `/company_archives/`, `/jobs/p*`, and the image proxy paths. No mention of naming an AI crawler | C | Allowed |
+| Careerconnection (`careerconnection.jp`) | Yes. `/review/{ID}/interview/` | About 1 item per company is readable; the rest requires registration. Many posts are old (2010s) | `User-agent: ClaudeBot` has only `Crawl-delay: 3`; no Disallow. `User-agent: *`'s Disallow covers paths such as voting, reporting, and job details | C | Allowed (space fetches at least 3 seconds apart) |
+| OpenWork (`openwork.jp`) | **None**. Of its 9 categories (組織体制・企業文化／年収・給与／入社理由と入社後ギャップ／働きがい・成長／女性の働きやすさ／ワーク・ライフ・バランス／退職検討理由／企業分析／経営者への提言), none is an interview category | Category names and the count per category. The body requires registration | Company pages are not among the disallowed. Some paths with a query string and `/landing/` are disallowed. No mention of naming an AI crawler | C (the Institute for Job Satisfaction's aggregated reports are B) | Allowed. Limited to the grounds for `themes` (trends) and the counts for post-join gap and reasons considered for leaving |
+| en Lighthouse (`en-hyouban.com`) | Yes (inferred from search-result fragments; the body is unconfirmed) | Unconfirmed | **`User-agent: ClaudeBot` / `Disallow: /`**. Names the crawler and refuses the entire site | C | **Not allowed**. Do not fetch it even via a `site:` search |
+| Glassdoor Japan (`glassdoor.co.jp`) | Yes, though the count for domestic companies is small | Unconfirmed | `/robots.txt` returns HTTP 530 and cannot be read | C | Not allowed (do not treat a site whose policy cannot be read as permitted) |
+| Indeed Company Reviews (`jp.indeed.com/cmp/`) | Yes, though the count is small | Unconfirmed | The file is large, and the tool could not confirm its content. `ClaudeBot` is on the list of crawlers used for training | C | Not allowed (until the content can be confirmed) |
+| Shukatsu Kaigi (`syukatsu-kaigi.jp`), ONE CAREER (`onecareer.jp`) | Yes. Accounts from **new-graduate** hiring | A summary is readable. The body requires registration | ONE CAREER's `User-agent: *` has essentially no restriction. Shukatsu Kaigi is unconfirmed | C | Allowed. Limited, however, to facts about the selection format, such as the number of selection stages and interviewers' titles; do not use it as grounds for a question specific to mid-career hiring. ONE CAREER PLUS (for mid-career hiring, `plus.onecareer.jp`) is unconfirmed |
+| JobQ Town, selection-process accounts on note and Hatena Blog, posts on X | Single, anonymous | Readable | Various | D | Not included in the procedure. Limited to a supplement when corroborated by another source |
+| YouTube interview-preparation videos | Mostly a general explanation of how to answer; almost no company-specific questions | Readable | — | C (a recruitment agency's (転職エージェント) official channel is B) | Not used as a company-specific source. Kept as a candidate source for the canonical general question-type reference (`job-change-interview-prep`'s `question-bank.md`) |
 
-取得の可否を決める規則（クローラーの名前・利用規約・404 と 403 の違い・確認日と読み直し・実行時に拒まれた場合）の原本は、`job-change-job-search` の `references/query-catalog.md` の「取得の可否を決める規則」にある。上の表はその規則を選考プロセスの情報源へ適用した結果であり、表に無いサイトを調査中に見つけた場合も同じ規則で判断する。口コミの本文を成果物へ丸ごと転記せず、質問や事実を特定するのに必要な最小限の引用にとどめる。ログイン画面へリダイレクトされたら、そのページはそのセッションでは読まない。読めなかったことを「情報が無い」と解釈しない。
+The canonical rule that decides whether fetching is allowed (the crawler's name, the terms of service, the difference between a 404 and a 403, the check date and re-reading, and being refused at fetch time) is in `job-change-job-search`'s `references/query-catalog.md`, "The rule for deciding whether retrieval is permitted." The table above is the result of applying that rule to sources for the selection process, and when a site not in the table is found during an investigation, judge it by the same rule. Do not transcribe a review's body wholly into the deliverable; keep a quote to the minimum needed to identify a question or a fact. When redirected to a login screen, do not read that page again within that session. Do not interpret an inability to read as "no information exists."
 
-転職エージェント経由で応募先企業の質問一覧を受け取っている利用者もいる。それは Web の外にある情報であり、Web 送信手段を持つ役割へ渡さず、利用者から `job-change-interview-prep` が直接受け取る。
+Some users receive a list of questions for their target company through a recruitment agency (転職エージェント). That is information from outside the web, so do not pass it to a role holding a web-transmission tool; `job-change-interview-prep` receives it directly from the user.

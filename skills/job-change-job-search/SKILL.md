@@ -1,241 +1,293 @@
 ---
 name: job-change-job-search
 description: >-
-  転職の求人検索を担うサブスキル。無償の公開Web検索だけで求人を探し、掲載ページの引用と出典URLを付した
-  job_search_results.json を作る。2モードを持つ。fuzzy（曖昧条件検索）は利用者の曖昧な希望（例「リモート多め・
-  年収600万以上・SaaS系」）を構造化条件シートへ変換し、AskUserQuestion で確認してから検索する。similar_better
-  （基準求人を上回る検索）は基準求人（job_posting.json または URL）から条件を抽出し、どの軸（年収・リモート・年間休日・
-  固定残業・変更の範囲）の改善を狙うかを確認してから検索する。検索へ渡す条件は匿名化し、現勤務先名・氏名・現年収を含めない
-  （希望年収を下限として含めることは可）。利用者が結果から企業を選んだら、企業研究の求人票の取り込みへ接続する。
-  job-change-support（hub）から振り分けられて動く。
+  Sub-skill for job search in a job change. It finds job postings using only free public web search, and produces
+  job_search_results.json with a quotation from the listing page and a source URL for every posting. It has two
+  modes. fuzzy (fuzzy search) converts the user's vague wishes (for example, "mostly remote, salary 6 million yen
+  or more, SaaS industry") into a structured condition sheet, confirms it with AskUserQuestion, and then searches.
+  similar_better (search to beat a reference posting) extracts conditions from a reference posting
+  (job_posting.json or a URL), confirms which axis (salary, remote work, annual holidays, fixed overtime pay,
+  scope of change) the search should improve on, and then searches. In both modes, it searches derivation lanes
+  in parallel alongside the primary set — raising the salary, increasing holidays, work style, adjacent
+  occupations, widening industry or region, company type, and company career pages — and gathers company profiles
+  (the nine axes of disclosed figures, published labor-law violation cases, and recent news) for every company
+  that appears in the results into the same deliverable. It anonymises the conditions passed to search: it
+  excludes the current employer's name, the user's name, and the current salary (a desired salary floor may be
+  included). Once the user picks a company from the results, this hands off to job posting intake in company
+  research. It runs when dispatched from job-change-support (the hub).
   Use when the user wants to search for job openings for a job change in Japan using only free public web search —
   either from a vague wish list (fuzzy mode) or by finding roles that beat a baseline posting (similar_better mode) —
-  and needs sourced results with verbatim quotes rather than fabricated listings, with their current employer, name,
-  and current salary kept out of the query.
+  with derived lanes for better conditions and wider scope, a sourced company profile for every company found,
+  with every posting backed by a verbatim quote from the listing page, and their current employer, name and
+  current salary kept out of the query.
   trigger words: 求人検索, 求人を探す, 求人を探して, 転職先を探す, リモートの求人, 年収600万以上の求人,
-  似た求人でもっと良い条件, 今より良い条件の求人, この求人より良いところ, 求人を絞り込む。
+  似た求人でもっと良い条件, 今より良い条件の求人, この求人より良いところ, 求人を絞り込む, 求人と企業情報, 幅広く求人を探す。
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
 ---
 
 # job-change-job-search
 
-転職の求人を探すとき、本スキル1つで条件の組み立てから検索・検証・納品までの手順がそろう。無償の公開Web検索だけで求人を探し、すべての求人に掲載ページの引用と出典URLを付す。
+When searching for job postings in a job change, this single skill covers the whole procedure, from building conditions through search, validation, and delivery. It finds job postings using only free public web search, and attaches a quotation from the listing page and a source URL to every posting.
 
-本スキルは hub（job-change-support）から振り分けられて動く。検索の実行（Web調査）は求人検索担当エージェント（job-change-job-searcher）が担う。判断基準は `references/` で自己完結する。
+This skill runs when dispatched from the hub (job-change-support). The job searcher agent (job-change-job-searcher) carries out the search execution (web research). The judgment criteria are self-contained in `references/`.
 
-## 目的と原則
+## Purpose and principles
 
-1. **無償の公開Web検索だけで探す。** 有償の求人API・会員限定の非公開求人には依存しない。検索方法のカタログは `references/query-catalog.md` にある。求人ページの開き方の3系統・サイト別のURL文法と制約・対象外にしたサイトとその理由・取得の可否を決める規則・クエリの展開規則・年収下限の再判定・重複の排除・相場の基準線・関連情報の取得先・掲載終了の確認を載せる。会員登録が必要な求人を範囲外にした場合は、成果物の `coverage_notes` に記す。robots.txt が AI クローラーの取得を明示的に拒んでいるサイトは、技術的に取得できても対象外とする。
+1. **Search using only free public web search.** It does not depend on paid job-posting APIs or member-only private postings. The catalog of search methods is in `references/query-catalog.md`. It covers the three families of opening job pages, the URL grammar and constraints per site, sites excluded from scope and the reasons, the rules for deciding whether fetching is allowed, the query-expansion rules, re-checking the salary floor, deduplication, market-rate baselines, where to obtain related information, and confirming listing expiry. When a job posting that requires membership registration is placed out of scope, this is recorded in the deliverable's `coverage_notes`. A site whose robots.txt explicitly refuses AI-crawler fetching is out of scope even when fetching it is technically possible.
 
-2. **掲載ページの引用と出典URLを付す。** 各求人には、掲載ページからの引用（`quote`）と出典URL（`url`）・掲載サイト名（`source_site`）を必ず付す。取得できない求人を創作しない。給与が「応相談」等で数値が読めない場合は `salary_range` を `null` にする。
+2. **Attach a quotation from the listing page and a source URL.** Every posting must carry a quotation from the listing page (`quote`), a source URL (`url`), and the listing site name (`source_site`). Postings that cannot be fetched are never fabricated. When the salary reads 「応相談」 (negotiable) or similar and no number can be read, `salary_range` is set to `null`.
 
-3. **匿名化を徹底する。** 検索担当エージェントへ渡す条件には、現勤務先名・氏名・現年収を含めない。希望年収の下限を条件に含めることは可とする。本スキルに関わる個人情報の境界の例外はこれだけであり、理由と規定は `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。`profile.json` のパス・内容を Web ツールを持つエージェントへ渡さない。条件はスキル本体が組み立て、匿名化した文字列としてのみ渡す。
+3. **Enforce anonymisation.** The conditions passed to the searcher agent exclude the current employer's name, the user's name, and the current salary. A desired salary floor may be included in the conditions. This is the only exception to the personal-information boundary that applies to this skill; the reasoning and the rule live in `{HUB_SKILL_DIR}/references/pii-boundary.md`. The path and content of `profile.json` are never passed to an agent that holds web tools. The skill body builds the conditions and passes them only as anonymised strings.
 
-4. **現勤務先の求人を除外する。** 検索結果に現勤務先の求人が含まれうる。除外はスキル本体がローカルで行う（`profile.json` を Web ツールへ渡さないため、除外判定はエージェントの外で行う）。
+4. **Exclude postings from the current employer.** Search results can include postings from the current employer. The skill body performs the exclusion locally (since `profile.json` is never passed to a web tool, the exclusion judgment happens outside the agent).
 
-5. **個人情報を外部へ送信しない。** 利用者の個人情報を、検索クエリ・fetch・外部APIを含む一切の外部送信に用いない。対象の列挙と例外の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。job-change-job-searcher は WebSearch・WebFetch を持つため、`profile.json` と `career-private/` 配下のパス・内容を渡さない。本スキルに関わる例外は希望年収の下限だけであり、匿名化した条件シートの `salary_min` として渡してよい（原則3）。現年収（`salary.current`）は例外に含まれず、渡さない。`commute.json` から導いた駅名も渡さない。
+5. **Never send personal information outward.** The user's personal information is never used in any outward transmission, including search queries, fetches, or external APIs. The canonical enumeration of covered items and the exceptions lives in the hub's `{HUB_SKILL_DIR}/references/pii-boundary.md`. Because job-change-job-searcher holds WebSearch and WebFetch, `profile.json` and paths and content under `career-private/` are never passed to it. The only exception for this skill is the desired salary floor, which may be passed as `salary_min` in the anonymised condition sheet (principle 3). The current salary (`salary.current`) is not among the exceptions and is never passed. Station names derived from `commute.json` are never passed either.
 
-6. **利用者の条件はそのまま検索し、偏りは別枠で点検する。** 利用者の希望は主集合（`search_sets.primary`）としてそのまま検索する。条件の書き方に紛れ込んだ「本人が選んだわけではない絞り込み」（職種名・業界・規模・フルリモート・役職の段階の固定など）は、Step 1 で必須か選好かを1問で確かめ、選好と答えた条件を外した探索集合（`search_sets.exploration`）を最大6本の追加クエリで作る。探索集合は主集合を置き換えず、主集合の本数を削らない。利用者が要らないと言えば作らない。点検する偏りの一覧と探索集合の組み方の原本は `references/bias-checklist.md` にある。
+6. **Search the user's conditions as given, and run derivations in a separate track.** The user's wishes are searched as they stand, as the primary set (`search_sets.primary`), with twelve queries. On top of this, both modes build derivation lanes (`search_sets.derivations`) toward improving conditions (salary, annual holidays, work style, company type) and toward widening scope (adjacent occupation, industry, seniority level, remote-work phrasing, region, company career pages), each with up to three additional queries per lane. When the way a condition is worded conceals a narrowing the user did not choose themselves, Step 1 confirms with one question whether it is required or a preference, and only conditions answered as preferences are moved by a lane. Lanes never replace the primary set, and never reduce the number of queries in the primary set. The default is to select every lane that fits the mode; lanes the user opts out of are not run. The canonical definition of lanes lives in `references/derivation-lanes.md`, and the list of biases lives in `references/bias-checklist.md`.
 
-## 範囲外
+7. **Gather company profiles for every company that appears in the results.** After the search, for each company that appears in the results, this gathers the nine axes of disclosed figures (average annual salary, annual holidays, overtime, paid-leave-use rate, turnover rate, male childcare-leave-use rate, revenue growth rate, operating margin, equity ratio), basic information, listing in published labor-law violation cases, and recent news, into `company_profiles`, each with a source URL and evidence level. Collection is carried out by the `company_profile` mode of the searcher agent, and it is an observation layer that carries no judgment. A company profile does not substitute for company research, and company research after a candidate company is chosen is still carried out separately. The canonical source list lives in "Sources for company information (company_profile mode)" in `references/query-catalog.md`.
 
-- **求人への応募・エージェント登録等の外部送信。** 応募フォームの送信・スカウト返信・転職エージェントへの登録は行わない。求人の収集までを支援し、応募は本人が行う。
-- **企業研究と、求人票の構造化した取り込み。** 選んだ企業の企業研究と求人票の構造化は job-change-company-research が担う。成果物は `company_research.json` と `job_posting.json` である。本スキルは検索結果を集め、選定後に企業研究へ接続する。
-- **適合性評価。** 実質時給・拘束時間・7次元の適合性評価は job-change-fit-assessment が担う。本スキルは求人票の記載だけで判定できる8軸のスクリーニングにとどめ、企業研究・自己分析・通勤時間を要する評価は行わない。
-- **利用者プロファイルの作成・管理。** profile.json の作成・更新・検証は hub（job-change-support）と `job-change-profile` が担う。本スキルは Step 3.5 の軸判定と Step 4 の PII リントのために profile.json をローカルで読むだけで、内容を外部へも Web ツールを持つエージェントへも渡さない。
+## Out of scope
 
-## パスの解決
+- **Applying to postings, registering with agencies, and other outward transmission.** This does not submit application forms, reply to scouts, or register with job-change agencies. It supports work up through gathering postings; the user applies.
+- **Company research, and structured intake of job postings.** Company research for the chosen company, and structuring the job posting, are handled by job-change-company-research. Its deliverables are `company_research.json` and `job_posting.json`. This skill gathers search results and hands off to company research after selection.
+- **Fit assessment.** Effective hourly wage, binding hours, and the seven-dimension fit assessment are handled by job-change-fit-assessment. This skill stays within the eight-axis screening that can be judged from the posting text alone, and does not perform assessment that requires company research, self-analysis, or commute time.
+- **Creating and managing the user profile.** Creating, updating, and validating profile.json is handled by the hub (job-change-support) and `job-change-profile`. This skill only reads profile.json locally, for the axis judgment in Step 3.5 and the PII lint in Step 4, and never passes its content outward or to an agent holding web tools.
 
-利用者データの置き場所は設定ファイルの記述だけで決まる。既定の置き場所は無い。本文で `{DATA_ROOT}` と書いた箇所は、次のコマンドが返す `data_root` に読み替える。
+## Path resolution
 
-hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、作業のどの段階よりも先に次を実行する。
+Where the user's data is placed is determined solely by what the configuration file states. There is no default location. Wherever this document writes `{DATA_ROOT}`, read it as the `data_root` that the following command returns.
+
+When dispatched from the hub (job-change-support), the hub passes an already-resolved `{DATA_ROOT}`. When started standalone, run the following before any stage of the work.
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 ```
 
-| 終了コード | 状態 | 対応 |
+| Exit code | State | Response |
 |---|---|---|
-| 0 | 設定済み | 出力の `paths` に各データの絶対パスが入る。そのまま作業へ進む |
-| 1 | 設定はあるが内容が不正 | 出力の `errors` を利用者へ示し、修復されるまで作業へ進まない |
-| 2 | 未設定 | Skill ツールで `job-change-support` を起動して設定を作らせ、`{DATA_ROOT}` を解決してから戻る |
+| 0 | Configured | The output's `paths` holds the absolute path for each piece of data. Proceed with the work as is |
+| 1 | Configured but the content is invalid | Show the output's `errors` to the user, and do not proceed until it is fixed |
+| 2 | Not configured | Start `job-change-support` with the Skill tool to have it create the configuration, resolve `{DATA_ROOT}`, and then return |
 
-`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。探索順序を含む設定ファイルの仕様は `docs/configuration.md` にある。
+`{SKILL_DIR}` denotes this skill's absolute path, and `{HUB_SKILL_DIR}` denotes the absolute path of `job-change-support` installed alongside it. The configuration file's specification, including the lookup order, lives in `docs/configuration.md`.
 
-## データ配置
+## Data layout
 
-検索実行ごとに `job-search/{YYYYMMDD}-{条件の短いスラッグ}/` を作り、`job_search_results.json` を置く。企業別の成果物ツリー（`companies/{企業スラッグ}/`）とは別である。
+For each search run, create `job-search/{YYYYMMDD}-{short condition slug}/` and place `job_search_results.json` there. This is separate from the per-company deliverable tree (`companies/{company slug}/`).
 
-| パス | 内容 |
+| Path | Content |
 |---|---|
-| `job-search/{YYYYMMDD}-{条件の短いスラッグ}/job_search_results.json` | 求人検索の成果物。仕様は `references/job-search-format.md` |
-| `job-search/{YYYYMMDD}-{条件の短いスラッグ}/job-search-report.md` | 検索結果を人が読める形へ整形したレポート。スキル本体が Step 5 で書く |
+| `job-search/{YYYYMMDD}-{short condition slug}/job_search_results.json` | The job search deliverable. Specification in `references/job-search-format.md` |
+| `job-search/{YYYYMMDD}-{short condition slug}/job-search-report.md` | A report formatting the search results into human-readable form. The skill body writes it in Step 5 |
+| `job-search/{YYYYMMDD}-{short condition slug}/job_search_results.partial-*.json` | Partial files that the searcher writes in parallel (the primary set and the lane groups). Deleted after Step 4 passes |
+| `job-search/{YYYYMMDD}-{short condition slug}/company_profiles.batch-*.json` | Batch files of company information. Deleted after Step 4 passes |
 
-- 条件の短いスラッグは、主条件をローマ字・英数字で表した簡潔な識別子とする（例: `remote-saas-be`）。日付は検索実行日（`executed_at`）に合わせる。
-- スキル本体フォルダー（`skills/job-change-job-search/`）に実データを置かない。`assets/` の2つの記入例は架空である。
+- The short condition slug is a concise identifier expressing the main conditions in romaji or alphanumerics (for example, `remote-saas-be`). The date matches the search execution date (`executed_at`).
+- Real data is never placed in the skill's own folder (`skills/job-change-job-search/`). The two sample entries under `assets/` are fictitious.
 
-## 中間成果物: job_search_results.json
+## Intermediate deliverable: job_search_results.json
 
-検索結果は `job_search_results.json`（`schema_version` は `2.2`）に集約する。構造は3層である。
+Search results are aggregated into `job_search_results.json` (`schema_version` is `2.3`). The structure has three layers.
 
-| 層 | フィールド | 書き手 |
+| Layer | Fields | Writer |
 |---|---|---|
-| 観測層 | `results[]` の title・company_name・url・source_site・salary_range・location・remote_policy・annual_holidays・match_notes・quote・better_points・`search_set`・`role_match`・`related_info`・`duty_items`・`axis_observations`・`baseline_comparison.axes`、およびトップレベルの `search_sets`・`search_log`・`improvement_axes` | 検索担当エージェント（Web ツールを持つ。profile を読まない） |
-| 判定層 | `results[]` の `axis_judgements`・`classification`・`classification_reasons`・`classification_override`・`slug`・`baseline_comparison.overall` | スキル本体（ローカル。profile を読む） |
-| 総括 | `screening`（分類ごとの件数・総合判定・軸ごとの未充足件数・現勤務先除外の実施記録・探索集合の実施記録） | スキル本体 |
+| Observation layer | In `results[]`: title, company_name, url, source_site, salary_range, location, remote_policy, annual_holidays, match_notes, quote, better_points, `search_set`, `lane`, `role_match`, `related_info`, `duty_items`, `axis_observations`, `baseline_comparison.axes`; at the top level: `search_sets`, `search_log`, `improvement_axes`, `company_profiles` | The searcher agent (holds web tools; never reads profile) |
+| Merge | Combining partial files, deduplication, excluding the current employer, assigning `results[].company_key` | The skill body (`scripts/merge_search_results.py`; reads profile locally) |
+| Judgment layer | In `results[]`: `axis_judgements`, `classification`, `classification_reasons`, `classification_override`, `slug`, `baseline_comparison.overall` | The skill body (local; reads profile) |
+| Summary | `screening` (counts per classification, overall verdict, unmet-condition counts per axis, the record of whether current-employer exclusion ran, the record of whether derivation lanes ran) | The skill body |
 
-この分離により、個人情報を Web ツールを持つエージェントへ渡さずに条件判定が成立する。完全な仕様・記入基準・検証規則は `references/job-search-format.md` を原本とする。
+This separation makes condition judgment possible without passing personal information to an agent holding web tools. The full specification, entry criteria, and validation rules are canonically defined in `references/job-search-format.md`.
 
-## モード
+## Modes
 
-### mode=fuzzy（曖昧条件検索）
+### mode=fuzzy (fuzzy search)
 
-利用者の曖昧な希望を構造化条件シートへ変換し、確認してから検索する。
+Converts the user's vague wishes into a structured condition sheet, confirms it, and then searches.
 
-1. 利用者の希望（例「リモート多め・年収600万以上・SaaS系」）を、次の軸へ構造化して条件シートを作成する。
-   - 職種（`roles`）・業界（`industries`）・年収下限（`salary_min`、円単位の数値）・勤務地/リモート（`location`・`remote_policy`）・雇用形態（`employment_type`）・その他条件（`other`）。
-   - 現勤務先名・氏名・現年収は条件に含めない（原則3）。希望年収の下限は `salary_min` として含めてよい。
-2. 構造化した条件シートを AskUserQuestion で確認する。選択式を中心に、最大4問・各4択までとする。曖昧な軸（リモートの頻度・年収の下限・職種の範囲など）を優先して確認する。
-3. 条件シートを `references/bias-checklist.md` の「利用者側の偏りの一覧」に照らし、該当する条件について「必須か、選好か」を確認の1問に含める。選好と答えた条件を外し、隣接職種・役職の段階・リモート表現を広げた探索集合の条件シートを作る。探索集合を作るかどうかを利用者に確かめ、要らないと言われれば作らない。年収下限は探索集合でも外さない。
-4. 確認済みの条件（主集合）と探索集合の条件を、いずれも匿名化した文字列として求人検索担当エージェント（job-change-job-searcher）へ渡し、`mode=fuzzy` で検索させる。
+1. Structure the user's wish (for example, "mostly remote, salary 6 million yen or more, SaaS industry") into a condition sheet along the following axes.
+   - Occupation (`roles`), industry (`industries`), salary floor (`salary_min`, a numeric value in yen), work location/remote work (`location`, `remote_policy`), employment type (`employment_type`), other conditions (`other`).
+   - The current employer's name, the user's name, and the current salary are excluded from the conditions (principle 3). A desired salary floor may be included as `salary_min`.
+2. Confirm the structured condition sheet with AskUserQuestion. Center it on multiple-choice questions, up to four questions with up to four options each. Prioritise confirming the axes that are vague (remote-work frequency, salary floor, occupation range, and so on).
+3. Check the condition sheet against the "List of user-side biases" in `references/bias-checklist.md`, and for any matching condition, include "is it required, or a preference?" as one of the confirmation questions. Only conditions answered as a preference are moved by a lane. The salary floor is never lowered by any lane.
+3.5. Confirm derivation lanes with a multiple-choice selection in AskUserQuestion. Split it into three questions (improving conditions / widening scope / location and entry point), with the options for each question following the "How to choose" table in `references/derivation-lanes.md`. The default is to select every lane that fits the mode and the condition sheet; mark the options 「（推奨）」 (recommended) and add the cost (the expected number of additional queries and the number of companies for company-profile collection) to each question's description. When a question gets no answer, every lane in that question's group is treated as selected. For each lane chosen, build a lane condition sheet writing which condition it moves, its value, and the reason.
+4. Pass the confirmed conditions (the primary set) and the lane condition sheets, both as anonymised strings, to the job searcher agent (job-change-job-searcher), and have it search under `mode=fuzzy` (how launches are split is in Step 2).
 
-### mode=similar_better（基準求人を上回る検索）
+### mode=similar_better (search to beat a reference posting)
 
-基準求人から条件を抽出し、どの軸の改善を狙うかを確認してから検索する。
+Extracts conditions from a reference posting, confirms which axis the search should improve on, and then searches.
 
-1. 基準求人を受け取る。所在は `companies/{企業スラッグ}/job_posting.json`（取り込み済みの求人票）または URL のいずれかである。URL を渡された場合、本スキルは WebFetch を持たないため条件を抽出できない。先に Skill ツールで `job-change-company-research` を起動して Step 0.5 の求人票の取り込みを実行させる。作られた `job_posting.json` を基準求人にする。
-2. 基準求人から職種・年収・年間休日・リモート方針・残業・**雇用形態**・**就業場所と業務の変更の範囲**を抽出する。後ろの2つは軸別比較の6軸に含まれるため、欠かすと当該軸が `unknown` のままになる。`job_posting.json` の `schema_version` が `1.0` の場合、そのファイルに `scope_of_change` は無い。この場合は当該軸を `unknown` として扱い、求人票を取り込み直すかどうかを利用者に確かめる。抽出時も、現勤務先名・氏名・現年収は条件へ持ち込まない。
-3. どの軸の改善を狙うかを AskUserQuestion で確認する。選択肢は年収・リモート・年間休日・固定残業・変更の範囲の5つであり、選ばれた軸の id を `improvement_axes` として記録する。雇用形態は選択肢に入れない（尺度上の方向を持たないため改善軸に取れない。希望があれば `conditions.employment_type` の必須条件として扱う）。軸 id と改善方向の原本は `references/job-search-format.md` にある。
-4. 抽出した基準条件と `improvement_axes` を匿名化した文字列として、求人検索担当エージェントへ渡し、`mode=similar_better` で検索させる。`baseline`（基準求人の URL または企業スラッグ）を成果物へ記録するよう指示する。エージェントは、基準求人の条件を上回る点を各求人の `better_points` に列挙し、6軸の `baseline_comparison.axes` を書く。
+1. Receive the reference posting. Its location is either `companies/{company slug}/job_posting.json` (an already-ingested posting) or a URL. When given a URL, this skill cannot extract conditions since it does not hold WebFetch. First start `job-change-company-research` with the Skill tool and run Step 0.5's posting intake. Use the resulting `job_posting.json` as the reference posting.
+2. Extract occupation, salary, annual holidays, remote-work policy, overtime, **employment type**, and **scope of change in work location and duties** from the reference posting. The latter two are among the six axes of the per-axis comparison, so omitting either leaves that axis `unknown`. When `job_posting.json`'s `schema_version` is `1.0`, that file has no `scope_of_change`. In that case, treat the axis as `unknown` and confirm with the user whether to re-ingest the posting. During extraction too, the current employer's name, the user's name, and the current salary are never carried into the conditions.
+3. Confirm with AskUserQuestion which axis the search should improve on. The options are the five: salary, remote work, annual holidays, fixed overtime pay, and scope of change; record the chosen axes' ids as `improvement_axes`. Employment type is not among the options (it carries no direction on a scale, so it cannot be taken as an improvement axis; if there is a wish for it, treat it as a required condition in `conditions.employment_type`). The canonical definition of axis ids and improvement direction lives in `references/job-search-format.md`.
+3.5. Confirm derivation lanes with the same procedure as fuzzy's 3.5. In similar_better, keep each lane's `salary_min` at or above the reference posting's floor, and drop `industry_widen` from the options when the reference posting's industry is a required condition. Have `baseline_comparison.axes` written for derived postings too.
+4. Pass the extracted baseline conditions, `improvement_axes`, and the lane condition sheets, as anonymised strings, to the job searcher agent, and have it search under `mode=similar_better` (how launches are split is in Step 2). Instruct it to record `baseline` (the reference posting's URL or company slug) in the deliverable. The agent lists, for each posting, the points where it beats the reference posting's conditions in `better_points`, and writes the six-axis `baseline_comparison.axes`.
 
-## パイプライン
+## Pipeline
 
-`{SKILL_DIR}` は本スキルの絶対パスを指す。`{results.json}` は成果物のパス（`job-search/{YYYYMMDD}-{スラッグ}/job_search_results.json`）に読み替える。
+`{SKILL_DIR}` denotes this skill's absolute path. `{results.json}` is read as the deliverable's path (`job-search/{YYYYMMDD}-{slug}/job_search_results.json`).
 
-### Step 0 受付とモード判別
+### Step 0 Intake and mode determination
 
-依頼が fuzzy（曖昧な希望からの検索）か similar_better（基準求人を上回る検索）かを判別する。基準となる求人・URLが示されていれば similar_better、漠然とした希望であれば fuzzy とする。判別が曖昧な場合は AskUserQuestion で確認する。
+Determine whether the request is fuzzy (a search from a vague wish) or similar_better (a search to beat a reference posting). Treat it as similar_better when a reference posting or URL is given, and as fuzzy when it is a vague wish. When the determination is unclear, confirm with AskUserQuestion.
 
-### Step 1 条件の組み立てと確認
+### Step 1 Building and confirming conditions
 
-モードに応じて条件を組み立て（上記「モード」の手順）、AskUserQuestion で確認する。ここで組み立てる条件は匿名化済みでなければならない（現勤務先名・氏名・現年収を含めない）。
+Build conditions according to the mode (the procedure in "Modes" above), and confirm them with AskUserQuestion. The conditions built here must already be anonymised (they exclude the current employer's name, the user's name, and the current salary).
 
-### Step 2 検索の実行（job-change-job-searcher, sonnet）
+### Step 2 Executing the search (job-change-job-searcher, sonnet)
 
-求人検索担当エージェント（job-change-job-searcher）を Agent ツールで起動する。指示書には次を渡す。
+Launch multiple job searcher agents (job-change-job-searcher) in a single message: one for the primary set, and one per every three lanes (for seven lanes, one for the primary set plus three lane handlers). Each handler's coverage never overlaps: the primary-set handler searches only the primary set's twelve queries, and a lane handler searches only its assigned lanes (the canonical rule against passing the same work to multiple roles lives in "How many to launch" in the hub's `{HUB_SKILL_DIR}/references/role-execution.md`). Each handler writes to a partial file and does not return the deliverable's body. The instructions pass the following.
 
-- モード（`fuzzy` または `similar_better`）。
-- 匿名化済みの検索条件（文字列。現勤務先名・氏名・現年収を含めない）。
-- 出力先ディレクトリ（`job-search/{YYYYMMDD}-{スラッグ}/`）と、成果物のトップレベルの `search_id` へ書く値。`search_id` にはディレクトリ名と同じ `{YYYYMMDD}-{スラッグ}` を入れる。
-- similar_better の場合は、基準条件・`improvement_axes`（改善軸の id の配列）・`baseline`（URL または企業スラッグ）を渡す。あわせて基準求人の求人票のパス `{DATA_ROOT}/companies/{企業スラッグ}/job_posting.json` を渡す。このファイルは企業別の非個人情報ツリーにあり、本人の情報を含まないため、Web ツールを持つエージェントへ渡してよい。基準求人が URL 由来で `job_posting.json` がまだ無い場合は、先に Step 0.5（求人票の取り込み）で job-change-company-research に作らせてから、そのパスを渡す。
-- fuzzy の場合は、探索集合の条件シート（Step 1 で作ったもの。作らなかった場合は「探索集合なし」と明記する）。エージェントはこれを `search_sets.exploration` に転記し、探索集合のクエリを主集合の12本とは別枠で投げる。
-- 本スキルの絶対パス `{SKILL_DIR}`（`references/query-catalog.md`・`references/job-search-format.md`・`references/bias-checklist.md` の所在）。
-- hub の絶対パス `{HUB_SKILL_DIR}`（`references/screening-axes.md`・`references/market-data-sources.md` の所在）。
-- **観測層まで**を書く指示。観測層は、`duty_items` の引用文と分類、8軸の `axis_observations`、実行したクエリの `search_log`、求人ごとの `search_set`・`role_match`・`related_info`、トップレベルの `search_sets` を指す。similar_better ではこれに、6軸の `baseline_comparison.axes` と `improvement_axes` の転記が加わる。判定層（`baseline_comparison.overall` を含む）と `screening` は書かせない。
+- The mode (`fuzzy` or `similar_better`) and the assignment ("primary-set handler" or the list of lane names).
+- The anonymised search conditions (a string, excluding the current employer's name, the user's name, and the current salary). For a lane handler, attach the condition sheet of its assigned lane (the lane name, the condition it moves and its value, and the reason).
+- The output directory (`job-search/{YYYYMMDD}-{slug}/`), the name of the partial file to write (`job_search_results.partial-primary.json` for the primary-set handler, `job_search_results.partial-lanes-{N}.json` for a lane handler), and the value to write into `search_id`. `search_id` takes the same `{YYYYMMDD}-{slug}` as the directory name.
+- For similar_better, pass the baseline conditions, `improvement_axes` (an array of improvement axis ids), and `baseline` (a URL or company slug). Also pass the reference posting's path, `{DATA_ROOT}/companies/{company slug}/job_posting.json`. This file sits in the per-company non-personal-information tree and holds no information about the user, so it may be passed to an agent holding web tools. When the reference posting originates from a URL and `job_posting.json` does not yet exist, first have job-change-company-research create it in Step 0.5 (posting intake), then pass its path.
+- This skill's absolute path `{SKILL_DIR}` (where `references/query-catalog.md`, `references/job-search-format.md`, `references/bias-checklist.md`, and `references/derivation-lanes.md` live).
+- The hub's absolute path `{HUB_SKILL_DIR}` (where `references/screening-axes.md` and `references/market-data-sources.md` live).
+- An instruction to write **through the observation layer only**. The observation layer means: the quotations and classification of `duty_items`, the eight-axis `axis_observations`, the `search_log` of executed queries (with `search_set` and `lane`), each posting's `search_set`, `lane`, `role_match`, `related_info` (the two per-posting keys), and the top-level `search_sets`. In similar_better, this also includes the six-axis `baseline_comparison.axes` and copying through `improvement_axes`. It never writes the judgment layer (including `baseline_comparison.overall`), `screening`, or `company_key`.
 
-**profile.json は渡さない**（原則5。searcher は WebSearch・WebFetch を持つ）。残業の上限・年間休日の下限・作業特性の希望といったしきい値も渡さない。これらは本人の条件であり、判定はスキル本体が Step 3.5 で行う。すでに匿名化条件として許容されている `salary_min` だけは例外とし、検索条件に含めてよい。
+**`profile.json` is never passed** (principle 5; the searcher holds WebSearch and WebFetch). Thresholds such as an overtime ceiling, an annual-holidays floor, or work-characteristic preferences are never passed either. These are the user's own conditions, and the skill body performs the judgment in Step 3.5. The one exception is `salary_min`, already allowed as an anonymised condition, which may be included in the search conditions.
 
-エージェントは `references/query-catalog.md` の検索方法に従って求人を集める。job_search_results.json は `references/job-search-format.md` の形式で作る。8軸と業務分類の語彙は `{HUB_SKILL_DIR}/references/screening-axes.md` を読む。
+The agent gathers postings following the search methods in `references/query-catalog.md`. It builds the partial file in the format of `references/job-search-format.md`. It reads the eight-axis and duty-classification vocabulary from `{HUB_SKILL_DIR}/references/screening-axes.md`. On a harness that cannot launch subagents, the skill body reads the role prompt and runs each assignment in sequence itself, writing the same partial files.
 
-### Step 3 現勤務先求人の除外（スキル本体）
+### Step 2.5 Merging and gathering company information (the skill body plus job-change-job-searcher)
 
-エージェントが返した job_search_results.json から、現勤務先の求人をスキル本体がローカルで除外する。在職中のエントリーは、`career-private/profile.json` の `career_history` のうち `period` が `〜現在` のものである。そのエントリーの `company` に一致する `company_name` を持つ result を取り除く。除外した件数と企業名は、利用者への報告に含める（成果物には残さない）。
+1. Build a list of companies from the partial files. Run the following and receive `companies` from `--json`. With `--profile`, postings from the current employer are excluded locally at this stage, and never enter the list.
 
-### Step 3.5 8軸判定と3分類（スキル本体）
+   ```bash
+   python {SKILL_DIR}/scripts/merge_search_results.py {DATA_ROOT}/job-search/{search_id} --list-companies --profile {DATA_ROOT}/career-private/profile.json --json
+   ```
 
-検索担当エージェントが書くのは観測層（求人票から読めた事実）までである。本人の条件との突き合わせは、`profile.json` を読めるスキル本体がローカルで行う。この分担により、個人情報を Web ツールを持つエージェントへ渡さずに条件判定が成立する。
+2. Gather company information. Split the company list into batches of eight, and launch one job searcher agent per batch under `mode=company_profile`, up to three at a time. The instructions pass the batch's companies (`company_key`, `name`, the job-listing page URL), the file name to write (`company_profiles.batch-{N}.json`), the output directory, and `{SKILL_DIR}`. Search conditions, profile, and lane information are never passed. Any batch beyond three waits for the previous group to finish before launching.
+3. Merge. Run the following and confirm exit code 0. Pass every lane chosen in Step 1 to `--lanes`.
 
-1. `{DATA_ROOT}/career-private/profile.json` を Read で読み、`schema_version` を確認する。
-2. `job_change_axis.conditions[]` と `work_character_preferences[]` から、8軸ごとの必須度としきい値を読み取る。必須度は `must` / `want` / `none` の3値である。同じ軸に必須条件が複数ある場合は、最も厳しいしきい値を採用する。
-3. 各 result の `axis_observations` としきい値を突き合わせ、`axis_judgements` を書く。観測が `stated=false`、または `value` が `null` の軸は `unknown` にする。**記載が無いことを、条件を満たす証拠にも満たさない証拠にも使わない**。
-4. `references/job-search-format.md` の決定表から `classification` を導き、`classification_reasons` を書く。導出結果を手で変える場合は、厳格化する方向にのみ `classification_override` を付ける。
-5. similar_better では、各求人の `baseline_comparison.overall` を書く。`improvement_axes` に挙げた軸だけを見て、1つ以上が改善方向であり、かつどれも逆方向でなければ `better`、それ以外は `not_better` とする。改善方向の対応表は `references/job-search-format.md` にある。エージェントが書いた `relation`（事実の関係）に良し悪しを与えるのはこの段階だけである。
-6. `screening` を導出値として書く。`counts`・`unmet_axis_summary` は実集計と一致させる。`current_employer_exclusion` には Step 3 の実施結果を記録する（未実施なら `performed: false`・`excluded_count: null`）。`exploration` には探索集合の実施の有無と、`search_set` が `exploration` の求人の件数・そのうち応募候補の件数を書く（未実施なら `performed: false` と `null`）。探索集合の求人も主集合と同じ規則で判定し分類する。分類は「どう見つけたか」に依存しない。
+   ```bash
+   python {SKILL_DIR}/scripts/merge_search_results.py {DATA_ROOT}/job-search/{search_id} --profile {DATA_ROOT}/career-private/profile.json --lanes better_salary,adjacent_role --json
+   ```
 
-`profile.json` の `schema_version` が `1.0` または `1.1` の場合はフォールバック動作にする。観測層はそのまま残す。全軸は `level: none`・`judgement: unknown`、全 result は `needs_more_research` にする。`screening.axes_source` は `degraded`、`recommendation` は `判定不能` にする。分類結果を「応募候補」として提示せず、`job-change-profile` での条件の構造化を案内する。
+   The merge script combines the partial files, removes duplicates, excludes postings from the current employer, combines `company_profiles`, assigns `company_key` to each result, and writes `job_search_results.json`. The partial files and batch files are kept, and deleted with `--cleanup` after Step 4's validation passes. When a company is missing its company information, it stops with an ERROR, so relaunch the `company_profile` batch once, for the missing companies only. If it is still missing after the relaunch, merge with `--stub-missing`, and leave the missing companies in `open_questions`. When a lane was chosen but its partial file is missing, this is recorded in `coverage_notes` as not run.
 
-判定に使う語彙（8軸・8作業特性・業務分類）の原本は、hub（`job-change-support`）の `references/screening-axes.md` にある。
+### Step 3 Excluding postings from the current employer (the skill body)
 
-### Step 4 機械的な検証と PII リント（スキル本体）
+Exclusion of postings from the current employer already happens in Step 2.5's merge. The current entry is the one in `career-private/profile.json`'s `career_history` whose `period` ends with `〜現在` (to present); the merge script removes any result whose `company_name` matches its `company` after normalisation. The excluded count is in `--json`'s `excluded_count`, and Step 3.5 records it in `screening.current_employer_exclusion` as `performed: true`・`excluded_count`・`method: "merge_search_results.py（正規化企業名の一致）"`. The excluded company name counts as the current employer's name, so it never appears in the deliverable or the merge script's output, and is conveyed only in the chat reply to the user.
 
-除外後の job_search_results.json を、`--profile` 付きで検証する。
+### Step 3.5 Eight-axis judgment and three-way classification (the skill body)
+
+The searcher agent writes only through the observation layer (the facts readable from the posting). Matching against the user's own conditions is done locally by the skill body, which can read `profile.json`. This division of labor makes condition judgment possible without passing personal information to an agent holding web tools.
+
+1. Read `{DATA_ROOT}/career-private/profile.json` with Read, and check `schema_version`.
+2. Read the requirement level and threshold per axis from `job_change_axis.conditions[]` and `work_character_preferences[]`. The requirement level is one of three values: `must` / `want` / `none`. When the same axis has multiple required conditions, adopt the strictest threshold.
+3. Match each result's `axis_observations` against the threshold, and write `axis_judgements`. An axis whose observation is `stated=false`, or whose `value` is `null`, becomes `unknown`. **The absence of a statement is never used as evidence that a condition is met, and never as evidence that it is not met.**
+4. Derive `classification` from the decision table in `references/job-search-format.md`, and write `classification_reasons`. When manually changing the derived result, attach `classification_override` only in the direction that makes it stricter.
+5. In similar_better, write each posting's `baseline_comparison.overall`. Looking only at the axes listed in `improvement_axes`, it is `better` when at least one is in the improving direction and none is in the opposite direction, and `not_better` otherwise. The mapping table for improvement direction lives in `references/job-search-format.md`. This is the only stage that assigns good or bad to the `relation` (the factual relationship) the agent wrote.
+6. Write `screening` as a derived value. Make `counts` and `unmet_axis_summary` match the actual tally. Record Step 3's execution result in `current_employer_exclusion` (`performed: false` and `excluded_count: null` when not run). In `derivations`, write whether lanes ran, and, per lane, the count of postings whose `search_set` is `derived` and how many of those are application candidates (`performed: false` and an empty array when no lane was chosen). Derived postings are judged and classified under the same rules as the primary set. Classification never depends on how a posting was found, and never depends on the content of `company_profiles`.
+
+When `profile.json`'s `schema_version` is `1.0` or `1.1`, fall back. Leave the observation layer as is. Set every axis to `level: none`, `judgement: unknown`, and every result to `needs_more_research`. Set `screening.axes_source` to `degraded` and `recommendation` to `判定不能`. Never present the classification result as an "application candidate", and guide the user toward structuring their conditions in `job-change-profile`.
+
+The canonical vocabulary used in judgment (the eight axes, eight work characteristics, duty classification) lives in `references/screening-axes.md` in the hub (`job-change-support`).
+
+### Step 4 Mechanical validation and PII lint (the skill body)
+
+Validate the job_search_results.json after exclusion, with `--profile`.
 
 ```bash
 python {SKILL_DIR}/scripts/validate_job_search_results.py {results.json} --profile {DATA_ROOT}/career-private/profile.json
 ```
 
-`--profile` を付けると、スキーマ検査に加えて PII リント（現勤務先名・氏名・現年収の混入検出）も実行する。ERROR が1件でもあれば FAIL である。PII 混入の ERROR が出た場合は、混入箇所を成果物から除去してから再検証する（匿名化の漏れであり、そのまま納品しない）。PASS（ERROR 0件）を確認してから納品する。profile.json の読み取りはこの検証のためのローカル処理に閉じ、外部へ送信しない。
+With `--profile`, this also runs the PII lint (detecting leaked current-employer name, user name, or current salary) alongside the schema check. Even a single ERROR is a FAIL. When a PII-leak ERROR appears, remove the leaked part from the deliverable and validate again (it is an anonymisation leak, and is never delivered as is). Confirm PASS (zero ERRORs) before delivering. Reading profile.json stays confined to this local validation process and is never sent outward.
 
-### Step 5 納品と接続
+Once PASS is confirmed, delete Step 2.5's partial files and batch files. On FAIL, keep them, and redo from the merge (Step 2.5's step 3).
 
-検証 PASS の job_search_results.json を納品する。報告は分類ごとにまとめ、`screening.recommendation` を先に述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
+```bash
+python {SKILL_DIR}/scripts/merge_search_results.py {DATA_ROOT}/job-search/{search_id} --cleanup
+```
 
-納品に先立ち、スキル本体が job_search_results.json を人が読める求人検索レポートへ整形する。出力先は `job-search/{search_id}/job-search-report.md` である。`search_id` は成果物のトップレベルの値であり、ディレクトリ名と同じ `{YYYYMMDD}-{スラッグ}` である。このレポートは非個人情報ツリーに置くため、現勤務先名・氏名・現年収を書かない（境界の原本は `{HUB_SKILL_DIR}/references/pii-boundary.md`）。
+### Step 5 Delivery and hand-off
 
-- 冒頭に `screening.recommendation` と `rationale`、分類ごとの件数（`screening.counts`）を置く。
-- 分類（`apply_candidate`・`needs_more_research`・`excluded`）ごとに求人を表にする（求人名・企業名・掲載サイト・出典URL・年収レンジ・勤務地／リモート方針・`want` の未充足の件数）。分類ごとに表を分け、`excluded` の求人を応募候補と同じ表に並べない。`want` の未充足の件数は、`axis_judgements` のうち `level` が `want` で `judgement` が `not_meets` の軸の数であり、報告の列であって成果物のフィールドではない。この件数で並べ替えて順位表にしない。
-- 探索集合の求人（`search_set` が `exploration`）は、各分類の表の中で「視野を広げた検索から」の小節に分けて置く。主集合の表より上に置かない。`match_notes` にあるどの偏りの点検から出た求人かを添える。探索集合だけに応募候補がある場合は、その旨を `rationale` に書き、主集合の応募候補の代わりに最有力候補として示さない。探索集合を作らなかった場合は、作らなかったことと理由を1行で書く。
-- 求人ごとに8軸の判定を表にする（軸・必須度・しきい値・観測値・`yes`/`no`/`unknown`）。スクリーニングの根拠として `classification_reasons` を添え、`classification_override` を付けた求人はその旨と理由を書く。観測が無い軸は `unknown` と書き、条件を満たす証拠にも満たさない証拠にも使わない。
-- `related_info` がある求人は、従業員数・設立年・上場の有無・認定・口コミの総合スコア・掲載日・相場の基準線を、出典URLとエビデンスレベルを添えて1行で書く。レベルCの値（口コミの総合スコア・給料ナビの中央値）は参考値である旨を添える。`related_info` は企業研究の代わりではなく、`needs_more_research` の求人を企業研究へ進めるかどうかの判断材料にとどめる。
-- 過去の検索結果との照合はスキル本体がローカルで行う。`{DATA_ROOT}/job-search/` 配下の過去の成果物を読み、同じ正規化企業名と職種名の求人が60日以上離れた別の `search_id` にもあれば `open_questions` に書く（規則は `references/query-catalog.md` の「掲載終了と再掲載の確認」）。過去の成果物には判定層が含まれるため、検索担当エージェントへ渡さない。
-- `open_questions` にある掲載終了の疑い（URL の再取得で読めなくなった求人）と、過去の検索にも現れていた求人は、そのまま報告に書く。
-- 軸ごとの未充足・判定不能の件数（`screening.unmet_axis_summary`）を表にする。
-- 現勤務先求人の除外は `screening.current_employer_exclusion` のとおりに書く。`performed` が `false` なら未検証と書き、0件と書かない。除外した企業名は現勤務先名にあたるため、レポートには書かず利用者への報告だけで伝える。
+Deliver the validated, PASSing job_search_results.json. Organise the report by classification, and state `screening.recommendation` first. Never include an empty section, a repeated statement, or a boilerplate preamble.
 
-1. 総合判定として `screening.recommendation` と `rationale` を最初に伝える。`応募推奨なし` の場合は、その旨を明記し、無理に最有力候補を選ばない。
-2. `classification` が `apply_candidate` の求人を、満たしている必須条件とともに列挙する。
-3. `needs_more_research` の求人を、判定できなかった軸（`unknown` の軸）と、それを確認する手段（企業研究または面接）とともに列挙する。
-4. `excluded` の求人を、満たさなかった必須条件とともに簡潔に列挙する。注意書きを付け、応募候補と同じ表には並べない。
-5. 利用者が企業を選んだら、hub（job-change-support）の Step 0 手順で `career-private/company_index.json` へ企業スラッグを登録する。`companies/{企業スラッグ}/` を作り、当該 result の `slug` へ追記する。追記後に Step 4 の検証を再実行し、PASS（ERROR 0件）を確認する。続いて job-change-company-research の Step 0.5（求人票の取り込み）へ接続する。求人ページの URL があればそれを入口とし、無ければ、検索結果へ転記した掲載内容を本文として渡す。
+Before delivery, the skill body formats job_search_results.json into a human-readable job search report. The output goes to `job-search/{search_id}/job-search-report.md`. `search_id` is the deliverable's top-level value, the same `{YYYYMMDD}-{slug}` as the directory name. Since this report sits in the non-personal-information tree, it never writes the current employer's name, the user's name, or the current salary (the canonical boundary lives in `{HUB_SKILL_DIR}/references/pii-boundary.md`).
 
-similar_better では各求人の `better_points`（基準求人より改善している点）を併記する。`baseline_comparison.axes` の6軸は、軸・改善軸に選んだか・`relation`・基準求人の値・候補求人の値の表にする。`overall` が `better` の求人と `not_better` の求人を分けて示し、`improvement_axes` に挙げた軸のどれで上回ったかを添える。`unknown` の軸は「未確認」と書き、基準求人と同じとは書かない。
+- Place `screening.recommendation`, `rationale`, and the count per classification (`screening.counts`) at the top.
+- Tabulate postings by classification (`apply_candidate`, `needs_more_research`, `excluded`) — job title, company name, listing site, source URL, salary range, work location/remote policy, and the unmet-`want` count. Keep a separate table per classification; never list `excluded` postings in the same table as application candidates. The unmet-`want` count is the number of axes in `axis_judgements` whose `level` is `want` and whose `judgement` is `not_meets`; it exists only as a report column, and the deliverable schema has no such field. Never sort by this count to make a ranking table.
+- Place derived postings (`search_set` is `derived`) within each classification's table, split by lane, under a 「派生レーン: {lane}」 (derivation lane) subsection. Never place them above the primary set's table. Attach, from `match_notes`, which lane and which condition produced the posting. When application candidates exist only among derived postings, state this in `rationale`, and never present them as the top candidate in place of the primary set's application candidates. When no lane was chosen at all, write in one line that none was created and why. When `coverage_notes` lists a lane that did not run, write that lane as not run.
+- Tabulate the eight-axis judgment per posting (axis, requirement level, threshold, observed value, `yes`/`no`/`unknown`). Attach `classification_reasons` as the screening's basis, and for a posting carrying `classification_override`, state this along with the reason. Write an axis with no observation as `unknown`, and never use it as evidence that the condition is met or as evidence that it is not met.
+- Place one table of company information, one row per element of `company_profiles`, with columns for company name, employee count, average annual salary, annual holidays, average monthly overtime, turnover rate, whether it is listed, published labor-law violation cases (「掲載あり」 (listed), 「掲載なし（違反が無い証拠にはならない）」 (not listed; no evidence of absence), 「未確認」 (unconfirmed)), and the lowest evidence level in that row. Write an item whose `value` is `null` as 「未取得」 (not obtained), never as 0. Add one line below the table noting that the average annual salary in a securities report is an average across all employees, and is never read as the salary for the posting's occupation. Note that level-C values (an overall word-of-mouth score, a median from a salary-navigator site) are reference values. Continue `recent_news` and `open_questions` per company as bullet lists.
+- Write `related_info`'s listing date and market-rate baseline as one column in the posting table.
+- `company_profiles` does not substitute for company research, and is never carried over into company research. Company research after choosing where to apply is done separately, and the company information from the search stage stays limited to material for judging whether to advance a `needs_more_research` posting into company research.
+- The skill body performs matching against past search results locally. It reads past deliverables under `{DATA_ROOT}/job-search/`, and when a posting with the same normalised company name and occupation name also appears in a different `search_id` 60 or more days apart, writes this into `open_questions` (the rule lives in "Confirming listing closure and re-listing" in `references/query-catalog.md`). Since a past deliverable includes the judgment layer, it is never passed to the searcher agent.
+- Write the suspected listing expiries recorded in `open_questions` (a posting that became unreadable on re-fetching the URL), and the postings that also appeared in a past search, into the report as they stand.
+- Tabulate the unmet and undecidable count per axis (`screening.unmet_axis_summary`).
+- Write current-employer exclusion exactly as `screening.current_employer_exclusion` gives it. When `performed` is `false`, write 「未検証」 (not verified), never 「0件」. The excluded company name counts as the current employer's name, so it is never written into job-search-report.md, and is conveyed only in the chat reply to the user.
 
-#### 報告のルール
+1. Convey `screening.recommendation` and `rationale` first, as the overall verdict. When it is `応募推奨なし` (no recommendation to apply), state this plainly, and never force a top candidate to be chosen.
+2. List postings whose `classification` is `apply_candidate`, along with the required conditions they meet.
+3. List `needs_more_research` postings, along with the axes that could not be judged (the `unknown` axes) and the means to confirm them (company research or interviewing).
+4. List `excluded` postings briefly, along with the required condition they failed to meet. Attach a note, and never list them in the same table as application candidates.
+5. Once the user picks a company, register the company slug in `career-private/company_index.json` following the hub's (job-change-support's) Step 0 procedure. Create `companies/{company slug}/`, and append it to that result's `slug`. After appending, re-run Step 4's validation and confirm PASS (zero ERRORs). Then hand off to job-change-company-research's Step 0.5 (posting intake). Use the job-listing page URL as the entry point when there is one; otherwise, pass the listing content copied into the search result as the body.
 
-**検証していない事項を成果として報告しない。**報告してよい数値は次に限る。
+In similar_better, also give each posting's `better_points` (the points that improve on the reference posting). Tabulate the six axes of `baseline_comparison.axes` — axis, whether it was chosen as an improvement axis, `relation`, the reference posting's value, and the candidate posting's value. Show postings whose `overall` is `better` separately from those that are `not_better`, and attach which of the axes listed in `improvement_axes` it beat. Write an `unknown` axis as "unconfirmed", never as the same as the reference posting.
 
-| 報告してよい数値 | 出所 |
+#### Reporting rules
+
+**Never report an unverified matter as an accomplishment.** The only figures allowed in the report are the following.
+
+| Figure allowed in the report | Source |
 |---|---|
-| 分類ごとの件数 | `screening.counts` |
-| 軸ごとの未充足・判定不能の件数 | `screening.unmet_axis_summary` |
-| 探索集合の件数・そのうち応募候補の件数 | `screening.exploration`（`performed` が `true` のときのみ） |
-| 求人ごとの `want` の未充足の件数 | `results[].axis_judgements` から数える |
-| 現勤務先求人の除外件数 | `screening.current_employer_exclusion.excluded_count`（`performed` が `true` のときのみ） |
-| 実行したクエリの本数・ヒット件数・採用件数 | `search_log` |
+| Count per classification | `screening.counts` |
+| Unmet/undecidable count per axis | `screening.unmet_axis_summary` |
+| Count per lane, and how many of those are application candidates | `screening.derivations.lanes` (only when `performed` is `true`) |
+| Each value in the company-information table | `company_profiles` (attach `grade` to each value; `null` is "not obtained") |
+| Unmet-`want` count per posting | Counted from `results[].axis_judgements` |
+| Excluded-current-employer-posting count | `screening.current_employer_exclusion.excluded_count` (only when `performed` is `true`) |
+| Number of queries executed, hit count, adopted count | `search_log` |
 
-書いてよいのは `search_log` にあるクエリとその件数までであり、**検索の網羅性は主張しない**。「網羅的に調べた」「主要な求人サイトを一通り確認した」とは書かない。
+The report may state only as much as the queries and their counts recorded in `search_log`, and **never claims that the search was comprehensive**. It never writes 「網羅的に調べた」 (researched exhaustively) or 「主要な求人サイトを一通り確認した」 (checked through the major job-listing sites).
 
-`current_employer_exclusion.performed` が `false` の項目は「未検証」と書く。「0件」と書かない。機械的な検証の PASS は「形式が整い、PII が混入しておらず、分類と総合判定が軸判定と整合している」ことを示すのであって、求人が本人に合っていることを示すのではない。この区別を報告に反映する。
+Write an item where `current_employer_exclusion.performed` is `false` as 「未検証」 (not verified), never as 「0件」. A PASS on mechanical validation shows only three things: the format is in order, no PII has leaked, and the classification and overall verdict agree with the axis judgments. Whether a posting suits the user is a separate question. Reflect this distinction in the report.
 
-## 合否ゲート
+## Pass/fail gates
 
-| ゲート | 通過条件と差し戻し先 |
+| Gate | Passing condition and where it sends work back |
 |---|---|
-| Step 4 の機械的な検証・PII リント | `validate_job_search_results.py --profile` が PASS（ERROR 0件）でなければ納品しない。PII 混入の ERROR は匿名化の漏れであり、成果物から除去してから再検証する。 |
-| 応募推奨 | `screening.recommendation` が `応募推奨なし` の場合、既定では企業研究・適合性評価へ接続しない。必須条件の見直し（`job-change-profile` の条件更新）、または検索条件・検索経路の見直しへ戻す。応募候補が0件のときに、除外候補や追加調査候補から最有力候補を仕立てない。**例外**: 満たさない必須条件を求人ごとにすべて列挙したうえで、利用者が特定の求人について先へ進むことを明示的に希望した場合は、その求人を企業研究へ接続してよい。この判定の材料は求人票の記載だけであり、判定そのものが企業研究や面接で覆りうるためである。接続する場合は、どの必須条件が未充足のままかを引き継ぎに明記する。利用者が希望を示していない場合は、本スキルから接続を提案しない。 |
-| フォールバックの明示 | `screening.recommendation` が `判定不能`（profile が 1.x）の場合、判定できていない旨を明示する。分類結果を「応募候補」として提示せず、`job-change-profile` での条件の構造化を案内する。 |
+| Step 2.5's merge | Do not proceed to Step 3.5 unless `merge_search_results.py` exits with code 0. When company information is missing, relaunch the `company_profile` batch once; if it is still missing, merge with `--stub-missing` and leave it in `open_questions`. |
+| Step 4's mechanical validation and PII lint | Never deliver unless `validate_job_search_results.py --profile` PASSes (zero ERRORs). A PII-leak ERROR is an anonymisation leak; remove it from the deliverable and validate again. |
+| Recommendation to apply | When `screening.recommendation` is `応募推奨なし` (no recommendation to apply), this does not hand off to company research or fit assessment by default. It sends the work back to reviewing the required conditions (updating conditions in `job-change-profile`), or to reviewing the search conditions or search approach. When there are zero application candidates, it never dresses up an excluded or a needs-more-research posting as the top candidate. **Exception**: after listing every unmet required condition for a posting, when the user explicitly wishes to proceed with that specific posting, this may hand it off to company research. The material for this judgment is only what the posting states, and the judgment itself can be overturned by company research or interviewing. When handing off, state plainly in the handover which required conditions remain unmet. When the user has not expressed a wish, this skill never proposes the hand-off on its own. |
+| Stating the fallback plainly | When `screening.recommendation` is `判定不能` (undecidable; profile is 1.x), state plainly that judgment could not be made. Never present the classification result as an "application candidate", and guide the user toward structuring their conditions in `job-change-profile`. |
 
-## 役割の実行（ハーネス別）
+## Role execution (by harness)
 
-本スキルのパイプラインは、専門の役割へ作業を委ねる形で書いてある。役割の内容は `references/roles/` に置き、これを原本とする。
+This skill's pipeline is written to delegate work to specialised roles. The role content lives under `references/roles/`, which is the canonical source.
 
-| エージェント名 | 役割プロンプトの原本 |
+| Agent name | Canonical role prompt |
 |---|---|
 | `job-change-job-searcher` | `{SKILL_DIR}/references/roles/job-searcher.md` |
 
-ハーネス別の実行手順と、起動する数の判断の原本は hub の `{HUB_SKILL_DIR}/references/role-execution.md` にある。
+The canonical execution procedure by harness, and the judgment for how many to launch, live in the hub's `{HUB_SKILL_DIR}/references/role-execution.md`.
 
-## エージェントのモデル方針
+## Agent model policy
 
-| エージェント | model | 責務 |
+| Agent | model | Responsibility |
 |---|---|---|
-| `job-change-job-searcher` | sonnet | 匿名化条件からの公開Web検索 → job_search_results.json ＋ 引用・出典URL付与 |
+| `job-change-job-searcher` | sonnet | Public web search from anonymised conditions (primary-set handler, lane handler) → partial file, with quotations and source URLs attached. In `company_profile` mode, a batch file of company information |
 
-model はエージェントの frontmatter に固定済みであり、起動時に上書きしない。
+`model` is fixed in the agent's frontmatter and is never overridden at launch. The primary-set handler, lane handlers, and company-information batches all launch the same agent multiple times with different assignments.
 
-## スクリプトのCLI使用例
+## Script CLI usage examples
 
-求人検索結果の検証（終了コードは PASS で 0、FAIL で 1。WARN のみは PASS 扱い）。`{SKILL_DIR}` は本スキルの絶対パス、`{results.json}` は検証対象のパスに読み替える。
+Merging partial files (exit code 0 on success, 1 on ERROR; `--list-companies` writes nothing and only returns the company list).
+
+```bash
+python {SKILL_DIR}/scripts/merge_search_results.py {search_dir} --list-companies --profile {DATA_ROOT}/career-private/profile.json --json
+python {SKILL_DIR}/scripts/merge_search_results.py {search_dir} --profile {DATA_ROOT}/career-private/profile.json --lanes better_salary,adjacent_role --json
+python {SKILL_DIR}/scripts/merge_search_results.py {search_dir} --profile {DATA_ROOT}/career-private/profile.json --stub-missing
+python {SKILL_DIR}/scripts/merge_search_results.py {search_dir} --cleanup
+```
+
+`--json` outputs `status`, `errors`, `warnings`, `excluded_count`, `companies`, `missing_lanes`, and `output_path`. `--stub-missing` creates an element with every field `null` for a company missing its company information. Merging keeps the partial files, and `--cleanup` deletes them after Step 4's PASS.
+
+Validating the job search results (exit code 0 on PASS, 1 on FAIL; WARN-only counts as PASS). `{SKILL_DIR}` is this skill's absolute path, and `{results.json}` is read as the path under validation.
 
 ```bash
 python {SKILL_DIR}/scripts/validate_job_search_results.py {results.json}
@@ -243,21 +295,22 @@ python {SKILL_DIR}/scripts/validate_job_search_results.py {results.json} --json
 python {SKILL_DIR}/scripts/validate_job_search_results.py {results.json} --profile {DATA_ROOT}/career-private/profile.json
 ```
 
-`--json` は結果を JSON 形式（`status`・`error_count`・`warning_count`・`errors`・`warnings`）で出力する。`--profile` を付けると、PII リント（現勤務先名・氏名・現年収の混入検出）が加わる。さらに `threshold_ref` が profile の条件・特性に実在するか、`level` が profile の必須度と一致するかも検査する。`--profile` を付けずに実行すると、PII リントとしきい値の突き合わせが未実施である旨の WARN が出る。記述例は `assets/` にある。fuzzy は `job_search_results_example.json`、similar_better は `job_search_results_similar_better_example.json` である。フィールド仕様と検証規則の原本は `references/job-search-format.md` である。単体テストは次で実行する。
+`--json` outputs the result in JSON form (`status`, `error_count`, `warning_count`, `errors`, `warnings`). With `--profile`, this adds the PII lint (detecting leaked current-employer name, user name, or current salary). It also checks whether `threshold_ref` actually exists among the profile's conditions and characteristics, and whether `level` matches the profile's requirement level. Running without `--profile` gives a WARN stating that the PII lint and the threshold cross-check were not run. Sample entries live under `assets/`: `job_search_results_example.json` for fuzzy, and `job_search_results_similar_better_example.json` for similar_better. The canonical field specification and validation rules live in `references/job-search-format.md`. Run the unit tests (for both the validation script and the merge script) with the following.
 
 ```bash
 cd {SKILL_DIR} && python -m unittest discover -s scripts/tests
 ```
 
-## references 一覧
+## References list
 
-| ファイル | 何を | いつ読むか |
+| File | What it holds | When to read it |
 |---|---|---|
-| `references/job-search-format.md` | job_search_results.json のフィールド仕様・記入基準・機械的な検証の規則・PII リント | 成果物を作る/読む/検証する全段階 |
-| `references/query-catalog.md` | 無償の公開Web検索で求人を探す方法（求人ページの開き方の3系統・サイト別のURL文法と制約・対象外と未確認のサイト・取得の可否を決める規則・クエリの展開規則・年収下限の再判定・重複の排除・相場の基準線・関連情報の取得先・掲載終了の確認） | Step 2 の検索、検索担当エージェントへの指示 |
-| `references/bias-checklist.md` | 利用者側の条件の偏りの一覧と点検の問い、探索集合の位置づけと組み方、探索集合の結果の扱い、報告に添える未充足の件数 | Step 1 の条件の確認、Step 5 の報告 |
-| `references/search-methods.md` | 探索の量と就業の質の関係、満足化の運用、観測と判定を分ける理由、探索集合を別枠にする理由の根拠（出典付き） | 報告のしかたを決める段階、応募推奨なしのときの提案を組み立てる段階 |
-| `{HUB_SKILL_DIR}/references/screening-axes.md` | 8スクリーニング軸・8作業特性・業務分類の語彙と境界例 | Step 2 の観測、Step 3.5 の判定 |
-| `{HUB_SKILL_DIR}/references/market-data-sources.md` | 相場データの出所と扱いの規則 | Step 2 の相場の基準線と関連情報 |
-| `{HUB_SKILL_DIR}/references/pii-boundary.md` | 個人情報の境界と例外の原本 | 条件を組み立て、エージェントへ渡す全段階 |
-| `references/roles/job-searcher.md` | 検索担当の役割プロンプト（観測層までを担う） | Step 2。サブエージェントを使えないハーネスでは本体が読む |
+| `references/job-search-format.md` | The field specification, entry criteria, mechanical validation rules, and PII lint for job_search_results.json | Every stage of creating, reading, or validating the deliverable |
+| `references/query-catalog.md` | The methods for finding postings via free public web search (the three families of opening job pages, the URL grammar and constraints per site, sites out of scope or unconfirmed, the rules for deciding whether fetching is allowed, the query-expansion rules, re-checking the salary floor, deduplication, market-rate baselines, where to obtain related information, where to obtain company information, confirming listing expiry) | Step 2's search, Step 2.5's gathering of company information, instructions to the searcher agent |
+| `references/derivation-lanes.md` | The purpose, the condition moved, the query-building method, the mode, and the corresponding bias for each of the ten derivation lanes; how to choose lanes (the three-question split); recording and how results are handled | Step 1's lane selection, Step 2's instructions, Step 5's report |
+| `references/bias-checklist.md` | The list of user-side condition biases and the checking questions, how biases map to derivation lanes, and the unmet-condition count attached to the report | Step 1's confirming of conditions, Step 5's report |
+| `references/search-methods.md` | The relation between search volume and employment quality, the practice of satisficing, the reason for separating observation from judgment, and the sourced grounds for keeping derivation lanes in a separate track and keeping company information at the observation level | The stage of deciding how to report, the stage of building the proposal when there is no recommendation to apply |
+| `{HUB_SKILL_DIR}/references/screening-axes.md` | The vocabulary and boundary examples for the eight screening axes, eight work characteristics, and duty classification | Step 2's observation, Step 3.5's judgment |
+| `{HUB_SKILL_DIR}/references/market-data-sources.md` | The source of market-rate data and the rules for handling it | Step 2's market-rate baseline and related information |
+| `{HUB_SKILL_DIR}/references/pii-boundary.md` | The canonical personal-information boundary and its exceptions | Every stage of building conditions and passing them to an agent |
+| `references/roles/job-searcher.md` | The searcher's role prompt (covering through the observation layer) | Step 2. On a harness that cannot use subagents, the skill body reads it |

@@ -1,16 +1,16 @@
-# company_index.json 仕様
+# company_index.json specification
 
-job-change-support スキル群における、企業名と企業スラッグの対応表 company_index.json の原本である。`scripts/validate_company_index.py` の実装は、この仕様に厳密に従う。
+The canonical reference for company_index.json, the mapping between company names and company slugs, in the job-change-support skill group. The implementation of `scripts/validate_company_index.py` follows this specification exactly.
 
-company_index.json は「企業名からスラッグを解決するための単一の原本」である。各サブスキル（企業研究・応募書類作成・面接対策・試験対策）は、同じ企業を常に同じスラッグへ解決し、そのスラッグを企業別ディレクトリ名に使う。利用者が別表記で同じ企業を指した場合も、各サブスキルはこの一覧を通して1つのスラッグに集約する。
+company_index.json is "the single canonical source for resolving a company name to a slug." Each sub-skill (company research, application document writing, job interview preparation, exam preparation) resolves the same company to the same slug every time, and uses that slug as the per-company directory name. Even when the user refers to the same company by a different name, each sub-skill converges on a single slug through this list.
 
-## 配置
+## Location
 
-- 原本の配置先: `{DATA_ROOT}/career-private/company_index.json`
-- 企業別ディレクトリの配置先: `{DATA_ROOT}/companies/{企業スラッグ}/`
-- スキル本体フォルダ（`skills/job-change-support/`）に一覧を置かない。`assets/company_index_example.json` は記入例であり、実データではない。
+- Where the canonical copy lives: `{DATA_ROOT}/career-private/company_index.json`
+- Where the per-company directory lives: `{DATA_ROOT}/companies/{company slug}/`
+- No list lives inside the skill's own folder (`skills/job-change-support/`). `assets/company_index_example.json` is a fictitious sample entry.
 
-## ルート構造
+## Root structure
 
 ```json
 {
@@ -26,83 +26,83 @@ company_index.json は「企業名からスラッグを解決するための単�
 }
 ```
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required/optional | Meaning and entry criteria |
 |---|---|---|---|
-| `schema_version` | number | 必須 | 仕様のバージョン。現行は `1`。欠落と数値でない値は ERROR。数値だが `1` 以外なら WARN |
-| `companies` | object | 必須 | 企業スラッグをキー、企業エントリーを値とするオブジェクト。欠落または非オブジェクトは ERROR。空オブジェクトは可 |
+| `schema_version` | number | Required | The specification version. Currently `1`. Missing, or a non-numeric value, is an ERROR. A number other than `1` is a WARN |
+| `companies` | object | Required | An object keyed by company slug, valued by a company entry. Missing, or of an invalid type, is an ERROR. An empty object is fine |
 
-## companies エントリー
+## The `companies` entry
 
-キーは企業スラッグ、値は企業エントリーである。スラッグは次の形に一致しなければならない。
+The key is a company slug, and the value is a company entry. A slug must match the following form.
 
-| 部位 | 規則 |
+| Part | Rule |
 |---|---|
-| 接頭辞（任意） | 「大文字1文字＋アンダースコア」。優先度や評価の区分でまとめるために用いる（例: `S_`）。 |
-| 本体（必須） | 英数字・ハイフン、および日本語文字（ひらがな・カタカナ・漢字・全角英数記号）。先頭はハイフン不可。空白やパス区切りなどの記号は不可。 |
+| Prefix (optional) | "One uppercase letter plus an underscore." Used to group companies by priority or by an evaluation tier (example: `S_`). |
+| Body (required) | Alphanumerics and hyphens, and Japanese characters (hiragana, katakana, kanji, and full-width alphanumerics and symbols). The first character cannot be a hyphen. A symbol such as whitespace or a path separator is not allowed. |
 
-本体は読みやすさを優先して決め、日本語会社名でよい（例: `S_アクメクラウド`）。英字のローマ字表記でもよい（例: `S_acme-cloud`）。企業別ディレクトリ名はスラッグと同一なので、接頭辞や日本語を付ければ、ディレクトリ名にもそのまま反映される。
+The body is decided for readability and may be the company's Japanese name (example: `S_アクメクラウド`). A romanized spelling also works (example: `S_acme-cloud`). Because the per-company directory name is identical to the slug, a prefix or Japanese text attached to the slug carries straight through into the directory name.
 
-`_general` は予約名である。企業を特定しない一般的な試験対策の成果物を `{DATA_ROOT}/companies/_general/` へ置くために使う（用途の原本は `job-change-exam-prep` の SKILL.md にある）。上の形式は先頭のアンダースコアを許さない。そのため `_general` を企業スラッグとして `companies` へ登録すると、`validate_company_index.py` が ERROR とする。予約名を企業へ割り当てない。
+`_general` is a reserved name. It is used to place general exam-preparation deliverables that name no particular company under `{DATA_ROOT}/companies/_general/` (its canonical use lives in `job-change-exam-prep`'s SKILL.md). The form above disallows a leading underscore. Registering `_general` as a company slug under `companies` is therefore an ERROR from `validate_company_index.py`. A reserved name is never assigned to a company.
 
-| フィールド | 型 | 必須/任意 | 意味・記入基準 |
+| Field | Type | Required/optional | Meaning and entry criteria |
 |---|---|---|---|
-| `name` | string | 必須 | 企業の正式名称。欠落または空は ERROR |
-| `aliases` | array | 必須 | 別表記の文字列の配列。別表記が無ければ空配列 `[]` にする。配列でない・文字列以外を含むと ERROR |
-| `created` | string | 任意 | `YYYY-MM-DD` 形式の登録日。欠落は WARN |
-| `status` | string | 任意 | 選考状況。`"active"`（選考中）または `"closed"`（選考終了・見送り）のいずれか。欠落時は `active` 扱いとする。`closed` になっても成果物は保持し続け、削除・アーカイブ移動は行わない。値の型不正・許容値外は ERROR |
-| `score` | integer | 任意 | 企業スコア。0以上100以下の整数。`fit_assessment.json` の `company_score.total` を転記した機械可読な値で、原本は `fit_assessment.json` 側にある（一覧・並べ替え用のコピー）。適合性評価スキル（job-change-fit-assessment）が転記・更新する。`company_score.total` が `null`（採点する軸の未申告、または判定できた軸が無い）のときは転記しない。欠落は許容（未調査・未採点の企業）。値の型不正・範囲外は ERROR。スラッグ接頭辞（例 `A_`）とは独立で、点数が変わってもスラッグ（ディレクトリ名）はリネームしない |
+| `name` | string | Required | The company's official name. Missing or empty is an ERROR |
+| `aliases` | array | Required | An array of alternate-name strings. When there is no alternate name, use an empty array `[]`. Not an array, or containing a non-string, is an ERROR |
+| `created` | string | Optional | The registration date, in `YYYY-MM-DD` form. Missing is a WARN |
+| `status` | string | Optional | The selection-process status. Either `"active"` (in progress) or `"closed"` (ended, or passed over). Treated as `active` when missing. Deliverables are kept even after it becomes `closed`; they are never deleted or moved to an archive. An invalid type, or a value outside the allowed set, is an ERROR |
+| `score` | integer | Optional | The company score. An integer from 0 through 100. A machine-readable value copied from `fit_assessment.json`'s `company_score.total`, whose canonical source lives on the `fit_assessment.json` side (this is a copy for listing and sorting). The fit-assessment skill (job-change-fit-assessment) copies and updates it. Not copied when `company_score.total` is `null` (no axis has been declared for scoring, or no axis could be judged). Missing is allowed (a company not yet investigated or scored). An invalid type or a value out of range is an ERROR. It is independent of the slug prefix (for example `A_`); when the score changes, the slug (the directory name) keeps its current name. |
 
-`name` と全エントリーの `aliases` は、一覧全体で企業を一意に指す識別子として働く。同一の文字列が複数のスラッグに現れると、各スキルが同じ名前から別々のスラッグを引きうるため ERROR とする。
+`name` and every entry's `aliases`, taken together, work as the identifier that uniquely points to a company across the whole list. The same string appearing under more than one slug is an ERROR, because each skill would then resolve different slugs from the same name.
 
-## 企業スラッグの解決手順（各スキルの Step 0）
+## The company-slug resolution procedure (each skill's Step 0)
 
-各サブスキルは、企業を扱う前に次の手順でスラッグを確定する。
+Each sub-skill fixes the slug with the following procedure before handling a company.
 
-1. 一覧が存在する場合は、まず `validate_company_index.py` で一覧を検証する。FAIL（ERROR 1件以上）の場合は、次節「壊れた一覧の修復」に従って修復してから解決へ進む。壊れた一覧のまま解決しない。hub（job-change-support）から振り分けられた場合は、hub が振り分け前に検証を済ませている。サブスキルが単独で起動された場合は、そのサブスキル自身が `validate_company_index.py` を実行する。
-2. `company_index.json` を読む。一覧が無ければ `{"schema_version":1,"companies":{}}` を作ってから進める。
-3. 依頼中の企業名が、いずれかのエントリーの `name` または `aliases` に一致すれば、そのスラッグを使う。
-4. 一致が無ければ、スラッグを一度だけ導出して一覧に登録し、`companies/{スラッグ}/` を作る。
-5. 同じ企業を別表記で指したと後から判明したら、そのエントリーの `aliases` に別表記を追記する。スラッグの再導出はしない。
-6. Web ツールを持つエージェントへは、確定済みのスラッグ（または `companies` 配下のディレクトリパス）だけを渡す。一覧そのものは渡さない。
+1. When the list exists, first validate it with `validate_company_index.py`. On FAIL (one or more ERROR), fix it following the next section, "Repairing a broken list," before proceeding to resolution. Never resolve against a broken list. When routed from the hub (job-change-support), the hub has already finished validating it before routing. When a sub-skill is launched on its own, that sub-skill runs `validate_company_index.py` itself.
+2. Read `company_index.json`. When the list does not exist, create `{"schema_version":1,"companies":{}}` before proceeding.
+3. When the company name in the request matches an entry's `name` or `aliases`, use that slug.
+4. When there is no match, derive a slug once, register it in the list, and create `companies/{slug}/`.
+5. When it later turns out that a different spelling refers to the same company, append that spelling to that entry's `aliases`. A slug is never re-derived.
+6. Pass an agent with web tools only the resolved slug (or the directory path under `companies/`), never the list itself.
 
-## 壊れた一覧の修復
+## Repairing a broken list
 
-修復の担い手は hub（job-change-support）である。書き込みは企業研究・試験対策・適合性評価・求人検索の各サブスキルに分散するが、壊れた一覧を直すのは hub だけである。サブスキルは単独起動で FAIL を検出した場合、自分で直さず hub へ戻す。修復後は `validate_company_index.py` を再実行し、PASS（ERROR 0件）を確認してから解決へ進む。
+The hub (job-change-support) is the one who repairs the list. Writing to it is spread across company research, exam preparation, fit assessment, and job search, but only the hub fixes a broken list. When a sub-skill launched on its own detects a FAIL, it does not fix it itself; it returns to the hub. After the repair, rerun `validate_company_index.py` and confirm PASS (zero ERROR) before proceeding to resolution.
 
-ERROR の種別ごとの対応は次のとおり。
+The action for each kind of ERROR is as follows.
 
-| ERROR | 対応 |
+| ERROR | Action |
 |---|---|
-| JSON として読み込めない | 読み込めなかったファイルの中身と例外のメッセージを利用者へ示し、手で直すか作り直すかを選ばせる。hub が自動で書き換えない（構造を推測して直すと、既存の登録内容を失う） |
-| 同一の `name` または alias が複数のスラッグに割り当てられている | 衝突している識別子と該当スラッグを示し、統合先のスラッグを `AskUserQuestion` で選ばせる。hub がエントリーを統合し、統合元の `name`・`aliases` を統合先の `aliases` へ移す。`companies/{企業スラッグ}/` の成果物が両方にある場合は、統合先へ移すか残すかも同時に問う |
-| スラッグの形式違反、`schema_version`・`companies`・`name`・`aliases` の欠落や型不正、`status`・`score` の値不正、エントリーが非オブジェクト | hub が該当箇所と修復案を示し、利用者の承認を得てから直す。スラッグを変える場合は `companies/{企業スラッグ}/` のディレクトリ名も同時に変える |
+| Cannot be loaded as JSON | Show the user the content of the file that could not be loaded and the exception message, and let them choose between fixing it by hand or rebuilding it. The hub never rewrites it automatically (guessing at the structure and fixing it loses the existing registrations) |
+| The same `name` or alias is assigned to more than one slug | Show the conflicting identifier and the slugs involved, and let the user choose the merge target with `AskUserQuestion`. The hub merges the entries, moving the merged-away entry's `name` and `aliases` into the target's `aliases`. When both slugs have deliverables under `companies/{company slug}/`, also ask at the same time whether to move them into the target or leave them |
+| A malformed slug, a missing or mistyped `schema_version` / `companies` / `name` / `aliases`, an invalid `status` or `score` value, or a non-object entry | The hub shows the location and a proposed fix, and fixes it after the user approves. When the slug changes, also rename the `companies/{company slug}/` directory at the same time |
 
-WARN のみ（`created` の欠落など）なら FAIL にならないため、修復せずに解決へ進んでよい。
+A WARN alone (such as a missing `created`) does not FAIL, so it is fine to proceed to resolution without fixing it.
 
-## 検証規則の要約
+## Summary of the validation rules
 
-`validate_company_index.py` は次を検査する。ERROR が1件でもあれば FAIL（終了コード 1）、ERROR 0件なら PASS（終了コード 0。WARN は許容）。
+`validate_company_index.py` checks the following. One or more ERROR is a FAIL (exit code 1); zero ERROR is a PASS (exit code 0; WARN is allowed).
 
 ```
 python validate_company_index.py <company_index.json> [--json]
 ```
 
-### ERROR（一覧として成立しない）
+### ERROR (the list does not stand as a list)
 
-- JSON として読み込めない
-- `schema_version` の欠落、または数値でない
-- `companies` の欠落、または非オブジェクト
-- スラッグが「任意の接頭辞（大文字1文字＋アンダースコア）＋本体（英数字・ハイフン・日本語文字。先頭ハイフン不可・空白/記号不可）」の形に一致しない
-- エントリーが非オブジェクト
-- `name` の欠落または空
-- `aliases` が配列でない、または文字列以外を含む
-- 同一の `name` または alias が複数のスラッグに割り当てられている（`name` と他社 alias の衝突を含む）
-- `status` が存在する場合に、文字列でない、または `"active"`・`"closed"` のいずれでもない
-- `score` が存在する場合に、整数でない、または0以上100以下の範囲にない
+- Cannot be loaded as JSON
+- `schema_version` is missing, or of an invalid type
+- `companies` is missing, or of an invalid type
+- A slug does not match the form "an optional prefix (one uppercase letter plus an underscore) plus a body (alphanumerics, hyphens, and Japanese characters; no leading hyphen, no whitespace or symbols)"
+- An entry is of an invalid type
+- `name` is missing or empty
+- `aliases` is of an invalid type, or contains a non-string
+- The same `name` or alias is assigned to more than one slug (including a collision between a `name` and another company's alias)
+- `status` is present and is of an invalid type, or is neither `"active"` nor `"closed"`
+- `score` is present and is of an invalid type, or is outside the range 0 through 100
 
-### WARN（成立するが情報不足）
+### WARN (stands as a list, but with incomplete information)
 
-- `schema_version` が既知のバージョン（`1`）以外の数値である
-- `created` の欠落
-- 同一エントリー内での `aliases` の重複
-- `name` と自社 alias の重複
+- `schema_version` is a number other than the known version (`1`)
+- `created` is missing
+- `aliases` has a duplicate within the same entry
+- `name` overlaps with the entry's own alias

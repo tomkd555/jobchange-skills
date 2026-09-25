@@ -33,8 +33,8 @@ def _known_category_terms(md_path: str) -> list[str]:
     """
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
-    start = text.index("既知の質問類型は")
-    end = text.index("である。", start) + len("である。")
+    start = text.index("The known question categories are ")
+    end = text.index(".", start) + len(".")
     return _CODE_RE.findall(text[start:end])
 
 

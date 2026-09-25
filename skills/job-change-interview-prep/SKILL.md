@@ -1,13 +1,17 @@
 ---
 name: job-change-interview-prep
 description: >-
-  転職の面接対策を担うサブスキル。job-change-interview-scout（sonnet）で対象企業の面接について口コミ・採用ページを
-  調べて interview_intel.json を作り、profile.json と（あれば）company_research.json・interview_intel.json を入力に、
-  job-change-interview-coach（opus）で企業固有の想定質問を質問類型ごとに生成し、模擬面接で回答を
-  1問ずつ収集し、STAR・具体性・一貫性・企業理解の4観点でフィードバックし、観点別の強みと優先改善点を
-  総括する。company_research.json も interview_intel.json も無ければ企業非依存の一般対策へフォールバックする。
-  日本の中途採用面接を中心に、カジュアル面談と外資系のビヘイビアラル面接・ケース面接へ対応する。
-  profile.json の個人情報は外部送信に用いない。
+  Sub-skill for job-change interview preparation. job-change-interview-scout (sonnet) researches review-site
+  posts and recruiting pages for the target company's interviews and builds interview_intel.json; taking
+  profile.json and, where available, company_research.json and interview_intel.json as input,
+  job-change-interview-coach (opus) generates company-specific expected questions by question category, collects
+  the user's answers one question at a time in a mock interview, gives feedback on four criteria — STAR,
+  specificity, consistency, and company understanding — and summarizes strengths and priority
+  improvements by criterion. Falls back to company-independent general preparation when neither
+  company_research.json nor interview_intel.json exists.
+  Covers mid-career hiring interviews in Japan, including casual meetings and the behavioral / case
+  interviews used by foreign-affiliated companies.
+  Personal information in profile.json is never used for outbound transmission.
   Use when the user prepares for a job-change interview in Japan (including foreign-affiliated company
   selection) — researching what a company asks in interviews, generating expected questions, running a
   mock interview, getting answer feedback, or practicing behavioral / case interviews.
@@ -17,199 +21,199 @@ allowed-tools: Read, Write, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
 
 # job-change-interview-prep
 
-転職の面接対策を行うとき、本スキルが想定質問の生成・模擬面接・回答評価・総括までの手順を定める。本スキルは、転職支援 hub（job-change-support）が面接対策として振り分けたときに起動する。対象は日本の中途採用面接を中心とし、外資系のビヘイビアラル面接・ケース面接へ対応する。
+This skill defines the procedure for job-change interview preparation, from generating expected questions through running a mock interview, evaluating answers, and summarizing results. It starts when the job-change support hub (job-change-support) routes a request here as interview preparation. It covers mid-career hiring interviews in Japan, including the behavioral and case interviews used by foreign-affiliated companies.
 
-対象企業の面接についての調査（Step 0.9）は専用エージェント job-change-interview-scout（sonnet）が、想定質問の生成（Step 1）と回答の評価（Step 3）は専用エージェント job-change-interview-coach（opus）が担う。本スキルは、両エージェントの起動、模擬面接の進行、総括を担う。
+The dedicated agent job-change-interview-scout (sonnet) handles researching the target company's interviews (Step 0.9); the dedicated agent job-change-interview-coach (opus) handles generating expected questions (Step 1) and evaluating answers (Step 3). This skill handles launching both agents, running the mock interview, and summarizing results.
 
-## 目的と原則
+## Purpose and principles
 
-1. **企業固有の質問は company_research.json の claim と interview_intel.json を根拠とする。** 企業固有の想定質問は、対象企業の企業研究結果（company_research.json）の claims と、面接情報の調査結果（interview_intel.json）を根拠とする。前者では特に topic=selection_process（選考プロセス・面接体験記）と topic=philosophy（理念）の claims を、後者では報告された質問（`reported_questions`）・面接の形式（`format_facts`）・口コミの傾向（`themes`）を用いる。想定質問には出所（`provenance`: `general`=一般・`reported`=報告・`inferred`=推測）を付け、報告された質問はその言い回しのまま、推測した質問は推測である旨を添えて示す。出所と根拠の信頼度は別のものであり、1つの確度にまとめない（原本は `references/question-bank.md` の「想定質問の出所と示し方」）。company_research.json も interview_intel.json も無い場合は企業固有の質問を生成せず、企業に依存しない一般対策へフォールバックする（フォールバックモード）。company_research.json があっても topic=selection_process の claims が0件で、interview_intel.json の `format_facts` も無い場合は、選考プロセスを前提とする質問を生成しない。面接の回数・形式・各段階の評価観点を既知として扱う質問がこれにあたる。この場合は topic=philosophy の claims だけを根拠に企業固有の質問を作る。そのうえで、選考プロセスの根拠が無い旨を利用者へ伝える（部分的なフォールバック）。claims が0件であることを、選考が単純であることの根拠にしない。就職差別につながるおそれのある事項に当たる質問は、どの出所からも想定質問として生成しない（一覧の原本は `references/question-bank.md` の「聞かれても答えなくてよい事項」）。`career-private/self_analysis.json` がある場合は、想定質問の生成と回答評価の入力に加える。`career-private/fit/{企業スラッグ}/fit_assessment.json` がある場合は、想定質問の生成の入力に加える。その `condition_fit` の `met: "unknown"` の項目と `overall.open_questions` は、逆質問・確認事項の質問素材として用いる。`companies/{企業スラッグ}/exam_assessment.json` がある場合は、特定された検査種別と選考の段取りを読む。面接が選考のどの段階にあたるかを判断する前提として用いる（任意入力。無くても進める）。
+1. **Company-specific questions rest on claims from company_research.json and on interview_intel.json.** Company-specific expected questions rest on claims from the target company's company research (company_research.json) and on the interview information gathered in interview_intel.json. From the former, the claims with topic=selection_process (selection-process reports, candidate write-ups) and topic=philosophy (company philosophy) are used in particular; from the latter, the reported questions (`reported_questions`), interview-format facts (`format_facts`), and review-site trends (`themes`) are used. Each expected question carries its provenance (`provenance`: `general`, `reported`, or `inferred`), showing reported questions in their reported wording and marking inferred questions as inferences. Provenance and the confidence of the underlying evidence are separate things and must not be collapsed into a single confidence level (the canonical definition lives in the "Provenance and presentation of expected questions" section of `references/question-bank.md`). When neither company_research.json nor interview_intel.json exists, no company-specific questions are generated; the skill falls back to company-independent general preparation (fallback mode). When company_research.json exists but has zero claims with topic=selection_process, and interview_intel.json's `format_facts` is also absent, no question that presupposes a selection process is generated. This covers any question that treats the number of interview rounds, their format, or the evaluation criteria of each stage as known. In this case, company-specific questions rest only on claims with topic=philosophy, and the user is told there is no evidence for the selection process (partial fallback). Zero claims is never treated as evidence that the selection process is simple. No expected question generated from any source touches a matter that could lead to employment discrimination (the canonical list lives in the "Matters the user is not required to answer" section of `references/question-bank.md`). When `career-private/self_analysis.json` exists, it is added as input to question generation and answer evaluation. When `career-private/fit/{company slug}/fit_assessment.json` exists, it is added as input to question generation; its `condition_fit` entries with `met: "unknown"` and its `overall.open_questions` are used as material for reverse questions (questions the candidate asks the interviewer) and confirmation items. When `companies/{company slug}/exam_assessment.json` exists, its identified exam type and selection-process arrangement are read and used as a premise for judging which selection stage the interview belongs to (optional input; the work proceeds without it).
 
-2. **回答評価はアンカーで固定する。** 回答評価は STAR・具体性・一貫性・企業理解の4観点で行い、各観点を3段階（充足・一部・不足）で判定する。判定基準（アンカー）の原本は `references/evaluation-rubric.md` にある。job-change-interview-coach は Step 3 でこのファイルを読んで判定する。評価は原本のアンカーに従い、甘くも辛くもしない。一貫性の観点で根拠として参照する先には、profile.json の `job_change_axis` を含める。self_analysis.json がある場合は、その `career_narrative`（一貫する動機）と `reason_for_change`（建設的な言い換えと `job_change_axis.reasons` との整合の説明）も参照先へ加える。
+2. **Answer evaluation is anchored.** Answers are evaluated on four criteria — STAR, specificity, consistency, and company understanding — each judged on a three-level scale (`充足` (met), `一部` (partial), `不足` (not met)). The canonical anchors for each level live in `references/evaluation-rubric.md`. job-change-interview-coach reads this file in Step 3 and judges against it. Evaluation follows the canonical anchors exactly, applying them neither leniently nor harshly. For the consistency criterion, the reference set includes profile.json's `job_change_axis`. When self_analysis.json exists, its `career_narrative` (the consistent motivation) and `reason_for_change` (the constructive reframing and its explanation of alignment with `job_change_axis.reasons`) are also added to the reference set.
 
-3. **個人情報を外部へ送信しない。** 利用者の個人情報は、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。対象の列挙と役割ごとの可否の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルの allowed-tools と job-change-interview-coach の tools は、いずれも Web 送信手段（WebSearch・WebFetch）を含まない。このため profile.json はそのまま渡してよい。job-change-interview-scout は Web 送信手段を持つため、渡してよいのは企業名・職種名・求人URL・出力先パスと、`companies/{企業スラッグ}/` の `company_research.json`・`job_posting.json` のパスに限る。`career-private/` 配下と、`companies/{企業スラッグ}/` の `interview_answers.json`・`interview_evaluation.json`・`interview_notes_user.md` は渡さない。
+3. **Personal information is never sent outbound.** The user's personal information is never used for any outbound transmission — search queries, fetches, or external APIs. The canonical list of covered items and role-by-role permissions lives in the hub's `{HUB_SKILL_DIR}/references/pii-boundary.md`. Neither this skill's allowed-tools nor job-change-interview-coach's tools include a web transmission method (WebSearch, WebFetch), so profile.json may be passed to it as is. job-change-interview-scout has web transmission methods, so it may receive only the company name, job title, job posting URL, output path, and the paths to `company_research.json` and `job_posting.json` under `companies/{company slug}/`. It never receives anything under `career-private/`, nor `interview_answers.json`, `interview_evaluation.json`, or `interview_notes_user.md` under `companies/{company slug}/`.
 
-4. **エージェントの model は固定である。** job-change-interview-coach の model は当該エージェントの frontmatter に opus で、job-change-interview-scout の model は sonnet で固定済みである。起動時に model を上書きしない。
+4. **An agent's model is fixed.** job-change-interview-coach's model is fixed to opus in that agent's frontmatter, and job-change-interview-scout's model is fixed to sonnet. Neither is overridden at launch.
 
-5. **利用者が持つ情報を Web より先に使う。** 転職エージェントから受け取った質問一覧や、過去に同じ企業の選考を受けた経験は、Web で集められる口コミより新しく、その企業の選考に直接結び付く。Step 0 で有無を確かめ、あれば `interview_notes_user.md` に書き留めて想定質問の素材にする。このファイルは本人の選考の経緯を含むため、Web 送信手段を持つ役割へ渡さない。
+5. **Information the user already holds takes priority over the web.** A list of questions received from a job-change agency, or the user's own experience from a past selection process at the same company, is more current than review-site posts gathered from the web and connects directly to that company's selection process. Step 0 checks whether such information exists and, if so, records it in `interview_notes_user.md` as material for expected questions. This file contains the details of the user's own selection process and is never passed to a role with web transmission methods.
 
-## 範囲外
+## Out of scope
 
-- **企業研究そのもの。** 企業の事業・財務・評判・選考プロセスの調査は `job-change-company-research` が担う。本スキルは調査済みの company_research.json を入力として用いる。
-- **応募書類の作成。** 職務経歴書・履歴書・志望動機書の作成は `job-change-documents` が担う。
-- **筆記試験・適性検査の対策。** SPI・玉手箱・オンラインアセスメント等の対策は `job-change-exam-prep` が担う。オンライン録画面接（HireVue 等）で問われる質問への回答準備は本スキルで扱うが、ゲーム型アセスメントの対策は扱わない。
-- **面接日程の調整・応募先への送信。** 面接の日程調整、企業への返信・送信は行わない。想定問答と回答の改善までを支援し、送信は利用者本人が行う。
-- **合否の予測。** 面接の合否や採用可能性を確率で予測しない。回答の観点別評価と改善提案までにとどめる。
+- **Company research itself.** Researching a company's business, finances, reputation, and selection process belongs to `job-change-company-research`. This skill takes the researched company_research.json as input.
+- **Producing application documents.** Producing a résumé, CV, or cover letter belongs to `job-change-documents`.
+- **Preparation for written tests and aptitude tests.** Preparation for SPI, 玉手箱 (Tamatebako), and other online assessments belongs to `job-change-exam-prep`. This skill covers preparing answers to questions asked in a recorded online interview (such as HireVue); preparation for game-based assessments belongs to `job-change-exam-prep`.
+- **Scheduling interviews and sending materials to the employer.** Scheduling interview dates and replying to or sending anything to the employer are out of scope. This skill supports expected questions and answer improvement; the user sends anything themselves.
+- **Predicting the outcome.** This skill never predicts the probability of passing or being hired. Its scope stops at evaluating answers by criterion and suggesting improvements.
 
-## パスの解決
+## Path resolution
 
-利用者データの置き場所は設定ファイルの記述だけで決まる。既定の置き場所は無い。本文で `{DATA_ROOT}` と書いた箇所は、次のコマンドが返す `data_root` に読み替える。
+The location of the user's data is determined entirely by the configuration file. There is no default location. Wherever this document writes `{DATA_ROOT}`, read it as the `data_root` returned by the following command.
 
-hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、本スキルが作業のどの段階よりも先に次を実行する。
+When routed from the hub (job-change-support), the hub passes the already-resolved `{DATA_ROOT}`. When launched standalone, this skill runs the following before any other step of the work.
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 ```
 
-| 終了コード | 状態 | 対応 |
+| Exit code | State | Response |
 |---|---|---|
-| 0 | 設定済み | 出力の `paths` に各データの絶対パスが入る。そのまま作業へ進む |
-| 1 | 設定はあるが内容が不正 | 出力の `errors` を利用者へ示し、修復されるまで作業へ進まない |
-| 2 | 未設定 | Skill ツールで `job-change-support` を起動して設定を作らせ、`{DATA_ROOT}` を解決してから戻る |
+| 0 | Configured | The absolute path to each data item is in the output's `paths`. Proceed with the work |
+| 1 | Configured but invalid | Show the user the `errors` in the output; do not proceed until it is fixed |
+| 2 | Not configured | Launch `job-change-support` with the Skill tool to create the configuration, resolve `{DATA_ROOT}`, then return here |
 
-`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。探索順序を含む設定ファイルの仕様は `docs/configuration.md` にある。
+`{SKILL_DIR}` is this skill's absolute path; `{HUB_SKILL_DIR}` is the absolute path of `job-change-support`, located alongside it. The configuration file's specification, including its search order, lives in `docs/configuration.md`.
 
-## 中間成果物
+## Intermediate artifacts
 
-パイプラインの各段階で次を生成する。企業を特定して進める場合（company モード。企業スラッグが解決済み）は `{DATA_ROOT}/companies/{企業スラッグ}/` 配下へ保存する。対象企業を特定せずに起動された場合は企業スラッグが無いため、成果物は会話上で提示し、利用者が保存先を指定した場合のみ書き出す。フォールバックモード（企業固有の根拠が無い）は企業スラッグの有無とは別の区別であり、企業スラッグがあればフォールバックモードでも同じ配置先へ保存する。`interview_notes_user.md`・`interview_answers.json`・`interview_evaluation.json` は利用者の情報と回答をそのまま含み、`interview_questions.json`・`interview-prep-report.md` は profile と回答から導いた内容を含むため、いずれも個人情報である。ただし本スキルと job-change-interview-coach はいずれも Web 送信手段を持たない。これらを読む役割は本スキルの外に無い。Web 送信手段を持つ役割にも、これらのファイルを読まないよう役割プロンプトで定めている。そのため、他の成果物と同じ配置先に置く（境界の原本は `{HUB_SKILL_DIR}/references/pii-boundary.md`）。
+Each stage of the pipeline produces the following. When the work proceeds with an identified company (company mode, with a resolved company slug), these are saved under `{DATA_ROOT}/companies/{company slug}/`. When launched without a target company, there is no company slug, so results are presented in conversation and written out only when the user specifies a save location. Fallback mode (no company-specific evidence) is a distinction independent of whether a company slug exists; when a company slug exists, fallback-mode artifacts are still saved to the same location. `interview_notes_user.md`, `interview_answers.json`, and `interview_evaluation.json` contain the user's information and answers verbatim, and `interview_questions.json` and `interview-prep-report.md` contain content derived from the profile and the answers, so all of these are personal information. Neither this skill nor job-change-interview-coach has a web transmission method, however, and no role outside this skill reads these files. Role prompts also instruct every role with a web transmission method not to read these files. For this reason, they are placed in the same location as the other artifacts (the canonical definition of the boundary lives in `{HUB_SKILL_DIR}/references/pii-boundary.md`).
 
-| ファイル | 内容 | 生成する Step |
+| File | Content | Step that produces it |
 |---|---|---|
-| `interview_notes_user.md` | 利用者が転職エージェントや過去の選考で得た、その企業の面接についての情報（利用者の言葉のまま） | Step 0 |
-| `interview_intel.json` | 対象企業の面接について口コミ・採用ページから集めた、報告された質問・面接の形式・口コミの傾向（job-change-interview-scout の出力 JSON。非個人情報） | Step 0.9 |
-| `interview_questions.json` | 質問類型ごとの想定質問（job-change-interview-coach の Step 1 出力 JSON をトップレベルごと保存する） | Step 1 |
-| `interview_answers.json` | 質問 id と回答の対（Step 2 の逐次保存。中断からの再開に使う） | Step 2 |
-| `interview_evaluation.json` | 4観点の評価（job-change-interview-coach の Step 3 出力 JSON をトップレベルごと保存する） | Step 3 |
-| `interview-prep-report.md` | 観点別の強み・優先改善点・再演習の提案 | Step 4 |
+| `interview_notes_user.md` | Information about the company's interviews that the user obtained from a job-change agency or a past selection process, in the user's own words | Step 0 |
+| `interview_intel.json` | Reported questions, interview-format facts, and review-site trends gathered from review sites and recruiting pages about the target company's interviews (output JSON of job-change-interview-scout; non-personal information) | Step 0.9 |
+| `interview_questions.json` | Expected questions by question category (the top-level Step 1 output JSON from job-change-interview-coach, saved as is) | Step 1 |
+| `interview_answers.json` | Question id / answer pairs (appended incrementally in Step 2; used to resume after an interruption) | Step 2 |
+| `interview_evaluation.json` | Evaluation on the four criteria (the top-level Step 3 output JSON from job-change-interview-coach, saved as is) | Step 3 |
+| `interview-prep-report.md` | Strengths and priority improvements by criterion, and suggestions for further practice | Step 4 |
 
-`interview_questions.json`・`interview_answers.json`・`interview_evaluation.json` の形式の原本は `references/interview-format.md` に、`interview_intel.json` の形式の原本は `references/interview-intel-format.md` にある。`interview_questions.json` と `interview_evaluation.json` は job-change-interview-coach の出力 JSON（Step 1・Step 3）にそのまま従う。`degraded`・`degraded_reason` を含むトップレベルごと保存する。`questions`・`evaluations` の配列だけを抽出して保存しない。`degraded` が落ちると、その質問群が企業固有のものか、企業に依存しないフォールバックかをファイルから判別できず、中断からの再開時に合否ゲートを再確認できないためである。
+The canonical specification for `interview_questions.json`, `interview_answers.json`, and `interview_evaluation.json` lives in `references/interview-format.md`; the canonical specification for `interview_intel.json` lives in `references/interview-intel-format.md`. `interview_questions.json` and `interview_evaluation.json` follow job-change-interview-coach's output JSON (Step 1 and Step 3) exactly. Every top-level key, including `degraded` and `degraded_reason`, is saved as is; the `questions` or `evaluations` array alone is never extracted and saved on its own. Dropping `degraded` would make it impossible to tell from the file alone whether a question set is company-specific or a company-independent fallback, which would in turn make it impossible to recheck the pass gate when resuming after an interruption.
 
-## パイプライン
+## Pipeline
 
-Step 0〜4 を順に進める。`{HUB_SKILL_DIR}` は転職支援 hub（job-change-support）の絶対パスに読み替える。
+Proceed through Step 0 to Step 4 in order. Read `{HUB_SKILL_DIR}` as the absolute path of the job-change support hub (job-change-support).
 
-### Step 0 読込とゲート
+### Step 0: Load and gate
 
-1. `{DATA_ROOT}/career-private/profile.json` の所在を Read / Glob で確認する。無ければ hub（job-change-support）へ戻し、プロファイルの初回作成を先行させる。
-2. プロファイルゲート（必須）を通す。profile.json は `validate_profile.py`（job-change-support の scripts）が PASS（ERROR 0件）であることを前提とする。hub 経由で本スキルへ入る場合、hub がルーティング前に PASS を確認済みである。単独で起動された場合は、本スキルが自分で `validate_profile.py` を実行して PASS を確かめる。FAIL の場合は ERROR の内容を利用者へ示し、`job-change-profile` での整備を勧める。ただし、利用者が欠落を承知のうえで着手を希望する場合は、欠けた項目の値を直接引用または前提とする質問を作らず、その項目を根拠とする評価も行わないという条件で進めてよい。その場合は、どの項目が欠けたままかを報告に明記する。hub から振り分けられ、hub が既にこの選択を利用者へ求めている場合は、再度は問わず、その選択に従う。hub と本スキルが同じ選択を2回求めないためである。
-3. 企業スラッグを解決する前に、`validate_company_index.py`（job-change-support の scripts）で一覧を検証する。FAIL（ERROR 1件以上）なら指摘内容を利用者へ示し、修復されるまで解決へ進まない。
-4. 対象企業の企業スラッグを `career-private/company_index.json` で解決する（詳細は job-change-support の `references/company-index-format.md`）。そのうえで company_research.json（`companies/{企業スラッグ}/company_research.json`）の有無を確認する。同フォルダーに `interview_answers.json` が存在する場合は、`interview_questions.json` の `questions[].id` の集合から `interview_answers.json` の `answers[].question_id` の集合を差し引く。残った id の質問を「残りの質問」として提示し、そこからの再開を利用者へ提案する。差分は会話の記憶ではなくこの2ファイルだけで決める。`interview_questions.json` が無い場合は再開できないため、Step 1 からやり直す。company_research.json が無い場合は、AskUserQuestion で次を利用者へ明示して選ばせる。
-   - (A) 企業研究を先に実施する。hub へ戻して `job-change-company-research` を起動し、company_research.json を得てから本スキルへ戻る。
-   - (B) 企業研究は行わず、Step 0.9 の面接情報の調査だけを行う。`interview_intel.json` を企業固有の根拠として進める。
-   - (C) フォールバックモードを選ぶ。企業固有の根拠を持たない一般対策として進め、以降は企業固有の想定質問を生成せず、企業理解の観点による評価も対象外とする。
-5. company_research.json がある場合は、`check_freshness.py`（job-change-support の scripts）で当該企業の `_manifest.json` を判定する。`stale` のトピックがあれば、その旨と対象トピック名を利用者へ示し、`job-change-company-research` での差分再調査を提案する。利用者が再調査せずに進むことを選んだ場合はそのまま進んでよい。ただし、古い情報に基づく旨と対象トピック名を Step 4 の `interview-prep-report.md` へ明記する。判定規則と TTL の原本は job-change-support の `references/freshness-policy.md` にある。
-6. `career-private/self_analysis.json` の有無を確認する。あれば Step 1・Step 3 の入力に加える。無くても進行できるが、自己分析（`job-change-self-analysis`）を先に実行すればキャリア・ナラティブと転職理由の建設的な言い換えを一貫性の観点の根拠に使えることを、利用者へ明示する。
-7. `career-private/fit/{企業スラッグ}/fit_assessment.json` の有無を確認する。あれば Step 1 の入力に加える。想定質問の生成時に、`condition_fit` の `met: "unknown"` の項目と `overall.open_questions` を、逆質問・確認事項の質問素材として用いる。無くても進行できる。fit_assessment.json は career-private 配下の成果物であり、Web ツールを持つエージェントへは渡さない。
-8. 個人情報の取り扱いルールを確認する。profile.json の内容を外部送信に用いない。本スキルと job-change-interview-coach はいずれも Web 送信手段を持たない。このため profile.json（あれば self_analysis.json・fit_assessment.json も）をそのまま渡してよい。
-9. 利用者が持つ情報の有無を AskUserQuestion で1問だけ確かめる。転職エージェントから受け取った質問一覧や選考の傾向、過去に同じ企業の選考を受けた経験、カジュアル面談で聞いた内容が該当する。あれば、利用者の言葉のまま `companies/{企業スラッグ}/interview_notes_user.md` に書き留める（company モード時）。要約・言い換えをしない。無ければ作らない。
-10. 対象とする選考段階（カジュアル面談・一次面接・二次面接・最終面接）を利用者へ確かめる。分からなければ `不明` とし、Step 0.9 の `format_facts` で補う。
+1. Check for the existence of `{DATA_ROOT}/career-private/profile.json` with Read / Glob. If it is missing, return to the hub (job-change-support) and have it create the profile first.
+2. Pass the profile gate (mandatory). profile.json is assumed to have passed (`validate_profile.py`, a job-change-support script, returning zero ERRORs) before this step. When entering this skill through the hub, the hub has already confirmed a PASS before routing. When launched standalone, this skill runs `validate_profile.py` itself to confirm a PASS. On FAIL, show the user the ERROR contents and recommend completing the profile through `job-change-profile`. If the user nonetheless wants to proceed knowing the gaps, this may continue under the condition that no question directly quotes or presupposes the value of a missing field, and no evaluation rests on that field as evidence; the report then states plainly which fields remain missing. When the hub has already put this choice to the user before routing here, it is not asked a second time; this skill follows the choice already made, so the hub and this skill never ask the user the same choice twice.
+3. Before resolving the company slug, validate the index with `validate_company_index.py` (a job-change-support script). On FAIL (one or more ERRORs), show the user the findings and do not proceed to resolution until it is fixed.
+4. Resolve the target company's company slug from `career-private/company_index.json` (details in job-change-support's `references/company-index-format.md`). Then check whether company_research.json exists (`companies/{company slug}/company_research.json`). If `interview_answers.json` exists in the same folder, subtract the set of `interview_answers.json`'s `answers[].question_id` values from the set of `interview_questions.json`'s `questions[].id` values. Present the questions whose ids remain as the "remaining questions" and offer to resume from there. This difference is determined solely from these two files. If `interview_questions.json` is missing, resumption is not possible, and the work restarts from Step 1. If company_research.json is missing, use AskUserQuestion to present the following choices explicitly and let the user pick.
+   - (A) Run company research first. Return to the hub, launch `job-change-company-research` to obtain company_research.json, then come back to this skill.
+   - (B) Skip company research and run only the Step 0.9 interview-information research. Proceed using `interview_intel.json` as the company-specific evidence.
+   - (C) Choose fallback mode. Proceed as general preparation with no company-specific evidence; from here on, no company-specific expected question is generated, and the company-understanding criterion is excluded from evaluation.
+5. When company_research.json exists, judge the company's `_manifest.json` with `check_freshness.py` (a job-change-support script). If any topic is `stale`, tell the user so, naming the affected topics, and suggest a differential re-research through `job-change-company-research`. If the user chooses to proceed without re-researching, that is fine, but the fact that the information is stale and which topics are affected must be recorded in Step 4's `interview-prep-report.md`. The canonical judgment rules and TTLs live in job-change-support's `references/freshness-policy.md`.
+6. Check whether `career-private/self_analysis.json` exists. If so, add it as input to Step 1 and Step 3. The work can proceed without it, but tell the user explicitly that running self-analysis (`job-change-self-analysis`) first would make the career narrative and the constructive reframing of the reason for leaving available as evidence for the consistency criterion.
+7. Check whether `career-private/fit/{company slug}/fit_assessment.json` exists. If so, add it as input to Step 1. When generating expected questions, use its `condition_fit` entries with `met: "unknown"` and its `overall.open_questions` as material for reverse questions and confirmation items. The work can proceed without it. fit_assessment.json is an artifact under career-private and is never passed to an agent with web tools.
+8. Confirm the personal-information handling rules. The content of profile.json is never used for outbound transmission. Neither this skill nor job-change-interview-coach has a web transmission method, so profile.json (and, where present, self_analysis.json and fit_assessment.json) may be passed as is.
+9. Ask a single AskUserQuestion to check whether the user holds any relevant information: a list of questions or selection-process trends received from a job-change agency, experience from a past selection process at the same company, or anything heard in a casual meeting. If so, record it in the user's own words in `companies/{company slug}/interview_notes_user.md` (in company mode). Do not summarize or rephrase it. If not, do not create the file.
+10. Confirm with the user which selection stage is the target (`カジュアル面談` (casual meeting), `一次面接` (first interview), `二次面接` (second interview), or `最終面接` (final interview)). If unclear, record `不明` (unknown) and supplement it later with Step 0.9's `format_facts`.
 
-### Step 0.9 面接情報の調査（job-change-interview-scout, sonnet）
+### Step 0.9: Interview-information research (job-change-interview-scout, sonnet)
 
-企業スラッグが解決済みの場合に、対象企業の面接についての情報を Web から集める。対象企業を特定せずに起動された場合は行わない。
+Runs when a company slug has been resolved, gathering information from the web about the target company's interviews. It does not run when launched without a target company identified.
 
-1. `companies/{企業スラッグ}/interview_intel.json` の有無と鮮度を確かめる。`_manifest.json` に `artifacts.interview_intel` の記録があれば `check_freshness.py` が判定する（TTL と判定規則の原本は `{HUB_SKILL_DIR}/references/freshness-policy.md`）。`fresh` なら再調査せず既存の成果物を使う。`stale` または未取得なら次へ進む。
-2. 調査するかどうかを利用者へ確かめる。所要時間が Web 取得を伴う調査1回分であることと、口コミサイトはログインなしで読める範囲に限られることを添える。利用者が不要と答えた場合は行わず、その旨を Step 4 の報告に書く。
-3. job-change-interview-scout（sonnet）を Agent ツールで起動する。指示書に次を渡す。
-   - 企業名（`company_index.json` の正式名称と別名）と職種名（`job_posting.json` の職種名。無ければ利用者が指定した職種名）。
-   - 出力先パス `{DATA_ROOT}/companies/{企業スラッグ}/interview_intel.json`。
-   - 本スキルの絶対パス（`{SKILL_DIR}`）と、job-change-company-research の絶対パス（`references/evidence-grading.md`・`references/source-catalog.md` の所在）。
-   - あれば `companies/{企業スラッグ}/company_research.json` と `job_posting.json` のパス。いずれも非個人情報ツリーにある。
-   - **渡さないもの**: `career-private/` 配下のパスと内容、`interview_notes_user.md`・`interview_answers.json`・`interview_evaluation.json`・`interview_questions.json`・`interview-prep-report.md`・`documents/` 配下のパス、利用者の氏名・経歴・年収。
-4. スカウトが書き出した `interview_intel.json` を `validate_interview_intel.py` で再検証する（ゲート）。FAIL（ERROR 1件以上）なら ERROR の内容を指示書へ添えてスカウトを再起動する。PASS を確認したら、`_manifest.json` を Read し、`artifacts.interview_intel` だけを `{"updated_at": "YYYY-MM-DD"}` に差し替えて全体を Write で書き戻す。他の成果物の記録を落とさない。ファイルが無ければ `{"schema_version": 1, "artifacts": {"interview_intel": {...}}}` を作る。
-5. `reported_questions` の `category` に `配慮事項` があれば、その内容を利用者へ「聞かれても答えなくてよい事項」として伝える（一覧の原本は `references/question-bank.md`）。`open_questions` に古い出典や新卒選考の記録に基づく旨があれば、それも伝える。
+1. Check whether `companies/{company slug}/interview_intel.json` exists and how fresh it is. If `_manifest.json` records `artifacts.interview_intel`, `check_freshness.py` judges it (the canonical TTL and judgment rules live in `{HUB_SKILL_DIR}/references/freshness-policy.md`). If `fresh`, use the existing artifact without re-researching. If `stale` or not yet obtained, proceed.
+2. Ask the user whether to research at all, noting that it takes about as long as one web-fetch research pass and that review sites can only be read within what is available without logging in. If the user declines, skip it and note this in the Step 4 report.
+3. Launch job-change-interview-scout (sonnet) with the Agent tool. Pass it the following in the instructions.
+   - The company name (the formal name and any aliases from `company_index.json`) and the job title (from `job_posting.json`; if absent, the job title the user specified).
+   - The output path `{DATA_ROOT}/companies/{company slug}/interview_intel.json`.
+   - This skill's absolute path (`{SKILL_DIR}`) and job-change-company-research's absolute path (the location of `references/evidence-grading.md` and `references/source-catalog.md`).
+   - The paths to `companies/{company slug}/company_research.json` and `job_posting.json`, if they exist. Both live in the non-personal-information tree.
+   - **Never pass**: any path or content under `career-private/`; `interview_notes_user.md`, `interview_answers.json`, `interview_evaluation.json`, `interview_questions.json`, `interview-prep-report.md`, or anything under `documents/`; or the user's name, career history, or salary.
+4. Re-verify the `interview_intel.json` the scout wrote with `validate_interview_intel.py` (gate). On FAIL (one or more ERRORs), attach the ERROR contents to the instructions and relaunch the scout. Once PASS is confirmed, Read `_manifest.json`, replace only `artifacts.interview_intel` with `{"updated_at": "YYYY-MM-DD"}`, and Write the whole object back. Do not drop the records of other artifacts. If the file does not exist, create `{"schema_version": 1, "artifacts": {"interview_intel": {...}}}`.
+5. If any `reported_questions[].category` is `配慮事項` (a matter requiring care), tell the user this is a matter they need not answer even if asked (「聞かれても答えなくてよい事項」) (the canonical list lives in `references/question-bank.md`). If `open_questions` notes that a source is old or comes from a new-graduate hiring record, tell the user this too.
 
-### Step 1 想定質問の生成
+### Step 1: Generate expected questions
 
-1. job-change-interview-coach（opus）を Agent ツールで起動し、Step 1 を指示する。指示書に次を渡す。
-   - 実行するステップ = 1。
-   - profile.json の絶対パス。company_research.json（あれば）・interview_intel.json（あれば）・interview_notes_user.md（あれば）・self_analysis.json（あれば）・fit_assessment.json（あれば）・exam_assessment.json（あれば）・求人票（あれば）の絶対パス。
-   - 対象とする選考段階（Step 0 で確かめたもの。`不明` を含む）。
-   - 本スキルの絶対パス（`{SKILL_DIR}`）。出力形式の原本 `references/interview-format.md` の所在として渡す。
-2. コーチは質問類型ごとに想定質問を生成する。各質問には interviewer_intent（面接官の評価観点）・basis（company_research の claim id・interview_intel の id・`interview_notes_user.md` の該当箇所・profile の該当箇所）・provenance（`general`・`reported`・`inferred`）・stage（想定される選考段階）を付して返す。フォールバックモードでは degraded: true とし、企業固有の claim を根拠に用いる質問は生成しない。company_research.json はあるが topic=selection_process の claims が0件で、interview_intel.json の `format_facts` も無い場合は、その旨を指示書に明記する。選考プロセスを前提とする質問は生成させない（部分的なフォールバック）。`fit_assessment.json` がある場合は、`condition_fit` の `met: "unknown"` の項目と `overall.open_questions` を加える。いずれも逆質問・確認事項の質問素材である。無い場合は company_research.json・interview_intel.json・profile.json のみを素材とする。選考段階が `カジュアル面談` の場合は、逆質問と、自己紹介・転職理由の短い回答だけを生成させる。
-3. コーチが返した JSON を、`degraded`・`degraded_reason` を含むトップレベルごと `interview_questions.json` として保存する（company モード時）。`questions` 配列だけを抽出しない。形式の原本は `references/interview-format.md` にある。質問類型・評価観点・外資系の質問形式の原本は、それぞれ `references/question-bank.md`・`references/evaluation-rubric.md`・`references/foreign-interviews.md` にある。
-4. 保存した `interview_questions.json` を `validate_interview_artifacts.py` で検証する（company モード時。ゲート）。FAIL（ERROR 1件以上）なら Step 2 へ進まず、ERROR の内容を指示書へ添えてコーチを再起動する。
+1. Launch job-change-interview-coach (opus) with the Agent tool, instructing it to run Step 1. Pass it the following in the instructions.
+   - The step to run = 1.
+   - The absolute path to profile.json. The absolute paths to company_research.json (if present), interview_intel.json (if present), interview_notes_user.md (if present), self_analysis.json (if present), fit_assessment.json (if present), exam_assessment.json (if present), and the job posting (if present).
+   - The target selection stage (as confirmed in Step 0, including `不明`).
+   - This skill's absolute path (`{SKILL_DIR}`), as the location of the canonical output-format definition `references/interview-format.md`.
+2. The coach generates expected questions by question category. Each question is returned with an interviewer_intent (the evaluation criterion the interviewer is checking), a basis (a claim id from company_research, an id from interview_intel, the relevant part of `interview_notes_user.md`, or the relevant part of the profile), a provenance (`general`, `reported`, or `inferred`), and a stage (the selection stage it is expected in). In fallback mode, degraded: true is set, and no question is generated from a company-specific claim. When company_research.json exists but has zero claims with topic=selection_process, and interview_intel.json's `format_facts` is also absent, this must be stated explicitly in the instructions, and no question that presupposes a selection process is generated (partial fallback). When fit_assessment.json exists, its `condition_fit` entries with `met: "unknown"` and its `overall.open_questions` are added; both serve as material for reverse questions and confirmation items. When it is absent, only company_research.json, interview_intel.json, and profile.json serve as material. When the selection stage is `カジュアル面談` (casual meeting), only the `逆質問` (reverse questions) category and short `自己紹介` (self-introduction) / `転職理由` (reason for changing jobs) answers are generated.
+3. Save the JSON the coach returns as `interview_questions.json` (in company mode), including every top-level key such as `degraded` and `degraded_reason`. Do not extract only the `questions` array. The canonical format definition lives in `references/interview-format.md`; the canonical definitions for question categories, evaluation criteria, and foreign-affiliated-company question formats live in `references/question-bank.md`, `references/evaluation-rubric.md`, and `references/foreign-interviews.md` respectively.
+4. Validate the saved `interview_questions.json` with `validate_interview_artifacts.py` (in company mode; a gate). On FAIL (one or more ERRORs), do not proceed to Step 2; attach the ERROR contents to the instructions and relaunch the coach.
 
-### Step 2 模擬面接
+### Step 2: Mock interview
 
-1. 本スキル（オーケストレーター）が、生成した想定質問を1問ずつ提示する。利用者の回答をテキストで収集し、回答ごとに次の質問へ進む。`provenance` が `reported` の質問を先に出し、`inferred` の質問は推測である旨を添えて出す。`配慮事項` は `notes` にだけ書く。模擬面接では扱わない。`stage` が対象の選考段階と異なる質問は、利用者が求めない限り後回しにする。
-2. 全問を課す必要はない。利用者が指定した範囲（質問類型・問数）で実施してよい。回答を受け取るごとに、`{"question_id": …, "answer": …, "answered_at": …}` の1件を `companies/{企業スラッグ}/interview_answers.json` の `answers` 配列へ追記保存する。企業スラッグが無い場合は会話上に保持する。`question_id` には、提示した質問の `interview_questions.json` での `id` をそのまま書く。`answer` には利用者の回答をそのまま転記し、要約・言い換えをしない。形式の原本は `references/interview-format.md` にある。
-3. この段階では評価・添削・言い換えをしない（評価は Step 3）。回答を誘導しない。
-4. Step 3 へ進む前に、`interview_answers.json` を `validate_interview_artifacts.py` で検証する（company モード時。ゲート）。`--questions` に `interview_questions.json` を渡し、`question_id` が質問側に実在することを確かめる。FAIL なら ERROR を解消してから Step 3 へ進む。
+1. This skill (the orchestrator) presents the generated expected questions one at a time, collects the user's answer as text, and moves to the next question after each answer. Questions with `provenance: reported` are presented first; `inferred` questions are presented as marked inferences. A `配慮事項` (matter requiring care) is only ever written in `notes`; it is never used in the mock interview. A question whose `stage` differs from the target selection stage is deferred unless the user asks for it.
+2. Not every question needs to be covered. The interview may be run over a range the user specifies (question category, number of questions). As each answer is received, append one entry `{"question_id": …, "answer": …, "answered_at": …}` to the `answers` array in `companies/{company slug}/interview_answers.json`. When there is no company slug, keep it in conversation instead. `question_id` is written exactly as the presented question's `id` in `interview_questions.json`. `answer` transcribes the user's answer verbatim, with no summarizing or rephrasing. The canonical format definition lives in `references/interview-format.md`.
+3. No evaluation, correction, or rephrasing happens at this stage (evaluation is Step 3). Answers are never led toward a particular direction.
+4. Before proceeding to Step 3, validate `interview_answers.json` with `validate_interview_artifacts.py` (in company mode; a gate), passing `interview_questions.json` to `--questions` to confirm every `question_id` exists on the question side. On FAIL, resolve the ERRORs before proceeding to Step 3.
 
-### Step 3 回答の評価とフィードバック
+### Step 3: Evaluate answers and give feedback
 
-1. job-change-interview-coach（opus）を Agent ツールで起動し、Step 3 を指示する。指示書に次を渡す。
-   - 実行するステップ = 3。
-   - profile.json の絶対パス。company_research.json（あれば）・interview_intel.json（あれば）・self_analysis.json（あれば）の絶対パス。
-   - 本スキルの絶対パス（`{SKILL_DIR}`）。出力形式の原本 `references/interview-format.md` の所在として渡す。
-   - 評価対象の質問一覧と回答（company モード時は `interview_answers.json` から読み込む。企業スラッグが無い場合は会話上に保持した対を用いる）。
-2. コーチは各回答を STAR（scores.star）・具体性（scores.specificity）・一貫性（scores.consistency）・企業理解（scores.company_fit）の4観点について、3段階（充足・一部・不足）で評価する。feedback と improvement には根拠参照（profile の該当箇所、self_analysis.json の narrative・reason_for_change、または claim id）を付して返す。フォールバックモードでは企業理解の観点を対象外とし、degraded: true とする。
-3. 評価アンカーの原本は `references/evaluation-rubric.md`（コーチの判定定義と一致）である。コーチが返した JSON を、`degraded`・`degraded_reason` を含むトップレベルごと `interview_evaluation.json` として保存する（company モード時）。`evaluations` 配列だけを抽出しない。回答そのものは `interview_answers.json` に残っており、`question_id` で対応が付く。形式の原本は `references/interview-format.md` にある。
-4. 保存した `interview_evaluation.json` を `validate_interview_artifacts.py` で検証する（company モード時。ゲート）。`--questions` に `interview_questions.json` を渡す。FAIL なら Step 4 へ進まず、ERROR の内容を指示書へ添えてコーチを再起動する。
+1. Launch job-change-interview-coach (opus) with the Agent tool, instructing it to run Step 3. Pass it the following in the instructions.
+   - The step to run = 3.
+   - The absolute path to profile.json. The absolute paths to company_research.json (if present), interview_intel.json (if present), and self_analysis.json (if present).
+   - This skill's absolute path (`{SKILL_DIR}`), as the location of the canonical output-format definition `references/interview-format.md`.
+   - The list of questions and answers to evaluate (read from `interview_answers.json` in company mode; the pairs kept in conversation when there is no company slug).
+2. The coach evaluates each answer on four criteria — STAR (scores.star), specificity (scores.specificity), consistency (scores.consistency), and company understanding (scores.company_fit) — each on a three-level scale (`充足` (met), `一部` (partial), `不足` (not met)). feedback and improvement always include an evidence reference (the relevant part of the profile, self_analysis.json's narrative or reason_for_change, or a claim id). In fallback mode, the company-understanding criterion is excluded and degraded: true is set.
+3. The canonical evaluation anchors live in `references/evaluation-rubric.md` (matching the coach's own judgment definitions). Save the JSON the coach returns as `interview_evaluation.json` (in company mode), including every top-level key such as `degraded` and `degraded_reason`. Do not extract only the `evaluations` array. The answers themselves remain in `interview_answers.json`, linked by `question_id`. The canonical format definition lives in `references/interview-format.md`.
+4. Validate the saved `interview_evaluation.json` with `validate_interview_artifacts.py` (in company mode; a gate), passing `interview_questions.json` to `--questions`. On FAIL, do not proceed to Step 4; attach the ERROR contents to the instructions and relaunch the coach.
 
-### Step 4 総括
+### Step 4: Summary
 
-1. 全評価を観点別に集計し、強み（充足の多い観点）と優先改善点（不足の観点と、その具体的な補い方）を整理する。改善案は `references/evaluation-rubric.md` のアンカーに沿い、STAR の欠落要素の補い方や、企業理解の反映方法を含める。
-2. 再演習の提案（評価の弱い観点・質問類型に絞った再度の模擬面接）を添える。
-3. 観点別の強み・優先改善点・再演習の提案を `interview-prep-report.md` にまとめる（company モード時は company フォルダーへ保存する）。総括の判断・改善案は評価アンカーと根拠参照に基づき、profile.json・company_research.json・interview_intel.json に無い事実を前提に置かない。報告書には、想定質問の出所の内訳（`general`・`reported`・`inferred` の件数）と、`interview_questions.json` の `notes`（聞かれても答えなくてよい事項・選考段階の前提・古い出典の注記）を書く。面接情報を調査しなかった場合は、その旨も書く。
-4. 報告書と最終メッセージはいずれも結論から述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
+1. Aggregate every evaluation by criterion, organizing strengths (criteria mostly met) and priority improvements (criteria not met, with specific ways to address them). Improvement suggestions follow the anchors in `references/evaluation-rubric.md` and include how to fill any missing STAR element and how to bring in company understanding.
+2. Add a suggestion for further practice (a repeat mock interview focused on the weaker criteria or question categories).
+3. Compile the strengths and priority improvements by criterion, and the practice suggestions, into `interview-prep-report.md` (saved to the company folder in company mode). Every judgment and improvement suggestion rests on the evaluation anchors and evidence references, never on facts absent from profile.json, company_research.json, or interview_intel.json. The report states the breakdown of expected-question provenance (the counts of `general`, `reported`, and `inferred`) and reproduces `interview_questions.json`'s `notes` (matters the user is not required to answer, premises about the selection stage, and notes on stale sources). If interview-information research was skipped, state this too.
+4. Both the report and the final message state the conclusion first. No section is left empty, no content is repeated, and no formulaic preamble is added.
 
-## 合否ゲートと差し戻し
+## Pass gates and reruns
 
-パイプラインには4つのゲートがある。
+The pipeline has four gates.
 
-- Step 0.9 のスカウト出力ゲート（company モードで調査した場合）では、保存した `interview_intel.json` を `validate_interview_intel.py` で検証し、PASS（ERROR 0件）を確認する。FAIL なら ERROR の内容を指示書へ添えてスカウトを再起動する。`{"error": ...}` が返った場合は入力の欠落であり、指示書を直して再起動する。この検証は形式と出典の有無だけを見て、質問が本当に聞かれたかどうかは見ない。
-- Step 0 のプロファイルゲート（必須）では、`validate_profile.py` が PASS でなければ Step 1 へ進まない。profile.json が未作成、または FAIL（ERROR 1件以上）の場合は、hub（job-change-support）でのプロファイル整備を先行させ、PASS を確認してから戻る。ただし FAIL の場合は ERROR の内容を示す。利用者が欠落を承知で着手を希望するなら、欠けた項目の値を直接引用または前提とする質問を作らず、その項目を根拠とする評価も行わないという条件で進めてよい。どの項目が欠けたままかを報告に明記する。hub が既にこの選択を利用者へ求めている場合は、再度は問わず、その選択に従う。
-- コーチ出力ゲート（Step 1・Step 3）では、job-change-interview-coach の返す JSON が次を満たすことを確認する。満たさない場合は、不足内容を指示書へ添えてコーチを再起動する。
-  - `{"error": ...}` でない（入力の欠落による返答でない）。
-  - スキーマに適合する（Step 1 は `questions`、Step 3 は `evaluations`）。
-  - `degraded` と `degraded_reason` が、企業固有の根拠の有無と整合する。`degraded` を `true` にする条件の原本は「目的と原則」1 であり、ここで再定義しない。`true` のときは `degraded_reason` に理由（企業固有の根拠が無い、または選考プロセスの根拠が無い）を書く。
-  - Step 3 の `scores` の各値が「充足」「一部」「不足」のいずれかである。
-  - Step 3 の `feedback` と `improvement` に根拠参照を含む。根拠参照とは、profile の該当箇所、self_analysis.json の narrative・reason_for_change、または claim id を指す。
-- 成果物ゲート（Step 1・Step 2・Step 3、company モード時）では、保存した `interview_questions.json`・`interview_answers.json`・`interview_evaluation.json` を `validate_interview_artifacts.py` で検証し、PASS（ERROR 0件）を確認する。FAIL なら次の Step へ進まない。この検証スクリプトは形式・`degraded` の整合・`question_id` の相互参照・語彙だけを見て、質問や評価の内容の当否は見ない。企業スラッグが無い場合は成果物をファイルへ書き出さないことがあり、そのときはこのゲートを適用しない。
+- The Step 0.9 scout-output gate (when research ran in company mode) validates the saved `interview_intel.json` with `validate_interview_intel.py` and confirms PASS (zero ERRORs). On FAIL, attach the ERROR contents to the instructions and relaunch the scout. A returned `{"error": ...}` means an input was missing; fix the instructions and relaunch. This validation checks only format and the presence of sources; whether a question was actually asked is left to the user's judgment.
+- The Step 0 profile gate (mandatory) does not allow proceeding to Step 1 unless `validate_profile.py` returns PASS. If profile.json does not exist, or if it FAILs (one or more ERRORs), have the hub (job-change-support) complete the profile first and confirm PASS before returning; on FAIL, show the ERROR contents. If the user wants to proceed knowing the gaps, this may continue under the condition that no question directly quotes or presupposes the value of a missing field, and no evaluation rests on that field as evidence; the report states which fields remain missing. When the hub has already put this choice to the user, it is not asked a second time; this skill follows the choice already made.
+- The coach-output gate (Step 1 and Step 3) confirms that the JSON job-change-interview-coach returns satisfies the following. If not, relaunch the coach with the shortfall attached to the instructions.
+  - It is not `{"error": ...}` (a response caused by a missing input).
+  - It conforms to the schema (`questions` for Step 1, `evaluations` for Step 3).
+  - `degraded` and `degraded_reason` are consistent with whether company-specific evidence exists. The condition for setting `degraded` to `true` is defined in "Purpose and principles" item 1 and is not redefined here. When `true`, `degraded_reason` states the reason (no company-specific evidence, or no evidence for the selection process).
+  - Each of Step 3's `scores` values is one of `充足` (met), `一部` (partial), or `不足` (not met).
+  - Step 3's `feedback` and `improvement` include an evidence reference. An evidence reference means the relevant part of the profile, self_analysis.json's narrative or reason_for_change, or a claim id.
+- The artifact gate (Step 1, Step 2, Step 3, in company mode) validates the saved `interview_questions.json`, `interview_answers.json`, and `interview_evaluation.json` with `validate_interview_artifacts.py` and confirms PASS (zero ERRORs). On FAIL, do not proceed to the next Step. This validation script checks only format, `degraded` consistency, `question_id` cross-references, and vocabulary; the soundness of a question or evaluation is outside what it checks. When there is no company slug, artifacts may not be written to a file at all, in which case this gate does not apply.
 
-差し戻しは同一ステップにつき最大2回とする。2回で解消しない場合は、当該の質問または評価を未決事項として利用者へ提示し、判断を委ねてから次へ進む。
+Reruns are capped at two per step. If the issue does not resolve within two reruns, present the question or evaluation in question as an open item to the user and proceed only after they decide.
 
-## 役割の実行（ハーネス別）
+## Executing roles (by harness)
 
-本スキルのパイプラインは、専門の役割へ作業を委ねる形で書いてある。役割の内容は `references/roles/` に置き、これを原本とする。
+This skill's pipeline is written as delegation of work to dedicated roles. Role content lives in `references/roles/`, which is the canonical source.
 
-| エージェント名 | 役割プロンプトの原本 |
+| Agent name | Canonical role-prompt location |
 |---|---|
 | `job-change-interview-scout` | `{SKILL_DIR}/references/roles/interview-scout.md` |
 | `job-change-interview-coach` | `{SKILL_DIR}/references/roles/interview-coach.md` |
 
-ハーネス別の実行手順と、起動する数の判断の原本は hub の `{HUB_SKILL_DIR}/references/role-execution.md` にある。サブエージェントを起動できないハーネスで本体がスカウトの役割を担う場合、本体は `career-private/` を読んでいることがある。その場合でも、スカウトの役割の作業中は個人情報を検索語にも成果物にも持ち込まない。
+The canonical execution procedure by harness, and the judgment for how many to launch, live in the hub's `{HUB_SKILL_DIR}/references/role-execution.md`. On a harness that cannot launch subagents, when the main body itself takes on the scout's role, it may have already read `career-private/`. Even then, while performing the scout's role, it brings no personal information into either its search terms or its output.
 
-## エージェントのモデル方針
+## Agent model policy
 
-| エージェント | model | 責務 |
+| Agent | model | Responsibility |
 |---|---|---|
-| `job-change-interview-scout` | sonnet | Step 0.9: 対象企業の面接についての Web 調査 → interview_intel.json |
-| `job-change-interview-coach` | opus | Step 1: 質問類型ごとの想定質問生成 ／ Step 3: 回答の4観点評価とフィードバック |
+| `job-change-interview-scout` | sonnet | Step 0.9: web research on the target company's interviews → interview_intel.json |
+| `job-change-interview-coach` | opus | Step 1: generate expected questions by category / Step 3: four-criterion answer evaluation and feedback |
 
-model はエージェントの frontmatter に固定済みであり、起動時に上書きしない。
+The model is fixed in each agent's frontmatter and is not overridden at launch.
 
-## スクリプトのCLI使用例
+## Script CLI usage examples
 
-本スキルの検証スクリプトは `validate_interview_intel.py` と `validate_interview_artifacts.py` の2本である。前者は Step 0.9 で保存した `interview_intel.json` を検証する。後者は Step 1・Step 2・Step 3 で保存した成果物を、それぞれ次のように検証する。検証対象の種別は、スクリプトがトップレベルのキーから判別する。そのため引数では指定しない。
+This skill has two validation scripts: `validate_interview_intel.py` and `validate_interview_artifacts.py`. The former validates the `interview_intel.json` saved in Step 0.9. The latter validates the artifacts saved in Step 1, Step 2, and Step 3, as shown below. The script determines which kind of artifact it is checking from the top-level keys, so this is never given as an argument.
 
 ```bash
-python {SKILL_DIR}/scripts/validate_interview_intel.py {DATA_ROOT}/companies/{企業スラッグ}/interview_intel.json --json
-python {SKILL_DIR}/scripts/validate_interview_artifacts.py {DATA_ROOT}/companies/{企業スラッグ}/interview_questions.json
-python {SKILL_DIR}/scripts/validate_interview_artifacts.py {DATA_ROOT}/companies/{企業スラッグ}/interview_answers.json --questions {DATA_ROOT}/companies/{企業スラッグ}/interview_questions.json
-python {SKILL_DIR}/scripts/validate_interview_artifacts.py {DATA_ROOT}/companies/{企業スラッグ}/interview_evaluation.json --questions {DATA_ROOT}/companies/{企業スラッグ}/interview_questions.json --json
+python {SKILL_DIR}/scripts/validate_interview_intel.py {DATA_ROOT}/companies/{company slug}/interview_intel.json --json
+python {SKILL_DIR}/scripts/validate_interview_artifacts.py {DATA_ROOT}/companies/{company slug}/interview_questions.json
+python {SKILL_DIR}/scripts/validate_interview_artifacts.py {DATA_ROOT}/companies/{company slug}/interview_answers.json --questions {DATA_ROOT}/companies/{company slug}/interview_questions.json
+python {SKILL_DIR}/scripts/validate_interview_artifacts.py {DATA_ROOT}/companies/{company slug}/interview_evaluation.json --questions {DATA_ROOT}/companies/{company slug}/interview_questions.json --json
 ```
 
-Step 0 で用いる3本はいずれも hub（job-change-support）のスクリプトであり、hub 経由で入る場合は hub がルーティング前に実行済みである。単独で起動された場合は本スキルが次を実行する。`{HUB_SKILL_DIR}` は hub スキルの絶対パスに読み替える。
+The three scripts used in Step 0 all belong to the hub (job-change-support); when entering through the hub, the hub has already run them before routing. When launched standalone, this skill runs the following itself. Read `{HUB_SKILL_DIR}` as the hub skill's absolute path.
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/validate_profile.py {DATA_ROOT}/career-private/profile.json --json
 python {HUB_SKILL_DIR}/scripts/validate_company_index.py {DATA_ROOT}/career-private/company_index.json
-python {HUB_SKILL_DIR}/scripts/check_freshness.py {DATA_ROOT}/companies/{企業スラッグ}/_manifest.json
+python {HUB_SKILL_DIR}/scripts/check_freshness.py {DATA_ROOT}/companies/{company slug}/_manifest.json
 ```
 
-`validate_interview_intel.py`・`validate_interview_artifacts.py`・`validate_profile.py`・`validate_company_index.py` の終了コードは PASS で 0、FAIL で 1（WARN のみは PASS 扱い）である。`check_freshness.py` は常に終了コード 0 を返し、`fresh`・`stale`・`missing` の分類を出力する。profile.json の仕様と検証規則の原本は job-change-support の `references/profile-format.md` にある。
+`validate_interview_intel.py`, `validate_interview_artifacts.py`, `validate_profile.py`, and `validate_company_index.py` exit 0 on PASS and 1 on FAIL (WARN alone counts as PASS). `check_freshness.py` always exits 0 and prints a classification of `fresh`, `stale`, or `missing`. The canonical specification and validation rules for profile.json live in job-change-support's `references/profile-format.md`.
 
-## references 一覧
+## references index
 
-| ファイル | 何を | いつ読むか |
+| File | What it covers | When to read it |
 |---|---|---|
-| `references/interview-intel-format.md` | `interview_intel.json` のフィールド仕様・記入基準・機械的な検証の規則、報告された質問と推測した質問の区別 | Step 0.9 の調査と検証、Step 1 の入力 |
-| `references/interview-format.md` | 3つの成果物（`interview_questions.json`・`interview_answers.json`・`interview_evaluation.json`）のフィールド仕様・記入基準・機械的な検証の規則 | Step 1〜Step 3 の保存と検証 |
-| `references/question-bank.md` | 想定質問の出所と示し方、頻出質問の質問類型・面接官の評価観点（細目・年代・選考段階）・答え方の原則・逆質問の NG・カジュアル面談・聞かれても答えなくてよい事項・転職エージェント経由の情報（出典付き） | Step 0 の聞き取り、Step 1 の想定質問生成、Step 2 の進行 |
-| `references/roles/interview-scout.md` | 面接情報調査担当の役割プロンプト | Step 0.9。サブエージェントを使えないハーネスでは本体が読む |
-| `references/roles/interview-coach.md` | 想定質問の生成と回答評価の役割プロンプト | Step 1・Step 3。サブエージェントを使えないハーネスでは本体が読む |
-| `references/evaluation-rubric.md` | 4観点（STAR・具体性・一貫性・企業理解）と3段階のアンカー、良い回答の要素、学術的根拠（DOI 付き） | Step 3 の評価、Step 4 の総括 |
-| `references/foreign-interviews.md` | 外資系のビヘイビアラル/コンピテンシー面接・ケース面接の進め方と評価観点（出典付き） | 外資系選考の Step 1・Step 2・Step 3 |
+| `references/interview-intel-format.md` | Field specification, entry criteria, and mechanical validation rules for `interview_intel.json`; the distinction between reported and inferred questions | The Step 0.9 research and validation, and Step 1 input |
+| `references/interview-format.md` | Field specification, entry criteria, and mechanical validation rules for the three artifacts (`interview_questions.json`, `interview_answers.json`, `interview_evaluation.json`) | Saving and validating in Step 1 through Step 3 |
+| `references/question-bank.md` | Provenance and presentation of expected questions; frequent question categories with interviewer evaluation criteria (sub-items, age bracket, selection stage), principles for answering, reverse questions to avoid, casual meetings, matters the user is not required to answer, and sourced information obtained through a job-change agency | The Step 0 interview, generating expected questions in Step 1, running Step 2 |
+| `references/roles/interview-scout.md` | Role prompt for the interview-information research role | Step 0.9. Read by the main body on a harness that cannot use subagents |
+| `references/roles/interview-coach.md` | Role prompt for generating expected questions and evaluating answers | Step 1 and Step 3. Read by the main body on a harness that cannot use subagents |
+| `references/evaluation-rubric.md` | The four criteria (STAR, specificity, consistency, company understanding) and their three-level anchors; elements of a good answer; academic evidence (with DOIs) | Evaluation in Step 3, summary in Step 4 |
+| `references/foreign-interviews.md` | How foreign-affiliated behavioral / competency interviews and case interviews proceed, and their evaluation criteria (sourced) | Step 1, Step 2, and Step 3 for a foreign-affiliated selection process |

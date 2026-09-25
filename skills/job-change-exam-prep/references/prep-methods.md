@@ -1,82 +1,82 @@
-# 対策方法
+# Preparation methods
 
-検査種別ごとに対策がどこまで効くか、その学術的な裏付け、定番教材の系統、ケース面接・フェルミ推定の型をまとめる。Step 2 の対策方針と、Step 3 の演習方針の原本とする。
+This summarizes, for each assessment type, how much preparation actually helps, its academic backing, the standard family of materials, and the pattern for case interviews and Fermi estimation. It is the canonical definition for Step 2's preparation policy and Step 3's practice policy.
 
-## 対策の効き方の二分
+## The split in how well preparation works
 
-対策の効き方は大きく2つに分かれる。検査が「同一形式の反復が効くもの」か、「望ましく見せる回答が効きにくいもの」かである。
+How well preparation works splits broadly into two groups: whether the assessment is one where "repeating the same format helps," or one where "an answer meant to look favorable is ineffective."
 
-### 同一形式の反復が効く検査（能力検査系）
+### Assessments where repeating the same format helps (the ability-test family)
 
-SPI3・玉手箱・TG-WEB・GAB・CAB などの能力検査では、反復練習で受検者の得点が上がる。出題形式が定型的だからである。認知能力検査の再受検・練習・コーチングによる得点上昇は、メタ分析で効果量 d≈0.26 と報告される（50 研究・134,436 名）。この値は単一のメタ分析による推定である。「真の能力向上」か「測定への慣れ」かを分離した結果ではない点に留意する。
+For ability tests such as SPI3, 玉手箱 (Tamatebako), TG-WEB, GAB, and CAB, a test-taker's score rises with repeated practice, because the question format is fixed. A meta-analysis reports an effect size of d≈0.26 for the score increase from retesting, practice, and coaching on cognitive-ability tests (50 studies, 134,436 people). This figure is the estimate from a single meta-analysis. Note that it does not separate "a genuine increase in ability" from "growing accustomed to the measurement."
 
-- 出典: Hausknecht, J. P., et al. (2007). Retesting in selection: A meta-analysis of coaching and practice effects for tests of cognitive ability. Journal of Applied Psychology, 92(2), 373–385. DOI: 10.1037/0021-9010.92.2.373 （レベル A。単一メタ分析）
+- Source: Hausknecht, J. P., et al. (2007). Retesting in selection: A meta-analysis of coaching and practice effects for tests of cognitive ability. Journal of Applied Psychology, 92(2), 373–385. DOI: 10.1037/0021-9010.92.2.373 (Level A. Single meta-analysis)
 
-学習の要点は、出題形式への習熟と短い制限時間での処理速度の向上である。玉手箱・TG-WEB のように短時間で同一形式を連続出題する検査では、1 問あたりの時間配分と即断が得点を左右する。
+The key to studying is becoming familiar with the question format and increasing processing speed within a short time limit. For tests such as 玉手箱 (Tamatebako) and TG-WEB, which present the same format in rapid succession under short time limits, the time allocated per question and quick decisions are what determine the score.
 
-### 望ましく見せる回答が効きにくい検査（性格検査・TAL・内田クレペリン）
+### Assessments where an answer meant to look favorable is ineffective (personality tests, TAL, 内田クレペリン検査 (Uchida-Kraepelin))
 
-性格検査・TAL・内田クレペリンは知識や解法の暗記による対策が成り立ちにくく、性格検査には回答の一貫性を見る仕組みがあるため、望ましく見せようとした回答は矛盾として現れうる。一貫した正直な回答を勧める。
+Personality tests, TAL, and 内田クレペリン検査 (Uchida-Kraepelin) are not well suited to preparation through memorizing knowledge or techniques. Personality tests in particular have a mechanism for checking answer consistency, so an answer that tries to look favorable can surface as a contradiction. Consistent, honest answers are recommended.
 
-- 出典（性格検査の回答方針）: ワンキャリア「適性検査になぜ落ちる？理由・落ちる確率と対策 7 つ」 https://www.onecareer.jp/articles/3598 （レベル C。対策媒体）
+- Source (answering policy for personality tests): OneCareer, 「適性検査になぜ落ちる？理由・落ちる確率と対策 7 つ」 ("Why do people fail aptitude tests? Reasons, failure rates, and 7 countermeasures") https://www.onecareer.jp/articles/3598 (Level C. Preparation outlet)
 
-内田クレペリンは連続加算の作業検査である。対策は加算そのものへの慣れにとどまる。TAL は公式の練習問題・対策本がほぼ無く、明確な正解を狙う対策が成り立たない（`references/assessment-catalog.md`）。これらに教材を過剰に投入することは勧めない。
+内田クレペリン検査 (Uchida-Kraepelin) is a work-sample test of continuous addition. Preparation is limited to becoming accustomed to the addition itself. For TAL, there are almost no official practice questions or preparation books, and preparation aimed at a clear correct answer does not hold (`references/assessment-catalog.md`). Over-investing materials into these is not recommended.
 
-### 回答のゆがみ（faking）をめぐる両論
+### The two competing views on faking
 
-性格検査での回答のゆがみ（社会的に望ましく見せる回答）が妥当性に与える影響については、学術的に見解が分かれる。両論を併記する。
+Whether faking (distorting answers to look socially desirable) on a personality test affects its validity is academically divided. Both views are presented together.
 
-| 説 | 主張と出典 |
+| View | Claim and source |
 |---|---|
-| 実害は限定的とする説（多数説） | 社会的望ましさは性格検査の妥当性を実質的には損なわないとする。出典: Ones, D. S., Viswesvaran, C., & Reiss, A. D. (1996). The role of social desirability in personality testing for personnel selection: The red herring. Journal of Applied Psychology, 81(6), 660–679. DOI: 10.1037/0021-9010.81.6.660 （レベル A） |
-| 妥当性が低く再考を求める説（批判的少数説） | 回答のゆがみは避けがたく、性格検査の予測的妥当性は低いとして選考での使用の再考を求める。出典: Morgeson, F. P., et al. (2007). Reconsidering the use of personality tests in personnel selection contexts. Personnel Psychology, 60(3), 683–729. DOI: 10.1111/j.1744-6570.2007.00089.x （レベル A） |
+| The "limited harm" view (majority view) | Holds that social desirability does not substantially undermine the validity of personality testing. Source: Ones, D. S., Viswesvaran, C., & Reiss, A. D. (1996). The role of social desirability in personality testing for personnel selection: The red herring. Journal of Applied Psychology, 81(6), 660–679. DOI: 10.1037/0021-9010.81.6.660 (Level A) |
+| The "low validity, reconsider use" view (critical minority view) | Holds that answer distortion is unavoidable, that the predictive validity of personality tests is low, and calls for reconsidering their use in selection. Source: Morgeson, F. P., et al. (2007). Reconsidering the use of personality tests in personnel selection contexts. Personnel Psychology, 60(3), 683–729. DOI: 10.1111/j.1744-6570.2007.00089.x (Level A) |
 
-未決着の論点であるため、いずれか一方を確定として助言しない。実務上の推奨（一貫した正直な回答）は、望ましく見せる回答が矛盾として現れて不利になりうること、および正直に回答すれば企業と応募者の適合を正しく測れることに基づく。
+Because this point is not settled, neither view is advised as confirmed. The practical recommendation (consistent, honest answers) rests on the fact that an answer meant to look favorable can surface as a contradiction and work against the candidate, and that answering honestly correctly measures the fit between the company and the applicant.
 
-## 検査種別ごとの対策方針
+## Preparation policy by assessment type
 
-| 検査種別 | 対策の効き方 | 学習の要点 |
+| Assessment type | How well preparation works | Key points to study |
 |---|---|---|
-| SPI3・玉手箱・TG-WEB・GAB・CAB | 反復練習が効く | 出題形式への習熟、短時間での処理速度、時間配分 |
-| 性格検査 | 望ましく見せる回答は非推奨 | 一貫した正直な回答。企業への適合の自己確認 |
-| TAL | 対策困難 | 形式の把握にとどめ、教材の過剰な投入を避ける |
-| 内田クレペリン | 対策困難 | 連続加算への慣れ、体調・集中の管理 |
+| SPI3, 玉手箱 (Tamatebako), TG-WEB, GAB, CAB | Repeated practice is effective | Familiarity with the question format, processing speed under a short time limit, time allocation |
+| 性格検査 (personality test) | An answer meant to look favorable is not recommended | Consistent, honest answers. A self-check of fit with the company |
+| TAL | Preparation is difficult | Limit to grasping the format; avoid over-investing in materials |
+| 内田クレペリン検査 (Uchida-Kraepelin) | Preparation is difficult | Becoming accustomed to continuous addition; managing physical condition and concentration |
 
-## 定番教材の系統
+## The standard family of materials
 
-能力検査の対策は、問題形式に習熟するための定番の対策本で進める。SPI・玉手箱等では、受検者が SPI ノートの会「これが本当の Web テストだ！」シリーズなどを広く使っている。検査種別に対応した教材を選び、形式ごとに反復する。
+Preparation for ability tests proceeds with the standard preparation books used to become familiar with the question formats. For SPI, 玉手箱 (Tamatebako), and similar tests, test-takers widely use series such as SPI ノートの会「これが本当の Web テストだ！」 series ("This Is the Real Web Test!"). Choose materials matched to the assessment type and repeat by format.
 
-- 出典: 就活の教科書「【最新版】玉手箱のおすすめ対策本」 https://reashu.com/tamtebako-text/ （レベル C。対策媒体）
+- Source: Shukatsu no Kyokasho ("The Job-Hunting Textbook"), "Recommended 玉手箱 (Tamatebako) preparation books (latest edition)" https://reashu.com/tamtebako-text/ (Level C. Preparation outlet)
 
-## ケース面接・フェルミ推定の型
+## The pattern for case interviews and Fermi estimation
 
-外資系（特にコンサルティングファーム）で課されるケース面接・フェルミ推定は、次の型で進める。評価の対象は、思考の過程（前提の妥当性・分解の網羅性・仮説と結論の説明）である。
+Case interviews and Fermi estimation, given at foreign-affiliated firms (especially consulting firms), proceed with the following pattern. What is evaluated is the thinking process (the soundness of the premises, the thoroughness of the decomposition, and how the hypothesis and conclusion are explained).
 
-1. 問いの範囲・定義・条件を確認し、前提を明示する。
-2. 問題を漏れなく重複なく（MECE を意識して）要素へ分解する。汎用のフレームワークは、対象の課題に合わせて調整して使う。
-3. 分解した要素に対し、根拠を伴う仮説を先に立てる。
-4. 結論を先に述べ、その後に論拠を示す。
+1. Confirm the scope, definitions, and conditions of the question, and state the premises explicitly.
+2. Decompose the problem into elements without omission or overlap (mindful of MECE). Adjust any general-purpose framework to fit the subject at hand.
+3. For each decomposed element, form a hypothesis backed by reasoning before proceeding.
+4. State the conclusion first, then present the supporting reasoning.
 
-- 出典（ケース面接の考え方）: コンサル GO「ケース面接の例題と対策を解説！」 https://consulgo.jp/article/case-interview-example/ （レベル B）
-- 出典（構造化とフレームワーク）: The Thinksters「How to structure a consulting case interview: frameworks, tips, and examples」 https://thethinksters.com/how-to-structure-a-consulting-case-interview-frameworks-tips-and-examples/ （レベル B）
-- 出典（フェルミ推定の評価観点）: ワンキャリア「フェルミ推定・ケース面接を対策！」 https://www.onecareer.jp/articles/298 （レベル C）
+- Source (approach to case interviews): Consul GO, 「ケース面接の例題と対策を解説！」 ("Explaining example case-interview questions and how to prepare") https://consulgo.jp/article/case-interview-example/ (Level B)
+- Source (structuring and frameworks): The Thinksters, "How to structure a consulting case interview: frameworks, tips, and examples" https://thethinksters.com/how-to-structure-a-consulting-case-interview-frameworks-tips-and-examples/ (Level B)
+- Source (evaluation criteria for Fermi estimation): OneCareer, 「フェルミ推定・ケース面接を対策！」 ("Preparing for Fermi estimation and case interviews!") https://www.onecareer.jp/articles/298 (Level C)
 
-## 妥当性の絶対水準についての注記
+## Note on the absolute level of validity
 
-能力検査（一般知的能力、GMA）の予測的妥当性の絶対水準は、学術的に論争中である。85 年分の研究を総括した古典（Schmidt & Hunter 1998、GMA 単独で .51 前後。DOI: 10.1037/0033-2909.124.2.262）に対し、2022 年の再分析（Sackett et al.、DOI: 10.1037/apl0000994）が対立する。再分析はレンジ制限（range restriction）の過大補正を指摘して妥当性を下方修正し、相対的には構造化面接を最上位に置く。補正方針については後続論文との間で議論が続いており、いずれの係数も確定値として扱えない。したがって、能力検査の対策の意義（反復で得点が上がること）は認めつつ、能力検査を万能視しない。この論点は面接対策（`job-change-interview-prep`）でも扱う。
+The absolute level of predictive validity for cognitive-ability tests (general mental ability, GMA) is academically contested. A classic study summarizing 85 years of research (Schmidt & Hunter 1998, around .51 for GMA alone. DOI: 10.1037/0033-2909.124.2.262) is opposed by a 2022 reanalysis (Sackett et al., DOI: 10.1037/apl0000994). The reanalysis points to over-correction for range restriction, revises the validity downward, and, relatively speaking, places the structured interview at the top. Debate over the correction approach continues with follow-up papers, and neither coefficient can be treated as a settled value. Accordingly, while this skill acknowledges the value of preparation for ability tests (that scores rise with repetition), it does not treat ability tests as all-powerful. This point is also covered in interview preparation (`job-change-interview-prep`).
 
-### 日本サンプルの査読実証
+### Peer-reviewed empirical studies on Japanese samples
 
-上の妥当性水準は、主に欧米サンプルを対象とした研究に基づく。日本サンプルを対象とした査読メタ分析も2件あり、どちらも日本での妥当性が欧米の定説ほど高くない可能性を示す。
+The validity levels above are based mainly on studies of Western samples. There are also two peer-reviewed meta-analyses targeting Japanese samples, both of which suggest that validity in Japan may not be as high as the Western consensus holds.
 
 <!-- textlint-disable jtf-style/2.1.2.漢字 -->
-<!-- 出典の著者名に常用漢字表外の字を含むため、この範囲だけ当該規則を無効化する。 -->
+<!-- Disabling this rule only for this range because the cited authors' names contain characters outside the jōyō kanji list. -->
 
-- 知的能力検査の妥当性一般化（1994）。日本の知的能力検査データを対象にメタ分析で妥当性一般化を検討した査読論文が『産業・組織心理学研究』に掲載されている（高橋潔・西田直史「知的能力検査に関する妥当性一般化 －メタ分析による結果－」産業・組織心理学研究 8(1):3-12, 1994。DOI: 10.32222/jaiop.8.1_3。レベルA・査読済み）。
-- 管理者適性検査 NMAT のメタ分析（2000）。24 研究を統合した日本サンプルのメタ分析で、知的能力検査のレンジ制限と信頼性の不完全性を補正した後の妥当性係数が r=0.257 と推定されている（二村英幸・今城志保・内藤淳「管理者層を対象とした性格検査・知的能力検査の妥当性のメタ分析と一般化」経営行動科学 13(3):159-167, 2000。DOI: 10.5651/jaas.13.159。レベルA・査読済み。この r=0.257 は当該メタ分析の単一の推定値）。同論文は、知的能力検査の妥当性が米国で一般に報告される値より低く、一般化できる範囲も限られると報告している。ただし NMAT はリクルート系（人事測定研究所）の製品で、著者も同系の測定研究者であるため、自社の手法を自ら評価する立場にあり、利益相反がある点に留意する。
+- Validity generalization for cognitive-ability tests (1994). A peer-reviewed paper examining validity generalization through meta-analysis on Japanese cognitive-ability test data was published in 産業・組織心理学研究 (Japanese Journal of Industrial/Organizational Psychology) (高橋潔・西田直史「知的能力検査に関する妥当性一般化 －メタ分析による結果－」, 産業・組織心理学研究 8(1):3-12, 1994. DOI: 10.32222/jaiop.8.1_3. Level A, peer-reviewed).
+- A meta-analysis of the managerial-aptitude test NMAT (2000). A meta-analysis integrating 24 Japanese-sample studies estimates the validity coefficient, after correcting for range restriction and imperfect reliability in the cognitive-ability test, at r=0.257 (二村英幸・今城志保・内藤淳「管理者層を対象とした性格検査・知的能力検査の妥当性のメタ分析と一般化」経営行動科学 13(3):159-167, 2000. DOI: 10.5651/jaas.13.159. Level A, peer-reviewed. This r=0.257 is a single estimate from that meta-analysis). The same paper reports that the validity of cognitive-ability tests is lower than the values generally reported in the United States, and that the range over which it generalizes is also limited. Note, however, that NMAT is a product of the Recruit-affiliated Japan Institute for Personnel Measurement, and its authors are measurement researchers from the same Recruit group, so there is a conflict of interest in that they are evaluating their own firm's method.
 
 <!-- textlint-enable jtf-style/2.1.2.漢字 -->
 
-これらは、欧米メタ分析の高い妥当性係数を日本の採用文脈へそのまま当てはめられないことを示す。
+These show that the high validity coefficients from Western meta-analyses cannot be applied as-is to the Japanese hiring context.
 
-なお、ここで確認できた日本サンプルの査読研究は、知的能力の検査全般と管理者適性検査 NMAT を対象とするものである。SPI3・玉手箱など新卒・中途採用で主力となる個別の商用検査そのものの予測的妥当性を、独立した第三者が日本サンプルで検証した査読研究は、2026年7月時点の追加探索（J-STAGE・CiNii・Crossref・OpenAlex・Semantic Scholar の横断）でも確認できていない。個別商用検査の妥当性は、提供元の非査読の公表資料に依存している可能性が高い。
+Note that the peer-reviewed Japanese-sample studies confirmed here cover cognitive-ability tests in general and the managerial-aptitude test NMAT specifically. As of July 2026, an additional search (across J-STAGE, CiNii, Crossref, OpenAlex, and Semantic Scholar) has not turned up a peer-reviewed study in which an independent third party verified the predictive validity of an individual commercial test such as SPI3 or 玉手箱 (Tamatebako) itself, on a Japanese sample. The validity of individual commercial tests is likely to rest on non-peer-reviewed materials published by their providers.

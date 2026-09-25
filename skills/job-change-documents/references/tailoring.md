@@ -1,45 +1,95 @@
-# 企業別カスタマイズと誇張禁止の基準
+# Company-specific tailoring and the anti-exaggeration standard
 
-応募書類を対象企業・対象求人に合わせて調整する手順と、その調整が誇張・創作に転じないための基準の原本である。作成担当（`job-change-document-writer`）は志望動機の構成とアピールマッピングに、監査担当（`job-change-document-auditor`）は誇張・創作の検出に用いる。全書類の誇張を検査する基準は本書に集約する。
+This is the canonical definition for the procedure that adjusts an application document to the target
+company and the target posting, and for the standard that keeps that adjustment from turning into
+exaggeration or fabrication. The writer (`job-change-document-writer`) uses it for the statement of
+motivation's structure and the appeal mapping; the auditor (`job-change-document-auditor`) uses it for
+detecting exaggeration and fabrication. The standard for checking exaggeration across every document
+type is consolidated here.
 
-## アピールマッピング
+## Appeal mapping
 
-作成の前に、求人要件と `profile.json` の実績を対応づけた表を作る。これがすべての訴求の根拠になる。
+Before writing, build a table that maps the posting requirements against `profile.json`'s
+achievements. This becomes the grounding for every selling point.
 
-| 列 | 内容 |
+| Column | Content |
 |---|---|
-| 求人要件 | 求人票が求める経験・スキル・成果。1行に1要件 |
-| 対応する実績 | その要件に対応する `profile.json` の職歴・実績。`career_history[].achievements` の該当項目を指す |
-| 裏付け | 対応を裏付ける具体的事実（担当範囲・`metric` の定量値・資格など） |
+| Posting requirement | An experience, a skill, or a result the posting asks for. One requirement per row. |
+| Corresponding achievement | The career history or achievement in `profile.json` that corresponds to that requirement. Points to the relevant entry in `career_history[].achievements`. |
+| Supporting evidence | The concrete fact that grounds the correspondence (the scope of responsibility, a quantified value in `metric`, a qualification, and the like). |
 
-- 訴求点は必ず求人要件に対応づける。要件に結び付かない自己PRを並べない。
-- 求人要件に対応する実績が `profile.json` に無い場合、その行は空のままにする。創作で埋めない。空欄が多い場合は、応募職と経歴の隔たりとして利用者へ示す（応募判断や経歴の補強は利用者の判断事項）。
+- Every selling point maps to a posting requirement. Do not line up a self-PR statement that connects
+  to no requirement.
+- When `profile.json` has no achievement that corresponds to a posting requirement, leave that row
+  blank. Do not fill it with fabrication. When many rows are blank, show the user the resulting gap
+  between the target job and the career history (whether to apply, and whether to strengthen the
+  career history, are the user's decisions).
 
-## 志望動機の構成
+## The statement of motivation's structure
 
-志望動機は、次の3段構成で書く（出典: リクルートエージェント「職務経歴書に志望動機は必要？」 https://www.r-agent.com/guide/resume/article4402/ 信頼できる二次）。
+Write the statement of motivation in three parts (source: リクルートエージェント "職務経歴書に志望動機は必要？"
+https://www.r-agent.com/guide/resume/article4402/, reliable secondary).
 
-1. 結論として、なぜその企業を志望するかを最初に述べる。
-2. そう考える背景・理由と、それを裏付ける具体的なエピソード（自身の経験・実績）を続ける。
-3. 入社後にどう活躍・貢献するかの見通しを示す。
+1. State the conclusion first: why the applicant wants this company.
+2. Follow with the background and the reasoning behind that conclusion, backed by a concrete episode
+   (the applicant's own experience or achievement).
+3. Close with a prospect for how the applicant will contribute and perform after joining.
 
-- その企業だからこそ実現できることを書く。志望動機が競合他社にも通じる内容であれば、採用担当者に「自社でなくてもよいのでは」と判断されうる。対象企業の理念・事業に固有の要素に結び付ける（同 リクルートエージェント）。
-- 企業研究の結果と実績を結び付ける。`company_research.json` の理念（`claims` の `topic=philosophy`）・事業・求める人物像と、`profile.json` の実績を対応づける。志望動機で参照した企業側の要素は、`company_research.json` の claim を根拠とする。伝聞や推測で企業像を作らない。
-- `company_research.json` が無い場合、企業固有の志望動機は書けない。汎用の骨子（自身の転職の軸・強みの整理）に留め、企業固有の調整は企業研究の後に行う旨を利用者へ明示する。
-- `career-private/self_analysis.json`（`job-change-self-analysis` の成果物）がある場合は、次のとおり用いる。志望動機書・自己PRの「背景」の段落には `career_narrative`（ライフテーマ・転機・一貫する動機）を用いる。「結論」「入社後の貢献」の裏付けには、根拠付きの `strengths`（episode_id・feedback_id に対応づけられた強み）を用いる。転職理由に触れる箇所は `reason_for_change.constructive_version`（発揮したい価値を軸にした言い換え）を基調とする。profile.json の `job_change_axis.reasons` と矛盾しないことを確認する。self_analysis.json が無い場合は profile.json の `strengths`・`job_change_axis` のみを素材とする。
+- Write what only this company makes possible. When a statement of motivation would read equally well
+  for a competitor, a hiring manager may judge that it need not be this company (同 リクルートエージェント).
+  Tie it to an element specific to the target company's philosophy and business.
+- Connect the company research to the achievements. Map `company_research.json`'s philosophy (claims
+  with `topic=philosophy`), business, and the profile of the person it wants against `profile.json`'s
+  achievements. Ground any element about the company cited in the statement of motivation in a
+  `company_research.json` claim; do not build a picture of the company from hearsay or guesswork.
+- When `company_research.json` does not exist, a company-specific statement of motivation cannot be
+  written. Limit it to a generic skeleton (the axis of the applicant's own career change, an
+  organization of their strengths), and tell the user explicitly that company-specific tailoring
+  follows after company research.
+- When `career-private/self_analysis.json` (the output of `job-change-self-analysis`) exists, use it
+  as follows. Use `career_narrative` (the life theme, a turning point, the consistent motivation) for
+  the 「背景」 (background) paragraph of the statement of motivation and the self-PR. Use `strengths`
+  grounded in evidence (a strength mapped to an `episode_id` or a `feedback_id`) to support the
+  「結論」 (conclusion) and 「入社後の貢献」 (contribution after joining) parts. Base any passage touching the reason for changing jobs on
+  `reason_for_change.constructive_version` (a reframing centered on the value the applicant wants to
+  bring). Confirm it does not conflict with profile.json's `job_change_axis.reasons`. When
+  self_analysis.json does not exist, use only profile.json's `strengths` and `job_change_axis` as
+  material.
 
-## 誇張禁止の基準
+## The anti-exaggeration standard
 
-作成担当は、企業別に表現を調整する過程で記述が `profile.json` の裏付けを超えないよう次を厳守する。監査担当は、この基準で誇張・創作を検出する。
+While adjusting the wording for a company, the writer strictly holds the description within what
+`profile.json` supports, following the standard below. The auditor detects exaggeration and
+fabrication against this same standard.
 
-- 書類中の数値・割合・金額は、`profile.json` の `achievements[].metric` と厳密に一致させる。丸め（「38%」→「約40%」）・水増し（「40%」→「50%近く」）をしない。metric に無い数値を新たに作らない。`metric` が `null` の実績には定量値を付けない。
-- 規模・範囲・主体を表す言葉は裏付けの範囲に限る。「大規模」「全社」「主導」「立ち上げ」「責任者」などの言葉は、`profile.json` の記述で裏付けられる範囲を超えて用いない。役割の表現（担当・主担当・リード・統括・責任者）が本人の関与の範囲のどこに当たるかの原本は、`job-change-profile` の `references/answer-handling.md`（役割の表現の段階）にある。書類の側で、profile.json が裏付ける役割より強い言葉に書き換えない。
-  - 規模の言葉（大規模・多数など）は、profile.json に規模を示す記述がある場合に限る。
-  - 範囲の言葉（全社・全部門・グローバルなど）は、`profile.json` がその範囲を示す場合に限る。一部門の施策を「全社の」と書かない。
-  - 主体の言葉（主導・統括・立ち上げなど）は、`profile.json` が本人の主体的関与を示す場合に限る。参加・補佐にとどまる関与を「主導」と書かない。
-- 記載のない経歴・実績を作らない。求人要件に合わせる目的で、`profile.json` にない職歴・実績・スキルを書き加えない（虚偽記載の禁止）。
+- Match a number, a percentage, or an amount in the document exactly to `profile.json`'s
+  `achievements[].metric`. Do not round it (「38%」→「約40%」) or inflate it (「40%」→「50%近く」).
+  Do not invent a number absent from `metric`. Do not attach a quantified value to an
+  achievement whose `metric` is `null`.
+- Limit a word for scale, scope, or ownership to what the evidence supports. Do not use a word such as
+  「大規模」「全社」「主導」「立ち上げ」「責任者」 (large-scale, company-wide, led, launched, responsible for) beyond
+  what `profile.json`'s description supports. The canonical definition of where a role-describing word
+  (担当・主担当・リード・統括・責任者) falls on the scale of the applicant's actual involvement lives in
+  `job-change-profile`'s `references/answer-handling.md` ("The scale of role phrasing"). Do not
+  rewrite a role on the document's side into stronger wording than profile.json supports.
+  - Use a word for scale (大規模 large-scale, 多数 numerous, and the like) only when profile.json has a
+    description that shows that scale.
+  - Use a word for scope (全社 company-wide, 全部門 across all departments, グローバル global, and the like)
+    only when profile.json shows that scope. Do not write a single department's initiative as
+    「全社の」.
+  - Use a word for ownership (主導 led, 統括 oversaw, 立ち上げ launched, and the like) only when
+    profile.json shows the applicant's own leading involvement. Do not write an involvement limited to
+    participation or support as 「主導」.
+- Do not invent a career history entry or an achievement absent from the record. Do not add a career
+  history entry, an achievement, or a skill absent from `profile.json` for the purpose of matching a
+  posting requirement (fabrication is prohibited).
 
-## この基準の適用範囲と限界
+## The scope and limits of this standard
 
-- 志望動機の3段構成と「その企業だからこそ」の原則は、大手転職エージェントの実務解説（信頼できる二次）に基づく。表現の細部は企業・職種で幅がある。
-- 誇張禁止の基準は、`profile.json` を裏付けの唯一の原本とする本スキル群の設計に基づく。profile.json の記述が不正確・不足の場合、書類の精度もそれに制約される。実績の補強は `job-change-profile` のセクション更新による profile.json の更新を通じて行う。
+- The statement of motivation's three-part structure and the "only this company" principle rest on a
+  major recruiting agency's practical guide (reliable secondary). The wording's detail varies by
+  company and occupation.
+- The anti-exaggeration standard rests on this skill family's design, which treats `profile.json` as
+  the sole canonical source of grounding. When profile.json's description is inaccurate or incomplete,
+  the document's precision is constrained accordingly. Strengthening an achievement runs through
+  updating profile.json via `job-change-profile`'s section update (`achievements`).

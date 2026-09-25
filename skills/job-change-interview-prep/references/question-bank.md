@@ -1,268 +1,268 @@
-# 頻出質問の原本（質問類型・評価観点・答え方）
+# Canonical source for frequent questions (question categories, evaluation criteria, principles for answering)
 
-日本の中途採用面接で頻出する質問を、質問類型ごとに整理する。各類型に、面接官がその質問で確認しようとする評価観点、答え方の原則、出典を付す。外資系のビヘイビアラル面接・ケース面接は `foreign-interviews.md` を、回答評価のアンカーは `evaluation-rubric.md` を、企業固有の面接情報の成果物は `interview-intel-format.md` を原本とする。
+This document organizes, by question category, the questions frequently asked in mid-career hiring interviews in Japan. For each category it gives the evaluation criterion the interviewer is checking with the question, the principle for answering, and its sources. The canonical source for foreign-affiliated behavioral interviews and case interviews is `foreign-interviews.md`; for answer-evaluation anchors, `evaluation-rubric.md`; and for the artifact holding company-specific interview information, `interview-intel-format.md`.
 
-## 想定質問の出所と示し方
+## Provenance and presentation of expected questions
 
-想定質問には3つの出所があり、`interview_questions.json` の `provenance` で区別する。
+An expected question has one of three provenances, distinguished by `interview_questions.json`'s `provenance` field.
 
-| 出所 | 内容 | 利用者への示し方 |
+| Provenance | Content | How it is presented to the user |
 |---|---|---|
-| `general` | 本ファイルの質問類型に基づく、企業に依存しない頻出質問 | そのまま出す |
-| `reported` | `interview_intel.json` で「聞かれた」と報告された質問（`kind: reported`）、または利用者が転職エージェント・過去の選考で得た質問 | 報告された言い回しのまま出す。出所（口コミはレベルC）と投稿時期を添える |
-| `inferred` | 企業研究の claims（中期経営計画・求める人物像・求人票の必須要件）や口コミの傾向から推測した質問 | 「聞かれる保証は無いが備える価値がある」ものとして、推測の根拠を添えて出す |
+| `general` | A common question category from this document, independent of any particular company | Presented as is |
+| `reported` | A question interview_intel.json reports as "asked" (`kind: reported`), or a question the user obtained from a job-change agency or a past selection process | Presented in its reported wording, with its source (review-site content is grade C) and posting period attached |
+| `inferred` | A question inferred from company-research claims (a medium-term management plan, a desired candidate profile, a job posting's required qualifications) or from a review-site trend | Presented as one where "there is no guarantee it will be asked, but it is worth preparing for," with the basis for the inference attached |
 
-出所と根拠の信頼度は別のものである。口コミ（C）で報告された質問は、その言い回しで聞かれた記録として練習する価値がある。有価証券報告書（A）から推測した質問は、根拠の事実は確かでも聞かれる保証は無い。両者を1つの確度にまとめない。
+Provenance and the confidence of the underlying evidence are separate things. A question reported through review-site content (C) is worth practicing as a record of the wording it was actually asked in. A question inferred from a securities report (A) rests on a certain fact, but there is no guarantee it will be asked. The two are never collapsed into a single confidence level.
 
-推測した質問の作り方は、根拠の種類ごとに次の対応で決める。
+How an inferred question is built follows this correspondence, depending on the kind of evidence.
 
-| 根拠（claim の topic または intel の種類） | 質問の作り方 |
+| Basis (a claim's topic, or the kind of intel) | How the question is built |
 |---|---|
-| 求人票の必須要件 | 1項目につき1つの実績深掘りの質問（「〜の経験を具体的に教えてください」）。最も機械的で、最も外れにくい |
-| 中期経営計画・有価証券報告書の重点施策（`business`） | 志望動機・入社後の貢献の質問（「〜の施策に、これまでの経験はどう活かせますか」） |
-| 採用ページの求める人物像・社員インタビュー（`philosophy`） | カルチャーフィットの質問（「〜な人物像とありますが、そう言える経験を教えてください」）。企業が自らを語った内容であり、根拠は A でも `confidence` は high にしない |
-| 口コミの退職検討理由（`themes`） | 面接官が確かめそうな方向の質問（「〜という環境で、意欲をどう保ちますか」）。企業に問題があるという断定にしない |
-| 口コミの入社後ギャップ（`themes`） | 逆質問の素材（「選考で聞いた話と入社後のずれを、どう見極めますか」）。面接官が聞く質問より、利用者が確かめる質問に向く |
-| 最近のニュース（新規事業・M&A） | 志望動機・逆質問の素材。不祥事は面接官が候補者に直接聞く質問になりにくいため、再発防止策を確かめる逆質問の素材にとどめる |
+| A job posting's required qualification | One achievement-drilling question per item (「〜の経験を具体的に教えてください」, "Please tell me specifically about your experience with ..."). The most mechanical to build and the least likely to miss the mark |
+| A medium-term management plan's or securities report's priority initiative (`business`) | A motivation-for-applying or contribution-after-joining question (「〜の施策に、これまでの経験はどう活かせますか」, "How can your experience so far contribute to the ... initiative?") |
+| A recruiting page's desired candidate profile or employee interviews (`philosophy`) | A culture-fit question (「〜な人物像とありますが、そう言える経験を教えてください」, "You describe wanting a ... kind of person — can you tell me about an experience that shows you fit that description?"). This is the company's own claim about itself, and even though the source is A, `confidence` is never set to high |
+| A review site's stated reasons for considering leaving (`themes`) | A question phrased as the direction an interviewer is likely to probe (「〜という環境で、意欲をどう保ちますか」, "How do you sustain motivation in an environment like ...?") |
+| A review site's stated post-hire gap (`themes`) | Material for a reverse question (「選考で聞いた話と入社後のずれを、どう見極めますか」, "How would you go about noticing a gap between what you heard in the selection process and what you find after joining?"). This fits a question the user asks better than one the interviewer asks |
+| Recent news (a new venture, an M&A) | Material for motivation for applying or a reverse question. A scandal rarely becomes something an interviewer asks the candidate directly, so it is limited to material for a reverse question that checks on measures taken to prevent recurrence |
 
-## 面接官の全体的な評価観点
+## The interviewer's overall evaluation criteria
 
-個々の質問類型に先立つ、中途採用面接に通底する評価観点である。
+These are the evaluation criteria that underlie mid-career hiring interviews generally, preceding any individual question category.
 
-| 評価観点 | 内容 |
+| Criterion | Content |
 |---|---|
-| 転職理由と志望動機の一貫性（中核） | 退職・転職の理由と、その企業を志望する理由が矛盾なく結び付いているか。人物評価の中核をなす[E64]。 |
-| 再現性 | 前職の成果を再現できる行動特性を備えているか。成果そのものより、成果を生んだ行動の再現可能性を見る[E63]。 |
-| カルチャーフィット | 企業の価値観・働き方への適合。転職媒体の解説記事は、即戦力であることとあわせてカルチャーフィットも重視されると書いている[E38]（レベルC。実施率の公開データは確認できていない）。 |
-| 定着性 | 入社後に定着する見込みがあるか。転職回数への懸念として最も強く現れる[E65]。 |
-| 入社意欲 | その企業で働く意欲と、入社後のイメージの具体性[E67]。 |
+| 転職理由と志望動機の一貫性（中核） (Consistency between the reason for changing jobs and the motivation for applying, the core criterion) | Whether the reason for leaving / changing jobs connects to the reason for wanting to join this company without contradiction. This forms the core of the candidate assessment[E64]. |
+| 再現性 (Reproducibility) | Whether the candidate has the behavioral traits to reproduce their prior achievements. What matters is the reproducibility of the behavior that produced the achievement[E63]. |
+| カルチャーフィット (Culture fit) | Fit with the company's values and way of working. Job-change media commentary states that culture fit is emphasized alongside being immediately effective[E38] (grade C; no public data on how commonly this is actually applied could be confirmed). |
+| 定着性 (Retention) | Whether the candidate is likely to stay after joining. This shows up most strongly as a concern about a high number of job changes[E65]. |
+| 入社意欲 (Motivation to join) | Motivation to work at the company, and the specificity of the candidate's picture of life after joining[E67]. |
 
-### 評価観点の細目（interviewer_intent の語彙）
+### Sub-items of the evaluation criteria (vocabulary for interviewer_intent)
 
-採用側向けの質問集は、120問を5つの大分類（職務適性16問・退職理由6問・志望動機／キャリアビジョン／仕事観23問・人間性／性格71問・追加アピール／逆質問4問）に分け、人間性／性格をさらに12の細目に分けている[E98]。`interviewer_intent` を書くときは、上の5観点に加えてこの細目を語彙として使う。
+An employer-facing question compilation divides 120 questions into five major categories — 16 on job aptitude, 6 on reason for leaving, 23 on motivation for applying / career vision / view of work, 71 on personality / character, and 4 on additional appeal / reverse questions — and further divides the personality / character category into 12 sub-items[E98]. When writing `interviewer_intent`, use these 12 sub-items as vocabulary alongside the five criteria above.
 
-| 細目 | 問数 | 確かめる事柄 |
+| Sub-item | Number of questions | What it checks |
 |---|---|---|
-| 社風との相性 | 3 | 企業の価値観・働き方との適合 |
-| 既存社員との相性 | 4 | 配属先の同僚との協働のしやすさ |
-| ストレス耐性 | 6 | 苦しい場面から何を得たか |
-| 強み・弱み | 8 | 自己認識と改善行動 |
-| 主体性・積極性 | 4 | 指示を待たずに動いた経験 |
-| コミュニケーション力・協調性 | 13 | 意見の違う相手との進め方 |
-| 分析力・論理思考力 | 8 | 問題の切り分けと筋道 |
-| 向上心・成長意欲 | 7 | 学び続ける姿勢 |
-| 学習意欲 | 4 | 新しい領域への取り組み |
-| 責任感 | 5 | 引き受けた仕事を完了させた経験 |
-| 柔軟性 | 3 | 変化への対応 |
-| 発想力 | 4 | 新しい案を出した経験 |
+| 社風との相性 (fit with company culture) | 3 | Fit with the company's values and way of working |
+| 既存社員との相性 (fit with existing employees) | 4 | Ease of collaborating with colleagues in the assigned team |
+| ストレス耐性 (stress tolerance) | 6 | What the candidate gained from a difficult experience |
+| 強み・弱み (strengths and weaknesses) | 8 | Self-awareness and corrective action |
+| 主体性・積極性 (initiative) | 4 | Experience acting without waiting for instructions |
+| コミュニケーション力・協調性 (communication and cooperativeness) | 13 | How the candidate works with someone who disagrees |
+| 分析力・論理思考力 (analytical and logical thinking) | 8 | How the candidate breaks down a problem and follows a line of reasoning |
+| 向上心・成長意欲 (drive to grow) | 7 | An ongoing attitude toward learning |
+| 学習意欲 (willingness to learn) | 4 | Taking on a new area |
+| 責任感 (sense of responsibility) | 5 | Experience seeing an undertaken task through to completion |
+| 柔軟性 (flexibility) | 3 | Response to change |
+| 発想力 (creativity) | 4 | Experience proposing a new idea |
 
-### 年代による重点
+### Emphasis by age bracket
 
-転職者7,206名への調査（2021年11月25日〜12月22日）では、答えにくかった質問の1位が、20代では「今後のキャリアプラン」、30代・40代以上では逆質問（「何か質問はありますか」）だった。年代を問わず、最も多い準備の方法は想定される質問への回答の準備だった[E99]。想定質問の生成では、利用者の年代に応じてキャリアプランと逆質問の準備の比重を変える。逆質問は企業固有の情報を集めても答えが出ない質問であり、答えは利用者自身の関心にある。
+A survey of 7,206 job changers (conducted November 25 to December 22, 2021) found that the hardest question to answer was, for respondents in their 20s, 「今後のキャリアプラン」 (career plan going forward), and for respondents in their 30s and 40s and older, the reverse question (「何か質問はありますか」). Across all age brackets, the most common form of preparation was preparing answers to expected questions[E99]. When generating expected questions, the balance between career-plan and reverse-question preparation shifts according to the user's age bracket. A reverse question is one for which gathering company-specific information yields no answer; the answer lies in the user's own interests.
 
-### 選考段階による重点
+### Emphasis by selection stage
 
-国内の中途採用は、現場の面接官による一次、部門長による二次、役員による最終の3段階が典型とされるが、段階数と面接官は企業ごとに異なる。段階ごとの重点は次のとおりであるが、これは運用上の目安であり、対象企業の実際の段階は `interview_intel.json` の `format_facts` で確かめる。確かめられない場合、`stage` は `不明` にする。
+Domestic mid-career hiring is typically described as three stages — a first round with a frontline interviewer, a second round with a department head, and a final round with an executive — though the number of stages and the interviewers vary by company. The emphasis at each stage is as follows; this is an operational rule of thumb, and the target company's actual stages should be confirmed from `interview_intel.json`'s `format_facts`. When they cannot be confirmed, `stage` is set to `不明` (unknown).
 
-| 段階 | 面接官（典型） | 重点 |
+| Stage | Interviewer (typical) | Emphasis |
 |---|---|---|
-| カジュアル面談 | 採用担当・現場の社員 | 評価の場ではない建前で、相互の情報交換。質問の向きが逆になる（後述） |
-| 一次面接 | 現場の管理職・同僚 | 実務の深掘り・スキルの適合・協働のしやすさ |
-| 二次面接 | 部門長 | マネジメント・組織への適合・キャリアプラン |
-| 最終面接 | 役員 | 志望度・条件・入社の意思・カルチャーフィット |
+| カジュアル面談 (casual meeting) | A recruiter or a frontline employee | Nominally a mutual exchange of information. The direction of questioning reverses (see below) |
+| 一次面接 (first interview) | A frontline manager or colleague | Drilling into day-to-day work, skill fit, ease of collaboration |
+| 二次面接 (second interview) | A department head | Management, organizational fit, career plan |
+| 最終面接 (final interview) | An executive | Level of interest in the company, conditions, intent to join, culture fit |
 
-## 質問類型
+## Question categories
 
-大手の転職媒体は、必ず聞かれる質問として自己紹介・転職理由・志望動機・自己PR・逆質問の5つを挙げる[E100]。本ファイルはこの5つを含む類型を並べる。
+Major job-change media outlets name self-introduction, reason for changing jobs, motivation for applying, self-PR, and reverse questions as the five that are always asked[E100]. This document lists categories including these five.
 
-### 自己紹介
+### Self-introduction
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | 経歴の要点を短く伝えられるか。以降の質問の入口として、面接官が深掘りする箇所を選ぶ材料になる[E100]。 |
-| 答え方の原則 | 1分程度で、職歴の流れと応募職に関わる実績を1つ挙げる。profile.json の `summary` と `career_history` の範囲で述べ、自己PRと重ねない。 |
+| Evaluation criterion | Whether the candidate can convey the essence of their career history briefly. This serves as the entry point for subsequent questions, giving the interviewer material for choosing where to drill down[E100]. |
+| Principle for answering | Speak for about a minute, covering the flow of the candidate's career history and one achievement relevant to the applied role. Stay within the range of profile.json's `summary` and `career_history`, without overlapping with self-PR. |
 
-### 転職理由・退職理由
+### Reason for changing jobs / reason for leaving
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | マッチング精度と定着性を左右する必須確認項目[E62]。退職理由と志望動機の一貫性が人物評価の中核である[E64]。他責で理由を説明していないかを見る。 |
-| 答え方の原則 | 他責の説明で終えない。理由に自分の改善行動を添える。ネガティブな理由（不満・条件）は、それが解消された先で実現したいこと（ポジティブな希望）に言い換える[E64]。志望動機と矛盾しない筋立てにする。 |
+| Evaluation criterion | An essential check that shapes matching accuracy and retention[E62]. Consistency between the reason for leaving and the motivation for applying forms the core of the candidate assessment[E64]. The interviewer watches for whether the explanation blames others. |
+| Principle for answering | Never end the explanation by blaming others. Add a corrective action the candidate themselves took to the reason. Reframe a negative reason (dissatisfaction, conditions) as a positive aspiration for what the candidate wants to achieve once it is resolved[E64]. Keep the narrative consistent with the motivation for applying. |
 
-### 志望動機
+### Motivation for applying
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | 入社意欲と企業理解、および転職理由との一貫性。「その企業だからこそ」の理由になっているか。競合他社にもそのまま通じる内容は評価されない[E97]。 |
-| 答え方の原則 | 企業固有の事実（company_research.json の claim。理念・事業・求める人物像）に結び付ける。転職理由で述べた希望と、この企業でそれが実現できる根拠を対応させる[E97]。 |
+| Evaluation criterion | Motivation to join, company understanding, and consistency with the reason for changing jobs. Whether the reason is specific to "this company in particular." Content that would apply equally to a competitor is not well regarded[E97]. |
+| Principle for answering | Connect the answer to a company-specific fact (a claim in company_research.json — philosophy, business, or desired candidate profile). Match the aspiration stated under reason for changing jobs to the basis for why this company can realize it[E97]. |
 
-### 自己PR・実績
+### Self-PR and achievements
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | 即戦力になるかと、再現性。前職の実績は、即戦力になるかを確かめる項目である[E63]。成果を生んだ行動特性が、応募先でも再現できるかを見る。 |
-| 答え方の原則 | 実績を数値で裏付ける。担った役割・担当範囲を profile.json の記述の範囲内で正確に述べ、規模や主体を過大に表現しない。 |
+| Evaluation criterion | Whether the candidate will be immediately effective, and reproducibility. A prior achievement is an item used to check whether the candidate will be immediately effective[E63]. The interviewer looks at whether the behavioral trait that produced the achievement can be reproduced at the new employer. |
+| Principle for answering | Back the achievement with numbers. State the role and scope of responsibility accurately, within what profile.json records, without overstating the scale or the candidate's own part in it. |
 
-### 実績の深掘り
+### Drilling into achievements
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | 再現性・思考と行動・整合性・内省。STAR 面接では各段階で、前提（Situation）・思考と行動（Task/Action）・虚偽の有無や整合性・内省（Result への振り返り）を評価する[E66]。 |
-| 答え方の原則 | 追加質問に耐える具体性を持たせる。数値・固有名詞・時系列を、事実に基づいて一貫させる。回答間の矛盾は深掘りで露見するため、脚色ではなく事実で準備する（面接では応募者の90%超が印象操作を行うとの報告があり、深掘りは矛盾の検出手段になる。`evaluation-rubric.md` の学術的根拠を参照）[E80]。 |
+| Evaluation criterion | Reproducibility, thinking and action, consistency, and self-reflection. A STAR-based interview evaluates, at each stage, the premise (Situation), the thinking and action (Task/Action), the presence of fabrication or inconsistency, and self-reflection (looking back on the Result)[E66]. |
+| Principle for answering | Make the answer specific enough to withstand further drilling. Keep numbers, proper nouns, and the timeline consistent and fact-based. A contradiction between answers tends to surface under drilling, so prepare with facts (a report exists that over 90 percent of candidates engage in some form of impression management in an interview, and drilling serves as a means of detecting such inconsistency; see the academic evidence in `evaluation-rubric.md`)[E80]. |
 
-### 弱み
+### Weaknesses
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | 自己認識・内省・改善行動。弱みを認識し、改善のための行動を取れているか。STAR 面接の内省評価と同じ軸で見られる[E66]。 |
-| 答え方の原則 | 弱みを率直に認めたうえで、改善のために取っている具体的な行動を添える。他責で終えない[E64]。応募職務の遂行に致命的な弱みを選ばない。 |
+| Evaluation criterion | Self-awareness, self-reflection, and corrective action. Whether the candidate recognizes a weakness and takes action to improve it. Evaluated on the same axis as the self-reflection check in a STAR-based interview[E66]. |
+| Principle for answering | Admit the weakness candidly, then add a specific action being taken to improve it. Never end by blaming others[E64]. Never choose a weakness that would be fatal to performing the applied role. |
 
-### 転職回数
+### Number of job changes
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | 定着性懸念（転職回数の多さに対して最も強く現れる）と、キャリアの軸の一貫性[E65]。 |
-| 答え方の原則 | 各転職をキャリアの軸（一貫した方向性）で結び、次の企業で定着する意志を示す[E65]。回数そのものを弁解するのではなく、軸の一貫性で応える。 |
+| Evaluation criterion | A retention concern (which shows up most strongly against a high number of job changes) and consistency in the candidate's career axis[E65]. |
+| Principle for answering | Connect each job change through a career axis (a consistent direction), and show the intent to stay at the next employer[E65]. Respond with the consistency of the axis. |
 
-### 空白期間・短期離職
+### Employment gaps and short tenures
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | 面接官は、転職回数から「繰り返しの傾向」を見る。空白期間と短期離職からは、「その1件に何があったか」を見る。定着性と、事実を率直に説明できるかを確かめる。 |
-| 答え方の原則 | 事実を短く述べ、その期間に行ったこと（学び直し・介護・療養後の回復・求職活動）と、応募職へ戻る理由を添える。profile.json の `career_history[].note` と `notes` にある本人の説明の範囲で述べ、理由を作らない。療養・介護・家族の事情は、本人が語る範囲を超えて詳しく述べる必要が無い。 |
+| Evaluation criterion | From the number of job changes, the interviewer looks for "a pattern of repetition." From an employment gap or a short tenure, the interviewer looks at "what happened in that one instance." This checks retention and whether the candidate can explain the fact candidly. |
+| Principle for answering | State the fact briefly, and add what the candidate did during that period (relearning, caregiving, recovery after treatment, job-seeking activity) and the reason for returning to the applied role. Stay within the range of the candidate's own explanation recorded in profile.json's `career_history[].note` and `notes`, without fabricating a reason. Treatment, caregiving, or a family matter need not be described in more detail than the candidate themselves is willing to share. |
 
-### 失敗・挫折
+### Failure and setback
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | ストレス耐性（苦しい場面から何を得たか）と内省[E98]。失敗そのものではなく、失敗の後に何を変えたかを見る。 |
-| 答え方の原則 | 失敗の事実・当時の判断・その後に変えた行動の3つを順に述べる。他責で終えない。self_analysis.json の `episodes` にある行動エピソードから選ぶ。 |
+| Evaluation criterion | Stress tolerance (what the candidate gained from a difficult experience) and self-reflection[E98]. The interviewer looks at what the candidate changed after the failure. |
+| Principle for answering | State, in order, the fact of the failure, the judgment made at the time, and the action changed afterward. Never end by blaming others. Choose from a behavioral episode in self_analysis.json's `episodes`. |
 
-### マネジメント
+### Management
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | 部下・後輩を持った経験がある利用者に対し、目標の設定・評価・育成・意見の違いの扱いを確かめる。二次面接以降で比重が上がる。 |
-| 答え方の原則 | 人数・期間・役割を profile.json の `career_history[].role` と `assignment` の範囲で正確に述べる。「主導」「統括」の表現は、聞き取りで本人が使った役割の段階を超えない（原本は `job-change-profile` の `references/answer-handling.md`）。 |
+| Evaluation criterion | For a candidate with experience managing subordinates or juniors, this checks goal-setting, evaluation, development, and how disagreement was handled. Its weight increases from the second interview onward. |
+| Principle for answering | State the number of people, the period, and the role accurately, within what profile.json's `career_history[].role` and `assignment` record. Never let a phrase such as "led" or "oversaw" exceed the level of role the candidate stated in the interview (the canonical source lives in job-change-profile's `references/answer-handling.md`). |
 
-### 協働・対立
+### Collaboration and conflict
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | コミュニケーション力・協調性（意見の違う相手との進め方）と、既存社員との相性[E98]。 |
-| 答え方の原則 | 意見が割れた場面・相手の立場の理解・合意に至った手順・結果を述べる。相手を非難する形にしない。 |
+| Evaluation criterion | Communication and cooperativeness (how the candidate works with someone who disagrees), and fit with existing employees[E98]. |
+| Principle for answering | State the situation where opinions diverged, the candidate's understanding of the other party's position, the process that reached agreement, and the outcome. Never frame it as blaming the other party. |
 
-### キャリアプラン
+### Career plan
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | 志望動機との一貫性と、その企業で実現できる見通しの具体性。20代では最も答えにくい質問とされる[E99]。 |
-| 答え方の原則 | 3〜5年の見通しを、応募職の延長線上で述べる。self_analysis.json の `career_narrative` があればそれを軸にする。企業の事業計画（company_research.json の `business` の claim）と結び付ける。 |
+| Evaluation criterion | Consistency with the motivation for applying, and the specificity of a realistic path at this company. This is reported as the hardest question to answer for respondents in their 20s[E99]. |
+| Principle for answering | State a three- to five-year outlook as an extension of the applied role. If self_analysis.json has a `career_narrative`, use it as the axis. Connect it to the company's business plan (a `business` claim in company_research.json). |
 
-### 入社後の貢献
+### Contribution after joining
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | 即戦力になるかと、企業理解。求人票の業務内容を理解したうえで、最初の半年から1年に何をするかを描けているか。 |
-| 答え方の原則 | 求人票の必須要件と自分の実績を1対1で結び、最初に取り組む課題を1つ挙げる。company_research.json の claim に無い事業や課題を前提に置かない。 |
+| Evaluation criterion | Whether the candidate will be immediately effective, and company understanding. Whether the candidate, having understood the job posting's duties, can picture what they will do in the first six months to a year. |
+| Principle for answering | Match the job posting's required qualifications to the candidate's own achievements one to one, and name one task to tackle first. Never presuppose a business or a challenge absent from a claim in company_research.json. |
 
-### カルチャーフィット
+### Culture fit
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | 社風との相性[E98]。企業の価値観・働き方と、本人の作業特性の希望（profile.json の `work_character_preferences`）が合うか。 |
-| 答え方の原則 | 企業の求める人物像（`philosophy` の claim）に対して、そう言える経験を1つ挙げる。合わない点があれば、それを隠さず、どう折り合うかを述べる。性格の自己申告（self_analysis.json の `personality`）は、エピソードに結び付いた範囲で使う。 |
+| Evaluation criterion | Fit with company culture[E98]. Whether the company's values and way of working match the candidate's stated preferences for work style (profile.json's `work_character_preferences`). |
+| Principle for answering | Against the desired candidate profile (a `philosophy` claim), give one experience that supports it. Where there is a mismatch, state it honestly and describe how the candidate would work with it. A self-reported personality trait (self_analysis.json's `personality`) is used only to the extent it is tied to an episode. |
 
-### 条件確認
+### Confirming conditions
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | 希望年収・入社可能日・他社の選考状況・転勤の可否。最終面接で比重が上がる。企業側の必須確認項目であり、意欲の評価ではない。 |
-| 答え方の原則 | 希望年収は profile.json の `salary.desired` を基に、根拠（現在の額と市場の相場）を添えて述べる。入社可能日は現職の退職手続きの期間を含めて述べる。他社の選考状況は事実を述べ、虚偽を言わない。fit_assessment.json の `condition_fit` で `met: "unknown"` の項目は、この場で確かめる事項の候補になる。 |
+| Evaluation criterion | Desired salary, possible start date, the status of other companies' selection processes, and willingness to relocate. Its weight increases at the final interview. This is the company's own mandatory confirmation item. |
+| Principle for answering | State the desired salary based on profile.json's `salary.desired`, with reasoning attached (the current amount and the market rate). State the possible start date including the time needed to resign from the current position. State the status of other selection processes as fact, never falsely. A `fit_assessment.json` `condition_fit` item with `met: "unknown"` is a candidate for something to confirm at this point. |
 
-### 逆質問
+### Reverse questions
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | 入社意欲と、入社後のイメージの具体性を測る場である[E67]。 |
-| 答え方の原則 | 事業・組織・役割の理解を前提とした、入社後の具体的な問いを用意する。 |
+| Evaluation criterion | A place to gauge motivation to join and the specificity of the candidate's picture of life after joining[E67]. |
+| Principle for answering | Prepare a specific, post-joining question that presupposes an understanding of the business, the organization, and the role. |
 
-避けるべき逆質問は次の2つである。
+Two kinds of reverse question should be avoided.
 
-- 調べれば分かる質問（会社概要・公開済みの事業内容など、company_research.json で既知の事項をそのまま問う質問）[E67]。
-- 待遇の質問（給与・福利厚生・休暇など、意欲より条件を優先する印象を与える質問）[E67]。
+- A question whose answer is easy to look up (company overview, already-published business content, or anything already established in company_research.json)[E67].
+- A question about treatment (salary, benefits, leave — anything that suggests conditions matter more than motivation)[E67].
 
-30代以上で最も答えにくいとされるのはこの逆質問である[E99]。`interview_intel.json` の `themes`（入社後ギャップ）と `fit_assessment.json` の `condition_fit` で `unknown` の項目は、逆質問の素材になる。
+The reverse question is reported as the hardest to answer for respondents in their 30s and older[E99]. An `interview_intel.json` `themes` entry about a post-hire gap, and a `fit_assessment.json` `condition_fit` item marked `unknown`, both serve as material for a reverse question.
 
-### カジュアル面談
+### Casual meeting
 
-選考の前に置かれる、評価の場ではない建前の面談である。質問の向きが逆になり、利用者が聞く側になる。企業側からは自己紹介と転職理由を短く述べるよう求められることが多い。この節は本スキルの運用上の整理であり、出典は無い。面談が選考に当たるかどうかは実務上定まっておらず、交通費の扱いや労働条件の明示が選考と同じになるとは限らない。利用者は、面談が選考と同じ扱いを受けると決めてかからず、必要なら企業側の扱いを面談で確かめる。
+A meeting held before the selection process, nominally for mutual information exchange. The direction of questioning reverses, and the user becomes the one asking. The employer side often asks for a brief self-introduction and reason for changing jobs. This section is this skill's own operational organization and carries no source. Whether a casual meeting counts as part of the selection process is not settled in practice, and matters such as travel-expense handling or the disclosure of working conditions do not necessarily follow the same rules as the formal selection process. The user should not assume a casual meeting receives the same treatment as the selection process, and should confirm the employer's own treatment of it during the meeting if needed.
 
-| 区分 | 内容 |
+| Item | Content |
 |---|---|
-| 評価観点 | 建前は評価しないが、印象は選考へ持ち越される。志望度の高さより、事業と役割への関心の具体性を見る。 |
-| 進め方の原則 | 逆質問を5つ程度用意し、事業・役割・チーム・働き方の順に聞く。待遇の質問は、企業側が触れた場合に限る。自己紹介は1分にまとめ、転職理由は志望動機と矛盾しない範囲で短く述べる。面談の内容は `interview_notes_user.md` に書き留め、以降の想定質問の素材にする。 |
+| Evaluation criterion | Nominally a mutual exchange of information, but the impression carries over into the selection process. What matters is the specificity of interest in the business and the role. |
+| Principle for proceeding | Prepare around five reverse questions, asked in the order of business, role, team, and way of working. Raise the topic of treatment only if the employer side brings it up first. Keep the self-introduction to about a minute, and state the reason for changing jobs briefly, within a range consistent with the motivation for applying. Record the content of the meeting in `interview_notes_user.md`, as material for later expected questions. |
 
-## 聞かれても答えなくてよい事項
+## Matters the user is not required to answer
 
-厚生労働省は、応募者の適性・能力に関係のない事項を把握することが就職差別につながるおそれがあるとして、14の事項を挙げている[E101]。面接官がこれらを聞くことは公正な採用選考の基本に反するため、想定質問として生成しない。口コミでこれらを聞かれたという報告があった場合（`interview_intel.json` の `category: 配慮事項`）、利用者へは「答えなくてよい事項」として伝え、答え方を練習させない。
+The Ministry of Health, Labour and Welfare (厚生労働省) names 14 matters that, being unrelated to an applicant's aptitude or ability, risk leading to employment discrimination if asked about[E101]. Because an interviewer asking about these violates the basic principles of fair hiring selection, none of these is ever generated as an expected question. When a review reports that one of these was asked (`interview_intel.json`'s `category: 配慮事項`), it is presented to the user as "a matter you are not required to answer," and the user is never coached on how to answer it.
 
-| 区分 | 事項 |
+| Group | Matters |
 |---|---|
-| 本人に責任のない事項 | 本籍・出生地、家族（職業・続柄・健康・病歴・地位・学歴・収入・資産）、住宅状況（間取り・部屋数・住宅の種類・近隣の施設）、生活環境・家庭環境 |
-| 本来自由であるべき事項 | 宗教、支持政党、人生観・生活信条、尊敬する人物、思想、労働組合・学生運動などの社会運動、購読新聞・雑誌・愛読書 |
-| 採用選考の方法 | 身元調査、本人の適性・能力に関係ない事項を含んだ応募書類、合理的・客観的に必要性が認められない採用選考時の健康診断 |
+| Matters outside the candidate's own responsibility | Permanent domicile and place of birth; family (occupation, relationship, health, medical history, standing, education, income, assets); housing situation (floor plan, number of rooms, type of housing, nearby facilities); living and family environment |
+| Matters that should be a matter of free choice | Religion, political party supported, outlook on life and living philosophy, an admired figure, ideology, involvement in a labour union or student movement or other social movement, subscribed newspapers, magazines, or favorite books |
+| Selection methods | A background check, application documents that include matters unrelated to the candidate's aptitude or ability, and a health examination at the time of selection whose necessity is not reasonably and objectively established |
 
-「尊敬する人物」「愛読書」は雑談の形で聞かれることがある。答える・答えないは利用者が決めることであり、本スキルはどちらへも誘導しない。
+"An admired figure" or "a favorite book" is sometimes asked in the form of small talk. Whether to answer is the user's own choice, and this skill never steers the user toward either answering or declining.
 
-## 転職エージェント経由の情報
+## Information obtained through a job-change agency
 
-転職エージェントは、担当する企業の直近の面接の質問と選考の傾向を候補者へ渡すことが多い。これは Web で集められる口コミより新しく、その企業の選考に直接結び付いた情報である。利用者がこの情報を持っていれば、本スキルは Step 0 で `interview_notes_user.md` に書き留め、`provenance: reported` の想定質問の素材にする。過去に同じ企業の選考を受けた経験も同じ扱いにする。このファイルは本人の選考の経緯を含むため、Web 送信手段を持つ役割へ渡さない。
+A job-change agency often passes a candidate the questions recently asked in interviews it handles and the trends in the selection process. This is more current than review-site content gathered from the web and connects directly to that company's selection process. When the user holds this information, this skill records it in `interview_notes_user.md` in Step 0 and uses it as material for expected questions with `provenance: reported`. Experience from a past selection process at the same company is treated the same way. This file contains the details of the user's own selection process and is never passed to a role with web transmission methods.
 
-## 質問類型と job-change-interview-coach のカテゴリの対応
+## Correspondence between question categories and job-change-interview-coach's categories
 
-job-change-interview-coach が想定質問に付す `category` は、次の対応で本ファイルの質問類型に結び付く。転職回数の質問は、定着性を確認する意図（interviewer_intent）を持つ転職理由カテゴリとして扱う。`category` の語彙の原本は `interview-format.md` の「既知の質問類型」にある。この表は、各 `category` の意味と本ファイルの質問類型との対応を示す。
+The `category` job-change-interview-coach attaches to an expected question connects to this document's question categories through the following correspondence. A question about the number of job changes is treated as belonging to the reason-for-changing-jobs category, carrying the intent (interviewer_intent) of checking retention. The canonical vocabulary for `category` lives in `interview-format.md`'s "The known question categories." This table shows the meaning of each `category` and its correspondence to this document's question categories.
 
-| 本ファイルの質問類型 | coach の category |
+| This document's question category | The coach's category |
 |---|---|
-| 自己紹介 | 自己紹介 |
-| 転職理由・退職理由 | 転職理由 |
-| 転職回数 | 転職理由（interviewer_intent = 定着性） |
-| 空白期間・短期離職 | 空白期間・短期離職 |
-| 志望動機 | 志望動機 |
-| 自己PR・実績 | 自己PR |
-| 実績の深掘り | 実績深掘り |
-| 弱み | 弱み |
-| 失敗・挫折 | 失敗・挫折 |
-| マネジメント | マネジメント |
-| 協働・対立 | 協働・対立 |
-| キャリアプラン | キャリアプラン |
-| 入社後の貢献 | 入社後の貢献 |
-| カルチャーフィット | カルチャーフィット |
-| 条件確認 | 条件確認 |
-| 逆質問 | 逆質問 |
-| カジュアル面談 | カジュアル面談 |
-| （外資系・国内のコンサルティング会社と IT 企業）ビヘイビアラル | ビヘイビアラル（`foreign-interviews.md`） |
-| （同上）ケース・技術 | ケース（`foreign-interviews.md`） |
-| 聞かれても答えなくてよい事項 | `category` には無い。`interview_intel.json` の `配慮事項` の報告を `notes` に列挙し、模擬面接には出さない |
+| Self-introduction | 自己紹介 |
+| Reason for changing jobs / reason for leaving | 転職理由 |
+| Number of job changes | 転職理由（interviewer_intent = 定着性） |
+| Employment gaps and short tenures | 空白期間・短期離職 |
+| Motivation for applying | 志望動機 |
+| Self-PR and achievements | 自己PR |
+| Drilling into achievements | 実績深掘り |
+| Weaknesses | 弱み |
+| Failure and setback | 失敗・挫折 |
+| Management | マネジメント |
+| Collaboration and conflict | 協働・対立 |
+| Career plan | キャリアプラン |
+| Contribution after joining | 入社後の貢献 |
+| Culture fit | カルチャーフィット |
+| Confirming conditions | 条件確認 |
+| Reverse questions | 逆質問 |
+| Casual meeting | カジュアル面談 |
+| Behavioral (foreign-affiliated companies, and domestic consulting firms and IT companies) | ビヘイビアラル（`foreign-interviews.md`） |
+| Case / technical (same as above) | ケース（`foreign-interviews.md`） |
+| Matters the user is not required to answer | Not present in `category`. A `配慮事項` report from `interview_intel.json` is listed in `notes` and never presented in the mock interview |
 
-## 出典
+## Sources
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. レベル. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+<!-- This section lists sources in a bibliographic format (publisher. title. year. level. URL). This rule is disabled for this section only, so that the separating periods and parts of company names are not judged as Japanese punctuation or synonyms. -->
 
-- [E38] マイナビ転職. 転職の適性検査とは？新卒と中途の違いや目的、種類、対策法. 2026. レベルC. https://tenshoku.mynavi.jp/knowhow/caripedia/167/
-- [E62] マイナビ（HUMAN CAPITAL サポネット）. 中途採用面接で聞くべき厳選質問集［50選］｜面接官の心得. 2022-11-09. レベルB. https://saponet.mynavi.jp/column/detail/ty_saiyo_t03_50-interview-questions_210611.html
-- [E63] マイナビ（HUMAN CAPITAL サポネット）. 中途採用面接で聞くべき厳選質問集［50選］｜面接官の心得. 2022-11-09. レベルB. https://saponet.mynavi.jp/column/detail/ty_saiyo_t03_50-interview-questions_210611.html
-- [E64] マイナビ転職. 面接での転職・退職理由の答え方 面接官も納得のポジティブな回答例文. 2026-02-25. レベルB. https://tenshoku.mynavi.jp/knowhow/mensetsu/guide/35/
-- [E65] リクルートエージェント. 転職回数が多い場合、面接で理由を聞かれたらどう答える？【回答例付き】. 2022-09-30. レベルB. https://www.r-agent.com/guide/jobinterview/14550/
-- [E66] エン・ジャパン. 誰でも応募者を深掘りできる面接フレームワーク│STAR面接とは？. 2023-07-07. レベルB. https://saiyo.employment.en-japan.com/blog/star-mensetsu
-- [E67] エン転職. 面接で使える逆質問45例！逆質問のコツや評価される立ち回りを紹介. 2026. レベルB. https://employment.en-japan.com/tenshoku-daijiten/41419/
-- [E80] Journal of Applied Psychology. Measuring faking in the employment interview: Development and validation of an interview faking behavior scale. 2007. レベルA（単一研究）. DOI:10.1037/0021-9010.92.6.1638 https://doi.org/10.1037/0021-9010.92.6.1638
-- [E97] リクルートエージェント. 職務経歴書に志望動機は必要？履歴書との違いや書き方を解説. 2024. レベルB. https://www.r-agent.com/guide/resume/article4402/
-- [E98] エン・ジャパン（エン人事のミカタ）. 面接質問集120選. レベルB（採用側向けの質問集。5つの大分類と12の細目の問数は2026-09-04 に原ページで確認。12の細目の問数の合計は69で、大分類の71問と一致しない。原ページの数え方の差であり、転記の誤りではない）. https://partners.en-japan.com/special/mensetsu_shitsumon/
-- [E99] エン転職. アンケート集計結果「面接」について. 2022（調査期間 2021-11-25〜2021-12-22、有効回答 7,206名）. レベルB. https://employment.en-japan.com/enquete/report-80/
-- [E100] doda. 面接で必ず聞かれる5つの質問. レベルB. https://doda.jp/guide/mensetsu/interview/
-- [E101] 厚生労働省. 公正な採用選考の基本（就職差別につながるおそれがある14事項）. レベルA. https://www.mhlw.go.jp/www2/topics/topics/saiyo/saiyo1.htm
+- [E38] マイナビ転職 (Mynavi Job Change). 転職の適性検査とは？新卒と中途の違いや目的、種類、対策法. 2026. Level C. https://tenshoku.mynavi.jp/knowhow/caripedia/167/
+- [E62] マイナビ（HUMAN CAPITAL サポネット）(Mynavi, HUMAN CAPITAL Saponet). 中途採用面接で聞くべき厳選質問集［50選］｜面接官の心得. 2022-11-09. Level B. https://saponet.mynavi.jp/column/detail/ty_saiyo_t03_50-interview-questions_210611.html
+- [E63] マイナビ（HUMAN CAPITAL サポネット）. 中途採用面接で聞くべき厳選質問集［50選］｜面接官の心得. 2022-11-09. Level B. https://saponet.mynavi.jp/column/detail/ty_saiyo_t03_50-interview-questions_210611.html
+- [E64] マイナビ転職. 面接での転職・退職理由の答え方 面接官も納得のポジティブな回答例文. 2026-02-25. Level B. https://tenshoku.mynavi.jp/knowhow/mensetsu/guide/35/
+- [E65] リクルートエージェント (Recruit Agent). 転職回数が多い場合、面接で理由を聞かれたらどう答える？【回答例付き】. 2022-09-30. Level B. https://www.r-agent.com/guide/jobinterview/14550/
+- [E66] エン・ジャパン (en Japan). 誰でも応募者を深掘りできる面接フレームワーク│STAR面接とは？. 2023-07-07. Level B. https://saiyo.employment.en-japan.com/blog/star-mensetsu
+- [E67] エン転職 (en Tenshoku). 面接で使える逆質問45例！逆質問のコツや評価される立ち回りを紹介. 2026. Level B. https://employment.en-japan.com/tenshoku-daijiten/41419/
+- [E80] Journal of Applied Psychology. Measuring faking in the employment interview: Development and validation of an interview faking behavior scale. 2007. Level A (single study). DOI:10.1037/0021-9010.92.6.1638 https://doi.org/10.1037/0021-9010.92.6.1638
+- [E97] リクルートエージェント. 職務経歴書に志望動機は必要？履歴書との違いや書き方を解説. 2024. Level B. https://www.r-agent.com/guide/resume/article4402/
+- [E98] エン・ジャパン（エン人事のミカタ）(en Japan, "En Jinji no Mikata"). 面接質問集120選. Level B (an employer-facing question compilation; the question counts for the five major categories and 12 sub-items were confirmed on the original page on 2026-09-04. The 12 sub-items sum to 69, which does not match the major category's 71 — a discrepancy that comes from how the original page counts). https://partners.en-japan.com/special/mensetsu_shitsumon/
+- [E99] エン転職. アンケート集計結果「面接」について. 2022 (survey period 2021-11-25 to 2021-12-22, 7,206 valid responses). Level B. https://employment.en-japan.com/enquete/report-80/
+- [E100] doda. 面接で必ず聞かれる5つの質問. Level B. https://doda.jp/guide/mensetsu/interview/
+- [E101] 厚生労働省 (Ministry of Health, Labour and Welfare). 公正な採用選考の基本（就職差別につながるおそれがある14事項）. Level A. https://www.mhlw.go.jp/www2/topics/topics/saiyo/saiyo1.htm
 
 <!-- textlint-enable -->

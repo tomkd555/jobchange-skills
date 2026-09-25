@@ -1,42 +1,82 @@
-# 履歴書の記述基準
+# Rirekisho writing standard
 
-日本の中途採用における履歴書の記述基準の原本である。作成担当（`job-change-document-writer`）が定型項目の記入に用い、監査担当（`job-change-document-auditor`）が現行様式への適合と使い回しの検査に用いる。
+This is the canonical definition for writing a rirekisho (résumé form) in mid-career hiring in Japan.
+The writer (`job-change-document-writer`) uses it to fill the form's fixed fields, and the auditor
+(`job-change-document-auditor`) uses it to check conformance with the current format and to check for
+signs of reuse across applications.
 
-履歴書は、学歴・職歴・資格・志望動機などの定型項目を埋める書類である。経験と実績を自由記述で示す職務経歴書とは役割が分かれる。
+The rirekisho is a document that fills in fixed fields — 学歴・職歴 (education and career history), 資格
+(qualifications), 志望動機 (motivation), and the like. Its role is separate from the shokumu-keirekisho (career
+history document), which shows experience and achievement in free-form prose.
 
-## 現行の様式事情
+## The current state of the format
 
-履歴書の標準様式は、2020年（令和2年）7月を境に変わった。
+The rirekisho's standard format changed at a boundary in July 2020 (Reiwa 2).
 
-- 日本規格協会が、2020年7月に JIS 規格の解説に載せていた履歴書の様式例を削除した（出典: 厚生労働省 青森労働局「厚生労働省が新たに作成した『履歴書様式例』を掲載しました。」 https://jsite.mhlw.go.jp/aomori-roudoukyoku/news_topics/topics/_00051.html 一次・公式）。以後、「JIS 規格の履歴書」という公式の標準様式は存在しない。
-- これを受けて厚生労働省が、公正な採用選考を確保する観点から新たな履歴書様式例（PDF版・Excel版）を作成し、配布している（出典: 厚生労働省 ハローワークインターネットサービス「履歴書・職務経歴書の書き方」 https://www.hellowork.mhlw.go.jp/member/career_doc01.html 一次・公式）。
+- 日本規格協会 (the Japanese Standards Association) removed the rirekisho format example it had
+  carried in its commentary on the JIS standard in July 2020 (source: 厚生労働省 青森労働局 "厚生労働省が新たに作成した『履歴書様式例』を掲載しました。"
+  https://jsite.mhlw.go.jp/aomori-roudoukyoku/news_topics/topics/_00051.html, primary/official).
+  Since then, no official standard format called "the JIS-standard rirekisho" exists.
+- In response, 厚生労働省 (the Ministry of Health, Labour and Welfare) created and now distributes a
+  new rirekisho format example (a PDF version and an Excel version), from the standpoint of ensuring
+  fair hiring selection (source: 厚生労働省 ハローワークインターネットサービス "履歴書・職務経歴書の書き方"
+  https://www.hellowork.mhlw.go.jp/member/career_doc01.html, primary/official).
 
-厚生労働省の新様式例を、現行の標準的な参照様式として用いる。
+This skill uses the 厚生労働省 (MHLW) new format example as the current reference standard.
 
-### 厚労省様式例の特徴
+### Features of the MHLW format example
 
-厚労省様式例は、応募者のプライバシーへの配慮を反映している（出典: 社会保険労務士法人アドバンス・行政書士法人アドバンス「厚生労働省の履歴書様式例 性別欄を任意記載欄に変更」 https://van.gr.jp/news/2021_0526/ 口コミ・集約。厚労省の一次記述を引用した二次解説）。
+The MHLW format example reflects consideration for the applicant's privacy (source:
+社会保険労務士法人アドバンス・行政書士法人アドバンス "厚生労働省の履歴書様式例 性別欄を任意記載欄に変更"
+https://van.gr.jp/news/2021_0526/, word of mouth/aggregated — a secondary commentary quoting 厚生労働省's
+own primary statement).
 
-- 性別欄は任意記載である。〔男・女〕の選択式ではなく、任意記載欄とする。応募者が記載を希望しなければ未記載にできる。
-- 厚生労働省は、通勤時間・扶養家族数（配偶者を除く）・配偶者・配偶者の扶養義務の4欄を、プライバシーに関わる度合いが高いため項目欄として設けていない。これらが必要な場合は、採用側が面接など後の段階で本人へ直接尋ねる前提である。
+- The sex field is optional. It is an optional free-entry field, replacing the 〔男・女〕 selection; an
+  applicant who does not wish to state it may leave it blank.
+- 厚生労働省 does not provide a field for four items — commute time, the number of dependent family
+  members excluding a spouse, a spouse, and a spouse's dependent obligation — because these touch
+  privacy to a high degree. Where the employer needs them, the premise is that it asks the applicant
+  directly at a later stage, such as an interview.
 
-作成担当は、厚労省様式例に沿って、これら4項目を求めない前提で書く。応募先が独自の様式を指定する場合はそれに従う。
+The writer follows the MHLW format example and writes on the premise that these four items are not
+required. When the target company specifies its own format, it follows that format.
 
-## 手書きとパソコン
+## Handwritten versus typed
 
-- 応募先の指定がなければ、手書きとパソコンのどちらで作成したかは、合否の基準にならない。パソコンで作成した整った履歴書は、基本的なビジネススキルの証拠にもなりうる。
-  - 根拠と限界: これは、本スキルの基礎調査の結果に基づく。「手書きが有利」という仮説の反証を探し、doda・マイナビ転職の実務解説が「応募先の指定がなければ手書きとパソコンのどちらでも合否基準にならない」と述べていることを照合した。レベルは口コミ・集約相当（C）であり、作成手段を合否要因とする一次の根拠は確認できず、引用可能な単一の出典 URL も本スキルの証拠の記録には残っていない。したがって断定的な事実としてではなく、作成手段より内容の企業別最適化を優先するという運用方針の裏づけとして扱う。
-- したがって、本スキルは作成手段を合否要因として扱わない。手段の選択より、記載内容の正確さと企業別の最適化を優先する。
+- Without an instruction from the target company, the pass/fail decision treats a handwritten
+  document and one typed on a computer as equivalent. A neatly typed rirekisho can itself serve as
+  evidence of basic business skill.
+  - Grounds and limits: this rests on this skill's own background research. Searching for
+    disconfirmation of the hypothesis "handwriting is favored," this skill cross-checked that doda's
+    and マイナビ転職's practical guides state that, absent an instruction from the target company,
+    neither handwriting nor typing is a pass/fail criterion. The grade is word of mouth/aggregated (C);
+    no primary source establishing the method of preparation as a pass/fail factor was confirmed, and
+    no single citable URL remains in this skill's evidence record. This skill therefore treats it as
+    support for an operating policy that gives priority to content and company-specific optimization
+    over the method of preparation.
+- This skill accordingly does not treat the method of preparation as a pass/fail factor. It gives
+  priority to the accuracy of the content and its company-specific optimization over the choice of
+  method.
 
-## 使い回しの回避
+## Avoiding reuse
 
-履歴書・志望動機を複数企業で使い回すと、前の応募先向けの記載が残るミスを招く。
+Reusing a rirekisho or a statement of motivation across multiple companies invites a mistake where
+wording aimed at an earlier target company remains.
 
-- 志望動機欄に前企業の社名・事業への言及が残る、応募職と合わない自己PRが残る、といった不整合は、採用担当者に「自社への志望度が低い」と読まれうる。
-- 作成担当は、企業ごとに志望動機・自己PRを見直す。監査担当は、対象企業・対象求人と食い違う固有名詞や訴求が残っていないかを検査する。
-- 志望動機の企業別カスタマイズの基準は `references/tailoring.md` による。
+- A mismatch — a previous company's name or business left in the 志望動機欄 (motivation field), or a self-PR that
+  does not fit the target job — can read to a hiring manager as low interest in their own company.
+- The writer revisits the statement of motivation and the self-PR for each company. The auditor checks
+  for a proper noun or a selling point left over that does not match the target company or the target
+  posting.
+- The standard for company-specific tailoring of the statement of motivation lives in
+  `references/tailoring.md`.
 
-## この基準の適用範囲と限界
+## The scope and limits of this standard
 
-- 現行様式の事情（JIS 様式例の削除・厚労省様式例）は、厚生労働省の一次・公式情報に基づく。性別欄を任意記載としたことと、4欄を設けていないことの引用は、厚労省の記述を引用した二次解説（口コミ・集約レベル）から取ったが、複数の独立ソースで一致する。
-- 手書きかパソコンかは合否に関係しないという整理は、大手転職メディアの実務解説に基づく。企業により様式・提出方法の指定は異なるため、応募先の指定を最優先する。
+- The current format's background (the removal of the JIS format example, the MHLW format example)
+  rests on 厚生労働省's primary/official information. The citations for making the sex field optional
+  and for not providing the four fields come from a secondary commentary (word of mouth/aggregated
+  grade) quoting 厚生労働省's own statement, but multiple independent sources agree.
+- The finding that handwriting versus typing has no bearing on the pass/fail decision rests on
+  practical guides from major career-change media. Because companies differ in the format and the
+  submission method they specify, the target company's own instruction takes priority above all.

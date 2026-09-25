@@ -1,107 +1,209 @@
-# 聞き取りの方法論（想起手がかりと申告の扱いの根拠）
+# Elicitation methodology (grounding for recall cues and handling a statement)
 
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
-<!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
+<!-- The [E1]-style notation in this text is the citation-id notation. This file disables the rule so the half-width square brackets are kept. -->
 
-job-change-profile スキルの聞き取り設計の原本である。SKILL.md の原則・question-bank.md の質問設計・エージェント2体（writer / auditor）がこのファイルを参照する。エビデンスレベルは A〜D の4段階（A=一次・公式、B=信頼できる二次、C=口コミ・集計サイト、D=個人ブログ・伝聞・未確認）で表記し、学術研究には DOI を記す。定義の原本は `job-change-company-research/references/evidence-grading.md` にあり、査読済みの学術研究はレベル A に含まれる。表記形式は末尾の「出典一覧」に対応づける。
+This is the canonical definition of job-change-profile's elicitation design. SKILL.md's principles,
+question-bank.md's question design, and both agents (writer / auditor) reference this file. Evidence level is
+written on a 4-step scale, A through D (A = primary/official, B = a reliable secondary source, C = word-of-mouth or
+an aggregator site, D = a personal blog, hearsay, or unconfirmed), and a piece of academic research carries a DOI.
+The canonical definition lives in `job-change-company-research/references/evidence-grading.md`, and a peer-reviewed
+academic study falls under Level A. The notation format maps to the "Sources" section at the end.
 
-## 構造化した想起手がかりで聞き取る
+## Elicit with structured recall cues
 
-自由記述に委ねず、事前に項目と順序を固定した枠に沿って聞くほうが、職務経歴・実績の想起は網羅的かつ正確になる。そう認める証拠のほうが多い（確度: 可能性が高い、65%以上80%未満）。
+Recall of career history and achievements is more comprehensive and accurate when elicitation follows a frame with
+its items and order fixed in advance than when it is left to free text. The evidence favoring this outweighs the
+evidence against it (confidence: likely, 65%-80%).
 
-- 選抜手法の妥当性メタ分析で構造化面接は上位群に位置づけられ[E17]、面接の内容と構造が妥当性を規定する[E18]。構造化面接の妥当性は、非構造化面接の約2倍である[E19]。
-- 自伝的記憶は階層ネットワークであり、イベント・ヒストリー・カレンダー（時系列とテーマ横断を組み合わせた手がかり）はこの構造に沿って想起の完全性・正確性を高める[E20]。カレンダー型手法は回顧データの完全性・一貫性を高める[E24]。
+- In meta-analyses of the validity of selection methods, a structured interview lands in the top tier [E17], and an
+  interview's content and structure govern its validity [E18]. A structured interview's validity is about twice
+  that of an unstructured one [E19].
+- Autobiographical memory is a hierarchical network, and an event-history calendar (a cue that combines
+  chronology with a cross-cutting theme) raises the completeness and accuracy of recall in line with this
+  structure [E20]. A calendar-based method raises the completeness and consistency of retrospective data [E24].
 
-運用: 聞き取りは「企業→在籍期間→役割→担当プロジェクト→成果」の時系列の枠に沿って進める（question-bank.md の Step 1〜2）。転職・異動・昇進などの転機を時系列の手がかりに使う。個々の実績は、在籍期間のなかに位置づけて聞く。
+Operation: elicitation proceeds along the chronological frame "company → tenure period → role → project →
+achievement" (`sections/career.md`, `sections/achievements.md`). A turning point — a job change, a transfer, a
+promotion — is used as a chronological cue. An individual achievement is asked about placed within its tenure
+period.
 
-**確信度を下げる証拠（限界）**: 構造化技法（イベント・ヒストリー・カレンダー）は、世帯員数・勤務先数などで過大報告を有意に増やす場合がある[E21]。構造化が与えるのは想起の枠であり、答えの正しさまでは保証しない。
+**Evidence that lowers confidence (a limit)**: a structured technique (an event-history calendar) can increase
+over-reporting for things such as household size or number of employers to a statistically significant degree
+[E21]. Structure supplies a frame for recall; it does not by itself guarantee the answer is correct.
 
-## 利用者の申告を裏取りしない
+## Never corroborate a user's statement
 
-聞き取りで得た経歴・実績・数値は、そのまま事実として記録する。証拠書類の提示を求めず、「その数値は確認できるか」「証明できるか」という形の問いを置かない。相手の主張を疑う問いは、聞き取りを尋問に変え、答えを引き出すどころか短くする。
+The career history, achievement, and figure obtained through elicitation are recorded as fact, as stated.
+Elicitation never asks for supporting documents, and never places a question shaped like "can that figure be
+confirmed" or "can you prove it." A question that doubts what the other party states turns elicitation into an
+interrogation, and it shortens the answers it draws out.
 
-運用: 本人が自分から不確かだと述べた値にだけ `（本人が不確かとした）` を付けてメモへ残す（後述「聞き取りメモの記載形式」）。聞き取り側から確度を問い詰めない。資格・語学の名称、保有スキル、担当した役割、在籍期間、年収、実績値のいずれについても、エビデンスとの照合を求めない。照合していないことを、成果物や申し送りで「確認が未了である」という未解決の課題として書かない。聞き取り側に許される操作の範囲、聞いてはならない問いの型、回答の様式への対応、定型でない経歴の記録のしかたの原本は `answer-handling.md` にある。
+Operation: only a value the user themselves called uncertain gets `（本人が不確かとした）` (the user called it
+uncertain) attached in the notes (see "The elicitation notes' recording format" below). Elicitation never presses
+for confidence on its own. Elicitation never asks for a cross-check against evidence for a qualification's or a
+language skill's name, a possessed skill, a role held, a tenure period, an annual salary, or an achievement figure.
+Nor does it write, in the deliverable or a handover note, that this cross-check is "not yet done," as an unresolved
+issue. The canonical definition of the scope of operations elicitation may perform, the types of question never
+asked, handling each answer format, and how to record a career history with an atypical shape lives in
+`answer-handling.md`.
 
-ただし、卒業年からの逆算で置いた資格の取得年のように、聞き取り側が計算で作った値は、推定値である旨を明示する（SKILL.md 原則6）。これは本人の言葉を疑うことではなく、本人が述べていない値を本人の申告と取り違えないための区別である。
+That said, a value elicitation itself produces by calculation — a qualification's year obtained, back-calculated
+from the graduation year, for example — is marked explicitly as an estimate (SKILL.md Principle 6). This is a
+distinction that keeps a value the user did not state from being mistaken for the user's own statement.
 
-創作は別の工程で抑える。作成担当（writer）は聞き取りメモにある事実だけを使い、監査担当（auditor）は成果物とメモを照合する。聞き取りの場で利用者を検証者に仕立てる必要はない。
+Fabrication is held in check at a different stage. The writer uses only facts in the elicitation notes, and the
+auditor checks the deliverable against those notes. Elicitation itself has no need to turn the user into a
+verifier.
 
-## 並行在籍の扱い
+## Handling concurrent employment
 
-同じ時期に複数の職に就いていること（兼務・出向・副業・自営）は珍しくない。在籍期間の重なりを不整合として扱わない。
+Holding more than one job during the same period — a concurrent role, secondment, side work, self-employment — is
+not unusual. An overlap in tenure periods is never treated as an inconsistency.
 
-運用: 職歴の骨格が出そろったら、同じ時期に複数の職に在籍していたかを1問で確かめる。あった職はそれぞれ `career_history` の1件とし、`period` の重なりをそのまま書く。どの立場での在籍かは `role` に書き分ける（例「業務委託（副業）」）。1つの職の中で複数の案件を並行して担当した場合は、実績1件ごとに `project`（案件の呼び名）と `period`（その案件の期間）を添え、どの案件のいつの成果かを区別できるようにする。案件が1つだけの職では添えない。
+Operation: once the career skeleton is laid out, confirm with one question whether the user held more than one job
+during the same period. Each job that did exist becomes its own `career_history` entry, and the overlap in
+`period` is kept as it stands. Which standing applied is written into `role` (for example, 「業務委託（副業）」 (contract work, side
+job)). When more than one project was handled concurrently within one job, attach `project` (the project's name) and
+`period` (that project's period) to each achievement, so which project's outcome and when it occurred can be told
+apart. A job with only one project carries neither.
 
-## 空白期間の扱い
+## Handling an employment gap
 
-職歴の骨格を確定したら、どの職歴の在籍期間にも含まれない期間（6か月以上）を機械的に検出し、説明と期間中の活動を聞く（確度: 可能性が高い、65%以上80%未満）。
+Once the career skeleton is settled, mechanically detect a period (6 months or more) covered by no career-history
+entry's tenure period, and ask for an explanation and the activity during it (confidence: likely, 65%-80%).
 
-- 空白期間は、3か月以内であれば問題視されにくいが、6か月以上は理由と計画性の説明が要る[E100]。
-- 空白期間は、それ自体が依然として採用の可否と賃金に不利に働く。「空白は無害」という強い主張は成り立たない[E99]。
+- A gap of 3 months or less draws little scrutiny, while one of 6 months or more requires an explanation and a
+  sense of planning [E100].
+- An employment gap still works against a hiring decision and against pay on its own. The strong claim that "a gap
+  is harmless" does not hold [E99].
 
-運用: 判定は全職歴の在籍期間の和集合に対して行う。隣どうしの職歴だけを見ると、本業と重なる副業がある場合に存在しない空白を検出し、利用者へ空白でない期間の説明を求めることになる。空白は隠さず、`career_gaps` に期間・説明・期間中の活動（学習・資格取得・介護・療養など）を記録し、説明可能な形にする。これは詐称に頼らず正確性・網羅性を保つための欄である。空白を有利に見せるための創作の場ではない。
+Operation: judge a gap against the union of every career-history entry's tenure period. Looking only at adjacent
+entries would detect a gap that does not exist whenever a side job overlaps the main job, and would ask the user
+to explain a period that is not in fact a gap. A gap is never hidden; record its period, an explanation, and the
+activity during it (study, obtaining a qualification, caregiving, medical treatment, and the like) in
+`career_gaps`, so it can be explained. This field exists to keep accuracy and comprehensiveness without resorting
+to falsification. It is never a place to fabricate an account that makes the gap look favorable.
 
-**確信度を下げる証拠（限界）**: HBR による空白期間の研究については、効果量の値を当該記事の本文から取得できていない。空白が選考結果に与える影響の定量的な大きさは、本スキルとして確定していない（エビデンスギャップ）。
+**Evidence that lowers confidence (a limit)**: for the HBR study on employment gaps, an effect-size figure could
+not be obtained from the article's own text. How large an employment gap's effect on a selection outcome is stays
+unsettled for this skill (an evidence gap).
 
-## 既存書類の取り込みと初回の軽量化
+## Importing an existing document and lightening the first pass
 
-聞き取りを短くする手立ては、聞く項目を減らすことと、手元の書類から取り込むことの2つである。対話という形式そのものは入力を速くしない（確度: 可能性が高い、65%以上80%未満）。
+There are two ways to shorten elicitation: asking about fewer items, and importing from a document already on
+hand. A conversational format does not by itself make data entry faster (confidence: likely, 65%-80%).
 
-- チャットボット形式の調査は、Web フォーム形式より所要時間が長い（26分44秒 対 17分30秒）。一方で回答のばらつきが増え、手を抜いた回答（satisficing）が減る[E105]。対話形式は速さのためではなく、回答の質と、中断しても続きから再開できることのために用いる。
-- 応募フォームの完了率は所要時間に強く依存する。5分未満で 12.47%、15分以上で 3.61% である[E106]。初回に聞く項目の数が、そのまま完了率に効く。
-- レジュメからの自動抽出の精度は、在籍期間で F1 0.963、会社名・役職で F1 0.932、長文の業務記述で F1 0.838 である[E107]。骨格（企業名・在籍期間・役職）は書類から取り込んで確認だけで済み、人の目を要するのは長文の記述である。
-- 立ち入った情報は後段へ回す。フォームの認知負荷を下げる原則として、機微でない情報から始め、職歴や希望年収のような項目を後段へ回すことが挙がっている[E108]。
+- A chatbot-format survey takes longer than a web-form format (26 minutes 44 seconds versus 17 minutes 30 seconds).
+  It also increases variance in answers and reduces satisficing (a low-effort answer) [E105]. A conversational
+  format is used for the quality of the answer and for letting the user resume after an interruption.
+- An application form's completion rate depends strongly on time taken. It is 12.47% under 5 minutes and 3.61% at
+  15 minutes or more [E106]. The number of items asked on the first pass has a direct effect on the completion rate.
+- Automated extraction from a résumé reaches an F1 of 0.963 for a tenure period, 0.932 for a company name or job
+  title, and 0.838 for a long-form job description [E107]. The skeleton (company name, tenure period, job title)
+  can be imported from a document and just confirmed; only the long-form description needs a human eye.
+- A sensitive item is pushed to a later stage. Among the principles for reducing a form's cognitive load is
+  starting with non-sensitive information and pushing an item such as career history or desired salary to a later
+  stage [E108].
 
-運用: 初回は職歴の骨格・現職の役割・転職理由・主要な条件・作業特性8件までで profile.json を成立させる。実績の定量化・スキルの棚卸し・企業スコアの採点軸・条件の網羅と優先順位付け・現年収の実額は、それを要する工程の直前まで先送りする（`SKILL.md` の「初回と深掘りの分担」）。書類は最初に有無だけを1問で聞き、提出を求めない。あれば読んで骨格を聞き取りメモへ転記し、抽出結果を一覧で示して違うところだけを申告させる（`.docx` の読み出し方は `SKILL.md` の Step 1 にある）。全項目への同意は求めない。同意が既定の答えになる聞き方を避けるためである。長文の記述には `（要確認）` を付ける。書類から読んだ事実も本人の申告と同格であり、物証として扱わない（前節「利用者の申告を裏取りしない」）。
+Operation: the first pass builds profile.json to validity with the career skeleton, current role, reasons for
+changing jobs, key conditions, and the 8 work-character preferences alone. Quantifying achievements, taking stock
+of skills, building the company scoring axes, covering and prioritizing conditions, and the actual figure for
+current salary are each deferred until just before the process that needs it (the section catalogue and the
+first-pass scope are in `sections.md`). Elicitation first asks with one question only whether a document exists,
+without requiring its submission. When one exists, it is read, the skeleton is transcribed into the elicitation
+notes, and the extracted result is presented as a list, with the user asked only "where it is different." (How to
+read a `.docx` is in `sections/career.md`.) Consent to every item is never sought, to avoid a question shaped so
+that consent becomes the default answer. A long-form
+description carries `（要確認）` (needs confirmation). A fact read from a document carries the same standing as the
+user's own statement, and is never treated as documentary proof (the previous section, "Never corroborate a user's
+statement").
 
-**確信度を下げる証拠（限界）**: 応募フォームの完了率も、レジュメ抽出の F1 も、母集団と課題が本スキルの聞き取りとは異なる。所要時間と完了率の関係も、書類からの抽出精度も、この聞き取りでの値は測っていない。
+**Evidence that lowers confidence (a limit)**: both the application form's completion rate and the résumé
+extraction's F1 come from a different population and task than this skill's elicitation. Neither the relationship
+between time taken and completion rate, nor the extraction accuracy from a document, has been measured for this
+elicitation.
 
-## 選択式を中心にした聞き取りの運用
+## Operating elicitation centered on the choice format
 
-- 聞き取りは AskUserQuestion の選択式を中心に運用する。1回の AskUserQuestion につき最大4問、各質問は最大4択とする。自由記述で聞くのは、企業名・在籍期間・実績値など、選択式にできない項目だけである。
-- 選択肢を事前に列挙できる質問（作業特性8件・ポータブルスキル9要素・条件の軸・企業スコアの定量軸など）は、文言が `question-bank.md` で確定している。聞き取りのたびに言い回しを作らない。逆に、その職について何も分かっていない時点で聞く項目（役割・担当業務）へ候補を提示しない。提示すれば、聞き取り側が想像した候補を出すことになるためである。
-- 利用者へ発する質問文と選択肢のラベルは敬体で書き、地の文（スキル内部の手順・この文書）は常体で書く。確認は「合っていますか」ではなく「どこが違いますか」と聞き、同意を既定の答えにしない。
-- 深掘りでは、利用者を感情の反すうへ陥らせず、問いを事実（いつ・どの場面で・何をしたか）へ向ける。退職理由の建設的言い換え・強みの根拠づけといった内省の深掘りは本スキルの範囲外とし、`job-change-self-analysis` へ誘導する。
-- 聞き取り結果は、聞き取り中に本体セッションが `career-private/profile_interview_notes.md` へ逐次追記する。これにより中断と再開に対応できる。作成担当（writer）は、このメモにある事実だけを使う。
+- Elicitation is run centered on AskUserQuestion's choice format. At most 4 questions per AskUserQuestion call,
+  with up to 4 choices per question. Free text is asked only for an item that cannot be put into choices, such as a
+  company name, a tenure period, or an achievement figure.
+- For a question whose choices can be enumerated in advance (the 8 work-character traits, the 9 elements of
+  portable skills, a condition's axis, a company scoring axis's quantitative candidates, and the like), the wording
+  is settled per section in `sections/{id}.md`. The phrasing is never composed anew each time elicitation runs.
+  Conversely, no candidate is presented for an item asked about before anything is yet known of that job (a role,
+  responsibilities) — presenting one would mean presenting a candidate elicitation itself imagined.
+- A question addressed to the user, and its choice labels, are written in polite Japanese (敬体); the running text
+  (this skill's internal procedure, this document) is written in plain Japanese (常体). Confirmation is asked as
+  「どこが違いますか」 (where does this differ), which avoids a question shaped so that agreement becomes the default
+  answer.
+- A deep dive never drives the user into ruminating on feelings; the question is aimed at fact (when, in what
+  situation, what was done). A deep dive into introspection — constructive rewording of a reason for leaving,
+  grounding a strength — falls outside this skill's scope and is directed to `job-change-self-analysis`.
+- The main session appends the elicitation's results to `career-private/profile_interview_notes.md` as elicitation
+  proceeds. This supports resuming after an interruption. The writer uses only the facts in these notes.
 
-## 聞き取りメモの記載形式
+## The elicitation notes' recording format
 
-`profile_interview_notes.md` は追記だけで育てる。作成担当は profile.json の各記述の裏付けをこのメモだけに求め、監査担当は成果物とこのメモを照合する。したがって、聞き取った事実と、それをいつ聞いたかが区別できる形で書く。
+`profile_interview_notes.md` grows only by appending. The writer looks to these notes alone for the support behind
+each statement in profile.json, and the auditor checks the deliverable against these notes. The notes are
+therefore written so that a fact elicited and when it was elicited can be told apart.
 
-- 聞き取りの回ごとに `## YYYY-MM-DD` の見出しを立て、その回で聞いた内容をその下へ追記する。過去の見出しの内容は書き換えない。前の回の内容が誤りだったと分かった場合は、最新の見出しの下へ `訂正:` で始まる行を足し、どの記述を何に改めるかを書く。
-- 1件を1行の箇条書きにし、`- {項目}: {利用者の回答}` の形で書く。`{項目}` には `references/question-bank.md` の質問項目名か profile.json のフィールド名を使う。
-- 企業名・在籍期間・役職・実績の数値は、利用者の言葉のまま転記する。単位と時点（いつの数値か）を落とさない。
-- 利用者が答えなかった項目は `- {項目}: 未回答` と書き、行ごと落とさない。本人が不確かだと述べた値には `（本人が不確かとした）` を付ける。答えたくないと述べた項目は `未回答（本人の意向）`、覚えていないと述べた項目は `本人が不明とした` と書く。
-- 書類向けの表現へ置き換えた項目は、原文の行を残したまま、その直下へ `言い換え（本人了承）:` の行を足す。了承を得ていない言い換えを書かない。行の型の一覧と、置き換えてよい範囲の原本は `answer-handling.md` にある。
-- 既存書類から取り込んだ記述のうち、利用者の確認が済んでいないものには `（要確認）` を付け、確認が済んだ時点で外す。書類由来であることを理由に扱いを変えない。取り込んだ内容も本人の申告と同格であり、確認の済んだ記述は他の回答と同じに扱う。
-- 聞き取り側の解釈・要約・推測を書かない。作成担当はメモにある事実だけを profile.json へ書くため、メモへ書き加えた解釈や推測はそのまま創作になる。
+- Raise a `## YYYY-MM-DD` heading for each round of elicitation, and append what was elicited that round beneath
+  it. The content under a past heading is never rewritten. When a past round's content turns out to have been
+  wrong, add a line starting with `訂正:` (correction) under the latest heading, stating which statement is being
+  revised to what.
+- Write one item as one bullet line, in the form `- {item}: {the user's answer}`. For `{item}`, use the question
+  item's name in `references/question-bank.md` or profile.json's field name.
+- Transcribe a company name, a tenure period, a job title, and an achievement figure in the user's own words. Never
+  drop the unit or the point in time (when the figure applies).
+- An item the user did not answer is written as `- {item}: 未回答` (unanswered), and the line is never dropped.
+  Attach `（本人が不確かとした）` (the user called it uncertain) to a value the user called uncertain. Write
+  `未回答（本人の意向）` (unanswered, at the user's own wish) for an item the user said they would rather not
+  answer, and `本人が不明とした` (the user called it unknown) for an item the user said they do not remember.
+- For an item reworded into document-ready phrasing, keep the original line and add a
+  `言い換え（本人了承）:` (reworded, user-approved) line directly beneath it. A rewording without approval is never
+  written. The list of line formats and the canonical definition of the permissible scope of a rewording live in
+  `answer-handling.md`.
+- Mark a statement imported from an existing document that the user has not yet confirmed with `（要確認）` (needs
+  confirmation), and remove the mark once confirmed. Being document-sourced never changes how an item is handled;
+  imported content carries the same standing as the user's own statement, and a confirmed statement is handled the
+  same as any other answer.
+- Elicitation's own interpretation, summary, or guess is never written. The writer uses only the facts in the
+  notes to write profile.json, so an interpretation or a guess added to the notes becomes fabrication as it stands.
 
-## 更新運用
+## Update practice
 
-profile.json は一度作って終わりにせず、最新の状態に保つ（確度: 可能性が高い、65%以上80%未満）。
+profile.json is kept current (confidence: likely, 65%-80%).
 
-- 古い情報の放置と網羅性の欠如は典型的な失敗であり、応募書類の作成では直近7〜10年を優先し、非該当業務を削る[E103]。四半期ごとの更新と、継続的に更新する文書（running document）でのキャリア棚卸しが英語圏・日本語圏の双方の資料で共通に推奨される[E104]。
+- Leaving information to go stale, and a lack of comprehensiveness, are typical failures; when writing an
+  application document, give priority to the most recent 7-10 years and cut work no longer relevant [E103]. A
+  quarterly update, and keeping career-history data as a running document, are recommended in common by
+  English-language and Japanese-language sources alike [E104].
 
-運用: 実績が出るたび、最低でも四半期ごとに追記する。profile.json 自体は網羅的に保ち（直近7〜10年への絞り込みは応募書類の作成の段階で応募書類サブスキルが行う）、更新のたびに `updated_at` を書き換える。
+Operation: append whenever a new achievement comes in, at least once a quarter. Keep profile.json itself
+comprehensive (narrowing to the most recent 7-10 years is done by the application-documents sub-skill at the stage
+of writing an application document), and rewrite `updated_at` with every update.
 
-## 出典一覧
+## Sources
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. レベル. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+<!-- This section lists sources in a bibliographic format (publisher. Title. Year. Level. URL). This section alone disables the rule so the separating periods and part of a company name are not judged as Japanese punctuation or a synonym. -->
 
-- [E17] Psychological Bulletin (APA). The validity and utility of selection methods in personnel psychology. 1998. レベルA. DOI:10.1037/0033-2909.124.2.262. https://doi.org/10.1037/0033-2909.124.2.262
-- [E18] Journal of Applied Psychology (APA). The validity of employment interviews: A comprehensive review and meta-analysis. 1994. レベルA. DOI:10.1037/0021-9010.79.4.599. https://doi.org/10.1037/0021-9010.79.4.599
-- [E19] Journal of Occupational Psychology. A meta-analytic investigation of the impact of interview format and degree of structure. 1988. レベルA. DOI:10.1111/j.2044-8325.1988.tb00467.x. https://doi.org/10.1111/j.2044-8325.1988.tb00467.x
-- [E20] Memory. The structure of autobiographical memory and the event history calendar. 1998-07. レベルA. DOI:10.1080/741942610. https://doi.org/10.1080/741942610
-- [E21] Public Opinion Quarterly. Event history calendars and question list surveys: a direct comparison of interviewing methods. 2001. レベルA. DOI:10.1086/320037. https://doi.org/10.1086/320037
-- [E24] Quality & Quantity. Applications of calendar instruments in social surveys: a review. 2009. レベルA. DOI:10.1007/s11135-007-9129-8. https://doi.org/10.1007/s11135-007-9129-8
-- [E99] Harvard Business Review (Groysberg, Lin). Research: Resume Gaps Still Matter. 2024-07-31. レベルB. https://hbr.org/2024/07/research-resume-gaps-still-matter
-- [E100] JAC Recruitment. 面接での経歴の空白期間の好印象な答え方は？. 2024-06-12. レベルC. https://www.jac-recruitment.jp/market/knowhow/interview/interview-blank-period/
-- [E103] Forbes JAPAN. 2026年の採用市場で差がつく「職務経歴書」5つの更新ポイント. 2026-03-15. レベルC. https://forbesjapan.com/articles/detail/93818
-- [E104] Indeed / ResumeGenius 他. Guide To Updating Your Resume. 2024. レベルC. https://www.indeed.com/career-advice/resumes-cover-letters/guide-to-updating-your-resume
-- [E105] ACM CHI (Kim, Lee, Gweon). Comparing Data from Chatbot and Web Surveys: Effects of Platform and Conversational Style on Survey Response Quality. 2019-05. レベルA. DOI:10.1145/3290605.3300316. https://doi.org/10.1145/3290605.3300316
-- [E106] Appcast. Recruitment Marketing Benchmark Report. 2025. レベルB. https://info.appcast.io/whitepaper/2025-recruitment-marketing-benchmark-report
-- [E107] arXiv (Zhu ほか). Layout-Aware Parsing Meets Efficient LLMs: A Unified, Scalable Framework for Resume Information Extraction and Evaluation. 2025-10. レベルB. arXiv:2510.09722. https://arxiv.org/abs/2510.09722
-- [E108] Nielsen Norman Group. Four Principles to Reduce Cognitive Load in Forms. レベルB. https://www.nngroup.com/articles/4-principles-reduce-cognitive-load/
+- [E17] Psychological Bulletin (APA). The validity and utility of selection methods in personnel psychology. 1998. Level A. DOI:10.1037/0033-2909.124.2.262. https://doi.org/10.1037/0033-2909.124.2.262
+- [E18] Journal of Applied Psychology (APA). The validity of employment interviews: A comprehensive review and meta-analysis. 1994. Level A. DOI:10.1037/0021-9010.79.4.599. https://doi.org/10.1037/0021-9010.79.4.599
+- [E19] Journal of Occupational Psychology. A meta-analytic investigation of the impact of interview format and degree of structure. 1988. Level A. DOI:10.1111/j.2044-8325.1988.tb00467.x. https://doi.org/10.1111/j.2044-8325.1988.tb00467.x
+- [E20] Memory. The structure of autobiographical memory and the event history calendar. 1998-07. Level A. DOI:10.1080/741942610. https://doi.org/10.1080/741942610
+- [E21] Public Opinion Quarterly. Event history calendars and question list surveys: a direct comparison of interviewing methods. 2001. Level A. DOI:10.1086/320037. https://doi.org/10.1086/320037
+- [E24] Quality & Quantity. Applications of calendar instruments in social surveys: a review. 2009. Level A. DOI:10.1007/s11135-007-9129-8. https://doi.org/10.1007/s11135-007-9129-8
+- [E99] Harvard Business Review (Groysberg, Lin). Research: Resume Gaps Still Matter. 2024-07-31. Level B. https://hbr.org/2024/07/research-resume-gaps-still-matter
+- [E100] JAC Recruitment. 面接での経歴の空白期間の好印象な答え方は？. 2024-06-12. Level C. https://www.jac-recruitment.jp/market/knowhow/interview/interview-blank-period/
+- [E103] Forbes JAPAN. 2026年の採用市場で差がつく「職務経歴書」5つの更新ポイント. 2026-03-15. Level C. https://forbesjapan.com/articles/detail/93818
+- [E104] Indeed / ResumeGenius 他. Guide To Updating Your Resume. 2024. Level C. https://www.indeed.com/career-advice/resumes-cover-letters/guide-to-updating-your-resume
+- [E105] ACM CHI (Kim, Lee, Gweon). Comparing Data from Chatbot and Web Surveys: Effects of Platform and Conversational Style on Survey Response Quality. 2019-05. Level A. DOI:10.1145/3290605.3300316. https://doi.org/10.1145/3290605.3300316
+- [E106] Appcast. Recruitment Marketing Benchmark Report. 2025. Level B. https://info.appcast.io/whitepaper/2025-recruitment-marketing-benchmark-report
+- [E107] arXiv (Zhu ほか). Layout-Aware Parsing Meets Efficient LLMs: A Unified, Scalable Framework for Resume Information Extraction and Evaluation. 2025-10. Level B. arXiv:2510.09722. https://arxiv.org/abs/2510.09722
+- [E108] Nielsen Norman Group. Four Principles to Reduce Cognitive Load in Forms. Level B. https://www.nngroup.com/articles/4-principles-reduce-cognitive-load/
 
 <!-- textlint-enable -->

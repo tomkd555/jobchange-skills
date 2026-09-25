@@ -1,114 +1,114 @@
-# 回答評価の原本（4観点・3段階アンカー）
+# Canonical answer-evaluation source (four criteria, three-level anchors)
 
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
-<!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
+<!-- The [E1]-style notation in the body is the source-id notation. To preserve the half-width square brackets, this rule is disabled for this file. -->
 
-模擬面接で収集した回答を評価するアンカー（各段階の判定基準を明文化した記述）の原本である。job-change-interview-coach は Step 3 でこのファイルを読み、記載のアンカーで判定する。評価は4観点で行い、各観点を3段階（充足・一部・不足）で判定する。企業非依存のフォールバックモードでは企業理解の観点を対象外とする。
+This is the canonical source for the anchors (explicit judging criteria for each level) used to evaluate answers collected in a mock interview. job-change-interview-coach reads this file in Step 3 and judges against the anchors it states. Evaluation covers four criteria, each judged on a three-level scale (`充足` (met), `一部` (partial), `不足` (not met)). In company-independent fallback mode, the company-understanding criterion is excluded from evaluation.
 
-## 4観点と3段階のアンカー
+## The four criteria and their three-level anchors
 
-各観点の JSON キー（`scores` 内）を併記する。
+The JSON key for each criterion (inside `scores`) is given alongside it.
 
-### STAR（`scores.star`）
+### STAR (`scores.star`)
 
-状況（Situation）・課題（Task）・行動（Action）・結果（Result）の4要素の有無で判定する。
+Judged by whether the four elements — Situation, Task, Action, Result — are present.
 
-| 段階 | 判定 |
+| Level | Judgment |
 |---|---|
-| 充足 | 4要素がそろっている。 |
-| 一部 | 1〜2要素が欠落している。 |
-| 不足 | 3要素以上が欠落している。 |
+| `充足` (met) | All four elements are present. |
+| `一部` (partial) | One or two elements are missing. |
+| `不足` (not met) | Three or more elements are missing. |
 
-### 具体性（`scores.specificity`）
+### Specificity (`scores.specificity`)
 
-数値・固有名詞による裏付けの有無で判定する。
+Judged by whether the answer is backed by numbers or proper nouns.
 
-| 段階 | 判定 |
+| Level | Judgment |
 |---|---|
-| 充足 | 数値・固有名詞による裏付けがある。 |
-| 一部 | 裏付けが部分的である。 |
-| 不足 | 抽象論のみで裏付けがない。 |
+| `充足` (met) | Backed by numbers or proper nouns. |
+| `一部` (partial) | Backed only partially. |
+| `不足` (not met) | Purely abstract, with no backing. |
 
-### 一貫性（`scores.consistency`）
+### Consistency (`scores.consistency`)
 
-転職理由と志望動機の矛盾の有無で判定する。判定の根拠として参照するのは profile.json の `job_change_axis` とする。`self_analysis.json` がある場合は、その `career_narrative`（一貫する動機）と `reason_for_change`（建設的な言い換えと `job_change_axis.reasons` との整合の説明）も根拠の参照先へ加える。
+Judged by whether there is a contradiction between the reason for changing jobs and the motivation for applying. The reference for this judgment is profile.json's `job_change_axis`. When `self_analysis.json` exists, its `career_narrative` (the consistent motivation) and `reason_for_change` (the constructive reframing and its explanation of alignment with `job_change_axis.reasons`) are also added to the reference set.
 
-| 段階 | 判定 |
+| Level | Judgment |
 |---|---|
-| 充足 | 矛盾がない。 |
-| 一部 | 軽微な食い違いがある。 |
-| 不足 | 明確な矛盾がある。 |
+| `充足` (met) | No contradiction. |
+| `一部` (partial) | A minor discrepancy. |
+| `不足` (not met) | A clear contradiction. |
 
-### 企業理解（`scores.company_fit`）
+### Company understanding (`scores.company_fit`)
 
-回答が企業固有の根拠（company_research.json の claim、または interview_intel.json の `RQ`・`FF`・`TH` の項目）に結び付いているかで判定する。フォールバックモード（company_research.json も interview_intel.json も無い場合）は対象外とする。
+Judged by whether the answer connects to company-specific evidence (a claim in company_research.json, or an `RQ`, `FF`, or `TH` item in interview_intel.json). Excluded in fallback mode (when neither company_research.json nor interview_intel.json exists).
 
-| 段階 | 判定 |
+| Level | Judgment |
 |---|---|
-| 充足 | claim への明確な結び付きがある。 |
-| 一部 | 結び付きが断片的である。 |
-| 不足 | 結び付きがない。 |
+| `充足` (met) | A clear connection to a claim. |
+| `一部` (partial) | The connection is fragmentary. |
+| `不足` (not met) | No connection. |
 
-## 良い回答の要素
+## Elements of a good answer
 
-高く評価される回答が備える要素である[E69]。
+The elements a highly rated answer has[E69].
 
-| 要素 | 内容 |
+| Element | Content |
 |---|---|
-| 具体性 | 抽象論でなく、具体的な状況・行動で語る。 |
-| 定量性 | 成果を数値で裏付ける。 |
-| 主体性 | 本人が担った役割・判断・行動を主語にして述べる（他者・組織の成果と区別する）。 |
-| アンサーファースト | 結論を先に述べ、根拠を後に続ける。 |
-| 行動（Action）への時間配分 | 回答時間の50〜60%を Action に割き、STAR のうち Action を最も詳しく述べる。この時間配分は、行動基準評定尺度（BARS）で採点するビヘイビアラル面接で特に重視される[E69]。 |
+| Specificity | Speaking through concrete situations and actions. |
+| Quantification | Backing an achievement with numbers. |
+| Ownership | Stating the role, judgment, and action the candidate themselves took, as the subject (distinguishing it from what others or the organization achieved). |
+| Answer-first | Stating the conclusion first, followed by the supporting reasoning. |
+| Time allocated to Action | Devoting 50 to 60 percent of the answer time to Action, and describing Action in the greatest detail among the STAR elements. This time allocation matters especially in a behavioral interview scored with a Behaviorally Anchored Rating Scale (BARS)[E69]. |
 
-## 学術的根拠
+## Academic evidence
 
-面接対策で構造化面接・過去行動面接に沿った準備を推奨する根拠と、その限界と、決着していない論点を示す。断定できない論点は両論を併記する。すべて DOI を付す。
+This section states the basis for recommending preparation aligned with structured and past-behavior interviews in interview preparation, its limits, and unsettled questions. Where a question cannot be settled, both sides of the debate are presented. Every source carries a DOI.
 
-### 構造化面接の予測的妥当性
+### Predictive validity of structured interviews
 
-構造化面接（質問と評価基準を事前に定めた面接）は、非構造化面接より予測的妥当性が高い。McDaniel et al.（1994）は245係数・N=86,311のメタ分析で、構造化面接が非構造化面接より妥当性が高いと結論した[E74]。Conway et al.（1995）は信頼性から導かれる妥当性の上限を、高度に構造化した面接で .67、非構造化面接で .34 と推定した[E79]。
+A structured interview (one with questions and evaluation criteria set in advance) has higher predictive validity than an unstructured interview. McDaniel et al. (1994), a meta-analysis of 245 coefficients across N = 86,311, concluded that structured interviews have higher validity than unstructured interviews[E74]. Conway et al. (1995) estimated the validity ceiling implied by reliability at .67 for highly structured interviews and .34 for unstructured interviews[E79].
 
-妥当性の絶対水準については、次の2つの推定が併存し、確定値として扱えない（両論併記）。
+Two estimates of the absolute level of validity coexist and neither can be treated as settled (both sides presented).
 
-| 推定 | 内容 |
+| Estimate | Content |
 |---|---|
-| 古典的推定（Schmidt & Hunter 1998） | 選考手法の予測的妥当性を85年分の研究で総括し、一般知的能力（GMA）単独 .51、GMA＋構造化面接 .63 等を示した[E73]。この .51 前後の値が長く標準として用いられてきた。 |
-| 下方修正（Sackett et al. 2022） | 従来の推定は range restriction（選抜による分散の縮小）の過大補正を含むとして妥当性を下方修正し、構造化面接を相対的に最上位に位置づけた。構造化面接の妥当性は約 .42 と見積もられる[E75]。ただしこの下方修正（range restriction 補正の是非）をめぐっては、Sackett らと Oh, Le & Roth（2023）の論争が続いており、いずれの係数も確定値ではない[E82]。相対順位（構造化面接・ワークサンプル・GMA が上位）はおおむね変わらない。 |
+| Classical estimate (Schmidt & Hunter, 1998) | Summarizing 85 years of research on the predictive validity of selection methods, it reported .51 for general mental ability (GMA) alone and .63 for GMA plus a structured interview, among other figures[E73]. This figure of around .51 has long served as the standard. |
+| Downward revision (Sackett et al., 2022) | Arguing that earlier estimates over-corrected for range restriction (the shrinkage of variance caused by selection), this work revised validity downward and placed structured interviews at the top of the relative ranking. The validity of structured interviews is estimated at approximately .42[E75]. This downward revision (over whether the range-restriction correction is warranted) remains contested between Sackett and colleagues and Oh, Le & Roth (2023), so neither coefficient is settled[E82]. The relative ranking (structured interviews, work samples, and GMA at the top) remains largely unchanged. |
 
-含意: 構造化・行動面接を前提とした STAR 準備は学術的に支持される。ただし妥当性の絶対水準は下方修正されている。本スキルは、面接手法を万能なものとして扱わない。
+Implication: preparing STAR answers on the premise of a structured, behavioral interview is academically supported. The absolute level of validity has, however, been revised downward. This skill treats interview technique as one tool with known limits.
 
-### 過去行動面接と状況面接の優劣（未決着）
+### Past-behavior versus situational interviews (unsettled)
 
-面接質問の形式は2種類に分かれる。過去の行動を問う過去行動面接（「〜のとき、実際にどう行動したか」）と、仮定の状況での対応を問う状況面接（「〜の状況なら、どう対応するか」）である。両者の優劣は学術的に未決着である。利用者は両形式に備える必要がある（両論併記）。
+Interview questions fall into two forms: the past-behavior interview, which asks about actual past behavior ("what did you actually do when ..."), and the situational interview, which asks about a hypothetical response ("what would you do if ..."). Which is superior remains academically unsettled. The user needs to prepare for both forms (both sides presented).
 
-- McDaniel et al.（1994）は状況面接を最上位とした[E74]。
-- Taylor & Small（2002）は、過去行動（行動記述）質問が状況質問より高い妥当性（.63 対 .47）を示すと報告した[E78]。
+- McDaniel et al. (1994) ranked situational interviews highest[E74].
+- Taylor & Small (2002) reported that past-behavior (behavior-description) questions show higher validity than situational questions (.63 versus .47)[E78].
 
-### 日本の採用面接での検証状況（限界）
+### Verification status in Japanese hiring interviews (a limitation)
 
-上記の妥当性の推定は、いずれも欧米標本のメタ分析に基づく。日本の採用面接の妥当性・信頼性を検証した研究は少数の事例研究に限られ、そこでは欧米のメタ分析が示す水準の妥当性が確認されていない。
+Every validity estimate above rests on meta-analyses of Western samples. Research verifying the validity and reliability of hiring interviews in Japan is limited to a small number of case studies, and none of them confirms validity at the level the Western meta-analyses show.
 
-鈴木（2013）は国内1社の採用面接データを分析した。行動評価の信頼性係数は 0.63〜0.73、行動評価から業績評価への予測的妥当性は -.34〜-.20 の負の係数だった。鈴木はここから、当該社の採用面接に予測的妥当性はないと結論した[E105]。鈴木（2016）は評価者間信頼性の順位相関が 0.04〜0.41 にとどまることを示した[E106]。竹田（2004）は、長期雇用を前提とする採用では応募者との信頼関係を築くことを重視し、構造化の程度をあえて低く抑えた面接を設計したと報告した[E107]。
+Suzuki (2013) analyzed interview data from one Japanese company. The reliability coefficient for behavioral evaluation was 0.63 to 0.73, and the predictive validity from behavioral evaluation to performance evaluation was a negative coefficient of −.34 to −.20. From this, Suzuki concluded that the company's hiring interview had no predictive validity[E105]. Suzuki (2016) showed inter-rater reliability rank correlations of only 0.04 to 0.41[E106]. Takeda (2004) reported designing an interview with a deliberately low degree of structure, prioritizing building trust with the candidate on the premise of long-term employment[E107].
 
-含意: 想定質問と評価アンカーは、回答の準備を助ける道具であり、面接の合否を予測する道具ではない。SKILL.md が範囲外と定める「合否の予測をしない」は、この検証状況を根拠とする。日本の面接評価がどの水準の妥当性を持つかを示す根拠が無い以上、準備の質から合否を推し量れない。
+Implication: expected questions and evaluation anchors are tools that help prepare answers. The "never predicting the outcome" scope exclusion in SKILL.md rests on this verification status. With no evidence for what level of validity Japanese interview evaluation has, the quality of preparation cannot be used to infer the likelihood of success.
 
-限界: 上記はいずれも新卒採用を対象とした1社事例であり、採用者のみ業績を観測することによる range restriction の影響を検討していない。中途採用の選考の予測的妥当性を検証した日本の査読論文は特定できていない。したがって、欧米メタ分析との食い違いを日本の一般則として扱わない。日本の採用面接に妥当性が無いと断定する根拠にもしない。
+Limitation: all of the above are single-company case studies of new-graduate hiring, and none examines the effect of range restriction from observing performance only for hired candidates. No peer-reviewed Japanese paper verifying the predictive validity of mid-career hiring selection could be identified. The discrepancy from the Western meta-analyses is therefore never treated as a general rule for Japan, nor is it treated as grounds for asserting that Japanese hiring interviews have no validity.
 
-### 印象操作と、事実に基づく準備の含意
+### Impression management, and the implication for fact-based preparation
 
-Levashina & Campion（2007）は、面接で応募者の90%超が何らかの印象操作をすると報告した[E80]。ただしこの報告は単一研究に基づく。独立した研究が同水準の結果を再現していないため、本ファイルは断定を避ける。含意は次のとおりである。脚色すると深掘りで矛盾が露見しうるため、事実に基づく具体的な準備が最善である。この含意は、上記の評価アンカー（具体性・一貫性を数値と固有名詞で裏付ける）と整合する。
+Levashina & Campion (2007) reported that over 90 percent of candidates engage in some form of impression management during an interview[E80]. This finding rests on a single study, however, and no independent study has reproduced a result at the same level, so this document avoids asserting it as settled. The implication is as follows: because embellishment can surface as a contradiction under further questioning, fact-based, specific preparation is the best approach. This implication is consistent with the evaluation anchors above (backing specificity and consistency with numbers and proper nouns).
 
-## 出典
+## Sources
 
-- [E69] CareerTestPrep. Behavioural Interview Questions: The Complete STAR Method Guide 2026. 2026-05-31. レベルB. https://www.careertestprep.com/blog/behavioural-interview-questions-star-method
-- [E73] Psychological Bulletin. The validity and utility of selection methods in personnel psychology: Practical and theoretical implications of 85 years of research findings. 1998. レベルA. DOI:10.1037/0033-2909.124.2.262 https://doi.org/10.1037/0033-2909.124.2.262
-- [E74] Journal of Applied Psychology. The validity of employment interviews: A comprehensive review and meta-analysis. 1994. レベルA. DOI:10.1037/0021-9010.79.4.599 https://doi.org/10.1037/0021-9010.79.4.599
-- [E75] Journal of Applied Psychology. Revisiting meta-analytic estimates of validity in personnel selection: Addressing systematic overcorrection for restriction of range. 2022. レベルA. DOI:10.1037/apl0000994 https://doi.org/10.1037/apl0000994
-- [E78] Journal of Occupational and Organizational Psychology. Asking applicants what they would do versus what they did do: A meta-analytic comparison of situational and past behaviour employment interview questions. 2002. レベルA. DOI:10.1348/096317902320369712 https://doi.org/10.1348/096317902320369712
-- [E79] Journal of Applied Psychology. A meta-analysis of interrater and internal consistency reliability of selection interviews. 1995. レベルA. DOI:10.1037/0021-9010.80.5.565 https://doi.org/10.1037/0021-9010.80.5.565
-- [E80] Journal of Applied Psychology. Measuring faking in the employment interview: Development and validation of an interview faking behavior scale. 2007. レベルA（単一研究）. DOI:10.1037/0021-9010.92.6.1638 https://doi.org/10.1037/0021-9010.92.6.1638
-- [E82] Journal of Applied Psychology. Correcting for range restriction in meta-analysis: A reply to Oh et al. (2023). 2023. レベルA. DOI:10.1037/apl0001116 https://doi.org/10.1037/apl0001116
-- [E105] 鈴木 2013. レベルA. DOI:10.24592/jshrm.14.2_4 https://doi.org/10.24592/jshrm.14.2_4
-- [E106] 鈴木 2016. レベルA. DOI:10.24592/jshrm.17.1_69 https://doi.org/10.24592/jshrm.17.1_69
-- [E107] 竹田 2004. レベルA. DOI:10.4992/jjpsy.75.339 https://doi.org/10.4992/jjpsy.75.339
+- [E69] CareerTestPrep. Behavioural Interview Questions: The Complete STAR Method Guide 2026. 2026-05-31. Level B. https://www.careertestprep.com/blog/behavioural-interview-questions-star-method
+- [E73] Psychological Bulletin. The validity and utility of selection methods in personnel psychology: Practical and theoretical implications of 85 years of research findings. 1998. Level A. DOI:10.1037/0033-2909.124.2.262 https://doi.org/10.1037/0033-2909.124.2.262
+- [E74] Journal of Applied Psychology. The validity of employment interviews: A comprehensive review and meta-analysis. 1994. Level A. DOI:10.1037/0021-9010.79.4.599 https://doi.org/10.1037/0021-9010.79.4.599
+- [E75] Journal of Applied Psychology. Revisiting meta-analytic estimates of validity in personnel selection: Addressing systematic overcorrection for restriction of range. 2022. Level A. DOI:10.1037/apl0000994 https://doi.org/10.1037/apl0000994
+- [E78] Journal of Occupational and Organizational Psychology. Asking applicants what they would do versus what they did do: A meta-analytic comparison of situational and past behaviour employment interview questions. 2002. Level A. DOI:10.1348/096317902320369712 https://doi.org/10.1348/096317902320369712
+- [E79] Journal of Applied Psychology. A meta-analysis of interrater and internal consistency reliability of selection interviews. 1995. Level A. DOI:10.1037/0021-9010.80.5.565 https://doi.org/10.1037/0021-9010.80.5.565
+- [E80] Journal of Applied Psychology. Measuring faking in the employment interview: Development and validation of an interview faking behavior scale. 2007. Level A (single study). DOI:10.1037/0021-9010.92.6.1638 https://doi.org/10.1037/0021-9010.92.6.1638
+- [E82] Journal of Applied Psychology. Correcting for range restriction in meta-analysis: A reply to Oh et al. (2023). 2023. Level A. DOI:10.1037/apl0001116 https://doi.org/10.1037/apl0001116
+- [E105] Suzuki 2013. Level A. DOI:10.24592/jshrm.14.2_4 https://doi.org/10.24592/jshrm.14.2_4
+- [E106] Suzuki 2016. Level A. DOI:10.24592/jshrm.17.1_69 https://doi.org/10.24592/jshrm.17.1_69
+- [E107] Takeda 2004. Level A. DOI:10.4992/jjpsy.75.339 https://doi.org/10.4992/jjpsy.75.339

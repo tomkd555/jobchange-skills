@@ -1,30 +1,30 @@
-# 受検案内 URL による検査系統の事前判別
+# Advance detection of the assessment family from the exam-invitation URL
 
-受検案内メールや受検ページの URL のドメインから検査の系統を事前に判別できるため、Step 0 で URL があれば使う。Step 2 では、暫定判別と Step 1 の調査結果の照合に使う。
+The family of assessment can be detected in advance from the domain of the exam-invitation email or the assessment page's URL, so this is used at Step 0 when a URL is available. At Step 2 it is used to cross-check the provisional detection against the Step 1 investigation results.
 
-## 判別表
+## Detection table
 
-| URL に含まれるドメイン文字列 | 判別できる系統 | 対応する検査 |
+| Domain string in the URL | Family this detects | Corresponding assessment |
 |---|---|---|
-| `arorua.net` | リクルート系 | SPI（テストセンター／WEB テスティング） |
-| `e-exam` | 日本 SHL 系 | 玉手箱・GAB・CAB のいずれか |
-| `nsvs` | 日本 SHL 系 | 玉手箱・GAB・CAB のいずれか |
-| `tsvs` | 日本 SHL 系 | 玉手箱・GAB・CAB のいずれか |
-| `c-personal` | ヒューマネージ系 | TG-WEB |
+| `arorua.net` | Recruit family | SPI (Test Center / Web Testing) |
+| `e-exam` | Japan SHL family | One of 玉手箱 (Tamatebako), GAB, or CAB |
+| `nsvs` | Japan SHL family | One of 玉手箱 (Tamatebako), GAB, or CAB |
+| `tsvs` | Japan SHL family | One of 玉手箱 (Tamatebako), GAB, or CAB |
+| `c-personal` | Humanage family | TG-WEB |
 
-複数の対策媒体が、URL・受検画面から検査種別を見分ける方法としてこの対応に共通して言及している。判別表の典拠は次の対策媒体（エビデンスレベル C）である。
+Multiple preparation outlets consistently mention this correspondence as a way to identify the assessment type from the URL or the assessment screen. The source for this detection table is the following preparation outlet (evidence level C).
 
-- 出典: レバテックルーキー「適性検査 20 種類の見分け方！URL・WEB 画面から判断する方法」 https://rookie.levtech.jp/guide/detail/90170/ （レベル C。対策媒体）
+- Source: Levtech Rookie, 「適性検査 20 種類の見分け方！URL・WEB 画面から判断する方法」 ("How to tell apart 20 types of aptitude test! Judging from the URL and web screen") https://rookie.levtech.jp/guide/detail/90170/ (Level C. Preparation outlet)
 
-## 使い方
+## How to use it
 
-- 判別は URL 文字列の照合のみで行う。URL への外部アクセスや、プロファイルの外部送信は伴わない。
-- 判別結果は暫定であり、確度は「推定」とする。確定は Step 1 の `job-change-exam-scout` の調査（採用ページ・選考体験記の確認）で行う。
+- Detection is done by matching the URL string only. It involves no external access to the URL and no external transmission of the profile.
+- The detection result is provisional, and its confidence is set to `推定` (estimate). Confirmation happens through the Step 1 investigation by `job-change-exam-scout` (checking the careers page and candidate write-ups).
 
-## 限界
+## Limitations
 
-判別には次の限界がある。Step 0 で暫定判別を伝える際は、これらを併せて示す。
+The following limitations apply to this detection. When conveying the provisional detection at Step 0, present these together with it.
 
-- **ペーパー形式は判別できない。** 内田クレペリン検査のように紙で行う検査には受検 URL が無いため、URL では判別できない（出典: 前掲レバテックルーキー、レベル C）。
-- **日本 SHL 系は単一の検査まで絞れない。** `e-exam`・`nsvs`・`tsvs` は日本 SHL の受検基盤であり、これらからは玉手箱・GAB・CAB のいずれかまでしか特定できない。最終的な種別は Step 1 の調査で確定する。
-- **検査提供元がドメインを変えることがある。** 検査提供元の受検基盤のドメインは、時期により変わる。判別表は現時点の対応であり、URL が表に一致しない場合や、一致しても実際の検査が異なる場合がある。URL による判別だけに頼らず、Step 1 の調査結果を優先する。
+- **Paper-format tests cannot be detected.** A test administered on paper, such as 内田クレペリン検査 (Uchida-Kraepelin), has no exam URL, so it cannot be detected from a URL (source: the Levtech Rookie article cited above, level C).
+- **The Japan SHL family cannot be narrowed to a single test.** `e-exam`, `nsvs`, and `tsvs` are Japan SHL's assessment platforms, so from these alone the type can only be narrowed to one of 玉手箱 (Tamatebako), GAB, or CAB. The final type is confirmed through the Step 1 investigation.
+- **An assessment vendor may change its domain.** The domain of an assessment vendor's platform can change over time. The detection table reflects the current correspondence at the time of writing; the URL may not match the table, or the actual assessment may differ even when it does match. Do not rely on URL-based detection alone; prioritize the Step 1 investigation results.

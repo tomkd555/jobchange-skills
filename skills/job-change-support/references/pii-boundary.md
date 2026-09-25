@@ -1,113 +1,113 @@
-# 個人情報の境界の原本（pii-boundary）
+# The canonical definition of the personal information boundary (pii-boundary)
 
-利用者の個人情報を、Web 送信手段を持つ役割へ渡さないための境界を定める原本である。hub と全サブスキルがこのファイルを参照する。
+This is the canonical definition of the boundary that keeps the user's personal information from reaching a role that has a means of sending data to the web. The hub and every sub-skill refer to this file.
 
-| 参照元 | 何に使うか |
+| Referrer | What it is used for |
 |---|---|
-| `job-change-support` | 各サブスキルへの振り分けと、企業研究へ渡す軸の絞り込み |
-| `job-change-profile` / `job-change-self-analysis` | `career-private/` 配下の作成・更新をどの役割へ任せてよいかの判断 |
-| `job-change-company-research` / `job-change-job-search` / `job-change-exam-prep` | Web 送信手段を持つ役割へ渡してよい材料の判断 |
-| `job-change-documents` / `job-change-interview-prep` / `job-change-fit-assessment` | 個人情報とその派生値の置き場所と受け渡し先の判断 |
+| `job-change-support` | Routing to each sub-skill, and narrowing the axes passed to company research |
+| `job-change-profile` / `job-change-self-analysis` | Deciding which role may create or update files under `career-private/` |
+| `job-change-company-research` / `job-change-job-search` / `job-change-exam-prep` | Deciding what material may be passed to a role that has a means of sending data to the web |
+| `job-change-documents` / `job-change-interview-prep` / `job-change-fit-assessment` | Deciding where personal information and its derived values are stored, and to whom they are passed |
 
-対象の列挙・例外・役割ごとの可否はここにのみ置き、参照元へ複製しない。参照元の SKILL.md は、原則としての規範（個人情報を外部送信に用いない）と、そのスキルに固有の帰結だけを書く。
+The enumeration of targets, the exceptions, and the permission for each role live here alone, and are never duplicated into a referrer. A referrer's SKILL.md states only the principle (personal information is never used for external transmission) and the consequences specific to that skill.
 
-役割プロンプト（`agents/*.md` と `skills/*/references/roles/*.md`）だけは例外で、規範の要点を原文どおりに持つ。役割プロンプトはサブエージェントへ単体で渡り、本ファイルを開けるとは限らないためである。たとえば `job-change-posting-parser` は `tools` に `WebFetch` と `WebSearch` だけを持ち、`Read` が無いため参照先を開けない。これは意図した複製であり、本ファイルを変えたときは14の役割プロンプトも同時に直す。
+The role prompts (`agents/*.md` and `skills/*/references/roles/*.md`) are the one exception: they carry the substance of the principle verbatim. A role prompt travels alone to a sub-agent, and the sub-agent may not be able to open this file. For example, `job-change-posting-parser` holds only `WebFetch` and `WebSearch` in its `tools`, has no `Read`, and cannot open a reference. This duplication is intentional; when this file changes, update all 14 role prompts at the same time.
 
-## 境界の原則（広い列挙）
+## Boundary principle (the wide enumeration)
 
-次を個人情報として扱い、検索クエリ・fetch・外部 API を含む一切の外部送信に用いない。
+Treat the following as personal information, and never use any of it for external transmission of any kind, including search queries, fetches, and external API calls.
 
-### profile.json の項目
+### Fields of profile.json
 
-対象は、氏名・現年収（`salary.current`）・希望年収（`salary.desired`）・居住地・学歴・在籍企業名（`career_history[].company`）・実績（`career_history[].achievements` の定量値を含む）である。`job_change_axis` の条件と `company_score_axes` の `weight`・`thresholds`・定性軸も、本人の判断と状況を表すため同じ扱いとする。
+The name, current salary (`salary.current`), desired salary (`salary.desired`), place of residence, education, and the name of the company where the user works or has worked (`career_history[].company`) are covered, along with achievements (including the quantitative values in `career_history[].achievements`). The conditions in `job_change_axis`, and the `weight`, `thresholds`, and qualitative axes of `company_score_axes`, are treated the same way, because they represent the user's own judgement and circumstances.
 
-### career-private/ 配下のファイル
+### Files under career-private/
 
-`{DATA_ROOT}/career-private/` 配下は、パスも内容も個人情報として扱う。
+Everything under `{DATA_ROOT}/career-private/` is treated as personal information, both its path and its content.
 
-| ファイル | 個人情報である理由 |
+| File | Why it is personal information |
 |---|---|
-| `profile.json` | 経歴・年収・氏名の原本 |
-| `profile_interview_notes.md` | 聞き取りの生の記録 |
-| `self_analysis.json` | 行動エピソード・他者からの評価・価値観 |
-| `company_index.json` | 応募先の一覧が本人の志望を示す |
-| `commute.json` | 通勤時間が居住地を示唆する |
-| `fit/{企業スラッグ}/fit_assessment.json` | profile・自己分析・通勤から導いた派生値 |
-| `fit/{企業スラッグ}/time_analysis.json` | 年収・労働時間・通勤時間から導いた派生値 |
-| `fit/{企業スラッグ}/sources.json` | 派生値の算定に使った数値の出典メタ |
-| `fit/{企業スラッグ}/qualitative_judgment.json` | 利用者が自分の言葉で書いた判定条件の適用結果 |
-| `fit/current/time_analysis.json` | 現職の拘束時間・実質時給 |
+| `profile.json` | The canonical record of career history, salary, and name |
+| `profile_interview_notes.md` | The raw record of the elicitation interview |
+| `self_analysis.json` | Behavioural episodes, feedback from others, and values |
+| `company_index.json` | The list of target companies reveals the user's own preferences |
+| `commute.json` | Commute time implies place of residence |
+| `fit/{company slug}/fit_assessment.json` | A value derived from the profile, self-analysis, and commute |
+| `fit/{company slug}/time_analysis.json` | A value derived from salary, working hours, and commute time |
+| `fit/{company slug}/sources.json` | Source metadata for the figures used to calculate a derived value |
+| `fit/{company slug}/qualitative_judgment.json` | The result of applying the judgement conditions the user wrote in their own words |
+| `fit/current/time_analysis.json` | Committed time and effective hourly wage at the current job |
 
-派生値も原本と同じ境界の内側にある。個人情報から計算した値は、計算の結果であっても個人情報である。
+A derived value stays inside the same boundary as the source it came from. A value calculated from personal information is personal information, even though it is the result of a calculation.
 
-### ツリーの名前は境界ではない
+### The boundary is defined by the role's web tools
 
-`career-private/` が個人情報、`companies/` と `job-search/` が非個人情報、という二分では実態を表せない。境界の本体は、Web 送信手段（WebSearch・WebFetch）を持つ役割へ個人情報のパスも内容も渡さないことである。ツリーの名前は、その判断の目安にすぎない。
+Splitting the world into "`career-private/` holds personal information, `companies/` and `job-search/` do not" fails to describe reality. The substance of the boundary is that a role with a means of sending data to the web never receives the path or the content of personal information. The name of a tree is only a rough guide for that judgement.
 
-`companies/{企業スラッグ}/` 配下のうち、次の成果物は個人情報を含む。いずれも書き出す役割と読む役割が Web 送信手段を持たないため、境界の内側にとどまる。
+Under `companies/{company slug}/`, the following artifacts contain personal information. Every one stays inside the boundary, because neither the role that writes it nor the role that reads it has a means of sending data to the web.
 
-| ファイル | 個人情報である理由 | 読み書きする役割 |
+| File | Why it is personal information | Role that reads and writes it |
 |---|---|---|
-| `documents/` 配下の応募書類 | 経歴・実績を `profile.json` から引いて本文に書く | `job-change-document-writer`・`job-change-document-auditor` |
-| `documents/appeal-mapping.md` | 求人要件と `profile.json` の実績の対応表 | 同上 |
-| `documents/tailoring-rationale.md` | どの実績を採用したかとその理由 | 同上 |
-| `interview_answers.json` | 利用者の回答を要約・言い換えをせずそのまま転記する | `job-change-interview-coach` |
-| `interview_evaluation.json` | 回答への評価と根拠参照 | 同上 |
-| `interview_notes_user.md` | 利用者が転職エージェントや過去の選考で得た、その企業の面接についての情報。本人の選考の経緯を含む | 同上 |
-| `interview_questions.json` | profile と `interview_notes_user.md` から作った想定質問。`basis` が profile の該当箇所を指す | 同上 |
-| `interview-prep-report.md` | 回答の評価の総括 | 同上 |
+| Application documents under `documents/` | The body text draws career history and achievements from `profile.json` | `job-change-document-writer` / `job-change-document-auditor` |
+| `documents/appeal-mapping.md` | A mapping between job requirements and the achievements in `profile.json` | same as above |
+| `documents/tailoring-rationale.md` | Which achievements were chosen, and why | same as above |
+| `interview_answers.json` | A verbatim transcript of the user's answers, with no summarising or paraphrasing | `job-change-interview-coach` |
+| `interview_evaluation.json` | An evaluation of the answers, with references to its basis | same as above |
+| `interview_notes_user.md` | What the user learned about that company's job interview from a recruiting agent or a past selection process, including the course of the user's own selection process | same as above |
+| `interview_questions.json` | Anticipated questions built from the profile and `interview_notes_user.md`; `basis` points to the relevant part of the profile | same as above |
+| `interview-prep-report.md` | A summary evaluation of the answers | same as above |
 
-これに対し、`companies/{企業スラッグ}/company_research.json`・`companies/{企業スラッグ}/exam_assessment.json`・`companies/{企業スラッグ}/interview_intel.json` と `job-search/{検索ID}/` 配下は、Web 送信手段を持つ役割が読み書きする。該当するのは `job-change-company-researcher`・`job-change-research-auditor`・`job-change-exam-scout`・`job-change-interview-scout`・`job-change-job-searcher` である。ここへ個人情報とその派生値を書かない。同じ `companies/{企業スラッグ}/` にある個人情報のファイル（上の表）については、これらの役割プロンプトが、ファイル名を挙げて読まないよう定めている。適合性評価の派生値の置き場所を `career-private/fit/{企業スラッグ}/` 配下に限るのも、同じ理由による。
+By contrast, `companies/{company slug}/company_research.json`, `companies/{company slug}/exam_assessment.json`, `companies/{company slug}/interview_intel.json`, and everything under `job-search/{search ID}/` are read and written by roles that have a means of sending data to the web: `job-change-company-researcher`, `job-change-research-auditor`, `job-change-exam-scout`, `job-change-interview-scout`, and `job-change-job-searcher`. Personal information and its derived values are never written there. For the files with personal information that sit in the same `companies/{company slug}/` tree (the table above), the role prompts for these roles name the files and instruct the role not to read them. The same reasoning limits where a fit-assessment derived value is stored, to under `career-private/fit/{company slug}/` alone.
 
-`_manifest.json` にも個人情報とその派生値を書かない。記録する項目の仕様は `freshness-policy.md` にある。
+`_manifest.json` never carries personal information or its derived values either. The specification for the items it records lives in `freshness-policy.md`.
 
-## 例外
+## Exceptions
 
-境界を越えて Web 送信手段を持つ役割へ渡してよいのは、次の2つに限る。ほかに例外を作らない。
+Only the following two cases may cross the boundary and reach a role with a means of sending data to the web. No other exception exists.
 
-### 匿名化した条件シート（希望年収の下限を含む）
+### An anonymised condition sheet (including the floor of the desired salary)
 
-求人検索の条件として、匿名化した条件シートを渡してよい。条件シートに入るのは、職種・業界・勤務地の粒度（都道府県または市区町村、利用者が自分で書いた沿線名・駅名）・リモート方針・雇用形態・希望年収の下限（`salary_min`）・similar_better で利用者が選んだ改善軸の id（`improvement_axes`）・探索集合で外した条件のキー名と理由である。求人検索はこれらを軸として成立する手続きであり、この範囲だけでは個人を特定できない。
+An anonymised condition sheet may be passed as the search condition for a job search. The condition sheet may hold: job type, industry, the granularity of the work location (prefecture or municipality, and any rail line or station name the user wrote in their own words), remote-work policy, employment type, the floor of the desired salary (`salary_min`), the id of the improvement axis the user chose in similar_better (`improvement_axes`), and the key names and reasons for any condition excluded from the exploration set. A job search is a procedure built on these as its axes, and this range of information alone cannot identify the individual.
 
-条件シートに入れないのは、現年収（`salary.current`）、残業の上限・年間休日の下限・作業特性の希望といったしきい値、`commute.json` から導いた駅名、過去の検索結果の判定層である。現年収と希望年収の両方がそろうと、在籍企業を推定できるだけの情報量になる。しきい値は本人の条件であり、それ自体が個人を表す。
+The condition sheet never holds: the current salary (`salary.current`); a threshold such as an overtime ceiling, a floor on annual holidays, or a preference on work characteristics; the station name derived from `commute.json`; or the assessment tier of a past search result. Once both the current salary and the desired salary are present, there is enough information to infer the company the user works for. A threshold is the user's own condition, and by itself represents the individual.
 
-この例外を使うのは `job-change-job-search` である。`profile.json` のパスも内容も渡さない。
+`job-change-job-search` is the one that uses this exception. Neither the path nor the content of `profile.json` is passed.
 
-### company_score_axes の quantitative 軸の識別子
+### The identifiers of the quantitative axes in company_score_axes
 
-企業研究（`job-change-company-research`）を起動するときは、`company_score_axes` のうち `kind` が `quantitative` の軸の識別子の配列だけを渡してよい。たとえば `["compensation_level", "monthly_overtime", "annual_holidays"]` のような配列である。この配列は氏名・在籍企業名・現年収を含まない。`weight`・`thresholds` は渡さない。重みと基準は利用者の判断であり、企業側の事実収集には不要である。`company_score_axes` が無い場合は、軸を渡さずに起動する。
+When starting company research (`job-change-company-research`), only the array of identifiers for the axes in `company_score_axes` whose `kind` is `quantitative` may be passed — an array such as `["compensation_level", "monthly_overtime", "annual_holidays"]`. This array holds no name, no name of the user's employer, and no current salary. `weight` and `thresholds` are never passed: the weight and the standard are the user's own judgement, and gathering facts on the company side needs neither. When there is no `company_score_axes`, research starts with no axis passed at all.
 
-定性軸（`kind` が `qualitative`）は、利用者が自分の言葉で書いた `label`・`definition`・`judgment` を持つため渡さない。定性軸の判定は、企業研究が集めた事実と求人票を材料に、Web ツールを持たない適合性評価が行う。定性軸について企業研究で追加の調査が必要な場合は、利用者自身の言葉で重点観点として指示する。
+A qualitative axis (`kind` is `qualitative`) is never passed, because it holds a `label`, `definition`, and `judgment` the user wrote in their own words. Judgement on a qualitative axis is made by fit assessment, which holds no web tool, working from the facts company research has gathered and from the job posting. When a qualitative axis needs further investigation from company research, the caller gives it to company research as a focus point, in the user's own words.
 
-## 機械で検出できる3項目（狭い定義）
+## The three items a machine can detect (the narrow definition)
 
-上の広い列挙は、材料を渡す前の判断に使う規範である。これに対し、成果物へ混入した個人情報を機械で検出する検査は、文字列一致で確実に検出できる3項目（現勤務先名・氏名らしき値・現年収）だけを対象とする。抽出元と検出規則の原本は `job-change-job-search` の `references/job-search-format.md` の「PII リント」にある。`scripts/validate_job_search_results.py` の実装（`_SALARY_MIN_FOR_LINT`・`_NAME_KEYS`）はこれと一致する。
+The wide enumeration above is the standard used for judging what to pass, before any material is passed. Separately from it, the mechanical check for personal information that has leaked into a finished artifact covers only the three items a plain string match can detect with certainty: the name of the current employer, a value that looks like a name, and the current salary. The canonical definition of the extraction source and the detection rule lives under "PII lint" in `references/job-search-format.md` of `job-change-job-search`. The implementation of `scripts/validate_job_search_results.py` (`_SALARY_MIN_FOR_LINT`, `_NAME_KEYS`) matches this definition.
 
-希望年収の下限は検査対象に含めない。上の例外として検索条件に使うことを認めているためである。
+The floor of the desired salary is excluded from this check, because the exception above permits its use as a search condition.
 
-狭い定義は広い列挙を置き換えない。機械が検出できるのは3項目だけであり、残りは渡す前の判断で守る。検査が PASS したことは、広い列挙を守った証拠にならない。
+The narrow definition never replaces the wide enumeration. A machine can detect only these three items; everything else is protected by the judgement made before material is passed. A PASS on the check is no evidence that the wide enumeration was honoured.
 
-## 役割ごとの可否
+## Permission by role
 
-各役割が Web 送信手段（WebSearch・WebFetch）を持つかどうかで、`career-private/` 配下を読んでよいかが決まる。各役割の `tools` は `agents/*.md` の frontmatter に固定してある。
+Whether a role may read under `career-private/` is decided by whether that role has a means of sending data to the web (WebSearch, WebFetch). Each role's `tools` is fixed in the frontmatter of `agents/*.md`.
 
-| 役割 | Web 送信手段 | `career-private/` 配下 |
+| Role | Means of sending data to the web | Reading under `career-private/` |
 |---|---|---|
-| `job-change-company-researcher` | あり（WebSearch・WebFetch） | 読まない。パスを渡されても開かない。`companies/{企業スラッグ}/` の個人情報のファイルも読まない |
-| `job-change-posting-parser` | あり（WebSearch・WebFetch） | 読まない。パスを渡されても開かない（`Read` を持たない） |
-| `job-change-job-searcher` | あり（WebSearch・WebFetch） | 読まない。パスを渡されても開かない。`companies/{企業スラッグ}/` の個人情報のファイルと `job-search/` の過去の成果物も読まない |
-| `job-change-exam-scout` | あり（WebSearch・WebFetch） | 読まない。パスを渡されても開かない。`companies/{企業スラッグ}/` の個人情報のファイルも読まない |
-| `job-change-interview-scout` | あり（WebSearch・WebFetch） | 読まない。パスを渡されても開かない。`companies/{企業スラッグ}/` の個人情報のファイルも読まない |
-| `job-change-research-auditor` | あり（WebSearch・WebFetch） | 読まない。パスを渡されても開かない。`companies/{企業スラッグ}/` の個人情報のファイルも読まない |
-| `job-change-fit-assessor` | なし | 読んでよい。派生値の書き込み先も `career-private/fit/{企業スラッグ}/` 配下に限る |
-| `job-change-profile-writer` | なし | 読んでよい |
-| `job-change-profile-auditor` | なし | 読んでよい |
-| `job-change-self-analysis-writer` | なし | 読んでよい |
-| `job-change-self-analysis-auditor` | なし | 読んでよい |
-| `job-change-document-writer` | なし | 読んでよい |
-| `job-change-document-auditor` | なし | 読んでよい |
-| `job-change-interview-coach` | なし | 読んでよい |
+| `job-change-company-researcher` | Yes (WebSearch, WebFetch) | Never reads it. Does not open it even when given a path. Also never reads the personal-information files under `companies/{company slug}/` |
+| `job-change-posting-parser` | Yes (WebSearch, WebFetch) | Never reads it. Does not open it even when given a path (holds no `Read`) |
+| `job-change-job-searcher` | Yes (WebSearch, WebFetch) | Never reads it. Does not open it even when given a path. Also never reads the personal-information files under `companies/{company slug}/`, nor past results under `job-search/` |
+| `job-change-exam-scout` | Yes (WebSearch, WebFetch) | Never reads it. Does not open it even when given a path. Also never reads the personal-information files under `companies/{company slug}/` |
+| `job-change-interview-scout` | Yes (WebSearch, WebFetch) | Never reads it. Does not open it even when given a path. Also never reads the personal-information files under `companies/{company slug}/` |
+| `job-change-research-auditor` | Yes (WebSearch, WebFetch) | Never reads it. Does not open it even when given a path. Also never reads the personal-information files under `companies/{company slug}/` |
+| `job-change-fit-assessor` | None | May read it. Writes derived values only under `career-private/fit/{company slug}/` |
+| `job-change-profile-writer` | None | May read it |
+| `job-change-profile-auditor` | None | May read it |
+| `job-change-self-analysis-writer` | None | May read it |
+| `job-change-self-analysis-auditor` | None | May read it |
+| `job-change-document-writer` | None | May read it |
+| `job-change-document-auditor` | None | May read it |
+| `job-change-interview-coach` | None | May read it |
 
-役割の `tools` を変更するときは、この表を必ず確認する。Web ツールを1つ足すだけで、その役割は個人情報を受け取れなくなる。
+Whenever a role's `tools` changes, check this table. Adding a single web tool is enough to make that role unable to receive personal information.
 
-サブエージェントを起動できないハーネス（Codex ほか）では、本体が役割プロンプトを読んで自分にその役割を課す。本体は Web 送信手段を持ちうる。それでも、その手段を持たない役割として作業する間は使わない。
+On a harness that cannot launch a sub-agent (Codex and others), the main body reads the role prompt and takes on that role itself. The main body may hold a means of sending data to the web; while it works as a role without that means, it never uses it.

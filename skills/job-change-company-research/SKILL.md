@@ -1,16 +1,18 @@
 ---
 name: job-change-company-research
 description: >-
-  転職の企業研究を担うサブスキル。企業名と重点観点を受け、公式資料・報道・口コミサイト等から情報を集め、
-  すべての主張に出典URLとエビデンスレベル（A=一次公式／B=信頼できる二次／C=口コミ集計／D=個人ブログ・伝聞）を
-  付した company_research.json を作り、機械的な検証と独立監査を通してから、トピック別の企業研究レポートを納品する。
-  求人情報URLを渡された場合は、求人票を取り込んで job_posting.json を作ってから調査へ入る。
-  指示された軸の指標について公表値を集めるところまでを担い、点数化・重み付け・格付けは行わない（profile 非依存）。
-  job-change-support（hub）から振り分けられて動く。
+  Sub-skill for company research in a job change. It takes a company name and areas of focus, collects
+  information from official materials, news reports, review sites and other sources, and builds a
+  company_research.json in which every claim carries a source URL and an evidence level (A = primary/official,
+  B = reliable secondary, C = aggregated review-site posts, D = personal blog/hearsay). It runs the result
+  through mechanical validation and an independent audit before delivering a topic-organized company research
+  report. When given a job posting URL, it imports the job posting into job_posting.json before starting
+  research. It covers collecting published figures for the axis metrics it is instructed to cover, and does
+  not score, weight, or rate the company (independent of profile). It runs when dispatched by
+  job-change-support (the hub).
   Use when the user researches a target company for a job change in Japan (including foreign-affiliated
   selection) — its philosophy, business, financials, compensation, benefits, work style, reputation, and
-  selection process — or imports a job posting from a URL, and needs sourced, evidence-graded findings
-  rather than unverified hearsay.
+  selection process — or imports a job posting from a URL, and needs sourced, evidence-graded findings.
   trigger words: 企業研究, 会社を調べる, 企業分析, 事業内容, 財務, 平均年収, 有価証券報告書, 評判, 口コミ,
   選考プロセス, 理念, パーパス, 求人URL, 求人票の取り込み, この求人を調べて。
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
@@ -18,52 +20,52 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skil
 
 # job-change-company-research
 
-転職の企業研究に取り組むとき、本スキル1つで収集から納品までの手順がそろう。すべての企業情報に出典URLとエビデンスレベルを付し、機械的な検証と独立監査で妥当性を担保したうえで、トピック別の企業研究レポートを納品する。
+This one skill provides the complete procedure for company research in a job change, from collection through delivery. It attaches a source URL and an evidence level to every piece of company information, secures validity through mechanical validation and an independent audit, and delivers a topic-organized company research report.
 
-本スキルは hub（job-change-support）から振り分けられて動く。収集・作成は企業研究担当エージェント（job-change-company-researcher）が、独立監査は企業研究の監査担当エージェント（job-change-research-auditor）が担う。判断基準は `references/` で自己完結する。
+This skill runs when dispatched by the hub (job-change-support). The company researcher agent (job-change-company-researcher) handles collection and drafting; the research auditor agent (job-change-research-auditor) handles the independent audit. The judgment criteria are self-contained in `references/`.
 
-## 目的と原則
+## Purpose and principles
 
-1. **すべての主張に出典とエビデンスレベルを付与する。** 企業情報の各主張（claim）には、出典URL・引用・エビデンスレベル（A=一次公式／B=信頼できる二次／C=口コミ集計／D=個人ブログ・伝聞・未確認）・確度（confidence）を付す。レベルの定義・判定基準・運用ルールの原本は `references/evidence-grading.md` にある。hub と各エージェントも、このファイルを原本として参照する。
+1. **Attach a source and an evidence level to every claim.** Each claim about a company carries a source URL, a quote, an evidence level (A = primary/official, B = reliable secondary, C = aggregated review-site posts, D = personal blog/hearsay/unconfirmed), and a confidence value. The canonical definition of the levels, the criteria for assigning them, and the operating rules live in `references/evidence-grading.md`. The hub and each agent treat this file as canonical too.
 
-2. **C・D単独で事実を断定しない。** 口コミ・伝聞（C・D）のみを根拠に事実を断定しない。C・D を根拠とする記述は限定表現で書く（「口コミでは〜という声がある。選択バイアスがあり傍証にとどめる」）。口コミは、集約された総合スコアであること・十分な件数があること・複数の情報源で照合できることの3つを条件に、傍証として用いる。個票、件数の少ない集計、評価項目ごとの個別スコアは、事実の断定に使わない。
+2. **Do not assert a fact on C or D alone.** Do not assert a fact on review-site posts or hearsay (C or D) alone. Write a statement based on C or D with a hedge (「口コミでは〜という声がある。選択バイアスがあり傍証にとどめる」). Use review-site posts as a supporting signal only under three conditions: the figure is an aggregated overall score, it rests on a sufficient number of responses, and it can be corroborated across multiple sources. Do not use individual posts, aggregates with few responses, or per-facet scores to assert a fact.
 
-3. **企業自身の主張にConfidence highを与えない。** 企業が自社を良く見せるための主張（採用サイトの「風通しが良い」等）は、出典がレベルAでも内容の真偽は担保されない。当該企業が所有するページ由来である旨を出典に明示し、confidence を high にしない（B 相当扱い）。事実（掲げていること、開示された数値、認定の有無）と評価（社風の良し悪し）を分けて claim にする。
+3. **Do not give a company's own claim about itself a confidence of high.** A claim a company makes to present itself favorably (for example, a "good communication culture" statement on its recruiting site) is not guaranteed true even when the source is level A. State in the source that the claim comes from a page the company itself owns, and do not set confidence to high (treat it as B-equivalent). Separate the fact (what the company states, a disclosed figure, whether a certification exists) from the evaluation (whether the culture is actually good) into different claims.
 
-4. **一次情報も万能ではない。** レベルAの一次情報にも代表性・比較可能性の限界がある（有報の平均年間給与は全従業員平均で職種別内訳を欠く等）。限界を statement または open_questions に明示する。
+4. **A primary source has limits too.** Even a level-A primary source has limits on representativeness and comparability (for example, the average annual salary in a securities report is a company-wide average and lacks a breakdown by job type). State these limits in the statement or in open_questions.
 
-5. **個人情報を外部へ送信しない。** 利用者の個人情報を、検索クエリ・fetch・外部APIを含む一切の外部送信に用いない。対象の列挙と例外の原本は hub の `{HUB_SKILL_DIR}/references/pii-boundary.md` にある。本スキルの job-change-company-researcher と job-change-posting-parser、監査を担う job-change-research-auditor はいずれも WebSearch・WebFetch を持つため、`profile.json` と `career-private/` 配下のパス・内容を渡さない。渡してよいのは `company_score_axes` の quantitative 軸の識別子の配列だけである（原本の例外）。重点観点は利用者の指示から与える。
+5. **Do not send personal information externally.** Do not use the user's personal information in any external transmission, including search queries, fetches, and external API calls. The canonical list of what this covers and its exceptions lives in the hub's `{HUB_SKILL_DIR}/references/pii-boundary.md`. This skill's job-change-company-researcher and job-change-posting-parser, and the auditor job-change-research-auditor, all hold WebSearch and WebFetch, so none of them receives paths or content under `profile.json` or `career-private/`. The only thing they may receive is the array of axis identifiers from `company_score_axes` whose `kind` is `quantitative` (the exception this canonical file allows). Areas of focus are given from the user's own instructions.
 
-6. **指示された軸の指標について実測値を出典付きで集める。評価も格付けもしない。** 企業研究は、指示書で渡された軸の識別子の配列（例 `["compensation_level", "annual_holidays"]`）に対応する定量指標の公表値を集め、`company_metrics` へ `value`・`unit`・`source_url`・`grade`・`as_of` を書く。軸の指定が無い場合は `compensation_level` を集める。実測値は企業側の事実であり、利用者プロファイル（希望年収・スキル・転職の軸）には依存しないため、profile.json を要しない。点数化・重み付け・総合点は、利用者がどの軸をどれだけ重んじるかに依存するため、適合性評価（job-change-fit-assessment）が算出する。定量候補軸9個の定義・単位・方向・出所と記入形式の原本は `references/company-score-rubric.md` にある。確認できなかった項目は `value` を `null` にし、推定値・概算値を入れない。
+6. **Collect published figures, with sources, for the metrics of the instructed axes. Do not evaluate or rate.** Company research collects published figures for the quantitative metrics that correspond to the array of axis identifiers given in the instruction (for example `["compensation_level", "annual_holidays"]`), and writes `value`, `unit`, `source_url`, `grade`, and `as_of` into `company_metrics`. When no axes are specified, it collects `compensation_level`. A published figure is a fact about the company and does not depend on the user's profile (desired salary, skills, criteria for changing jobs), so this step needs no profile.json. Scoring, weighting, and the overall score depend on how much weight the user gives each axis, so the fit assessment (job-change-fit-assessment) computes them. The canonical definition of the nine quantitative candidate axes (axis key, metric, unit, direction, source) and the entry format live in `references/company-score-rubric.md`. Set `value` to `null` for an item that cannot be confirmed, and do not enter an estimate or an approximation.
 
-## 範囲外
+## Out of scope
 
-- **利用者プロファイルの作成・管理。** profile.json の作成・更新・検証は hub（job-change-support）が担う。本スキルは profile.json を入力に取らない（原則5のとおり、Web 調査担当へ profile.json を渡さない）。
-- **応募書類・面接・試験対策の生成。** 企業研究の結果（company_research.json）を根拠として使うのは下流のサブスキル（job-change-documents／job-change-interview-prep／job-change-exam-prep）であり、本スキルはそれらを実行しない。
-- **選考試験種別の詳細調査。** 選考プロセスの概要（段階・筆記/適性検査の有無）は topic=selection_process として扱うが、検査種別（SPI3・玉手箱等）の特定と対策は job-change-exam-prep（job-change-exam-scout）が担う。
-- **投資助言・企業の優劣の断定。** 財務情報は事実として整理するが、株式の売買判断や「良い/悪い会社」の断定はしない。
+- **Creating and managing the user's profile.** The hub (job-change-support) creates, updates, and validates profile.json. This skill does not take profile.json as input (per principle 5, profile.json is not given to a role with web access).
+- **Generating application documents, interview preparation, or exam preparation.** Downstream sub-skills (job-change-documents / job-change-interview-prep / job-change-exam-prep) use the company research result (company_research.json) as grounding; this skill does not run them.
+- **Detailed investigation of the selection exam type.** An overview of the selection process (its stages, whether a written test or aptitude test exists) is handled as topic=selection_process, but identifying the exam type (SPI3, 玉手箱 (Tamatebako), and so on) and preparing for it belongs to job-change-exam-prep (job-change-exam-scout).
+- **Investment advice or ranking companies as better or worse.** Financial information is organized as fact, but this skill makes no stock-trading judgment and no "good company / bad company" determination.
 
-## パスの解決
+## Resolving paths
 
-利用者データの置き場所は設定ファイルの記述だけで決まる。既定の置き場所は無い。本文で `{DATA_ROOT}` と書いた箇所は、次のコマンドが返す `data_root` に読み替える。
+Where the user's data lives is determined solely by the configuration file. There is no default location. Wherever this document writes `{DATA_ROOT}`, read it as the `data_root` value returned by the following command.
 
-hub（job-change-support）から振り分けられた場合は、hub が解決済みの `{DATA_ROOT}` を渡す。単独で起動された場合は、作業のどの段階よりも先に次を実行する。
+When dispatched by the hub (job-change-support), the hub passes in the already-resolved `{DATA_ROOT}`. When started standalone, run the following before any other step of the work.
 
 ```bash
 python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 ```
 
-| 終了コード | 状態 | 対応 |
+| Exit code | State | Action |
 |---|---|---|
-| 0 | 設定済み | 出力の `paths` に各データの絶対パスが入る。そのまま作業へ進む |
-| 1 | 設定はあるが内容が不正 | 出力の `errors` を利用者へ示し、修復されるまで作業へ進まない |
-| 2 | 未設定 | Skill ツールで `job-change-support` を起動して設定を作らせ、`{DATA_ROOT}` を解決してから戻る |
+| 0 | Configured | The `paths` in the output holds the absolute path for each piece of data. Proceed with the work. |
+| 1 | Configured but invalid | Show the user the `errors` in the output and do not proceed until it is fixed. |
+| 2 | Not configured | Start `job-change-support` with the Skill tool to have it create the configuration, resolve `{DATA_ROOT}`, then return here. |
 
-`{SKILL_DIR}` は本スキルの絶対パス、`{HUB_SKILL_DIR}` は同じ配置先にある `job-change-support` の絶対パスを指す。探索順序を含む設定ファイルの仕様は `docs/configuration.md` にある。
+`{SKILL_DIR}` refers to this skill's own absolute path; `{HUB_SKILL_DIR}` refers to the absolute path of `job-change-support`, located alongside it. The canonical specification of the configuration file, including its lookup order, lives in `docs/configuration.md`.
 
-## 中間成果物: company_research.json
+## Intermediate artifact: company_research.json
 
-企業研究の判断はすべて `company_research.json` に集約する。出力先は `{DATA_ROOT}/companies/{企業スラッグ}/company_research.json` である。企業スラッグは企業別ディレクトリ名に使う識別子であり、形式の原本は job-change-support の `references/company-index-format.md` にある。Step 0 で `career-private/company_index.json` を引いて解決し、以後は再導出しない（例: 架空クラウドワークス株式会社 → `kakuu-cloudworks`、`S_アクメクラウド`）。
+All company research judgments are gathered into `company_research.json`. Its output location is `{DATA_ROOT}/companies/{company slug}/company_research.json`. The company slug is the identifier used as the per-company directory name; its canonical format lives in job-change-support's `references/company-index-format.md`. Step 0 resolves it by looking it up in `career-private/company_index.json`, and it is never re-derived afterward (example: a fictional company 架空クラウドワークス株式会社 → `kakuu-cloudworks`, `S_アクメクラウド`).
 
 ```json
 {
@@ -82,113 +84,113 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 }
 ```
 
-topic は `philosophy`・`business`・`financials`・`compensation`・`benefits`・`workstyle`・`reputation`・`selection_process` の8種である。`company_metrics` は定量候補軸の実測値である（後述の原則6）。フィールドの完全な仕様・記入基準・検証規則は `references/company-research-format.md` を原本とし、記述例は `assets/company_research_example.json`（架空企業）にある。
+There are eight kinds of `topic`: `philosophy`, `business`, `financials`, `compensation`, `benefits`, `workstyle`, `reputation`, and `selection_process`. `company_metrics` holds the measured figures for the quantitative candidate axes (principle 6, above). The canonical definition of the complete field specification, entry criteria, and validation rules lives in `references/company-research-format.md`; a worked example (a fictional company) lives in `assets/company_research_example.json`.
 
-## パイプライン
+## Pipeline
 
-サブスキルとして次の Step 0〜4 を順に進める。`{SKILL_DIR}` は本スキルの絶対パス、`{company_research.json}` は成果物のパス（`companies/{企業スラッグ}/company_research.json`）に読み替える。
+As a sub-skill, proceed through Step 0 through Step 4 below in order. Read `{SKILL_DIR}` as this skill's own absolute path, and `{company_research.json}` as the artifact's path (`companies/{company slug}/company_research.json`).
 
-### Step 0 受付
+### Step 0: Intake
 
-次を確認する。不明点は AskUserQuestion で選択式を中心に尋ね、最大4問・各4択までとする。
+Confirm the following. Ask about anything unclear mainly through multiple-choice questions with AskUserQuestion, up to 4 questions with up to 4 choices each.
 
-- 対象企業名（正式名称）。曖昧な場合（グループ会社・持株会社・同名企業がある等）は候補を挙げて確認する。
-- 重点観点（あれば）。理念・事業・財務・給与・福利厚生・働き方・評判・選考のどれを厚く見るか。指定が無ければ8トピックを均等に扱う。
-- 求人票の入手経路。求人情報URL・求人票の本文・PDF や画像のファイルのいずれかを受け取る。どれも無い場合は Step 0.5 で対話により埋めるため、その旨だけを確認する。
+- The target company's name (its formal name). When it is ambiguous (a group company, a holding company, or another company sharing the name exists), list the candidates and confirm.
+- Areas of focus, if any: which of philosophy, business, financials, compensation, benefits, work style, reputation, or selection process to weight more heavily. When none is specified, treat all eight topics equally.
+- How the job posting will be obtained. Accept a job posting URL, the pasted text of the job posting, or a PDF or image file. When none of these is available, confirm only that fact, since Step 0.5 fills the gaps through dialogue.
 
-企業スラッグは `career-private/company_index.json` で解決する。企業名が index の `name` または `aliases` に一致すればそのスラッグを使い、一致が無いときのみ一度だけ導出して index へ登録し、`companies/{企業スラッグ}/` を作る（詳細は job-change-support の `references/company-index-format.md` を参照）。
+Resolve the company slug in `career-private/company_index.json`. When the company name matches `name` or `aliases` in the index, use that slug; only when there is no match, derive one exactly once, register it in the index, and create `companies/{company slug}/` (see job-change-support's `references/company-index-format.md` for details).
 
-### Step 0.5 求人票の取り込み（必須）
+### Step 0.5: Job posting intake (required)
 
-求人票の取り込みは、企業ごとの工程の最初である。ここで作る `job_posting.json` は、この後の企業研究と適合性評価が入力として読む。取り込みを飛ばして先へ進まない。
+Job posting intake is the first stage of the per-company pipeline. The `job_posting.json` built here is read as input by the company research and fit assessment that follow. Do not skip intake and move ahead.
 
-入口は4通りある。本スキルは、利用者が用意できる材料に応じて入口を選び、いずれの場合も同じ `job_posting.json` を作る。仕様は `references/job-posting-format.md` にある。
+There are four entry points. This skill selects an entry point according to what material the user can provide, and builds the same `job_posting.json` in every case. The specification lives in `references/job-posting-format.md`.
 
-| 入口 | `source_type` | 担い手 |
+| Entry point | `source_type` | Handler |
 |---|---|---|
-| 求人情報URL | `url` | job-change-posting-parser |
-| 求人票の本文（貼り付け） | `text` | 本スキル |
-| 求人票の PDF・画像 | `file` | 本スキル |
-| 企業名のみ（求人が特定できない） | `dialogue` | 本スキル |
+| A job posting URL | `url` | job-change-posting-parser |
+| The pasted text of the job posting | `text` | This skill |
+| A PDF or image of the job posting | `file` | This skill |
+| Company name only (the job posting cannot be identified) | `dialogue` | This skill |
 
-**求人情報URLの場合（job-change-posting-parser, sonnet）。** 求人票の取り込み担当エージェントを Agent ツールで起動し、求人URLと `{SKILL_DIR}`（`references/job-posting-format.md` の所在）を渡す。エージェントは WebFetch でページを取得し、`{company_name, aliases, job_posting}` の JSON を返す（ファイルは書かない）。**利用者の個人情報（原則5の列挙）は渡さない**（posting-parser は WebFetch を持つ）。返却された `company_name`・`aliases` を使い、Step 0 と同じ手順でスラッグを解決する（一致が無いときのみ一度だけ導出して登録する）。
+**When the entry point is a job posting URL (job-change-posting-parser, sonnet).** Launch the job posting intake agent with the Agent tool, passing it the job posting URL and `{SKILL_DIR}` (the location of `references/job-posting-format.md`). The agent fetches the page with WebFetch and returns a JSON of `{company_name, aliases, job_posting}` (it writes no file). **Do not pass it the user's personal information (the items listed in principle 5)**, since posting-parser holds WebFetch. Use the returned `company_name` and `aliases` to resolve the slug through the same procedure as Step 0 (deriving and registering one exactly once, only when there is no match).
 
-**求人票の本文・ファイルの場合。** 本スキルが仕様に従って `job_posting` オブジェクトを組み立てる。本文は利用者が貼り付けたものをそのまま読み、ファイルは Read で読む。`source_type` を `text` または `file` とし、`source_url` は null にする。企業名とスラッグは Step 0 で確認・解決したものを使う。業務・就業場所の変更の範囲と有期契約の更新上限は `scope_of_change` へ埋める（記入基準は `references/job-posting-format.md` の同名の節にある）。
+**When the entry point is the pasted text or a file of the job posting.** This skill assembles the `job_posting` object according to the specification. It reads the pasted text as the user gave it, and reads a file with Read. It sets `source_type` to `text` or `file`, and sets `source_url` to null. It uses the company name and slug already confirmed and resolved in Step 0. It fills the scope of change to duties and work location, and the cap on contract renewal, into `scope_of_change` (the entry criteria live in the section of the same name in `references/job-posting-format.md`).
 
-**企業名しか無い場合。** 応募職種（`title`）を対話で確認し、給与・勤務地・雇用形態・要件のうち利用者が答えられる項目だけを埋める。`source_type` を `dialogue`、`source_url` を null にする。業務・就業場所の変更の範囲と有期契約の更新上限も、利用者が求人票を見て答えられる範囲で `scope_of_change` へ埋める（記入基準は `references/job-posting-format.md` の同名の節にある）。答えられなかった項目を推定で補わず、`open_questions` に「何が未確認か」を書く。求人票の記載が少ないことは差し戻しの理由にならない。未確認の項目は、この後の企業研究と面接での確認事項へ回す。
+**When only the company name is available.** Confirm the applied position (`title`) through dialogue, and fill only the items among salary, location, employment type, and requirements that the user can answer. Set `source_type` to `dialogue` and `source_url` to null. Fill `scope_of_change` — the scope of change to duties and work location, and the cap on contract renewal — as far as the user can answer by looking at the job posting (the entry criteria live in the section of the same name in `references/job-posting-format.md`). Do not fill an item the user could not answer with an estimate; write what remains unconfirmed into `open_questions`. Accept a job posting with sparse content as it stands. Carry unconfirmed items forward as items to confirm in the company research and interview that follow.
 
-**共通の後処理。**
+**Common follow-up.**
 
-1. 組み立てた `job_posting` オブジェクトを、本スキルが `companies/{企業スラッグ}/job_posting.json` へ Write で書く（スラッグ解決後にのみ書く）。
-2. 次で検証し、PASS（ERROR 0件）を確認する。ERROR があれば、URL 入口なら posting-parser へ差し戻し、それ以外なら本スキルが埋め直し、埋められない欠損は `open_questions` に残す。
+1. This skill writes the assembled `job_posting` object to `companies/{company slug}/job_posting.json` with Write (only after the slug is resolved).
+2. Validate it with the following command and confirm a PASS (zero ERRORs). If there is an ERROR, send it back to posting-parser for the URL entry point, or have this skill fill it in again for any other entry point, and leave a gap that cannot be filled in `open_questions`.
 
    ```bash
    python {SKILL_DIR}/scripts/validate_job_posting.py {job_posting.json} --json
    ```
 
-3. `companies/{企業スラッグ}/_manifest.json` の `artifacts.job_posting` を `{updated_at: 取得日, source_url: 取り込んだ求人URL}` に更新する（後述「_manifest.json の更新」）。URL 以外の入口では `source_url` を null にする。
+3. Update `artifacts.job_posting` in `companies/{企業スラッグ}/_manifest.json` to `{updated_at: 取得日, source_url: 取り込んだ求人URL}` (see "Updating _manifest.json" below). Set `source_url` to null for any entry point other than a URL.
 
-取り込んだ求人票は、Step 1 の収集で選考プロセス・求める人物像の照合に使う。`job_posting.metrics`（年間休日・残業・有給取得率・付与日数）は、company_research の `company_metrics` を補強する材料になる。
+The imported job posting is used in the Step 1 collection to cross-check the selection process and the desired candidate profile. `job_posting.metrics` (annual holidays, overtime, paid-leave-taking rate, and days granted) provides supporting material for company_research's `company_metrics`.
 
-### Step 1 収集・作成（job-change-company-researcher, opus）
+### Step 1: Collection and drafting (job-change-company-researcher, opus)
 
-企業研究担当エージェント（job-change-company-researcher）を Agent ツールで起動し、company_research.json を作らせる。指示書には次を渡す。
+Launch the company researcher agent (job-change-company-researcher) with the Agent tool and have it build company_research.json. Pass the following in the brief.
 
-- 企業名（正式名称）・重点観点（あれば）・出力先ディレクトリ・求人票の所在（あれば）。
-- 実測値を集める軸の識別子の配列（例 `["compensation_level", "annual_holidays"]`）。呼び出し元から軸の指定が無い場合は `["compensation_level"]` を渡す。利用者が定義した定性軸の記述は渡さない（本人の状況を映すため。判定は適合性評価が行う）。定性軸に関わる事柄を調べる必要がある場合、利用者が自分の言葉で重点観点として指示する。
-- 本スキルの絶対パス `{SKILL_DIR}`（references と scripts の所在）。
+- The company name (its formal name), areas of focus (if any), the output directory, and the location of the job posting (if any).
+- The array of axis identifiers for which to collect measured figures (for example `["compensation_level", "annual_holidays"]`). When the caller specifies no axes, pass `["compensation_level"]`. Do not pass the description of a qualitative axis the user defined, since it reflects the user's own situation and the fit assessment makes that judgment. When something related to a qualitative axis needs investigating, the user gives it as an area of focus in their own words.
+- This skill's absolute path `{SKILL_DIR}` (the location of references and scripts).
 
-重点観点は、8トピック（理念・事業・財務・給与・福利厚生・働き方・評判・選考）の強弱指定へ正規化して渡す。利用者の自由記述に含まれる個人情報（原則5、原本は `{HUB_SKILL_DIR}/references/pii-boundary.md`）は指示書に含めず、該当トピックの強弱指定へ言い換える。
+Normalize areas of focus into a weight-of-emphasis specification across the eight topics (philosophy, business, financials, compensation, benefits, work style, reputation, selection) before passing them. Rephrase personal information from the user's free-form description as a weight-of-emphasis specification for the relevant topic (principle 5; the canonical definition lives in `{HUB_SKILL_DIR}/references/pii-boundary.md`), and pass only that specification in the brief.
 
-**profile.json は渡さない**（原則5。researcher は WebSearch・WebFetch を持つため）。Step 0.5 で job_posting.json を作った場合は、その所在を指示書に渡し、選考プロセス・求める人物像の照合に使わせる。エージェントは `references/evidence-grading.md`・`references/company-research-format.md`・`references/source-catalog.md`・`references/philosophy-analysis.md`・`references/compensation-benefits.md`・`references/company-score-rubric.md` を原本とする。これらに従い、収集した主張を claims 配列へ集約する。平均年間給与・年間休日・月平均の残業時間・有給取得率・離職率などの数値は、文章の claim に埋めるだけでなく `company_metrics` へ構造化して格納する（単位・出典URL・レベル併記。確認できなければ value を null）。
+**Do not pass profile.json** (principle 5; the researcher holds WebSearch and WebFetch). When job_posting.json was built in Step 0.5, pass its location in the brief and have the agent use it to cross-check the selection process and the desired candidate profile. The agent treats `references/evidence-grading.md`, `references/company-research-format.md`, `references/source-catalog.md`, `references/philosophy-analysis.md`, `references/compensation-benefits.md`, and `references/company-score-rubric.md` as canonical, and follows them to gather the collected claims into the claims array. For figures such as average annual salary, annual holidays, average monthly overtime, paid-leave-taking rate, and turnover rate, store them in a prose claim and, structured, into `company_metrics` (with the unit, source URL, and level noted together; set value to null when it cannot be confirmed).
 
-指示書で渡された軸の指標を優先して集め、`company_metrics` の各項目へ実測値と出典を書く（原則6。profile を要しない、企業側の事実の収集）。点数も格付けも付けない。重点観点として渡された事柄は、確認できた事実と出典を claims へ書く。自分で `validate_company_research.py` を PASS させてから返す（`company_metrics` の欠落・構造不正は ERROR になる）。ここまでが本エージェントの責務である。
+Prioritize collecting the metrics for the axes given in the brief, and write the measured figure and its source into each item of `company_metrics` (principle 6; collecting a fact about the company that needs no profile). Attach no score and no rating. For anything given as an area of focus, write into claims the facts and sources that could be confirmed. Have the agent run `validate_company_research.py` itself and get a PASS before returning (a missing or malformed `company_metrics` is an ERROR). This is the extent of this agent's responsibility.
 
-### Step 2 機械的な検証
+### Step 2: Mechanical validation
 
-researcher が返した company_research.json を、オーケストレーター側でも検証する。
+Validate the company_research.json the researcher returned, on the orchestrator side as well.
 
 ```bash
 python {SKILL_DIR}/scripts/validate_company_research.py {company_research.json} --json
 ```
 
-ERROR が1件でもあれば Step 1 へ差し戻す。PASS（ERROR 0件）になるまで先へ進まない。WARN のみは PASS 扱いだが、内容を記録し、必要ならトピックの裏付け追加を促す。
+Send it back to Step 1 when there is even one ERROR. Do not proceed until it reaches a PASS (zero ERRORs). A WARN alone counts as a PASS, but record its content and prompt for additional supporting evidence on the topic when needed.
 
-### Step 3 独立監査（job-change-research-auditor, opus）
+### Step 3: Independent audit (job-change-research-auditor, opus)
 
-企業研究の監査担当エージェント（job-change-research-auditor）を、収集担当の判断理由を渡さない新規コンテキストで起動する。指示書には company_research.json の絶対パス、Step 1 で収集を指示した軸の識別子の配列、`{SKILL_DIR}` を渡す。
+Launch the company research auditor agent (job-change-research-auditor) in a new context that withholds the researcher's rationale. Pass the brief the absolute path of company_research.json, the array of axis identifiers whose collection was instructed in Step 1, and `{SKILL_DIR}`.
 
-監査は次を行う。判定は `BLOCK` / `CONCERNS` / `CLEAN` で返る。
+The audit does the following. The verdict returns as `BLOCK` / `CONCERNS` / `CLEAN`.
 
-- `validate_company_research.py` の再実行（結果を `validation_rerun`＝ERROR 0件なら PASS、そうでなければ FAIL として記録）。`validation_rerun` が FAIL の場合、verdict は無条件で BLOCK である。
-- claims を層化抽出し、出典URLが実在するか、引用が原文と一致するかを確認する（レベルAの財務系 claim と confidence=high の claim を必ず標本に含める）。
-- レベル付与の妥当性（口コミをA・Bへ格上げしていないか、一次情報をCへ格下げしていないか）。
-- レベルC・D単独の断定、企業が自社を良く見せる主張への confidence high 付与の有無。
-- 必須7トピック（`philosophy`・`business`・`financials`・`compensation`・`benefits`・`workstyle`・`reputation`）の網羅状況と、`selection_process` の充足状況（0件は WARN 相当で、収集を推奨）。`selection_process` の欠落は重大扱いにしない。
-- `company_metrics` の妥当性（`references/company-score-rubric.md` 基準）。実測値が出典の記載と一致するか、エビデンスレベルの付与が妥当か、指示された軸の指標を過不足なく集めているかを検査する。
+- Rerunning `validate_company_research.py` (recording the result as `validation_rerun` — PASS when there are zero ERRORs, FAIL otherwise). When `validation_rerun` is FAIL, the verdict is unconditionally BLOCK.
+- Stratified sampling of claims, confirming that each source URL exists and that its quote matches the original text (the sample must always include level-A financial claims and claims with confidence=high).
+- The validity of the assigned levels (whether a review-site post has been upgraded to A or B, or a primary source downgraded to C).
+- Whether a fact is asserted on level C or D alone, and whether confidence high has been given to a claim in which the company presents itself favorably.
+- Coverage of the seven required topics (`philosophy`, `business`, `financials`, `compensation`, `benefits`, `workstyle`, `reputation`), and how well `selection_process` is filled in (zero items counts as a WARN-level issue, and collecting it is recommended). Do not treat a missing `selection_process` as critical.
+- The validity of `company_metrics` (against the standard in `references/company-score-rubric.md`). Check whether each measured figure matches what its source states, whether the assigned evidence level is appropriate, and whether the metrics for the instructed axes have been collected completely, with nothing missing and nothing extra.
 
-verdict が `BLOCK` の場合、または severity=重大の finding があれば Step 1 へ差し戻す。差し戻し時は監査の findings（target・evidence・fix）を researcher へそのまま渡す。
+Send it back to Step 1 when the verdict is `BLOCK`, or when there is a finding with severity=重大. When sending it back, pass the researcher the audit's findings (target, evidence, fix) as they are.
 
-### Step 4 納品
+### Step 4: Delivery
 
-company_research.json を、人が読める企業研究レポート `companies/{企業スラッグ}/company-research-report.md` へ整形して納品する。
+Format company_research.json into the human-readable company research report `companies/{company slug}/company-research-report.md` and deliver it.
 
-- 冒頭に、軸ごとの実測値と単位・出典・エビデンスレベル・時点を示す。確認できなかった軸は「確認できず」と書く。企業側の事実であって利用者との適合ではない旨と、点数化と総合点の算出は適合性評価が担う旨を、1文ずつ添える。
-- トピック別（理念・事業・財務・給与・福利厚生・働き方・評判・選考プロセス）に、主張＋出典＋レベル＋確度を読める形で並べる。
-- open_questions（裏取りできなかった論点・出所の食い違い・一次情報の代表性の限界）を明記する。
-- C・D を根拠とする記述は、レポート上でも限定表現を保つ（「口コミでは〜という声がある。傍証にとどめる」）。
+- At the top, show the measured figure, unit, source, evidence level, and point in time for each axis. For an axis that could not be confirmed, write 「確認できず」. Add, one sentence each, that this is a fact about the company, separate from the user's fit, and that the fit assessment is responsible for scoring and computing the overall score.
+- Arrange claims by topic (philosophy, business, financials, compensation, benefits, work style, reputation, selection process), presenting the claim, its source, its level, and its confidence in a readable form.
+- State the open_questions explicitly (points that could not be corroborated, discrepancies between sources, and the limits of a primary source's representativeness).
+- Keep the hedge in place, in the report too, for anything based on C or D (「口コミでは〜という声がある。傍証にとどめる」).
 
-納品時に、`companies/{企業スラッグ}/_manifest.json` の `artifacts.company_research` を更新する（後述「_manifest.json の更新」）。`updated_at` を調査日にし、調査したトピックそれぞれの `last_researched` を調査日にする。あわせて Step 3 の監査で得た verdict を `audit_verdict` に、監査した日付を `audited_at` に書く。差し戻して再監査した場合は、最後の監査の verdict と日付を書く。
+At delivery, update `artifacts.company_research` in `companies/{company slug}/_manifest.json` (see "Updating _manifest.json" below). Set `updated_at` to the research date, and set `last_researched` to the research date for each topic that was researched. Also write the verdict obtained from the Step 3 audit into `audit_verdict`, and the date it was audited into `audited_at`. When it was sent back and re-audited, write the verdict and date of the last audit.
 
-企業スラッグの接頭辞（ディレクトリ名）は変更しない。`career-private/company_index.json` の分類・一覧用のフィールドへ、企業の点数や格付けを書かない。点数は適合性評価が算出するためである。
+Do not change the company slug prefix (the directory name). Do not write a company's score or rating into the classification or listing fields of `career-private/company_index.json`, because the fit assessment is what computes the score.
 
-最終メッセージには、軸ごとの実測値と出典の要点、主要トピックの要点、検証結果（validate の PASS・監査の verdict）、残る未決事項（差し戻し2回で解消しなかった論点があれば）を要約する。レポートと最終メッセージはいずれも結論から述べる。中身の無い節・同じ内容の繰り返し・定型の前置きを置かない。
+Summarize, in the final message, the key points of the measured figures and sources for each axis, the key points of the main topics, the validation result (the validate PASS, the audit verdict), and any remaining open items (a point not resolved after two rounds of sending back). Both the report and the final message state their conclusion first. Include no empty section, no repeated content, and no boilerplate preamble.
 
-## _manifest.json の更新
+## Updating _manifest.json
 
-`companies/{企業スラッグ}/_manifest.json` は、企業別成果物の最終更新日と、company_research のトピック別の最終調査日を持つ記録である。この記録を書くのは本スキルであり、再調査が必要かどうかの判定は hub の責務である（本スキルは判定しない）。
+`companies/{company slug}/_manifest.json` is a record holding the last-updated date of each per-company artifact and the last-researched date of each company_research topic. This skill writes this record; determining whether re-research is needed is the hub's responsibility, and this skill makes no such determination.
 
-構造は次のとおり。トピック名は company_research の既存トピック名（`philosophy`・`business`・`financials`・`compensation`・`benefits`・`workstyle`・`reputation`・`selection_process`）を使う。
+The structure is as follows. Use the existing company_research topic names (`philosophy`, `business`, `financials`, `compensation`, `benefits`, `workstyle`, `reputation`, `selection_process`) as topic names.
 
 ```json
 {
@@ -205,58 +207,58 @@ company_research.json を、人が読める企業研究レポート `companies/{
 }
 ```
 
-- `_manifest.json` が無ければ作る。あれば該当箇所のみを更新し、他の成果物（`fit_assessment` 等）の記録は残す。
-- Step 0.5 で job_posting.json を作ったときは `artifacts.job_posting` を更新する。
-- Step 4 の納品時に `artifacts.company_research.updated_at` と、調査したトピックの `topics.<トピック名>.last_researched` を更新する。同時に `audit_verdict`（Step 3 の verdict。`CLEAN`・`CONCERNS`・`BLOCK` のいずれか）と `audited_at`（監査した日付）を書く。差し戻して再監査した場合は最後の監査の結果で上書きする。
+- Create `_manifest.json` if it does not exist. When it exists, update only the relevant part and preserve the record of other artifacts (such as `fit_assessment`).
+- Update `artifacts.job_posting` when job_posting.json was built in Step 0.5.
+- At Step 4 delivery, update `artifacts.company_research.updated_at` and `topics.<topic name>.last_researched` for each topic that was researched. At the same time, write `audit_verdict` (the Step 3 verdict, one of `CLEAN`, `CONCERNS`, or `BLOCK`) and `audited_at` (the date it was audited). When it was sent back and re-audited, overwrite these with the result of the last audit.
 
-### トピック限定の差分再調査
+### Topic-scoped incremental re-research
 
-呼び出し元（hub）から対象トピックの指定を受けた場合、そのトピックだけを再調査する。
+When the caller (the hub) specifies a target topic, re-research only that topic.
 
-1. 指定トピックのみを重点観点として Step 1 の researcher を起動し、当該トピックの claims を得る。
-2. 既存の company_research.json を読み、指定トピックの claims だけを差し替え（マージ）、他トピックの claims はそのまま残す。
-3. 指定トピックに対応づく `company_metrics` の項目を再取得し、値・出典URL・レベル・時点（`as_of`）を更新する。再取得の対象外の項目はそのまま残す。確認できなくなった項目は `value` を `null` に戻す。
-4. Step 2 の機械的な検証を再度通す（PASS を確認する）。
-5. `_manifest.json` の `artifacts.company_research.topics.<指定トピック>.last_researched` のみを更新する（他トピックの `last_researched` は変えない）。`updated_at` は今回の調査日にする。
+1. Launch the Step 1 researcher with only the specified topic as the area of focus, and obtain the claims for that topic.
+2. Read the existing company_research.json, replace (merge) only the specified topic's claims, and leave the claims of every other topic unchanged.
+3. Re-fetch the `company_metrics` items that correspond to the specified topic, and update their value, source URL, level, and point in time (`as_of`). Leave items outside the scope of re-fetching unchanged. Reset `value` to `null` for an item that can no longer be confirmed.
+4. Run the Step 2 mechanical validation again and confirm a PASS.
+5. Update only `artifacts.company_research.topics.<specified topic>.last_researched` in `_manifest.json` (leave `last_researched` for every other topic unchanged). Set `updated_at` to this research date.
 
-どのトピックに再調査が必要かの判定と再調査の指示は hub が行い、本スキルは指定されたトピックの再調査と記録の更新を担う。
+The hub determines which topic needs re-research and instructs it; this skill handles re-researching the specified topic and updating the record.
 
-## 合否ゲートと差し戻し
+## Pass/fail gates and send-backs
 
-パイプラインには2つのゲートがある。
+The pipeline has two gates.
 
-| ゲート | 通過条件と差し戻し先 |
+| Gate | Passing condition and send-back destination |
 |---|---|
-| Step 2 の機械的な検証ゲート | `validate_company_research.py` が PASS（ERROR 0件）でなければ Step 3 以降へ進まない。ERROR は Step 1 へ差し戻す。 |
-| Step 3 の独立監査ゲート | `job-change-research-auditor` の verdict が `BLOCK`、または severity=重大の finding があれば Step 1 へ差し戻す。 |
+| The Step 2 mechanical validation gate | Do not proceed to Step 3 or any later step unless `validate_company_research.py` reaches a PASS (zero ERRORs). Send an ERROR back to Step 1. |
+| The Step 3 independent audit gate | Send it back to Step 1 when `job-change-research-auditor`'s verdict is `BLOCK`, or when there is a finding with severity=重大. |
 
-差し戻しは同一企業の調査につき最大2回まで行う。2回で解消しない指摘は、company-research-report.md の未決事項へ記録し、利用者へ判断を委ねてから納品する。機械的な検証の ERROR は差し戻しの上限にかかわらず解消してから納品し、未解決が監査の finding だけである場合に限り、未決事項として明記したうえで納品してよい。差し戻し時は、機械的な検証の ERROR 内容または監査の findings をそのまま researcher へ渡し、修正後に再度 Step 2 から通す。
+Send a given company's research back at most twice. Record a finding not resolved after two rounds into company-research-report.md's open items, and deliver only after leaving the judgment to the user. Resolve a mechanical-validation ERROR before delivery regardless of the send-back limit; delivery is allowed, with the item stated explicitly as an open item, only when what remains unresolved is solely an audit finding. When sending back, pass the researcher the mechanical validation's ERROR content or the audit's findings as they are, and run it through Step 2 again after the fix.
 
-## 役割の実行（ハーネス別）
+## Executing the role (by harness)
 
-本スキルのパイプラインは、専門の役割へ作業を委ねる形で書いてある。役割の内容は `references/roles/` に置き、これを原本とする。
+This skill's pipeline is written to delegate the work to specialized roles. The content of each role lives in `references/roles/`, which is canonical.
 
-| エージェント名 | 役割プロンプトの原本 |
+| Agent name | Canonical role prompt |
 |---|---|
 | `job-change-company-researcher` | `{SKILL_DIR}/references/roles/company-researcher.md` |
 | `job-change-research-auditor` | `{SKILL_DIR}/references/roles/research-auditor.md` |
 | `job-change-posting-parser` | `{SKILL_DIR}/references/roles/posting-parser.md` |
 
-ハーネス別の実行手順、起動する数の判断、作成と監査を分ける理由の原本は hub の `{HUB_SKILL_DIR}/references/role-execution.md` にある。
+The canonical definition of the execution procedure by harness, how to decide how many to launch, and the reason for separating drafting from auditing lives in the hub's `{HUB_SKILL_DIR}/references/role-execution.md`.
 
-## エージェントのモデル方針
+## Agent model policy
 
-| エージェント | model | 責務 |
+| Agent | model | Responsibility |
 |---|---|---|
-| `job-change-company-researcher` | opus | 一次情報と二次以下の情報の収集 → company_research.json ＋ 出典・レベル付与 |
-| `job-change-research-auditor` | opus | 独立コンテキストでの出典実在・引用一致・レベル妥当性・トピック網羅の監査 |
-| `job-change-posting-parser` | sonnet | 求人URLの取得 → job_posting.json の仕様に沿ったオブジェクトの組み立て（ファイルは書かない） |
+| `job-change-company-researcher` | opus | Collecting primary and secondary-or-lower information → building company_research.json with sources and assigned levels |
+| `job-change-research-auditor` | opus | Auditing source existence, quote agreement, level validity, and topic coverage, in an independent context |
+| `job-change-posting-parser` | sonnet | Fetching the job posting URL → assembling an object conforming to the job_posting.json specification (writes no file) |
 
-この方針は各エージェントの frontmatter に固定済みであり、起動時に model を上書きしない。
+This policy is fixed in each agent's frontmatter, and `model` is never overridden at launch.
 
-## スクリプトのCLI使用例
+## Script CLI usage examples
 
-企業研究データの検証（終了コードは PASS で 0、FAIL で 1。WARN のみは PASS 扱い）。`{SKILL_DIR}` は本スキルの絶対パス、`{company_research.json}` は検証対象のパスに読み替える。
+Validating company research data (the exit code is 0 for a PASS, 1 for a FAIL; a WARN alone counts as a PASS). Read `{SKILL_DIR}` as this skill's own absolute path, and `{company_research.json}` as the path of the target being validated.
 
 ```bash
 python {SKILL_DIR}/scripts/validate_company_research.py {company_research.json}
@@ -265,20 +267,20 @@ python {SKILL_DIR}/scripts/validate_job_posting.py {job_posting.json}
 python {SKILL_DIR}/scripts/validate_job_posting.py {job_posting.json} --json
 ```
 
-`--json` は結果を JSON 形式（`status`・`error_count`・`warning_count`・`errors`・`warnings`）で出力する。記述例は `assets/company_research_example.json`、フィールド仕様と検証規則の原本は `references/company-research-format.md`（企業研究）と `references/job-posting-format.md`（求人票の取り込み）にある。単体テストは次で実行する。
+`--json` outputs the result in JSON form (`status`, `error_count`, `warning_count`, `errors`, `warnings`). A worked example lives in `assets/company_research_example.json`; the canonical field specification and validation rules live in `references/company-research-format.md` (company research) and `references/job-posting-format.md` (job posting intake). Run the unit tests with the following.
 
 ```bash
 cd {SKILL_DIR} && python -m unittest discover -s scripts/tests
 ```
 
-## references 一覧
+## References list
 
-| ファイル | 何を | いつ読むか |
+| File | What it covers | When to read it |
 |---|---|---|
-| `references/evidence-grading.md` | エビデンスレベルA〜Dの定義・判定基準・C/D断定禁止・自社を良く見せる主張の確度制限・出所の突き合わせ・裏取り知見（口コミの選択バイアス・集約スコアの妥当性・有報の限界） | レベルと確度を付ける/検査する全段階 |
-| `references/company-research-format.md` | company_research.json のフィールド仕様・記入基準・機械的な検証の規則 | company_research.json を書く/読む/検証する全段階 |
-| `references/source-catalog.md` | 情報源カタログ（EDINET有報・IR開示・就職四季報・しょくばらぼ・認定制度・口コミサイト）と各情報源の記載内容・限界・出典URL | Step 1 の収集、Step 3 の監査 |
-| `references/philosophy-analysis.md` | 理念・社是・パーパス分析の収集源と分析手順（明文→行動指針→人事制度→開示との一貫性検証）、自社を良く見せる主張の確度制限との関係 | topic=philosophy の収集・分析 |
-| `references/compensation-benefits.md` | 給与・福利厚生・働き方の調査観点と情報源カタログ（有報・しょくばらぼ・認定制度・就職四季報・OpenWork・公的統計）、company_metrics への格納ルール | topic=compensation/benefits/workstyle の収集 |
-| `references/company-score-rubric.md` | 定量候補軸9個（軸キー・指標・単位・方向・出所）の定義と `company_metrics` の記入形式、点数化・重み・総合点を適合性評価が担う分業 | Step 1 の実測値の収集、Step 3 の company_metrics 監査 |
-| `references/job-posting-format.md` | job_posting.json のフィールド仕様・記入基準・機械的な検証の規則（4通りの入口と `source_type` を含む） | Step 0.5 で求人票を取り込む/検証する段階 |
+| `references/evidence-grading.md` | The definitions of evidence levels A through D, the criteria for assigning them, the prohibition on asserting a fact from C/D alone, the confidence limit on a claim in which a company presents itself favorably, cross-checking sources, and corroborating findings (review-site selection bias, the validity of an aggregated score, the limits of a securities report) | Every stage that assigns or checks a level and a confidence |
+| `references/company-research-format.md` | The field specification, entry criteria, and mechanical validation rules for company_research.json | Every stage that writes, reads, or validates company_research.json |
+| `references/source-catalog.md` | The source catalog (EDINET securities reports, IR disclosures, Shushoku Shikiho, Shokuba Labo, certification schemes, review sites) and each source's content, limits, and source URL | The Step 1 collection, the Step 3 audit |
+| `references/philosophy-analysis.md` | The collection sources and analysis procedure for philosophy, corporate creed, and purpose analysis (explicit statement → behavioral guidelines → HR systems → consistency check against disclosures), and its relationship with the confidence limit on a claim in which a company presents itself favorably | Collecting and analyzing topic=philosophy |
+| `references/compensation-benefits.md` | The investigation perspectives and source catalog for compensation, benefits, and work style (securities reports, Shokuba Labo, certification schemes, Shushoku Shikiho, OpenWork, public statistics), and the rule for storing figures into company_metrics | Collecting topic=compensation/benefits/workstyle |
+| `references/company-score-rubric.md` | The definition of the nine quantitative candidate axes (axis key, metric, unit, direction, source), the entry format for `company_metrics`, and the division of labor by which the fit assessment handles scoring, weighting, and the overall score | Collecting measured figures in Step 1, auditing company_metrics in Step 3 |
+| `references/job-posting-format.md` | The field specification, entry criteria, and mechanical validation rules for job_posting.json (including the four entry points and `source_type`) | The stage of importing and validating a job posting in Step 0.5 |

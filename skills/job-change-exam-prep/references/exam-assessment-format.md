@@ -1,10 +1,10 @@
-# exam_assessment.json の原本仕様（exam-assessment-format）
+# Canonical specification for exam_assessment.json (exam-assessment-format)
 
-検査種別の調査結果 `exam_assessment.json` のフィールド仕様・記入基準・機械的な検証の規則を定める原本である。選考試験の調査担当エージェント（job-change-exam-scout）がこの仕様で成果物を作る。`scripts/validate_exam_assessment.py` は、この仕様に照らして機械的に検査する。
+This is the canonical definition of the field specification, entry criteria, and mechanical validation rules for `exam_assessment.json`, the investigation result on assessment type. The selection-exam investigator agent (job-change-exam-scout) builds the deliverable to this specification. `scripts/validate_exam_assessment.py` checks it mechanically against this specification.
 
-出力先は `{DATA_ROOT}/companies/{企業スラッグ}/exam_assessment.json` である。企業が特定できない汎用の対策依頼では、企業スラッグの代わりに `_general/` を用いる。
+The output destination is `{DATA_ROOT}/companies/{company slug}/exam_assessment.json`. For a generic preparation request where no company can be identified, `_general/` is used in place of a company slug.
 
-## 全体構造
+## Overall structure
 
 ```json
 {
@@ -29,100 +29,100 @@
 }
 ```
 
-記入済みの全体像は `assets/exam_assessment_example.json`（架空データ）にある。
+A fully filled-in example (fictional data) is at `assets/exam_assessment_example.json`.
 
-## フィールド仕様
+## Field specification
 
-### company（文字列・必須）
+### company (string, required)
 
-調査対象の企業名（正式名称）。欠落・空は ERROR。
+The name of the company under investigation (official name). Missing or empty is an ERROR.
 
-### assessments（配列・必須）
+### assessments (array, required)
 
-特定した検査種別の配列。配列でない場合は ERROR。空配列は WARN（種別を特定できなかった事情を `open_questions` に記すことを推奨する）。`assessments` が空で `open_questions` も空の場合は、成果物が何も述べていないため ERROR とする。
+The array of identified assessment types. Not being an array is an ERROR. An empty array is a WARN (it is recommended to record, in `open_questions`, why no type could be identified). If `assessments` is empty and `open_questions` is also empty, this is an ERROR, because the deliverable states nothing at all.
 
-### assessments[].type（文字列・必須）
+### assessments[].type (string, required)
 
-検査の名称。欠落・空は ERROR。名称の語彙の原本は `references/assessment-catalog.md` であり、ここへは複製しない。カタログが扱わない検査名は WARN にとどめる（カタログに載らない検査を企業が使う場合があるため、ERROR にはしない）。
+The name of the assessment. Missing or empty is an ERROR. The canonical definition of this vocabulary is `references/assessment-catalog.md`; it is not duplicated here. An assessment name not covered by the catalog stays at WARN, because a company may use an assessment the catalog does not cover.
 
-### assessments[].stage（文字列・必須）
+### assessments[].stage (string, required)
 
-選考のどの段階で実施されるか（「書類選考の通過後」「一次面接前」など）。欠落・空は WARN。段階が不明でも成果物としては成立するため、ERROR にはしない。
+The stage in the selection process at which the assessment is administered (e.g., 「書類選考の通過後」, 「一次面接前」). Missing or empty is a WARN: the deliverable still stands even when the stage is unknown.
 
-### assessments[].evidence（配列・必須）
+### assessments[].evidence (array, required)
 
-その種別を特定した根拠。配列でない場合は ERROR。空配列は ERROR とする（出典 URL のない断定を禁じるためである）。各要素は次を持つ。
+The evidence used to identify this type. Not being an array is an ERROR. An empty array is an ERROR (this prohibits asserting a claim with no source URL). Each element carries the following.
 
-| フィールド | 必須 | 記入基準 |
+| Field | Required | Entry criteria |
 |---|---|---|
-| `source_url` | 必須 | 根拠ページの URL。`http` で始まる文字列でなければならない（欠落・不一致は ERROR） |
-| `grade` | 必須 | エビデンスレベル `A` / `B` / `C` / `D` のいずれか。他の値・欠落は ERROR |
-| `quote` | 必須 | 根拠ページからの引用。欠落・空は ERROR |
+| `source_url` | Required | The URL of the source page. Must be a string starting with `http` (missing or non-matching is an ERROR) |
+| `grade` | Required | One of the evidence levels `A` / `B` / `C` / `D`. Any other value, or missing, is an ERROR |
+| `quote` | Required | A quotation from the source page. Missing or empty is an ERROR |
 
-`grade` の定義と付与ルールの原本は `job-change-company-research/references/evidence-grading.md` である。選考試験の文脈での当てはめは、役割プロンプト `references/roles/exam-scout.md` に書いてある。
+The canonical definition and assignment rules for `grade` are in `job-change-company-research/references/evidence-grading.md`. How this is applied in the context of selection exams is written in the role prompt `references/roles/exam-scout.md`.
 
-### assessments[].confidence（文字列・必須）
+### assessments[].confidence (string, required)
 
-その種別の確度。次の2値のいずれかとする。欠落・空、または2値以外は ERROR。
+The confidence for this type. Must be one of the following two values. Missing, empty, or any value other than these two is an ERROR.
 
-| 値 | 意味 |
+| Value | Meaning |
 |---|---|
-| `確定` | 採用ページ・企業公式の選考案内など、レベル A の出典で種別が明記されている |
-| `推定` | 選考体験記など、レベル A 以外の出典からの類推である |
+| `確定` (confirmed) | The type is explicitly stated by a level-A source, such as a careers page or an official company selection notice |
+| `推定` (estimate) | Inferred from a source below level A, such as a candidate write-up |
 
-`確定` は、`evidence` に `grade` が `A` の要素を1件以上含むことを要件とする。含まない場合は ERROR とする（単一の伝聞のみを根拠に「確定」とすることを、機械的な検査で防ぐ）。
+`確定` (confirmed) requires that `evidence` contain at least one element with `grade` equal to `A`. If it does not, this is an ERROR (this mechanically prevents setting `確定` (confirmed) on the basis of a single piece of hearsay alone).
 
-`推定` で `evidence` が1件のみの場合は WARN とする。根拠が単一の体験記のみである種別に当たり、対策計画でその限界を明示する必要があるためである。
+When `confidence` is `推定` (estimate) and `evidence` has only one element, this is a WARN, because the type is backed by only a single write-up, and this limitation needs to be made explicit in the preparation plan.
 
-### assessments[].format_notes（文字列・必須）
+### assessments[].format_notes (string, required)
 
-出題形式（科目構成・時間・実施方式の特徴）の要約。欠落・空は WARN。
+A summary of the question format (subject composition, time, administration-method characteristics). Missing or empty is a WARN.
 
-### assessments[].prep_recommendations（配列・必須）
+### assessments[].prep_recommendations (array, required)
 
-一般的な推奨対策の方向性。非空の文字列の配列とする。配列でない、または非空の文字列でない要素を含む場合は ERROR。空配列は WARN。
+The general direction of recommended preparation. Must be an array of non-empty strings. Not being an array, or containing an element that is not a non-empty string, is an ERROR. An empty array is a WARN.
 
-### open_questions（配列・必須）
+### open_questions (array, required)
 
-裏取りできなかった論点、受検案内の到着後に確認すべき点などを記す。指示書で渡された claims と調査結果が食い違った場合は、双方の主張と採否の理由もここに記す。配列でない、または非空の文字列でない要素を含む場合は ERROR。
+Records points that could not be verified, points to confirm once the exam invitation arrives, and so on. When the claims passed in the instructions conflict with the investigation results, both claims and the reason for the choice are also recorded here. Not being an array, or containing an element that is not a non-empty string, is an ERROR.
 
-## 機械的な検証の規則（validate_exam_assessment.py）
+## Mechanical validation rules (validate_exam_assessment.py)
 
-`scripts/validate_exam_assessment.py` が機械的に検査する。ERROR が1件でもあれば FAIL（終了コード1）、ERROR 0件なら PASS（終了コード0。WARN があっても PASS）。
+`scripts/validate_exam_assessment.py` performs the mechanical check. One or more ERRORs means FAIL (exit code 1); zero ERRORs means PASS (exit code 0, even with WARNs present).
 
 ```
 python validate_exam_assessment.py <exam_assessment.json> [--json]
 ```
 
-**ERROR（成果物として成立しない・ルール違反）**
+**ERROR (the deliverable does not stand, or a rule is violated)**
 
-- JSON として読み込めない、またはルート要素がオブジェクトでない
-- `company` の欠落・空
-- `assessments` が配列でない
-- `assessments` が空で `open_questions` も空
-- `type` の欠落・空
-- `evidence` が配列でない、または空配列
-- `source_url` が欠落、または `http` で始まらない
-- `grade` が `A`／`B`／`C`／`D` 以外
-- `quote` の欠落・空
-- `confidence` が `確定`／`推定` 以外
-- `confidence` が `確定` なのに `evidence` にレベル A の要素が無い
-- `prep_recommendations`・`open_questions` が配列でない、または非空の文字列でない要素を含む
+- Cannot be parsed as JSON, or the root element is not an object
+- `company` is missing or empty
+- `assessments` is not an array
+- `assessments` is empty and `open_questions` is also empty
+- `type` is missing or empty
+- `evidence` is not an array, or is an empty array
+- `source_url` is missing, or does not start with `http`
+- `grade` is not one of `A` / `B` / `C` / `D`
+- `quote` is missing or empty
+- `confidence` is not one of `確定` / `推定`
+- `confidence` is `確定` but `evidence` has no level-A element
+- `prep_recommendations` or `open_questions` is not an array, or contains a non-empty-string element
 
-**WARN（成立するが不足・確度上の注意）**
+**WARN (the deliverable stands, but there is a shortfall or a confidence-related note)**
 
-- `assessments` が空配列
-- `type` が `assessment-catalog.md` の扱う検査名ではない
-- `stage` の欠落・空
-- `confidence` が `推定` で `evidence` が1件のみ
-- `format_notes` の欠落・空
-- `prep_recommendations` が空配列
+- `assessments` is an empty array
+- `type` is not a name covered by `assessment-catalog.md`
+- `stage` is missing or empty
+- `confidence` is `推定` and `evidence` has only one element
+- `format_notes` is missing or empty
+- `prep_recommendations` is an empty array
 
-## 機械的な検査が及ばない範囲
+## Scope beyond mechanical checking
 
-次は機械では判定できないため、人が判断する。
+The following cannot be judged mechanically and require human judgment.
 
-- 出典の内容が本当にその検査種別を述べているか（`quote` と `type` の対応）。
-- エビデンスレベルの付与そのものの妥当性（口コミを A へ格上げしていないか、採用ページを C へ格下げしていないか）。
-- 複数の出典が食い違う場合の採否。
-- 「推定」の種別を対策計画でどこまで前提にしてよいかの線引き。
+- Whether the source's content genuinely describes that assessment type (the correspondence between `quote` and `type`).
+- Whether the assignment of the evidence level itself is appropriate (whether a review has been upgraded to A, or a careers page downgraded to C).
+- Which side to adopt when multiple sources conflict.
+- Where to draw the line on how far a `推定` (estimate) type may be relied on in the preparation plan.

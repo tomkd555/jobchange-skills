@@ -1,75 +1,104 @@
-# 実績の定量化ガイド（型・代替表現・限界）
+# Guide to quantifying an achievement (patterns, alternative phrasing, and limits)
 
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
-<!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
+<!-- The [E1]-style notation in this text is the citation-id notation. This file disables the rule so the half-width square brackets are kept. -->
 
-job-change-profile スキルの Step 2 で実績（achievements）を聞き取り・作成・監査するときに参照する原本である。SKILL.md の原則3・question-bank.md の Step 2・エージェント2体がこのファイルを参照する。エビデンスレベルは A〜D の4段階で表記し、学術研究には DOI を記す。
+This is the canonical definition referenced when eliciting, writing, and auditing an achievement in
+job-change-profile's `achievements` section. SKILL.md's Principle 3, `sections/achievements.md`, and both agents
+reference this file. Evidence level is written on a 4-step scale, and a piece of academic research carries a DOI.
 
-## 定量化を推奨しつつ、機械的な数値付与はしない
+## Recommend quantification, without mechanically forcing a number
 
-実績の定量化は実務で強く推奨される。ただし数値は量より質（要件との関連）が重要であり、すべての実績へ機械的に数値を付けることは逆効果になりうる（確度: 可能性が高い、65%以上80%未満）。
+Quantifying an achievement is strongly recommended in practice. A figure's relevance to the requirement matters
+more than its mere quantity, and attaching a number to every achievement mechanically can backfire (confidence:
+likely, 65%-80%).
 
-- 人材紹介会社は、実績を定量的な数字で表し、前年度比などで示すことを推奨する[E25]。
-- 学術的には、応募書類に competency statements（能力・実績の記述）を加えると評価が上がり、書類選考を通過する確率が高まる。ただしこの効果は記述の場所に依存せず、「一般的な書き方でも」生じる[E34]。**すなわち定量化そのものを切り分けた効果ではなく、記述の存在自体の効果が大きい。**
-- 過剰な数値や事実と異なる数値は逆効果である。箇条書きの全項目へ機械的に数値を付けることや、事実と異なる数値は採用担当の不信を招く。採用側視点の記事は、事実と異なる数値が1つあるだけで書類全体の信頼を毀損すると指摘する[E29]。
+- A recruiting agency recommends expressing an achievement in a quantitative figure, shown against the prior year
+  and the like [E25].
+- Academically, adding competency statements (a description of ability or achievement) to an application document
+  raises its evaluation and the probability of passing document screening. This effect, however, does not depend
+  on where the statement sits; it "arises even from ordinary phrasing" [E34]. **A large part of this effect comes
+  from the statement's mere presence.**
+- An excessive or inaccurate figure backfires. Attaching a number mechanically to every bullet point, and a figure
+  that departs from fact, invite the hiring side's distrust. An article written from the hiring side's viewpoint
+  notes that a single inaccurate figure damages the credibility of the whole document [E29].
 
-運用: `metric` には、利用者が述べた数値をそのまま書く。出所の説明は求めない。聞き取り側が数値を作ることもしない。数値が出ない実績を無理に数値化せず、`metric` を `null` にして工夫した点と評価された点を `description` で具体化する。E29 が指す危険は、利用者が誇張することよりも、聞き取り側が定量化の型へ当てはめようとして数値を膨らませることにある。
+Operation: write to `metric` the figure the user states, as it stands. Elicitation never asks for an explanation
+of its source, and never manufactures a figure itself. When no figure is available for an achievement, it is never
+forced into a number; `metric` is set to `null`, and the point worked on and the point evaluated are made concrete
+in `description`. The danger E29 names lies mainly in elicitation itself inflating a figure while trying to fit it
+into a quantification pattern.
 
-## 定量化の型
+## Patterns for quantification
 
-実績を数値で表すときの型は次のとおりである。聞き取りでは、どの型に当てはまるかを利用者と一緒に確かめながら進める。
+The patterns for expressing an achievement as a figure are as follows. During elicitation, proceed by checking
+together with the user which pattern applies.
 
-| 型 | 示し方 |
+| Pattern | How to show it |
 |---|---|
-| 前年度比・増減率 | 売上・コスト・工数などの変化を割合で示す（例: 「前年度比で処理件数を1.4倍」）[E25]。 |
-| 件数・規模 | 対応した案件数・顧客数・データ量・システム規模などの絶対量を示す[E28]。 |
-| 頻度 | 定常業務の実施頻度・処理回数を示す[E28]。 |
-| 対応人数・範囲 | マネジメント・折衝の対象人数、担当した部門・地域の範囲を示す[E28]。 |
-| 工程削減率・効率化 | 運用保守・定型業務では、工程削減率・処理時間短縮・ミス削減で示す[E32][E26]。 |
-| 定性的な成果の結びつけ | 数値化しにくい成果は、後続の定量的な成果（受注・継続契約など）と結びつけて示す[E32]。 |
-| 基準との比較 | 前年や前期、チームや部門の平均と比べて示す（例: 「達成率80%から90%へ」「チーム平均95%に対して98%」）[E38]。 |
-| 活動量からの概算 | 記録が手元に無い場合は、覚えている活動量（1日の架電数×稼働日数、週の訪問件数×週数）から本人に概算してもらう[E39]。聞き取り側は、概算である旨を添え、値を本人の言葉のまま記録する。 |
+| Year-on-year change, a rate of change | Show a change in sales, cost, or workload as a proportion (for example, 「前年度比で処理件数を1.4倍」, processing count up 1.4× year on year) [E25]. |
+| A count or a scale | Show an absolute quantity such as the number of projects or clients handled, the data volume, or the system's scale [E28]. |
+| Frequency | Show the frequency or the number of times a routine task was carried out [E28]. |
+| The number of people or the scope handled | Show the number of people managed or negotiated with, or the department or region handled [E28]. |
+| A reduction rate or an efficiency gain | For operations and maintenance or routine work, show a process reduction rate, a processing-time cut, or a reduction in errors [E32][E26]. |
+| Linking a qualitative outcome | For an outcome that resists quantification, show it linked to a later quantitative outcome (an order won, a renewed contract) [E32]. |
+| A comparison against a benchmark | Show it against the prior year, the prior period, or a team's or department's average (for example, 「達成率80%から90%へ」, achievement rate up from 80% to 90%; 「チーム平均95%に対して98%」, 98% against a team average of 95%) [E38]. |
+| An approximation from an activity volume | When no record is on hand, have the user approximate it from an activity volume they recall (a daily call count × days worked, a weekly visit count × weeks) [E39]. Elicitation notes that it is an approximation and records the value in the user's own words. |
 
-## 定量化困難な業務の代替表現
+## Alternative phrasing for a hard-to-quantify task
 
-間接部門・定型業務・運用保守など、直接の数値が出にくい業務では、次の代替表現を使う（確度: 可能性が高い、65%以上80%未満）。
+For work in an indirect department, routine work, or operations and maintenance, where a direct figure is hard to
+produce, use the following alternative phrasing (confidence: likely, 65%-80%).
 
-- 定型業務でも、工夫した点・ミスの削減・効率化で表現できる[E26]。数値化が難しくても、工夫や評価された点を具体的に書けばよい[E27]。
-- 運用保守は、工程削減率・システム規模・定性的な成果を受注と結びつけて示せる[E32]。
-- 直接の数値が出にくい業務でも、頻度・範囲・対応人数・概算のレンジで定量化できる[E28]。
+- Even routine work can be expressed through a point worked on, a reduction in errors, or an efficiency gain [E26].
+  When quantification is difficult, writing the point worked on and the point evaluated concretely is enough [E27].
+- Operations and maintenance can be shown through a process reduction rate, the system's scale, and a qualitative
+  outcome linked to an order won [E32].
+- Even work that resists a direct figure can be quantified through frequency, scope, the number of people handled,
+  or an approximate range [E28].
 
-運用: 代替表現を使う場合も、規模・範囲・主体を表す言葉（大規模・全社・主導など）は、聞き取りメモで裏付けられる範囲を超えて用いない。裏付けを欠く誇張は監査（auditor）の指摘対象になる。
+Operation: even when using alternative phrasing, a word denoting scale, scope, or the acting subject (大規模
+[large-scale], 全社 [company-wide], 主導 [led], and the like) is never used beyond the range the elicitation notes
+support. An exaggeration
+without support becomes a target for the auditor's finding.
 
-## 定量化の効果の限界（エビデンスギャップ）
+## The limits of quantification's effect (an evidence gap)
 
-- 定量化そのものを切り分けて効果を測った査読済みのフィールド実験は、言語を問わず確認できていない（エビデンスギャップ）。効果量の主張の多くは人材サービス提供者の自己報告に依存する。記述の存在自体が評価を上げることは示されるが[E34]、「数値を足すほど評価が上がる」という単調な関係は実証されていない。
-- 数値・具体性の説得効果は文脈依存である。確率の言明では、数値と言葉のどちらが信頼を高めるかは文脈で変わる[E37]。数値が細かすぎると、かえって疑いを招く場合がある[E36]。
+- No peer-reviewed field experiment isolating and measuring the effect of quantification itself has been confirmed,
+  in any language (an evidence gap). Many of the claimed effect sizes rest on a staffing provider's own
+  self-reported figures. A statement's mere presence is shown to raise evaluation [E34], but no monotonic
+  relationship — "the more figures, the higher the evaluation" — has been demonstrated.
+- The persuasive effect of a figure or a specific detail depends on context. In a probability statement, whether a
+  figure or a word raises trust more depends on the context [E37]. A figure that is too fine-grained can itself
+  invite suspicion [E36].
 
-## 職種依存
+## Dependency on occupation
 
-実績数値の重みは職種に依存する（確度: 可能性が非常に高い、80%以上90%未満）。
+The weight an achievement figure carries depends on the occupation (confidence: very likely, 80%-90%).
 
-- IT 職では、応募書類で最重視される項目が実績数値ではなく「スキル・使用可能ツール」であった（採用担当150名調査で48.4%）[E2][E31]。**この数値は単一の調査に由来する。**
+- For an IT role, the item weighed most heavily in an application document was "skills and usable tools" (48.4% in a
+  survey of 150 hiring staff) [E2][E31]. **This figure comes from a single survey.**
 
-運用: 職種によっては、実績の定量化よりスキルの明確な棚卸し（Step 3）が採否を左右するため、定量化に固執せず、職種に応じて重点を移す。
+Operation: for some occupations, a clear skill inventory (Step 3) settles a hiring outcome more than quantifying
+achievements does, so elicitation adjusts its emphasis to suit the occupation.
 
-## 出典一覧
+## Sources
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. レベル. URL）で出典を並べる節である。区切りのピリオドと社名の一部を和文の句読点・同義語として判定させないため、この節だけ無効化する。 -->
+<!-- This section lists sources in a bibliographic format (publisher. Title. Year. Level. URL). This section alone disables the rule so the separating periods and part of a company name are not judged as Japanese punctuation or a synonym. -->
 
-- [E2] Geekly（ギークリー）. 【採用担当150名に聞いた】応募書類で重視するポイントとは？. 2021-12. レベルC（単一ソース・自己報告）. https://www.geekly.co.jp/column/cat-jobsearch/resume_point_byrecruiter/
-- [E25] JAC Recruitment. 職務経歴書「実績」の書き方とは？職種別の記入例も解説. 2022-11-25. レベルC. https://www.jac-recruitment.jp/market/knowhow/resume/achievements/
-- [E26] JAC Recruitment. 職務経歴書「実績」の書き方とは？職種別の記入例も解説. 2022-11-25. レベルC. https://www.jac-recruitment.jp/market/knowhow/resume/achievements/
-- [E27] エン・ジャパン（エン転職）. 転職Q&A「【職務経歴書】数字で示せる実績がない。何を書けば良い？」. 2023. レベルC. https://employment.en-japan.com/qa_1199_2040/
-- [E28] The Muse. How to Quantify Your Resume Bullets (When You Don't Work With Numbers). 2020-06-19. レベルC. https://www.themuse.com/advice/how-to-quantify-your-resume-bullets-when-you-dont-work-with-numbers
-- [E29] The Resume Writers (AU). The Metric Mirage: How Overusing Resume Numbers Is Undermining Their Impact. 2025-08-28. レベルC. https://theresumewriters.com.au/the-metric-mirage-how-overusing-resume-numbers-is-undermining-their-impact/
-- [E31] Geekly（ギークリー）. 【採用担当150名に聞いた】応募書類で重視するポイントとは？. 2021-12. レベルC（単一ソース・自己報告）. https://www.geekly.co.jp/column/cat-jobsearch/resume_point_byrecruiter/
-- [E32] type転職エージェント. インフラエンジニアの職務経歴書｜職務経歴書の書き方. 2023. レベルC. https://type.career-agent.jp/knowhow/documents/keirekisho/network.html
-- [E34] International Journal of Selection and Assessment. The Impact of Competency Statements on Resumes for Short-listing Decisions. 2000. レベルA. DOI:10.1111/1468-2389.00132. https://doi.org/10.1111/1468-2389.00132
-- [E36] Strategic Management Journal. Give it to us straight (most of the time). 2018. レベルA. DOI:10.1002/smj.2733. https://doi.org/10.1002/smj.2733
-- [E37] Judgment and Decision Making. Cultivating credibility with probability words and numbers. 2019. レベルA. DOI:10.1017/S1930297500005404. https://doi.org/10.1017/S1930297500005404
-- [E38] リクルートダイレクトスカウト. 職務経歴書での実績の書き方とは？効果的なアピール方法を紹介. 2025. レベルC. https://directscout.recruit.co.jp/contents/article/3627/
-- [E39] jobree（履歴書・職務経歴書の書き方）. 職務経歴書の営業実績が覚えてない｜採用担当者が教える書き方と例文. 2025. レベルC. https://rirekisho.jobree.co.jp/how/職務経歴書-営業-実績-覚えてない/
+- [E2] Geekly（ギークリー）. 【採用担当150名に聞いた】応募書類で重視するポイントとは？. 2021-12. Level C (single source, self-reported). https://www.geekly.co.jp/column/cat-jobsearch/resume_point_byrecruiter/
+- [E25] JAC Recruitment. 職務経歴書「実績」の書き方とは？職種別の記入例も解説. 2022-11-25. Level C. https://www.jac-recruitment.jp/market/knowhow/resume/achievements/
+- [E26] JAC Recruitment. 職務経歴書「実績」の書き方とは？職種別の記入例も解説. 2022-11-25. Level C. https://www.jac-recruitment.jp/market/knowhow/resume/achievements/
+- [E27] エン・ジャパン（エン転職）. 転職Q&A「【職務経歴書】数字で示せる実績がない。何を書けば良い？」. 2023. Level C. https://employment.en-japan.com/qa_1199_2040/
+- [E28] The Muse. How to Quantify Your Resume Bullets (When You Don't Work With Numbers). 2020-06-19. Level C. https://www.themuse.com/advice/how-to-quantify-your-resume-bullets-when-you-dont-work-with-numbers
+- [E29] The Resume Writers (AU). The Metric Mirage: How Overusing Resume Numbers Is Undermining Their Impact. 2025-08-28. Level C. https://theresumewriters.com.au/the-metric-mirage-how-overusing-resume-numbers-is-undermining-their-impact/
+- [E31] Geekly（ギークリー）. 【採用担当150名に聞いた】応募書類で重視するポイントとは？. 2021-12. Level C (single source, self-reported). https://www.geekly.co.jp/column/cat-jobsearch/resume_point_byrecruiter/
+- [E32] type転職エージェント. インフラエンジニアの職務経歴書｜職務経歴書の書き方. 2023. Level C. https://type.career-agent.jp/knowhow/documents/keirekisho/network.html
+- [E34] International Journal of Selection and Assessment. The Impact of Competency Statements on Resumes for Short-listing Decisions. 2000. Level A. DOI:10.1111/1468-2389.00132. https://doi.org/10.1111/1468-2389.00132
+- [E36] Strategic Management Journal. Give it to us straight (most of the time). 2018. Level A. DOI:10.1002/smj.2733. https://doi.org/10.1002/smj.2733
+- [E37] Judgment and Decision Making. Cultivating credibility with probability words and numbers. 2019. Level A. DOI:10.1017/S1930297500005404. https://doi.org/10.1017/S1930297500005404
+- [E38] リクルートダイレクトスカウト. 職務経歴書での実績の書き方とは？効果的なアピール方法を紹介. 2025. Level C. https://directscout.recruit.co.jp/contents/article/3627/
+- [E39] jobree（履歴書・職務経歴書の書き方）. 職務経歴書の営業実績が覚えてない｜採用担当者が教える書き方と例文. 2025. Level C. https://rirekisho.jobree.co.jp/how/職務経歴書-営業-実績-覚えてない/
 
 <!-- textlint-enable -->

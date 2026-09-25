@@ -1,365 +1,382 @@
-# 無償の公開Web検索による求人探索カタログ（query-catalog）
+# Catalog of free public web search for job discovery (query-catalog)
 
-無償の公開Web検索だけで求人を探すためのカタログである。掲載する各サイトは、検索結果ページがログインなしで閲覧できることと、robots.txt が検索結果ページの取得を禁じていないことを実際に確認したものに限る。確認できなかったサイト、方針として使わないと決めたサイトは、その理由とともに「対象外にしたサイト」へ記す。求人検索担当エージェント（job-change-job-searcher）は、WebSearch・WebFetch でこれらをたどり、掲載ページの引用とURLを付して結果を集める。
+A catalog for finding job postings using free public web search alone. Each listed site is one whose search-results page has actually been confirmed to be viewable without login, and whose robots.txt has actually been confirmed not to forbid fetching the search-results page. A site that could not be confirmed, or one this skill has decided as a matter of policy not to use, is recorded with its reason under "Sites excluded from scope." The job searcher agent (job-change-job-searcher) follows these with WebSearch and WebFetch, and gathers results with a quotation from and the source URL of the listing page attached.
 
-**確認日**: 2026-08-21（求人ボックス・マイナビ転職エンジニア・type・Wantedly と初回の対象外）、2026-09-04（HERP Careers・系統C・追加の対象外・未確認のサイト）。各サイトのログイン要否・URL構造・robots.txt をその日付時点で確認した。サイト側の仕様変更により、本カタログの記載と実態がずれうる。取得できない項目は成果物の `coverage_notes` に記す。確認日から180日を過ぎたサイトは、使う前に robots.txt を読み直す（規則は「取得の可否を決める規則」にある）。
+**Confirmation dates**: 2026-08-21 (求人ボックス (Kyujin Box), マイナビ転職エンジニア (Mynavi Tenshoku Engineer), type, Wantedly, and the initial excluded sites), 2026-09-04 (HERP Careers, family C, additional excluded sites, and unconfirmed sites). Each site's login requirement, URL structure, and robots.txt were confirmed as of that date. A site's own specification changes can cause this catalog's record to drift from actuality. An item that could not be retrieved is recorded in the deliverable's `coverage_notes`. For a site whose confirmation date is more than 180 days old, re-read its robots.txt before use (the rule is in "The rule for deciding whether retrieval is permitted").
 
-**共通の制約**
-- 会員登録・ログインが必要な「非公開求人」は無償の公開検索の範囲外とする。範囲外にした旨は `coverage_notes` に記す。
-- 掲載ページの文言はそのまま `quote` に記す。取得できない求人を創作しない。
-- 給与が「応相談」等で数値が読めない求人は `salary_range` を `null` にする。
-- robots.txt が禁じているパスを取得しない。個々のサイトの禁止パスは各節に記す。
+**Common constraints**
+- "Non-public postings" that require member registration or login are outside the scope of free public search. Being placed outside scope is recorded in `coverage_notes`.
+- A listing page's wording is transcribed verbatim into `quote`. A posting that cannot be retrieved is never fabricated.
+- A posting whose salary reads 「応相談」 (negotiable) or similar, with no readable number, has `salary_range` set to `null`.
+- A path forbidden by robots.txt is never fetched. Each site's forbidden paths are recorded in its own section.
 
-## 求人ページの開き方は3系統ある
+## There are 3 families of ways to open a job listing page
 
-サイトによって、URLを組み立てて検索結果へ直接たどり着けるかどうかが分かれる。系統を取り違えると、存在しないURLを組み立てて404を集めることになる。
+Sites differ in whether a search result can be reached directly by constructing a URL. Confusing the families results in constructing a nonexistent URL and collecting 404s.
 
-| 系統 | 内容 | 該当サイト |
+| Family | Content | Sites it applies to |
 |---|---|---|
-| A. URL文法の組み立て | 条件がURLの構造へ規則的に現れ、未経験の組合せでもURLを合成して結果を得られる。文法は本カタログに記す。 | 求人ボックス、マイナビ転職エンジニア、HERP Careers |
-| B. `site:` 検索で結果URLを発見 | 検索条件が内部IDでURLへ現れるため、URLを合成できない。`WebSearch` で `site:{ドメイン} {職種} {地域} {条件}` を検索し、得られた結果ページ・個別求人ページのURLを `WebFetch` で読む。 | type、Wantedly |
-| C. 企業スラッグから採用ページを開く | 横断検索の入口を持たず、企業ごとの採用ページだけがある。企業スラッグが既知のとき（企業研究の結果、HERP Careers や `site:` 検索で見つけた企業）に限り、そのページを `WebFetch` で読む。 | HRMOS、Findy |
+| A. Constructing URL syntax | Conditions appear in the URL's structure in a regular way, so a URL can be assembled to obtain a result even for an untried combination. The syntax is recorded in this catalog. | 求人ボックス (Kyujin Box), マイナビ転職エンジニア (Mynavi Tenshoku Engineer), HERP Careers |
+| B. Discovering the results URL via a `site:` search | The search conditions appear in the URL as an internal ID, so a URL cannot be assembled. `WebSearch` is used to search `site:{domain} {occupation} {region} {condition}`, and the resulting results page or individual posting page URL is read with `WebFetch`. | type, Wantedly |
+| C. Opening the careers page from a known company slug | There is no entry point for cross-site search; only each company's own careers page exists. Only when the company slug is already known (found through company research, HERP Careers, or a `site:` search), that page is read with `WebFetch`. | HRMOS, Findy |
 
-推測したIDは他社の求人か404を指すため、**系統BのサイトでURLを組み立ててはならない**。系統Cでも同じであり、企業スラッグを推測して組み立てない。
+A guessed ID points to another company's posting or a 404, so **a URL must never be constructed for a family-B site**. The same holds for family C: a company slug is never guessed and assembled.
 
-## 1. 求人ボックス（系統A）
+## 1. 求人ボックス (Kyujin Box) (family A)
 
-株式会社カカクコムが運営する求人検索エンジン。国内の求人を横断的に集約する。条件からURLを組み立てられる、本カタログで唯一の大規模ソースである。
+A job search engine operated by Kakaku.com, Inc. It aggregates postings across Japan. It is this catalog's only large-scale source whose URL can be constructed from conditions.
 
-| 観点 | 内容 |
+| Aspect | Content |
 |---|---|
-| ドメイン | `https://xn--pckua2a7gp15o89zb.com`（「求人ボックス.com」の Punycode 表記。`WebFetch` へはこの形で渡す） |
-| ログイン要否 | 検索・一覧の閲覧はログイン不要（確認済み） |
-| URLの形 | 条件はURLパスへ日本語をURLエンコードして埋め込む。クエリ文字列は使わない |
-| robots.txt | `/api/`・`/suggest/`・`/rd/`・`/map/`・`/my/`・`/apply*`・`/pdf/` 等が Disallow。検索結果ページ（`/{キーワード}の仕事…`）は禁止対象に含まれない |
+| Domain | `https://xn--pckua2a7gp15o89zb.com` (the Punycode form of "求人ボックス.com"; pass it to `WebFetch` in this form) |
+| Login requirement | Browsing the search and listing pages requires no login (confirmed) |
+| URL shape | Conditions are embedded in the URL path as URL-encoded Japanese. A query string is not used |
+| robots.txt | `/api/`, `/suggest/`, `/rd/`, `/map/`, `/my/`, `/apply*`, `/pdf/`, and so on are Disallow. The search-results page (`/{keyword}の仕事…`) is not among the forbidden targets |
 
-### URL文法
+### URL syntax
 
-| 用途 | パス | 例 |
+| Purpose | Path | Example |
 |---|---|---|
-| 職種の一覧 | `/{キーワード}の仕事` | `/データサイエンティストの仕事` |
-| 地域で絞る | `/{キーワード}の仕事-{都道府県}` | `/データサイエンティストの仕事-東京都` |
-| 条件を足す | `/{キーワード}-{条件}の仕事-{都道府県}` | `/データサイエンティスト-年収500万円の仕事-東京都` |
-| 給与の相場 | `/{職種}の年収・時給`（給料ナビ） | `/データサイエンティストの年収・時給` |
+| Occupation listing | `/{keyword}の仕事` | `/データサイエンティストの仕事` |
+| Narrow by region | `/{keyword}の仕事-{prefecture}` | `/データサイエンティストの仕事-東京都` |
+| Add a condition | `/{keyword}-{condition}の仕事-{prefecture}` | `/データサイエンティスト-年収500万円の仕事-東京都` |
+| Salary market rate | `/{occupation}の年収・時給` (Salary Navi) | `/データサイエンティストの年収・時給` |
 
-条件は `-` で連結して複数指定できる。確認済みの条件トークンは `年収500万円`（100万円刻みで置き換わる）・`フルリモート`・`上場企業`・`大手企業` である。
+Conditions can be joined with `-` to specify several at once. The confirmed condition tokens are `年収500万円` (replaced in 1-million-yen increments), `フルリモート`, `上場企業`, and `大手企業`.
 
-実測（2026-08-21）: `/データサイエンティスト-年収500万円の仕事-東京都` が1,098件、`/データサイエンティスト-フルリモートの仕事` が1,461件を返した。
+Measured (2026-08-21): `/データサイエンティスト-年収500万円の仕事-東京都` returned 1,098 hits, and `/データサイエンティスト-フルリモートの仕事` returned 1,461 hits.
 
-| 観点 | 内容 |
+| Aspect | Content |
 |---|---|
-| 取得できる項目 | 求人タイトル・企業名・勤務地・給与・雇用形態など、一覧に表示される項目 |
-| 制約 | 集約元サイトの記載をそのまま載せるため、同一求人が複数の集約元から重複して現れる。「重複の排除」の規則で排除する。詳細が読めない求人は掲載元リンク先を `WebFetch` で確認する |
+| Retrievable fields | Posting title, company name, work location, salary, employment type, and other fields shown in the listing |
+| Constraint | Because it carries the aggregation source's own record as is, the same posting appears repeatedly from multiple aggregation sources. Deduplicate using the "Deduplication" rule. For a posting whose detail is not readable, confirm via the source link with `WebFetch` |
 
-## 2. マイナビ転職エンジニア（系統A）
+## 2. マイナビ転職エンジニア (Mynavi Tenshoku Engineer) (family A)
 
-マイナビが運営する転職サイトのエンジニア領域。URLのセグメントがコードで表現され、未出現の組合せでも合成できる。
+The engineering segment of the job-change site operated by Mynavi. URL segments are expressed as codes, and can be assembled even for a combination not yet observed.
 
-| 観点 | 内容 |
+| Aspect | Content |
 |---|---|
-| ログイン要否 | 検索結果一覧の閲覧はログイン不要（確認済み） |
-| robots.txt | AIクローラー（ClaudeBot・anthropic-ai・GPTBot・CCBot）を User-agent として挙げた記述は無い（2026-08-21 に確認）。`User-agent: *` の Disallow は応募・会員機能まわりが中心で、`/engineer/list/` と個別求人ページ `/jobinfo-{ID}-…/` は禁止対象に含まれない。`/job/`・`/entry/`・`/mypage/`・`/ajax/*` は Disallow であり、たどらない |
+| Login requirement | Browsing the search-results listing requires no login (confirmed) |
+| robots.txt | There is no entry naming an AI crawler (ClaudeBot, anthropic-ai, GPTBot, CCBot) as a User-agent (confirmed 2026-08-21). The `User-agent: *` Disallow entries are centred on application and member functions; `/engineer/list/` and the individual posting page `/jobinfo-{ID}-…/` are not among the forbidden targets. `/job/`, `/entry/`, `/mypage/`, and `/ajax/*` are Disallow, and are never followed |
 
-### URL文法
+### URL syntax
 
 ```
-https://tenshoku.mynavi.jp/engineer/list/p{都道府県}/e{雇用形態}/min{年収}/f{こだわり}/o{職種}/i{業種}/kw{キーワード}/pg{ページ}/
+https://tenshoku.mynavi.jp/engineer/list/p{prefecture}/e{employment type}/min{salary}/f{preference}/o{occupation}/i{industry}/kw{keyword}/pg{page}/
 ```
 
-各セグメントは省略でき、順序は上記に固定される。判明しているコードは次のとおりである。
+Each segment may be omitted, and the order is fixed as above. The known codes are as follows.
 
-| セグメント | 意味 | 判明している値 |
+| Segment | Meaning | Known values |
 |---|---|---|
-| `p` | 都道府県 | `p13`＝東京都 |
-| `e` | 雇用形態 | `e01`＝正社員 |
-| `min` | 初年度年収の下限（万円・4桁） | `min0550`・`min0600`・`min0700`・`min0800` |
-| `f` | こだわり条件 | `f618`＝リモートワーク可 |
-| `o` | 職種 | `o16`＝ITエンジニア |
-| `i` | 業種 | 未確認 |
-| `kw` | フリーキーワード | 日本語をそのまま置く |
+| `p` | Prefecture | `p13` = Tokyo |
+| `e` | Employment type | `e01` = permanent employee |
+| `min` | Salary floor for the first year (in units of 10,000 yen, 4 digits) | `min0550`, `min0600`, `min0700`, `min0800` |
+| `f` | Preference condition | `f618` = remote work allowed |
+| `o` | Occupation | `o16` = IT engineer |
+| `i` | Industry | Not confirmed |
+| `kw` | Free keyword | Place the Japanese term as is |
 
-未知のコードを推測で埋めない。必要なときは `site:tenshoku.mynavi.jp {条件語}` を `WebSearch` で引き、実在するURLを見つけてからコードを読み取る。
+An unknown code is never filled in by guesswork. When one is needed, run `site:tenshoku.mynavi.jp {condition term}` with `WebSearch` to find a real URL and read the code from it.
 
-実測（2026-08-21）: 実際の絞り込みUIには現れない組合せ `p13/e01/min0700/f618/kwデータサイエンティスト/` が29件を返した。セグメントを合成して検索できることを確認した。
+Measured (2026-08-21): a combination that does not appear in the actual narrowing UI, `p13/e01/min0700/f618/kwデータサイエンティスト/`, returned 29 hits. This confirmed that segments can be assembled to search.
 
-| 観点 | 内容 |
+| Aspect | Content |
 |---|---|
-| 取得できる項目 | 求人タイトル・企業名・勤務地・初年度年収・雇用形態・こだわり条件 |
-| 制約 | `min` の絞り込みは提示レンジの上限で判定されることがある。「年収下限の再判定」の規則に従って求人票本文で確かめ直す |
+| Retrievable fields | Posting title, company name, work location, first-year salary, employment type, preference conditions |
+| Constraint | The `min` narrowing can sometimes be judged against the upper bound of the offered range. Confirm again against the body of the posting, following the "Re-judging the salary floor" rule |
 
-## 2.5 HERP Careers（系統A）
+## 2.5 HERP Careers (family A)
 
-株式会社 HERP が運営する採用管理サービスの公開求人一覧。同サービスを使う企業の求人を横断して検索できる。スタートアップと IT 系の職種に偏る。
+The public posting listing of the recruitment management service operated by HERP, Inc. It searches across the postings of companies using this service. It skews toward startups and IT-sector occupations.
 
-| 観点 | 内容 |
+| Aspect | Content |
 |---|---|
-| ドメイン | `https://herp.careers` |
-| ログイン要否 | 横断一覧の閲覧はログイン不要（2026-09-04 に確認。`/careers/jobs?parent-job-role-ids=engineer&remote-work-type-ids=FULL_REMOTEWORK` が「20/242 企業を表示中」を返した） |
-| URLの形 | `/careers/jobs` にクエリ文字列で条件を付ける。企業ごとのページは `/v1/{企業スラッグ}` |
-| robots.txt | AIクローラーを User-agent として挙げた記述は無い。`User-agent: *` の Disallow は `/ref/`・`/*?viaCareers=`・`/apply$` だけで、一覧と個別求人は禁止対象外（2026-09-04 に確認） |
-| 利用規約 | 自動取得の可否を本カタログの確認では読んでいない。初めて使う検索セッションで「取得の可否を決める規則」に従って確かめる |
+| Domain | `https://herp.careers` |
+| Login requirement | Browsing the cross-site listing requires no login (confirmed 2026-09-04; `/careers/jobs?parent-job-role-ids=engineer&remote-work-type-ids=FULL_REMOTEWORK` returned 「20/242 企業を表示中」 (showing 20 of 242 companies)) |
+| URL shape | `/careers/jobs` with conditions attached as a query string. A per-company page is `/v1/{company slug}` |
+| robots.txt | There is no entry naming an AI crawler as a User-agent. The `User-agent: *` Disallow covers only `/ref/`, `/*?viaCareers=`, and `/apply$`; the listing and individual postings are not among the forbidden targets (confirmed 2026-09-04) |
+| Terms of service | Whether automated retrieval is permitted has not been read in this catalog's confirmation. Confirm it in the first search session that uses this site, following "The rule for deciding whether retrieval is permitted" |
 
-### URL文法
+### URL syntax
 
-| パラメータ | 意味 | 実在を確認した値 |
+| Parameter | Meaning | Value confirmed to exist |
 |---|---|---|
-| `parent-job-role-ids` | 職種の大分類 | `engineer` |
-| `job-role-ids` | 職種の小分類 | 未確認 |
-| `employment-type-id` | 雇用形態 | 未確認 |
-| `city-codes` | 勤務地 | 未確認 |
-| `remote-work-type-ids` | リモート区分 | `FULL_REMOTEWORK` |
+| `parent-job-role-ids` | Occupation, top-level category | `engineer` |
+| `job-role-ids` | Occupation, sub-category | Not confirmed |
+| `employment-type-id` | Employment type | Not confirmed |
+| `city-codes` | Work location | Not confirmed |
+| `remote-work-type-ids` | Remote-work category | `FULL_REMOTEWORK` |
 
-一覧ページには職種・雇用形態・勤務地・年収・リモート区分・企業規模の絞り込みとフリーワード検索がある。未確認のパラメータの値は、一覧ページの絞り込みを `WebFetch` で読んで実在する値を確かめてから使う。推測で値を埋めない。値が読めない場合は、フリーワードと `parent-job-role-ids` だけで検索する。
+The listing page has narrowing by occupation, employment type, work location, salary, remote-work category, and company size, plus free-word search. For an unconfirmed parameter's value, read the listing page's narrowing controls with `WebFetch` to confirm a value that actually exists, before using it. A value is never filled in by guesswork. When a value cannot be read, search using only the free word and `parent-job-role-ids`.
 
-| 観点 | 内容 |
+| Aspect | Content |
 |---|---|
-| 取得できる項目 | 求人タイトル・企業名・勤務地・年収・雇用形態・リモート区分 |
-| 制約 | 掲載企業は同サービスの利用企業に限られる。同じ求人が企業ページ（`/v1/{企業スラッグ}`）と横断一覧の両方に現れるため、「重複の排除」で企業ページ側を残す |
+| Retrievable fields | Posting title, company name, work location, salary, employment type, remote-work category |
+| Constraint | Listed companies are limited to users of this service. The same posting appears on both the company page (`/v1/{company slug}`) and the cross-site listing, so under "Deduplication," the company-page side is kept |
 
-## 3. `site:` 検索で見つけるサイト（系統B）
+## 3. Sites found via a `site:` search (family B)
 
-次のサイトは、検索条件が数値ID・数値コードとしてURLへ現れるため、条件からURLを組み立てられない。`WebSearch` で `site:{ドメイン} {職種} {地域} {条件}` を引き、返ってきたURLを `WebFetch` で読む経路だけを使う。robots.txt はいずれも 2026-08-21 に原文を取得して確認した。
+The following sites express search conditions as a numeric ID or numeric code in the URL, so a URL cannot be assembled from conditions. Use only the path of running `WebSearch` for `site:{domain} {occupation} {region} {condition}` and reading the returned URL with `WebFetch`. Each robots.txt was fetched and confirmed in its original form on 2026-08-21.
 
-| サイト | ドメイン | robots.txt | 特徴 |
+| Site | Domain | robots.txt | Characteristics |
 |---|---|---|---|
-| type | `type.jp` | `User-agent: *` の1ブロックのみ。AIクローラーを挙げた記述は無い。Disallow は `/skillsheet/`・`/experience/`・`/maintenance_user/` 等で、求人カテゴリと個別求人ページは禁止対象外 | 職種・エリアが数値カテゴリで表現される（`/job-1/1001/` など）。番号の対応表は公開されていない |
-| Wantedly | `www.wantedly.com` | `User-agent: *` の1ブロックのみ。AIクローラーを挙げた記述は無い。Disallow は会員機能と `.js` 断片が中心で、募集ページ `/projects/{ID}` は禁止対象外 | 募集ページが数値IDで表現される。給与が明示されない募集が多く、`salary_range` は `null` になりやすい |
+| type | `type.jp` | Only one `User-agent: *` block. There is no entry naming an AI crawler. Disallow covers `/skillsheet/`, `/experience/`, `/maintenance_user/`, and so on; the occupation category and individual posting pages are not among the forbidden targets | Occupation and area are expressed as a numeric category (e.g. `/job-1/1001/`). No public table maps the numbers |
+| Wantedly | `www.wantedly.com` | Only one `User-agent: *` block. There is no entry naming an AI crawler. Disallow is centred on member functions and `.js` fragments; the listing page `/projects/{ID}` is not among the forbidden targets | A listing page is expressed with a numeric ID. Many listings do not state a salary explicitly, so `salary_range` tends to be `null` |
 
-## 3.5 企業スラッグから採用ページを開くサイト（系統C）
+## 3.5 Sites where a careers page is opened from a company slug (family C)
 
-次のサイトは、企業ごとの採用ページを持つが、横断して検索する入口を持たない。企業スラッグか ID が既に分かっている場合に限り、そのページを `WebFetch` で読む。スラッグの出所は、HERP Careers の企業ページ、または `site:` 検索の結果である。検索担当エージェントは `company_research.json` を受け取らないため、企業研究で分かった採用ページの URL を使う場合は、呼び出し元スキルが指示書に URL だけを書いて渡す。スラッグを推測して組み立てない。robots.txt はいずれも 2026-09-04 に確認した。
+The following sites each have a careers page per company, but have no entry point for cross-site search. Only when a company slug or ID is already known is that page read with `WebFetch`. The source of the slug is a HERP Careers company page, or a `site:` search result. Since the job searcher agent is not given `company_research.json`, when a careers-page URL learned through company research is to be used, the calling skill writes only the URL into the instructions and passes it that way. A slug is never guessed and assembled. Each robots.txt was confirmed on 2026-09-04.
 
-| サイト | URLの形 | robots.txt | 特徴 |
+| Site | URL shape | robots.txt | Characteristics |
 |---|---|---|---|
-| HRMOS 採用ページ | `https://hrmos.co/pages/{企業スラッグ}/jobs`（`?category={ID}` で職種を絞れる） | `/robots.txt` が 404 を返す（ファイルが無い）。禁止の意思表示は無いと読む（「取得の可否を決める規則」の 404 の扱い） | 一覧はログイン不要（`hrmos.co/pages/hrmos/jobs` が「全 82 件中 82 件を表示」を返した）。雇用形態・職種・勤務地・部門の絞り込みがある |
-| Findy | `https://findy-code.io/companies/{ID}/jobs` | `User-agent: *` の Disallow は会員機能（`/home/`・`/likes/`・`/matches/`・`/settings/`・`/users/` ほか）とブログの下書きだけ。AIクローラーを挙げた記述は無い | 企業ページの求人一覧だけがあり、横断検索は無い。同じ求人が HERP Careers にも載ることが多い |
+| HRMOS careers page | `https://hrmos.co/pages/{company slug}/jobs` (`?category={ID}` narrows by occupation) | `/robots.txt` returns 404 (the file is absent). This is read as showing no intent to forbid ("The rule for deciding whether retrieval is permitted," on the handling of 404) | The listing requires no login (`hrmos.co/pages/hrmos/jobs` returned 「全 82 件中 82 件を表示」 (showing 82 of 82)). Narrowing by employment type, occupation, work location, and department exists |
+| Findy | `https://findy-code.io/companies/{ID}/jobs` | The `User-agent: *` Disallow covers only member functions (`/home/`, `/likes/`, `/matches/`, `/settings/`, `/users/`, and others) and blog drafts. There is no entry naming an AI crawler | Only a per-company posting listing exists; there is no cross-site search. The same posting often also appears on HERP Careers |
 
-## 4. 対象外にしたサイト
+## 4. Sites excluded from scope
 
-| サイト | 理由 |
+| Site | Reason |
 |---|---|
-| Indeed 日本（`jp.indeed.com`） | robots.txt はファイルが大きく、ツールでは原文を通して確かめられていない（2026-08-21 と 2026-09-04 の取得で要約が食い違った）。複数回の取得で一致したのは、Indeed が `ClaudeBot`・`anthropic-ai`・`GPTBot`・`CCBot` を学習用クローラーの群として名前で挙げ、求人の検索と閲覧のパスを拒んでいることである。掲載側が意思表示した禁止であり、本スキルは方針として使わない。`site:jp.indeed.com` の検索経路も使わない |
-| Green（`www.green-japan.com`） | robots.txt に `User-agent: GPTBot` / `Disallow: /` のブロックがあり、生成AIのクローラーを名前を挙げて全面的に拒んでいる（2026-08-21 に確認）。`ClaudeBot`・`anthropic-ai` の記載は無いが、拒否の意思表示は同種のクローラーへ向いたものと読み、Indeed と同じ扱いで使わない。加えて `User-agent: *` で `/search?` が Disallow であり、検索結果ページ自体もたどれない |
-| スタンバイ（`jp.stanby.com`） | robots.txt の `User-agent: *` が `/search`・`/jobs/`・`/*?*` を Disallow している（2026-08-21 に確認）。検索結果ページ・個別求人ページ・クエリ文字列付きURLのすべてが禁止対象であり、公開検索でたどれる経路が残らない |
-| ハローワークインターネットサービス | 条件を指定した状態の URL を直接開けない。画面遷移とセッション保持で検索状態を持つ設計のため、URLだけでは検索結果を開けない（`GECA110010.do` 形式の URL を直接開くとシステムエラーになることを 2026-09-04 に再確認）。求人番号が既知の場合を除いて使わない。厚生労働省が民間の職業紹介事業者向けに設けている求人情報の提供の仕組みは調べていない |
-| エン転職（`employment.en-japan.com`） | robots.txt に `User-agent: ClaudeBot` / `Disallow: /` のブロックがあり、サイト全体を名前を挙げて拒んでいる（2026-09-04 に確認）。`GPTBot` には `Crawl-delay: 30` と検索一覧の Disallow、`OAI-SearchBot` には `/comp*/list*`・`/apply*` の Disallow がある。Indeed と同じ扱いで使わない |
-| engage（`en-gage.net`） | robots.txt に `User-agent: ClaudeBot` / `Disallow: /` のブロックがあり、サイト全体を拒んでいる（2026-09-04 に確認）。`/search/`・`/search2/` は `GPTBot`・`OAI-SearchBot`・`PerplexityBot` ほかにも Disallow である。**同じドメインの配下に多数の企業の採用ページ（`en-gage.net/{企業名}/…`）が置かれており、それらも同じ禁止を受ける。**企業研究で採用ページの URL がこのドメインだった場合も取りにいかない |
-| LinkedIn Jobs（`www.linkedin.com`） | robots.txt は AIクローラーを名前で挙げていないが、ログインなしで求人を見る唯一のパス `/jobs-guest/` と `/jobs?runSearch*`・`/jsearch*`・`/api/jobPostings/jobs*` を、`LinkedInBot` 以外のすべての User-agent に Disallow している（2026-09-04 に確認）。あわせて同社の利用規約が自動収集を禁じている。名前を挙げた拒否が無くても、方針として使わない |
-| doda（`doda.jp`）の求人検索 | robots.txt の `User-agent: *` が `/DodaFront/View/JobSearchList.action*` と `/DodaFront/View/JobSearchList/*?*` を Disallow しており、検索一覧の仕組みそのものが全 User-agent に禁止されている（2026-09-04 に確認）。AIクローラーを挙げた記述は無い。個別求人ページの URL の形は確認できていない。`{HUB_SKILL_DIR}/references/market-data-sources.md` にある doda 平均年収ランキングは別のページ群であり、この対象外の影響を受けない |
-| Talentio 採用ページ（`talentio.co.jp`） | `/robots.txt` が 403 を返す（2026-09-04 に確認）。方針を読めないうえ、403 は自動アクセスを遮る仕組みがあることを示す。方針を読めないサイトを許可されたものとして扱わない |
+| Indeed Japan (`jp.indeed.com`) | robots.txt is a large file, and this catalog's tools have not been able to read its full text consistently (the summary obtained differed between the 2026-08-21 and 2026-09-04 retrievals). What agreed across multiple retrievals is that Indeed names `ClaudeBot`, `anthropic-ai`, `GPTBot`, and `CCBot` as a group of training crawlers and forbids the paths for job search and browsing. This is a prohibition the site itself expresses, and this skill does not use it as a matter of policy. The `site:jp.indeed.com` search route is also not used |
+| Green (`www.green-japan.com`) | robots.txt has a `User-agent: GPTBot` / `Disallow: /` block, forbidding a generative-AI crawler entirely, by name (confirmed 2026-08-21). `ClaudeBot` and `anthropic-ai` are absent from the list, though the expressed refusal is read as directed at crawlers of the same kind, and this site is treated the same as Indeed and not used. In addition, `User-agent: *` has `/search?` as Disallow, so the search-results page itself cannot be followed |
+| Stanby (`jp.stanby.com`) | robots.txt's `User-agent: *` has `/search`, `/jobs/`, and `/*?*` as Disallow (confirmed 2026-08-21). The search-results page, individual posting pages, and any URL with a query string are all among the forbidden targets, leaving no route reachable by public search |
+| Hello Work Internet Service | A URL with the conditions already specified cannot be opened directly. Search state is held through screen transitions and a session, by design, so a search result cannot be opened by URL alone (re-confirmed 2026-09-04 that opening a `GECA110010.do`-style URL directly produces a system error). Not used except when the posting number is already known. The mechanism the Ministry of Health, Labour and Welfare provides for private job-placement businesses to receive posting information has not been investigated |
+| en-japan (`employment.en-japan.com`) | robots.txt has a `User-agent: ClaudeBot` / `Disallow: /` block, forbidding the entire site by name (confirmed 2026-09-04). `GPTBot` has `Crawl-delay: 30` and a Disallow on the search listing; `OAI-SearchBot` has Disallow on `/comp*/list*` and `/apply*`. Treated the same as Indeed and not used |
+| engage (`en-gage.net`) | robots.txt has a `User-agent: ClaudeBot` / `Disallow: /` block, forbidding the entire site (confirmed 2026-09-04). `/search/` and `/search2/` are also Disallow for `GPTBot`, `OAI-SearchBot`, `PerplexityBot`, and others. **Many companies' own careers pages (`en-gage.net/{company name}/…`) are placed under the same domain, and they receive the same prohibition.** Even when a careers-page URL learned through company research falls under this domain, it is not fetched |
+| LinkedIn Jobs (`www.linkedin.com`) | robots.txt names no AI crawler, yet it forbids `/jobs-guest/` — the only path for viewing postings without login — along with `/jobs?runSearch*`, `/jsearch*`, and `/api/jobPostings/jobs*`, for every User-agent other than `LinkedInBot` (confirmed 2026-09-04). In addition, the company's own terms of service forbid automated collection. Even absent a refusal naming this crawler, it is not used as a matter of policy |
+| doda (`doda.jp`) job search | robots.txt's `User-agent: *` has `/DodaFront/View/JobSearchList.action*` and `/DodaFront/View/JobSearchList/*?*` as Disallow, forbidding the search-listing mechanism itself for every User-agent (confirmed 2026-09-04). There is no entry naming an AI crawler. The shape of the individual posting page's URL has not been confirmed. The doda average-annual-income ranking in `{HUB_SKILL_DIR}/references/market-data-sources.md` is a separate page group and is unaffected by this exclusion |
+| Talentio careers page (`talentio.co.jp`) | `/robots.txt` returns 403 (confirmed 2026-09-04). The policy cannot be read, and a 403 also shows a mechanism exists to block automated access. A site whose policy cannot be read is not treated as permitted |
 
-## 5. 未確認のサイト
+## 5. Unconfirmed sites
 
-次のサイトは、robots.txt の確認は済んだが、ログインなしで読める一覧の URL の形を確かめられていない。あるいは調査そのものをしていない。本カタログには載せず、確かめられた時点で系統を決めて追加する。載っていないことは、対象外にしたことを意味しない。
+The following sites have had their robots.txt confirmed, but the shape of a URL for a listing readable without login has not been confirmed, or the investigation itself has not been done. They are not included in this catalog, and will be added with a family assigned once confirmed. Being absent here does not mean it has been excluded.
 
-| サイト | 確認できたこと | 未確認のこと |
+| Site | What was confirmed | What remains unconfirmed |
 |---|---|---|
-| paiza転職（`paiza.jp`） | robots.txt は `User-agent: *` / `Disallow:`（空）で全面的に開いている（2026-09-04）。一覧の入口は `/career/job_offers` | 職種・勤務地・年収の絞り込みが URL にどう現れるか |
-| ビズリーチ 公開求人（`www.bizreach.jp`） | robots.txt に AIクローラーの記述は無い。`/job/j/` のパスは禁止対象外（2026-09-04） | 個別求人の本文が会員登録なしで読めるか。確認できたのはキーワード別の一覧ページだけである |
-| LAPRAS（`lapras.com`） | robots.txt は `PetalBot` だけを拒む | ログインなしで読める求人一覧があるか。スカウト型の製品であり、一覧を持たない可能性がある |
-| YOUTRUST（`youtrust.jp`） | robots.txt に Disallow が無い | 求人一覧の有無。人脈型の製品であり、求人票の一覧を持たない可能性がある |
-| ジョブカン採用管理の採用ページ（`ats.jobcan.ne.jp`） | robots.txt の Disallow は `/wp-admin/` だけ | 実在する企業の採用ページの URL の例。`ats.jobcan.jp` は別のドメインであり取り違えやすい |
-| Airワーク 採用管理の採用ページ | 製品のドメインは `airregi.jp/work/recruitment` 配下。`airwork.net` は名前解決できない | 実在する企業の採用ページの URL の例と、その robots.txt |
-| `hellowork.careers` | robots.txt は開いている | 運営者。厚生労働省の正規のサービスか、許諾を受けた転載か、無関係な収集サイトかを確かめられていない。確かめられるまで使わない |
-| リクナビNEXT・マイナビ転職（エンジニア版以外）・doda X・AMBI・ミイダス・日経転職版・Forkwell Jobs・Offers・レバテックキャリア | 調査していない | すべて |
+| paiza tenshoku (`paiza.jp`) | robots.txt is `User-agent: *` / `Disallow:` (empty), fully open (2026-09-04). The listing entry point is `/career/job_offers` | How narrowing by occupation, work location, and salary appears in the URL |
+| BizReach public postings (`www.bizreach.jp`) | robots.txt has no entry naming an AI crawler. The path `/job/j/` is not among the forbidden targets (2026-09-04) | Whether an individual posting's body can be read without member registration. Only a keyword-based listing page has been confirmed readable |
+| LAPRAS (`lapras.com`) | robots.txt forbids only `PetalBot` | Whether a posting listing exists that is readable without login. It is a scouting-type product, and may not have a listing |
+| YOUTRUST (`youtrust.jp`) | robots.txt has no Disallow | Whether a posting listing exists. It is a networking-type product, and may not have a posting listing |
+| Jobcan Recruitment Management careers pages (`ats.jobcan.ne.jp`) | robots.txt's only Disallow is `/wp-admin/` | An example of an actual company's careers-page URL. `ats.jobcan.jp` is a different domain and is easily confused with this one |
+| Airwork Recruitment Management careers pages | The product's domain is under `airregi.jp/work/recruitment`. `airwork.net` does not resolve | An example of an actual company's careers-page URL, and its robots.txt |
+| `hellowork.careers` | robots.txt is open | The operator. Whether this is an official Ministry of Health, Labour and Welfare service, an authorised reproduction, or an unrelated collection site has not been confirmed. Not used until confirmed |
+| Rikunabi NEXT, Mynavi Tenshoku (outside the engineer edition), doda X, AMBI, Miidas, 日経転職版 (Nikkei Tenshokuban), Forkwell Jobs, Offers, Levtech Career | Not investigated | Everything |
 
-## 取得の可否を決める規則
+## The rule for deciding whether retrieval is permitted
 
-本カタログの「対象外」と「未確認」は、次の規則で決めている。カタログに無いサイトを検索セッション中に見つけた場合も、同じ規則で判断し、判断の内容を `coverage_notes` に書く。
+This catalog's "excluded" and "unconfirmed" entries are decided by the following rule. When a site absent from this catalog is found during a search session, judge it by the same rule, and record the content of the judgement in `coverage_notes`.
 
-| 規則 | 内容 |
+| Rule | Content |
 |---|---|
-| クローラーの名前 | `WebFetch` がどの User-agent を名乗るかは確かめられていない。したがって、robots.txt が `ClaudeBot`・`anthropic-ai`・`Claude-User`・`Claude-SearchBot` のいずれかを名前で挙げて拒んでいるサイトは、自分がその名前で見られているものとして扱い、使わない。`GPTBot`・`CCBot` のような他社の生成AIクローラーだけを拒んでいるサイトも、拒否の意思表示は同種のクローラーへ向いたものと読み、使わない |
-| 利用規約 | robots.txt は取得の可否のすべてではない。国内の求人サイトと採用管理サービスは、利用規約で自動取得を禁じていることがあり、その規約は同じドメインに置かれた企業の採用ページにも及ぶ。本カタログで利用規約を読んでいないサイト（HERP Careers・HRMOS・Findy）は、検索セッションで初めて使う前に利用規約のページを `WebFetch` で読み、自動取得・スクレイピングを禁じる条項があればそのセッションでは使わず、`coverage_notes` にその旨を書く。読めなかった場合も同じ扱いにする |
-| 404 と 403 の違い | robots.txt が 404 を返すサイト（ファイルが無い）は、禁止の意思表示が無いものとして扱う。403 を返すサイトは、方針を読めないうえに自動アクセスを遮る仕組みがあることを示すため、許可されたものとして扱わない。両者は RFC 9309 では同じ「取得不能」に分類されるが、403 は掲載側の能動的な遮断であり、同意を推定できない |
-| 確認日と読み直し | 対象・対象外のいずれも、確認した日付を本カタログに残す。確認日から180日を過ぎたサイトは、使う前に robots.txt を読み直し、変わっていれば本カタログを直す。読み直しの結果は `coverage_notes` に書く |
-| 実行時に拒まれた場合 | カタログで対象としたサイトが、検索セッション中に robots.txt の変更・403・ログイン画面への転送で読めなくなった場合は、そのセッションでは使わず、`coverage_notes` に日付とともに書く。同じセッションで再試行を繰り返さない |
+| Crawler name | Which User-agent `WebFetch` identifies itself as has not been confirmed. Therefore, a site whose robots.txt names and forbids any of `ClaudeBot`, `anthropic-ai`, `Claude-User`, or `Claude-SearchBot` is treated as one that sees this crawler under that name, and is not used. A site that forbids only another company's generative-AI crawler, such as `GPTBot` or `CCBot`, is likewise read as expressing a refusal directed at crawlers of the same kind, and is not used |
+| Terms of service | Terms of service factor into whether retrieval is permitted, together with robots.txt. A domestic job site or recruitment management service sometimes forbids automated retrieval in its terms of service, and that clause can reach a company's own careers page placed on the same domain. For a site whose terms of service have not been read in this catalog (HERP Careers, HRMOS, Findy), read the terms-of-service page with `WebFetch` the first time it is used in a search session; if a clause forbids automated retrieval or scraping, do not use the site for that session, and record this in `coverage_notes`. The same treatment applies when the terms could not be read |
+| The difference between 404 and 403 | A site whose robots.txt returns 404 (the file is absent) is treated as showing no intent to forbid. A site that returns 403 is not treated as permitted, since its policy cannot be read and a 403 also shows a mechanism exists to block automated access. RFC 9309 classifies both the same way, as "unable to fetch," but a 403 is an active block by the site, from which consent cannot be inferred |
+| Confirmation date and re-reading | For both included and excluded sites, this catalog keeps the date it was confirmed. For a site whose confirmation date is more than 180 days old, re-read its robots.txt before use, and correct this catalog if it has changed. Record the result of re-reading in `coverage_notes` |
+| Refused at run time | When a site treated as in scope by this catalog becomes unreadable during a search session, through a robots.txt change, a 403, or a redirect to a login screen, do not use it for that session, and record it in `coverage_notes` with the date. Do not repeat the retry within the same session |
 
-## クエリの展開規則
+## Query expansion rules
 
-1回の検索で投げるクエリは、職種の言い換え・地域・条件の組合せで作る。言い換えを増やすほど良くなるわけではない。
+The queries run in a single search are built from a combination of occupation-name rephrasing, region, and conditions. Increasing the number of rephrasings does not necessarily make results better.
 
-**職種名の変種は、利用者が書いた原文と言い換え2つの3つを基本とする**。LLM によるクエリ展開の検証では、1変種から3変種への増加が最も一貫した改善を示し、5変種では雑音が増えた（https://arxiv.org/abs/2510.10009 レベルB）。これは査読前のプレプリントであり、著者による一次報告である。曖昧なクエリでは、展開そのものが再現率を下げることも報告されている（https://arxiv.org/abs/2505.12694 レベルB。同上）。エビデンスレベルの定義の原本は `job-change-company-research/references/evidence-grading.md` にある。
+**The occupation-name variants are, as a base, the three of the user's original wording plus 2 rephrasings.** In a study verifying LLM-based query expansion, growing from 1 variant to 3 variants showed the most consistent improvement, and 5 variants increased noise (https://arxiv.org/abs/2510.10009, grade B). This is a preprint that has not been peer-reviewed, and is a primary report by its authors. It has also been reported that, for an ambiguous query, expansion itself can lower recall (https://arxiv.org/abs/2505.12694, grade B; likewise a non-peer-reviewed preprint and a primary report by its authors). The canonical definition of the evidence-grade scale lives in `job-change-company-research/references/evidence-grading.md`.
 
-言い換えだけで検索すると、利用者が指定した職種の求人を取りこぼす。**利用者が明示した職種名は、展開せずそのまま1本投げる**。
+Searching by rephrasing alone misses postings for the occupation the user explicitly named. **The occupation name the user explicitly stated is run as is, unexpanded, as one query.**
 
-クエリの上限は、1検索セッションあたり**12本**とする。内訳は次のとおりである。
+The query cap is **12 per search session**. The breakdown is as follows.
 
-| 本数 | 組み方 |
+| Count | Composition |
 |---|---|
-| 9 | 職種名の変種3つ（原文＋言い換え2つ） × 第一希望地域1 × 条件3パターン（条件なし／年収下限／リモート） |
-| 2 | 最有力の変種1つ × 次点の地域2 |
-| 1 | 予備。役職の段階の指定がある場合はその呼称と職種の大分類の組、道具や技術の指定がある場合はカタカナ表記（後述）に使う。どちらも無ければ実行しない |
+| 9 | 3 occupation-name variants (original + 2 rephrasings) × 1 first-choice region × 3 condition patterns (no condition / salary floor / remote) |
+| 2 | 1 strongest variant × 2 next-choice regions |
+| 1 | Reserve. Used for the pairing of that seniority level's title with the occupation's broad category, when a seniority level is specified, or for the katakana spelling (described below) when a tool or technology is specified. Not run when neither applies |
 
-12本を投げ切ることが目的ではない。必須条件を満たす求人が十分に集まった時点で止めてよい（根拠は `search-methods.md` の「探索の量は就業の質を予測しない」にある）。
+12 is a ceiling. Stopping once enough postings meeting the required conditions have been gathered is acceptable (the basis is "Search volume does not predict employment quality" in `search-methods.md`).
 
-fuzzy モードでは、この12本（主集合）とは別枠で、条件の偏りを点検する探索集合を最大6本まで投げる。組み方と、主集合の本数を削って探索へ回さない理由は `bias-checklist.md` にある。探索集合のクエリも `search_log` に1本ずつ記録し、採用した求人の `search_set` を `exploration` にする。
+Separate from these 12 (the primary set), queries for the derivation lanes the user chose are run. Up to 3 queries per lane; even choosing all 10 lanes adds at most 30 more. The canonical definition of how lanes are built is `derivation-lanes.md`; the reason the primary set's query count is not reduced to make room for the lanes is in `search-methods.md`. A lane's queries are also recorded one by one in `search_log`, with `search_set` set to `derived` and `lane` set to the lane name. The same `search_set` and `lane` are written for the postings adopted. Whoever handles the primary set does not search the lanes, and whoever handles a lane searches only the lane assigned to them.
 
-### 同義語の作り方
+Retrieval in `company_profile` mode is capped at 6 per company (the sources are described below in "Sources for company information").
 
-下の表に載る職種はそのまま使う。載っていない職種は、`{職種名} とは 別の呼び方` を `WebSearch` で引き、求人サイトが実際に使っている呼称を2〜3つ得て、**確信のない言い換えを創作しない**。
+### How to build synonyms
 
-表の典拠は、厚生労働省編職業分類 令和4年版（小分類に18,725の職業名が紐づく。分類表: https://www.mhlw.go.jp/content/11650000/001030651.pdf レベルA。公的機関が編集した職業分類）と doda 職種図鑑（https://doda.jp/guide/zukan/ レベルB。民間の求人媒体が編集した二次情報）である。職業情報提供サイト jobtag は SPA のため `WebFetch` で読めない（2026-08-21 に確認）。実行時に典拠を参照する必要はない。表を引くだけでよい。
+An occupation listed in the table below is used as is. For an occupation absent from the table, search `{occupation name} とは 別の呼び方` with `WebSearch`, obtain 2 to 3 names that job sites actually use, and **never invent an unconfirmed rephrasing**.
 
-言い換え1・2は同じ職種の別の呼称であり、主集合で使う。隣接職種は職務が重なる別の職種であり、探索集合（`bias-checklist.md`）でだけ使う。求人の `role_match` は、言い換え1・2に当たれば `same`、隣接職種に当たれば `adjacent` とする（原本は `job-search-format.md`）。
+The table's sources are the Ministry of Health, Labour and Welfare's Occupational Classification, Reiwa 4 edition (18,725 occupation names are tied to its minor categories; the classification table: https://www.mhlw.go.jp/content/11650000/001030651.pdf, grade A, a classification edited by a public institution), and doda's Occupation Encyclopedia (https://doda.jp/guide/zukan/, grade B, secondary information edited by a private job-placement outlet). The occupation-information site jobtag is a single-page application and cannot be read with `WebFetch` (confirmed 2026-08-21). There is no need to consult the sources at run time; consulting the table alone is enough.
 
-| 職種 | 言い換え1 | 言い換え2 | 隣接職種 | 注 |
+Rephrasings 1 and 2 are other names for the same occupation, and are used in the primary set. An adjacent occupation is a different occupation whose duties overlap, and is used only in the exploration set (`bias-checklist.md`). A posting's `role_match` is `same` when it matches rephrasing 1 or 2, and `adjacent` when it matches an adjacent occupation (the canonical definition is `job-search-format.md`).
+
+| Occupation | Rephrasing 1 | Rephrasing 2 | Adjacent occupation | Note |
 |---|---|---|---|---|
-| バックエンドエンジニア | サーバーサイドエンジニア | Webアプリケーションエンジニア | フルスタックエンジニア | |
-| フロントエンドエンジニア | Webフロントエンドエンジニア | UIエンジニア | フルスタックエンジニア | |
-| インフラエンジニア | サーバーエンジニア | クラウドエンジニア | SRE | |
+| バックエンドエンジニア (backend engineer) | サーバーサイドエンジニア | Webアプリケーションエンジニア | フルスタックエンジニア | |
+| フロントエンドエンジニア (frontend engineer) | Webフロントエンドエンジニア | UIエンジニア | フルスタックエンジニア | |
+| インフラエンジニア (infrastructure engineer) | サーバーエンジニア | クラウドエンジニア | SRE | |
 | SRE | サイトリライアビリティエンジニア | インフラエンジニア | DevOpsエンジニア | |
-| データサイエンティスト | 機械学習エンジニア | データアナリスト | データエンジニア | 言い換え1・2は別職種として掲載されることも多い。相場も職務も異なるため、求人票の記載で確かめる |
-| データエンジニア | データ基盤エンジニア | ETLエンジニア | データアナリスト | |
-| モバイルアプリエンジニア | iOSエンジニア | Androidエンジニア | フロントエンドエンジニア | |
-| 社内SE | 情報システム担当 | 情シス | IT企画 | |
-| プロジェクトマネージャー | PM | ITプロジェクトマネージャー | プロダクトマネージャー | |
-| プロダクトマネージャー | PdM | プロダクトオーナー | プロジェクトマネージャー | |
-| QAエンジニア | テストエンジニア | 品質保証エンジニア | テスト自動化エンジニア | |
-| セキュリティエンジニア | 情報セキュリティエンジニア | SOCアナリスト | ネットワークエンジニア | SOCアナリストは監視運用に寄った呼称である |
-| ITコンサルタント | 業務コンサルタント | 業務システムコンサルタント | PMO | |
-| 経理 | 財務経理 | 会計スタッフ | 経営企画 | |
-| 人事 | 人事労務 | 採用担当 | 総務 | |
-| 法人営業 | 法人向け営業 | BtoB営業 | インサイドセールス | |
-| カスタマーサクセス | カスタマーサポート | テクニカルサポート | インサイドセールス | サポート側は職務が異なる。求人票の業務内容で確かめる |
+| データサイエンティスト (data scientist) | 機械学習エンジニア | データアナリスト | データエンジニア | Rephrasings 1 and 2 are often listed as separate occupations. The market rate and duties differ, so confirm from the posting's own description |
+| データエンジニア (data engineer) | データ基盤エンジニア | ETLエンジニア | データアナリスト | |
+| モバイルアプリエンジニア (mobile app engineer) | iOSエンジニア | Androidエンジニア | フロントエンドエンジニア | |
+| 社内SE (in-house SE) | 情報システム担当 | 情シス | IT企画 | |
+| プロジェクトマネージャー (project manager) | PM | ITプロジェクトマネージャー | プロダクトマネージャー | |
+| プロダクトマネージャー (product manager) | PdM | プロダクトオーナー | プロジェクトマネージャー | |
+| QAエンジニア (QA engineer) | テストエンジニア | 品質保証エンジニア | テスト自動化エンジニア | |
+| セキュリティエンジニア (security engineer) | 情報セキュリティエンジニア | SOCアナリスト | ネットワークエンジニア | SOC analyst leans toward a monitoring/operations title |
+| ITコンサルタント (IT consultant) | 業務コンサルタント | 業務システムコンサルタント | PMO | |
+| 経理 (accounting) | 財務経理 | 会計スタッフ | 経営企画 | |
+| 人事 (HR) | 人事労務 | 採用担当 | 総務 | |
+| 法人営業 (corporate sales) | 法人向け営業 | BtoB営業 | インサイドセールス | |
+| カスタマーサクセス (customer success) | カスタマーサポート | テクニカルサポート | インサイドセールス | The support side has different duties. Confirm from the posting's description of duties |
 
-表に無い職種で `WebSearch` に頼る前に、厚生労働省編職業分類の小分類を引く。小分類には職業名の別の呼称が複数紐づいている。求人サイトが使う呼称の多くはここに載る。job tag の CSV も同じ語彙を持つが、`WebFetch` では読めないため実行時には使わない。
+Before relying on `WebSearch` for an occupation absent from the table, consult the minor categories of the Ministry of Health, Labour and Welfare's Occupational Classification. A minor category ties in several alternate names for the occupation. Much of the wording job sites use appears there. The jobtag CSV carries the same vocabulary, but is not used at run time because `WebFetch` cannot read it.
 
-### 役職の段階
+### Seniority level
 
-職種名の言い換えは職種を変えるが、役職の段階は変えない。管理職の求人は職種名を落として役職名だけで掲載されることがあり（例: 「エンジニアリング部門 部長」）、職種名だけのクエリでは取りこぼす。
+An occupation-name rephrasing changes the occupation, and keeps the seniority level as it is. A managerial posting is sometimes listed under the title alone, with the occupation name dropped (e.g. 「エンジニアリング部門 部長」 (head of the engineering department)), and an occupation-name-only query misses it.
 
-| 段 | 呼称の形 | 注 |
+| Level | Form of the title | Note |
 |---|---|---|
-| 上級の担当者 | シニア{職種}、リード{職種}、{職種}リード | 接頭の形が多い |
-| 第一線の管理職 | {職種}マネージャー、{職種}課長、チームリーダー、{職種}主任 | IT系はマネージャー、それ以外の企業は課長・主任が多い |
-| 中間管理職 | 部長、グループマネージャー、ユニットリーダー | 職種名を省き役職名だけで掲載されることがある |
-| 修飾なし | {職種} | 既定 |
+| Senior individual contributor | シニア{occupation}, リード{occupation}, {occupation}リード | Often a prefixed form |
+| First-line manager | {occupation}マネージャー, {occupation}課長, チームリーダー, {occupation}主任 | IT tends toward マネージャー; other industries tend toward 課長/主任 |
+| Middle manager | 部長, グループマネージャー, ユニットリーダー | Sometimes listed under the title alone, with the occupation name dropped |
+| Unmodified | {occupation} | Default |
 
-条件シートに役職の段階の指定（`other` の「マネージャー」「リーダー」など）がある場合は、予備の1本を、その段階の呼称と職種の大分類（「エンジニア」「営業」）の組にする。指定が無い場合は修飾なしで検索し、探索集合で役職の段階を1つ上と1つ下にずらす（`bias-checklist.md`）。
+When the condition sheet specifies a seniority level (such as 「マネージャー」 or 「リーダー」 under `other`), the reserve query pairs that level's title with the occupation's broad category (「エンジニア」, 「営業」). When no such level is specified, search unmodified, and shift the seniority level one step up and one step down in the `seniority_shift` lane (`derivation-lanes.md`).
 
-### 英語表記とカタカナ表記
+### English and katakana spellings
 
-`other` に道具や技術の名前がある場合、求人サイトによって英語表記（Salesforce・Machine Learning）とカタカナ表記（セールスフォース・機械学習）のどちらを使うかが分かれる。よく使われるカタカナ表記がある場合に限り、予備の1本をカタカナ表記で投げる。カタカナ表記を創作しない（クバネティスのように定着していない表記は使わない）。
+When `other` names a tool or technology, job sites split between using the English spelling (Salesforce, Machine Learning) and the katakana spelling (セールスフォース, 機械学習). Only when a well-established katakana spelling exists, run the reserve query with the katakana spelling. A katakana spelling is never invented (an unsettled spelling, such as クバネティス, is not used).
 
-### 除外語（`site:` 検索のみ）
+### Exclusion terms (site: search only)
 
-系統A のサイトの URL 文法には除外の演算子が無い。`WebSearch` の `site:` 検索では `-{除外する言葉}` で除外できる。使うのは次の2つの場合に限る。
+A family-A site's URL syntax has no exclusion operator. `WebSearch`'s `site:` search can exclude with `-{term to exclude}`. Use it only in the following 2 cases.
 
-- 同じ職種名を含む隣接職種を除くとき。例: `カスタマーサクセス -カスタマーサポート`。
-- `employment_type` が正社員で、派遣・業務委託の求人を除くとき。例: `-派遣 -業務委託`。系統A のサイトは雇用形態のトークンを持つため、除外語は不要である。
+- Excluding an adjacent occupation that shares the same occupation name. Example: `カスタマーサクセス -カスタマーサポート`.
+- When `employment_type` is permanent employment, excluding dispatch and contractor postings. Example: `-派遣 -業務委託`. A family-A site carries an employment-type token, so the exclusion term is unnecessary there.
 
-除外語で消えた求人は `search_log` に現れない。除外語を使ったクエリは、除外語を含めた文字列のまま `query` に記録する。
+A posting removed by an exclusion term does not appear in `search_log`. A query that used an exclusion term is recorded in `query` with the exclusion term included as typed.
 
-### リモートの表現
+### Expressions of remote work
 
-`remote_policy` の条件トークンは求人ボックスでは「フルリモート」1つだが、求人票の側は表現が分かれる。フルリモートだけで検索すると、「一部リモート」「週2日出社」を主な表現とする求人を取りこぼす。条件3パターンのリモートの1本は、利用者の `remote_policy` に応じて次の表現を使う。
+The `remote_policy` condition token is a single "フルリモート" (full remote) on 求人ボックス (Kyujin Box), but a posting's own wording varies. Searching for full remote alone misses a posting whose main wording is "一部リモート" (partial remote) or "週2日出社" (2 office days a week). One of the 3 condition patterns for remote work uses the following wording, depending on the user's `remote_policy`.
 
-| 求人票の表現 | 観測層での対応（`remote_certainty`） |
+| A posting's wording | Corresponding value in the observation layer (`remote_certainty`) |
 |---|---|
-| フルリモート、完全リモート | `guaranteed` または `full_remote_possible`（どちらかは求人票の本文で決める） |
-| リモートワーク可、在宅勤務可 | `full_remote_possible` |
-| 一部リモート、ハイブリッド、週◯日出社 | `hybrid` |
+| フルリモート, 完全リモート (full remote, fully remote) | `guaranteed` or `full_remote_possible` (decided from the posting's body, whichever applies) |
+| リモートワーク可, 在宅勤務可 (remote work allowed, work-from-home allowed) | `full_remote_possible` |
+| 一部リモート, ハイブリッド, 週◯日出社 (partial remote, hybrid, N office days a week) | `hybrid` |
 
-利用者がフルリモートを必須としている場合でも、探索集合の1本はハイブリッドの表現で投げる（`bias-checklist.md` の「フルリモートの固定」）。判定は判定層が本人の必須度で行う。
+Even when the user requires full remote as a must, when the `remote_widen` lane is chosen, the hybrid wording is used for the query ("Fixation on full remote work" in `bias-checklist.md`, `derivation-lanes.md`). The judgement layer decides on this, using the user's own requirement level.
 
-### 年収の表現
+### Expressions of salary
 
-求人票の年収は「年収」「想定年収」「モデル年収」「月給」の4つの形で書かれる。`site:` 検索では「年収」に加えて「想定年収」でも投げる。「モデル年収」は別の在籍年数の一例であり提示額ではないため、観測層で `value` に使わない（原本は `{HUB_SKILL_DIR}/references/screening-axes.md` の `salary_condition`）。月給表記だけの求人は、下限を確かめられないだけであり、`salary_min` 未満とは限らない。「年収下限の再判定」の規則に従って `salary_range` を `null` にして残す。
+A job posting's salary is written in one of 4 forms: 年収 (annual salary), 想定年収 (expected annual salary), モデル年収 (model annual salary), 月給 (monthly salary). A `site:` search is also run with 想定年収 in addition to 年収. モデル年収 is a single example for one particular tenure, separate from the offered amount, so it is not used as `value` in the observation layer (the canonical definition is `salary_condition` in `{HUB_SKILL_DIR}/references/screening-axes.md`). A posting stated only as a monthly salary is one whose floor simply cannot be confirmed; it is not necessarily below `salary_min`. Following the "Re-judging the salary floor" rule, keep it with `salary_range` set to `null`.
 
-### 沿線・通勤圏
+### Rail lines and commuting range
 
-求人ボックスには沿線で絞る画面があるとされるが、URL 文法としては確認していない。沿線・駅名を検索語に使うのは、利用者が条件シートの `location` に自分で沿線名または駅名を書いた場合に限る。`career-private/commute.json` から駅名を導いて検索語にしてはならない。最寄り駅は市区町村より細かい居住地の情報であり、Web 送信手段を持つ役割へ渡せない（境界の原本は `{HUB_SKILL_DIR}/references/pii-boundary.md`）。
+求人ボックス (Kyujin Box) is said to have a screen for narrowing by rail line, but this has not been confirmed as URL syntax. A rail line or station name is used as a search term only when the user has written a line or station name themselves into the condition sheet's `location`. A station name must never be derived from `career-private/commute.json` for use as a search term. The nearest station is residential information more specific than a municipality, and cannot be passed to a role holding a means of sending data to the web (the canonical definition of the boundary is `{HUB_SKILL_DIR}/references/pii-boundary.md`).
 
-## 年収下限の再判定
+## Re-judging the salary floor
 
-サイトの年収フィルターは、提示レンジの**上限**で判定していることがある。実測（2026-08-21）では、マイナビ転職エンジニアで `min0700` を指定した結果に「初年度年収 350万円～800万円」の求人が現れた。
+A site's salary filter can sometimes judge against the **upper bound** of the offered range. In a measurement (2026-08-21), specifying `min0700` on マイナビ転職エンジニア (Mynavi Tenshoku Engineer) returned a posting reading 「初年度年収 350万円～800万円」 (first-year salary 3.5 to 8 million yen).
 
-**年収下限（`salary_min`）を検索の絞り込みに使ったときは、フィルターの結果を信用せず、求人票本文に書かれたレンジの下限値で必ず再判定する**。下限値が `salary_min` 未満の求人は結果に載せない。レンジが読めない求人（「応相談」等）は `salary_range` を `null` にしたうえで結果に残し、下限を確かめられなかった旨を `match_notes` に書く。
+**When the salary floor (`salary_min`) was used to narrow the search, do not trust the filter's result; always re-judge using the floor value written in the posting's own body.** A posting whose floor value is under `salary_min` is not placed in the results. A posting whose range cannot be read (「応相談」 (negotiable) or similar) is kept in the results with `salary_range` set to `null`, and the fact that the floor could not be confirmed is written into `match_notes`.
 
-この再判定は、検索経路の取りこぼしと取りすぎを補正する観測層の作業であり、本人の条件との突き合わせ（判定層）ではない。`salary_min` は検索担当へ渡してよい唯一の本人条件であるためにこれができる（境界の原本は `{HUB_SKILL_DIR}/references/pii-boundary.md`）。残業の上限・年間休日の下限・作業特性の希望はしきい値を渡されないため、同じ絞り込みを行わない。観測を書くだけにとどめる。
+This re-judging is observation-layer work that corrects for what the search route missed and over-collected; matching against the user's own conditions stays in the judgement layer. This is possible because `salary_min` is the one condition of the user's own that may be passed to the job searcher (the canonical definition of the boundary is `{HUB_SKILL_DIR}/references/pii-boundary.md`). Since no threshold is passed for the overtime ceiling, the annual-holidays floor, or work-characteristic preferences, the same narrowing is not done for them. Only the observation is recorded.
 
-## 重複の排除
+## Deduplication
 
-アグリゲータは複数の集約元から同じ求人を取り込むため、同一の求人が別々のURLで複数回現れる。次の複合キーが一致する求人は同一とみなし、1件だけ残す。
+An aggregator pulls the same posting in from multiple aggregation sources, so an identical posting can appear repeatedly under different URLs. A posting whose following composite key matches another's is treated as identical, and only one is kept.
 
 ```
-正規化企業名 ∥ 職種名の先頭12文字 ∥ 勤務地（市区町村） ∥ 給与レンジ
+normalised company name ∥ first 12 characters of the occupation name ∥ work location (municipality) ∥ salary range
 ```
 
-正規化企業名は、「株式会社」「（株）」「(株)」「有限会社」等の法人格表記を除去し、全角英数字を半角へそろえ、空白を除いたものである。
+The normalised company name is obtained by converting full-width alphanumerics to half-width, removing whitespace, stripping a corporate-form notation ("株式会社," "（株）," "(株)," "有限会社," "合同会社") from the leading and trailing positions, and lowercasing letters. The canonical definition of the rule lives in the `results[].company_key` section of `job-search-format.md`, and its implementation is `normalize_company_key` in `scripts/validate_job_search_results.py`.
 
-キーが一致したときに残す1件は、次の優先順位で選ぶ。掲載内容が最も一次情報に近いものを残すためである。
+When the key matches, the one kept is chosen by the following priority, so that the listing closest to primary information is retained.
 
-1. 企業の採用ページ（HRMOS・Findy・HERP Careers の企業ページを含む）
-2. 単独の求人サイト（マイナビ転職エンジニア・type・Wantedly・HERP Careers の横断一覧）
-3. アグリゲータ（求人ボックス）
+1. The company's own careers page (including a company page on HRMOS, Findy, or HERP Careers)
+2. A single-source job site (the マイナビ転職エンジニア (Mynavi Tenshoku Engineer), type, or Wantedly listing, or the HERP Careers cross-site listing)
+3. An aggregator (求人ボックス (Kyujin Box))
 
-排除した件数は `coverage_notes` に記す。
+The count removed is recorded in `coverage_notes`.
 
-### 第二段階: 近い候補の照合
+### Second stage: matching close candidates
 
-複合キーの完全一致では、次の2つの場合を取りこぼす。
+An exact match on the composite key misses the following 2 cases.
 
-- 職種名の先頭12文字が、サイトごとの接頭辞（「【急募】」「【リモート可】」、企業ブランド名）でずれる場合。
-- 給与レンジが、基本給だけのサイトと賞与込みのサイトで異なる文字列になる場合。
+- The first 12 characters of the occupation name differ due to a site-specific prefix (such as "【急募】" (urgent) or "【リモート可】" (remote allowed), or a company brand name).
+- The salary range renders as a different string between a site that shows base salary alone and one that includes bonus.
 
-そのため、完全一致の後に第二段階として、正規化企業名と勤務地（市区町村）が一致し、職種名の類似度が 0.8 以上の組を「同一の可能性がある求人」として `coverage_notes` に列挙する。自動では統合しない。統合すると、条件が本当に異なる別の求人を落とす危険があるためである。職種名の正規化と類似度は次のとおりである。
+Therefore, after the exact match, as a second stage, a pair whose normalised company name and work location (municipality) match, and whose occupation-name similarity is 0.8 or higher, is listed in `coverage_notes` as "a posting that may be identical." It is not merged automatically, since merging risks dropping a genuinely different posting whose conditions truly differ. The occupation-name normalisation and similarity are as follows.
 
-| 手順 | 内容 |
+| Step | Content |
 |---|---|
-| 正規化 | 全角英数字を半角へ、【】・（）・［］で囲まれた接頭辞と接尾辞を除去、空白を除去、「株式会社」「（株）」「㈱」を除去 |
-| 類似度 | 正規化した職種名同士を `difflib.SequenceMatcher` の `ratio()` で比べる（標準ライブラリだけで計算できる） |
-| しきい値 | 0.8 以上を候補とする。この値は運用上の取り決めであり、実測で決めたものではない |
+| Normalisation | Convert full-width alphanumerics to half-width, remove a prefix or suffix enclosed in 【】, （）, or ［］, remove whitespace, remove "株式会社," "（株）," "㈱" |
+| Similarity | Compare the normalised occupation names with `difflib.SequenceMatcher`'s `ratio()` (computable from the standard library alone) |
+| Threshold | 0.8 or higher is a candidate. This value is an operational convention chosen without measurement |
 
-給与レンジは第二段階では照合の条件に含めず、一致していれば同一の裏付けとして `coverage_notes` に添える。
+The salary range is not included as a matching condition in the second stage; when it does match, it is appended to `coverage_notes` as corroboration of identity.
 
-## 相場の基準線
+## Market-rate benchmark
 
-求人の提示額が高いか低いかは、相場との比較で決まる。相場データの出所とその扱いの規則は、原本 `{HUB_SKILL_DIR}/references/market-data-sources.md` にある。ここへ転記しない。求人検索で使うのは次の2点である。
+Whether a posting's offered amount is high or low is decided by comparison against a market rate. The canonical definition of the source of market-rate data and its handling rules lives in `{HUB_SKILL_DIR}/references/market-data-sources.md`, and is not transcribed here. What job search uses is the following 2 points.
 
-求人ボックス給料ナビ（`/{職種}の年収・時給`）が返す中央値を基準線に使う。**エビデンスレベルはCであり、同サイトの独自試算による参考値である旨の併記を `market-data-sources.md` の規則が義務づけている**。したがって単独で事実を断定せず、参考値として示す。
+The median returned by 求人ボックス (Kyujin Box) Salary Navi (`/{occupation}の年収・時給`) is used as the benchmark. **This is grade C, and `market-data-sources.md`'s rule requires stating alongside it that this is a reference value from the site's own independent estimate.** Therefore it never settles a fact on its own, and is shown as a reference value.
 
-**基準線を引く職種名は、候補求人が名乗っている職種名と同じにする**。実測（2026-08-21）では「データアナリスト」が723万円、「データサイエンティスト」が553万円だった。この実測では、職種名を変えるだけで基準線が170万円動いた。求人が「データサイエンティスト」を名乗るなら、基準線も「データサイエンティスト」で引く。
+**The occupation name used to draw the benchmark must be the same as the one the candidate posting itself uses.** In a measurement (2026-08-21), "データアナリスト" (data analyst) came to 7.23 million yen and "データサイエンティスト" (data scientist) came to 5.53 million yen. In this measurement, changing the occupation name alone moved the benchmark by 1.7 million yen. If a posting calls itself "データサイエンティスト," the benchmark is also drawn under "データサイエンティスト."
 
-取得した基準線は、値・出典URL・取得年月の3つを `coverage_notes` へ記し、求人ごとには `related_info.salary_benchmark` へ記す（仕様は `job-search-format.md`）。
+The obtained benchmark's value, source URL, and retrieval year and month are recorded in `coverage_notes` as a set of three, and for each posting, in `related_info.salary_benchmark` (the specification is in `job-search-format.md`).
 
-本人の現年収との比較は判定層（呼び出し元スキル）の領分であり、検索担当は本人の年収を知らない。
+Comparison against the user's own current salary belongs to the judgement layer (the calling skill); the job searcher does not know the user's own salary.
 
-## 関連情報の取得先
+## Sources for related information
 
-求人票だけでは判定できない軸の確認材料として、求人ごとに `related_info` を集める（仕様は `job-search-format.md` の「探索集合と関連情報」）。集めるのはログイン不要で読める範囲だけであり、企業研究の代わりにはならない。取得先は次のとおりである。取得できなかったキーは省略するか、`value` を `null` にする。
+For a posting's own related information, under 2.3 the 2 per-posting keys are gathered into `related_info` (the specification is "Exploration set and related information" in `job-search-format.md`). Per-company information is gathered under "Sources for company information" below, and written into `company_profiles`. A key that could not be retrieved is either omitted, or has its `value` set to `null`.
 
-| キー | 取得先 | レベル | 注 |
+| Key | Source | Grade | Note |
 |---|---|---|---|
-| `employee_count`・`founded_year`・`capital_yen`・`listed` | 企業の採用ページまたは会社概要ページ。上場企業は EDINET の有価証券報告書 | A（いずれも企業自身の一次・公式の情報。レベルは発信者で決まる） | 会社概要の数値は企業の自己申告であり、有価証券報告書や登記の日付と食い違うことがある。食い違う場合は両方を `note` に併記する（`{HUB_SKILL_DIR}/references/market-data-sources.md`） |
-| `edinet_code` | EDINET の書類検索 | A | 上場企業と有価証券報告書の提出義務がある企業だけが持つ |
-| `certifications` | 企業の採用ページまたは会社概要ページの認定の表示 | A（出典は採用ページ） | 認定制度の一覧（くるみん・えるぼし・健康経営優良法人・ユースエール）はツールで取得できないか未確認であり、たどらない（原本は `{HUB_SKILL_DIR}/references/market-data-sources.md`）。表示が無いことを認定が無い証拠にしない |
-| `review_aggregate` | OpenWork の企業ページ（ログインなしで読める総合スコアと回答件数） | C | 本文はログインが必要なため読まない。件数が少ない場合はその旨を `note` に書く。robots.txt の確認は `{HUB_SKILL_DIR}/references/market-data-sources.md` にある |
-| `posting_age` | 求人ページの掲載日・更新日の表示 | A（掲載ページ自身の表示） | 表示が無ければ省略する。古いことを掲載終了の証拠にしない |
-| `salary_benchmark` | 求人ボックス給料ナビの中央値（「相場の基準線」） | C | 候補求人が名乗る職種名と同じ職種名で引く |
+| `posting_age` | The listing or update date shown on the posting page | A (the listing page's own display) | Omitted when not shown. Age is never treated as evidence the listing has ended |
+| `salary_benchmark` | The median from 求人ボックス (Kyujin Box) Salary Navi ("Market-rate benchmark") | C | Drawn under the same occupation name the candidate posting itself uses |
 
-企業名で `WebSearch` を引く際、検索語は企業名と項目名（「従業員数」「設立」）だけにする。条件シートの内容や利用者の情報を混ぜない。
+## Sources for company information (company_profile mode)
 
-## 掲載終了と再掲載の確認
+For every company appearing in the results, one `company_profiles` element is gathered (the specification is "Derivation lanes and company information (2.3)" in `job-search-format.md`). Only what can be read without login is gathered, and company research is still carried out separately. Retrieval is capped at 6 per company, and an item that could not be retrieved has its `value` set to `null` with the reason written in `note`.
 
-求人が今も募集中かどうかは、求人票の文面からは分からない。次の2つの確認を、費用の小さい順に行う。
+| Item → recorded to | Source | Grade | Agent retrieves |
+|---|---|---|---|
+| Average annual compensation → `metrics.compensation_level`; number of employees → `basics.employee_count`; average age and average tenure → `open_questions` or `note` | The 「従業員の状況」 (state of employees) section of the 有価証券報告書 (securities report). Since EDINET's viewing screen is rendered with JavaScript and its API requires an authentication key, read the securities-report PDF placed on the company's own IR page (search "{company name} 有価証券報告書" with `WebSearch`) | A | Yes. EDINET directly is tried only once; if unreadable, this is written in `note` |
+| Revenue growth rate, operating margin, equity ratio → `metrics.revenue_growth`, `operating_margin`, `equity_ratio` | The 「主要な経営指標等の推移」 (key management indicators over time) section of the securities report (the calculation rule is in `job-change-company-research/references/source-catalog.md`) | A | Yes |
+| Male childcare-leave utilisation rate → `metrics.male_childcare_leave_rate` | The human-capital disclosure in the securities report | A | Yes |
+| 「労働基準関係法令違反に係る公表事案」 (published cases of labour-law violations) → `negative_checks.labor_law_violation_list` | The latest nationwide PDF from the Ministry of Health, Labour and Welfare, https://www.mhlw.go.jp/kinkyu/151106.html | A | Yes. Retrieved once per batch, and cross-checked against every company in the batch. An absence from the list is never treated as evidence of an absence of violations. The published period covers roughly one year; a case outside that period does not appear |
+| Eruboshi certification → `basics.certifications` | The Ministry of Health, Labour and Welfare's list page of Eruboshi-certified companies | A | Yes |
+| Kurumin certification, the Database of Companies Promoting Women's Active Participation, Shokuba Rabo | — | A | No. These cannot be retrieved because they return 403 or require operating a search form ("Sources that cannot be fetched automatically" in `job-change-company-research/references/source-catalog.md`). What the user has looked up is received instead. For this reason `turnover_rate`, `monthly_overtime`, and `paid_leave_rate` are often `null` |
+| Health and Productivity Management Outstanding Organization, Youth Yell certification | Each program's list of certified companies | A | Tried once. Whether retrieval is possible is unconfirmed; failure to read it is never treated as evidence the certification is absent |
+| Overall review score → `basics.review_aggregate` | OpenWork's company page (the overall score and response count, readable without login) | C | Yes. The review text requires login and is not read. When the response count is small, this is written in `note` |
+| Company overview → `name`, `official_url`, `hq_location`, `industry`, `basics.founded_year`, `capital_yen`, `listed`, `business_summary` | The company overview page on the company's own official site | A (for the factual part; a company's own evaluative claim about itself is never used as grounds) | Yes. The figures in a company overview are the company's own self-reported figures, and can disagree with a securities report's or a registration's date. When they disagree, note both in `note` |
+| Careers page → `careers_url` | The company's own official site, or a company page on HRMOS or HERP Careers (only when the slug is known) | A | Yes |
+| `basics.edinet_code` | An EDINET document search | A | Tried once. Only a listed company, or one obligated to file a securities report, has one |
+| Recent reporting and announcements → `recent_news` | A company's own press release (A), major reporting outlets such as Nikkei (B) | A/B | Yes. The last 12 months, up to 3 items |
 
-| 確認 | 内容 | 記録先 |
+When running `WebSearch` under a company name, the search terms are limited to the company name and the item name ("従業員数" (employee count), "有価証券報告書" (securities report)). The content of the condition sheet or the user's own information is never mixed in. A securities report's average annual compensation is an average across all employees, and is never read as the salary for the posting's occupation. A number is never inferred from a review's text and written into `metrics`.
+
+## Confirming listing closure and re-listing
+
+Whether a posting is still open cannot be told from its wording alone. Perform the following 2 checks, in ascending order of cost.
+
+| Check | Content | Recorded to |
 |---|---|---|
-| URL の再取得 | 納品の直前に、採用した求人の `url` を1件ずつ `WebFetch` で開き直す。404、一覧ページへの転送、「掲載終了」「募集を終了しました」の表示があれば、その求人を `results` から外し、`coverage_notes` に URL と日付を書く | `coverage_notes` |
-| 過去の検索との照合 | 呼び出し元スキルが `{DATA_ROOT}/job-search/` 配下の過去の成果物を読み、同じ正規化企業名と職種名の求人が、60日以上離れた別の `search_id` にも現れていれば、その旨を `open_questions` に書く。長く出続ける求人は、採用が決まらない求人か、常時募集の求人かのどちらかであり、求人票からは区別できない | `open_questions` |
+| Re-fetching the URL | Just before delivery, open each adopted posting's `url` again with `WebFetch`, one by one. If it shows a 404, a redirect to a listing page, or wording such as "掲載終了" (listing ended) or "募集を終了しました" (recruitment has ended), remove that posting from `results`, and write the URL and date into `coverage_notes` | `coverage_notes` |
+| Matching against past searches | The calling skill reads past deliverables under `{DATA_ROOT}/job-search/`; if a posting with the same normalised company name and occupation name also appears in a different `search_id` more than 60 days apart, this is written into `open_questions`. A posting that keeps appearing over a long span is either a posting that never gets filled, or a standing-recruitment posting, and the two cannot be told apart from the posting alone | `open_questions` |
 
-過去の検索とは呼び出し元スキルがローカルで照合する。過去の成果物には判定層（本人のしきい値との突き合わせ）が含まれるため、Web 送信手段を持つ検索担当エージェントへは渡さない。いずれの確認も、求人を `excluded` に分類する根拠にはしない。分類の根拠は8軸判定だけである。
+Matching against past searches is done locally by the calling skill. A past deliverable includes the judgement layer (matching against the user's own thresholds), so it is never passed to the job searcher agent, which holds a means of sending data to the web. Neither check is grounds for classifying a posting as `excluded`. The grounds for classification are the 8-axis judgement alone.
 
-## フォールバックの共通手段
+## Common fallback measures
 
-系統Aのサイトでも、仕様変更・動的描画・一時的な障害で直接たどれないことがある。そのときは次へフォールバックする。
+Even a family-A site can, on occasion, become unreachable directly because of a specification change, dynamic rendering, or a temporary outage. In that case, fall back as follows.
 
-| 手段 | 内容 |
+| Measure | Content |
 |---|---|
-| 検索エンジンの `site:` 演算子 | `WebSearch` で `site:{ドメイン} {職種} {勤務地} {条件語}` を検索し、結果ページまたは個別求人ページのURLを得てから `WebFetch` で内容を読む。例: `site:type.jp バックエンドエンジニア 東京 リモート`。動的描画サイトでも、個別求人ページはインデックスされていることが多い。対象外にしたサイトへはこの手段でも取りにいかない |
-| 別サイトへの代替 | 1サイトで取得できない条件は、本カタログの他サイトで代替する。取得元サイトは各 result の `source_site` に必ず記す |
-| 取得限界の明示 | どのサイトのどの範囲を対象にし、何を範囲外にしたか（会員限定の非公開求人・動的描画で読めなかった絞り込み・robots.txt により対象外としたサイト）を `coverage_notes` に記す |
+| The search engine's `site:` operator | Search `site:{domain} {occupation} {work location} {condition term}` with `WebSearch`, obtain the results page or individual posting page's URL, and then read the content with `WebFetch`. Example: `site:type.jp バックエンドエンジニア 東京 リモート`. Even on a dynamically rendered site, an individual posting page is often indexed. This measure is also never used to reach an excluded site |
+| Substituting a different site | A condition that cannot be retrieved from one site is substituted from another site in this catalog. The site of retrieval is always recorded in each result's `source_site` |
+| Stating the retrieval's limits | States which range of which site was covered, and what was placed out of scope (member-only non-public postings, a narrowing that could not be read due to dynamic rendering, a site excluded under robots.txt), in `coverage_notes` |
 
-いずれの手段でも、掲載ページの引用 `quote` とURLを付し、取得できない求人を創作しない原則を保つ。
+Under every measure, the principle of attaching a quotation `quote` and a URL from the listing page, and never fabricating a posting that could not be retrieved, is preserved.

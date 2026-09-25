@@ -1,125 +1,125 @@
-# 構造化質問セット（question-bank）
+# Structured question set (question-bank)
 
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
-<!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
+<!-- The [E1] form in the body is the notation for a source id. This file disables that rule to keep the half-width square brackets. -->
 
-job-change-self-analysis スキルの Step 1〜3.5 で使う、あらかじめ定めた構造化された問いの原本である。無制限の「なぜ」の反復を禁じ、深掘りは必ず行動・事実（エピソード）へ対応づける（根拠は self-analysis-methods.md の反すう防止の運用規則）。
+This is the canonical definition of the fixed, structured questions used in Steps 1-3.5 of the job-change-self-analysis skill. Unlimited repetition of "why" is forbidden, and probing further always maps to a behaviour or a fact (an episode) (the grounds are the rumination-prevention operating rules in self-analysis-methods.md).
 
-## 使い方のルール
+## Rules for use
 
-- 質問は AskUserQuestion の選択式を中心に運用する。1回の AskUserQuestion につき最大4問、各質問は最大4択とする。自由記述は、選択式で扱えない項目（時期・場面・数値といったエピソードの具体値）に限る。
-- 深掘りでは、利用者を感情の反すうへ陥らせず、質問を事実（いつ・どの場面で・何をしたか）へ向ける。感情の将来予測（「転職すれば幸せか」）を確信の根拠にしない。
-- 下記の枠組み（Schein のアンカー分類・CCI の設問など）は、内省を促す呼び水として使う。診断結果を確定した判定として扱わない。
-- 著作権のある心理尺度（CAAS・VPI・CliftonStrengths 等）の項目文をそのまま転載・出題しない。次元名・枠組みの説明にとどめる。出題してよい道具と使わない道具の一覧は `personality-guide.md` にある。MBTI・16Personalities・企業側の適性検査・各社の無償診断は出さない。
+- Questions run mainly through AskUserQuestion's choice form. Each AskUserQuestion call carries at most 4 questions, and each question carries at most 4 options. Free text is limited to an item the choice form cannot handle, such as a concrete value in an episode: a time, a situation, or a number.
+- Probing further never leads the user into emotional rumination; the question always points to a fact (when, in what situation, what did the person do). An affective forecast ("will changing jobs bring happiness?") never grounds a firm conclusion.
+- The frameworks below (Schein's anchor categories, the CCI questions, and the like) are used as a prompt for introspection. A diagnostic result is never treated as a settled judgment.
+- The item text of a copyrighted psychological scale (CAAS, VPI, CliftonStrengths, and the like) is never reproduced or asked as it stands. The description stays at the name of a dimension or a framework. The list of instruments that may and may not be asked is in `personality-guide.md`. MBTI, 16Personalities, employer-side aptitude tests, and any company's free diagnostic tool are never offered.
 
-## Step 1: 行動エピソードの棚卸し（STAR素材）
+## Step 1: Taking stock of behavioural episodes (STAR material)
 
-profile.json の `career_history`・`achievements` を選択肢の素材として利用者へ示し、答えを STAR（Situation / Task / Action / Result）へ構造化する。モチベーショングラフの考え方（時系列に出来事を並べ、感情の起伏を添える）は任意の補助として使う。
+Show the user `career_history` and `achievements` from profile.json as material for the options, and structure the answer into STAR (Situation / Task / Action / Result). Use the idea of a motivation graph (arranging events along a timeline and attaching the rise and fall of feelings) as an optional aid.
 
-呼び水の問い:
+Prompting questions:
 
-- これまでで、手応えを感じた仕事・工夫して乗り越えた場面はどれか（profile.json の実績から選択肢を提示する）。
-- その場面の状況（Situation）はどうだったか。何を任され（Task）、実際に何をしたか（Action）、どうなったか（Result）。
-- その結果を数値で表せるか（Result の metric）。表せない場合は `null` でよい。
-- その進め方は、会社や環境が変わっても機能したか（reproducibility）。別の場面で同じ進め方が効いた例はあるか。
-- そのとき、どんな動機・感情で取り組んでいたか（emotion_note。当時の記録であり、将来の予測ではない）。
+- これまでで、手応えを感じた仕事・工夫して乗り越えた場面はどれか (Which piece of work gave you a sense of accomplishment, or which situation did you get through with some ingenuity?). Present options drawn from profile.json's `achievements`.
+- その場面の状況（Situation）はどうだったか。何を任され（Task）、実際に何をしたか（Action）、どうなったか（Result）。(What was the situation? What were you tasked with, what did you actually do, and what happened?)
+- その結果を数値で表せるか（Result の metric）。表せない場合は `null` でよい。(Can the result be expressed as a number — the metric for Result? When it cannot, `null` is fine.)
+- その進め方は、会社や環境が変わっても機能したか（reproducibility）。別の場面で同じ進め方が効いた例はあるか。(Did that approach work even when the company or environment changed — reproducibility? Is there an example where the same approach worked in a different situation?)
+- そのとき、どんな動機・感情で取り組んでいたか（emotion_note。当時の記録であり、将来の予測ではない）。(What motivation or feeling were you working with at the time — emotion_note, a record from that time, and never a forecast of the future.)
 
-STAR の各要素のうち、Situation・Action・Result は必須である（欠けるとエピソードとして成立しない）。深掘りは「なぜそう感じたか」ではなく「どの場面で・何をしたか」へ向ける。
+Among the STAR elements, Situation, Action, and Result are required (an episode does not stand without them). Probing further points to 「どの場面で・何をしたか」 (in what situation, and what did you do).
 
-## Step 2: 他者フィードバックの取り込み（他己分析・ジョハリの窓）
+## Step 2: Incorporating feedback from others (evaluation by others, the Johari window)
 
-他者評価は自己評価より予測妥当性が高い（self-analysis-methods.md）。過去の評価面談での指摘や、他者から言われたことを記録として集め、自己認知と突き合わせる（ジョハリの窓: 自己が気づく領域と、他者が気づく領域の一致・不一致）。
+Evaluation by others has higher predictive validity than self-evaluation (self-analysis-methods.md). Collect, as a record, points raised in a past performance review and things others have said, and check them against self-perception (the Johari window: the agreement and disagreement between what the self notices and what others notice).
 
-呼び水の問い:
+Prompting questions:
 
-- 過去の評価面談・1on1で、上司や同僚から具体的に指摘されたことは何か（source_type を選択式で: 上司／同僚／部下／顧客／友人・家族／評価面談）。
-- それはどの場面・どの仕事に対する指摘だったか（linked_episode_ids へ対応づける）。
-- 自分では強みと考えていなかったものの、他者から評価された点はあるか（ジョハリの窓の「自分は気づかないが他者は気づく」領域）。
+- 過去の評価面談・1on1で、上司や同僚から具体的に指摘されたことは何か (In a past performance review or a 1-on-1, what did a manager or colleague specifically point out to you?). Present `source_type` in choice form: 上司 (manager) / 同僚 (colleague) / 部下 (subordinate) / 顧客 (client) / 友人・家族 (friend or family) / 評価面談 (performance review).
+- それはどの場面・どの仕事に対する指摘だったか（linked_episode_ids へ対応づける）。(Which situation, or which piece of work, was that comment about?) Map it with `linked_episode_ids`.
+- 自分では強みと考えていなかったものの、他者から評価された点はあるか（ジョハリの窓の「自分は気づかないが他者は気づく」領域）。(Is there a point you underestimated yourself, though others valued it?) — the Johari window's region where others notice what you overlook.
 
-フィードバックは課題志向で記録する。「あなたはこういう人だ」という人格評価は避け、「どの行動が、どの結果につながったか」の形へ言い換えて記録する。この場で他者フィードバックが入手できない場合は、成果物を WARN のまま先へ進める。今後の課題として、他者フィードバックの収集を利用者へ示す。他者への依頼文は `assets/feedback_request_template.md` を使う。
+Record feedback with a task-oriented focus. Avoid a judgment of character such as "you are this kind of person," and record it rephrased into the form "which action led to which result." When feedback from others cannot be obtained on the spot, proceed with the deliverable left in a WARN state. Show the user that collecting feedback from others remains an open task. Use `assets/feedback_request_template.md` for the request text to others.
 
-## Step 3: 興味・価値観・career adaptability の構造化質問
+## Step 3: Structured questions on interests, values, and career adaptability
 
-### 興味（RIASEC の枠組み）
+### Interests (the RIASEC framework)
 
-- 業務のうち、時間を忘れて取り組めるのはどの種類の活動か（RIASEC の6領域を選択肢として提示: Realistic 現場・技術、Investigative 調査・分析、Artistic 創作・表現、Social 支援・教育、Enterprising 企画・推進、Conventional 管理・整備）。
-- その領域に当てはまる具体的なテーマ・題材は何か（concrete_topics）。
+- 業務のうち、時間を忘れて取り組めるのはどの種類の活動か (Among your tasks, which kind of activity can you lose yourself in?). Present the six RIASEC domains as options: Realistic 現場・技術 (hands-on / technical), Investigative 調査・分析 (research / analysis), Artistic 創作・表現 (creation / expression), Social 支援・教育 (support / education), Enterprising 企画・推進 (planning / driving), Conventional 管理・整備 (administration / organising).
+- その領域に当てはまる具体的なテーマ・題材は何か（concrete_topics）。(What concrete theme or subject matter fits that domain? — `concrete_topics`.)
 
-RIASEC は興味の枠組みの軸名として使う。診断ツールの結果を確定した判定にしない。
+RIASEC is used as the axis names of the interests framework. A diagnostic tool's result is never treated as a settled judgment.
 
-### 価値観（行動へ対応づける）
+### Values (mapped to behaviour)
 
-- 仕事で判断に迷ったとき、最後に優先したものは何か。それはどのエピソードで表れたか（evidence_episode_ids へ対応づける）。
-- 譲れないと感じた場面はどこか。何を守ろうとしたか。
+- 仕事で判断に迷ったとき、最後に優先したものは何か。それはどのエピソードで表れたか（evidence_episode_ids へ対応づける）。(When you were torn over a decision at work, what did you end up prioritising, and in which episode did that show up?) Map it with `evidence_episode_ids`.
+- 譲れないと感じた場面はどこか。何を守ろうとしたか。(In what situation did you feel you could not give ground, and what were you trying to protect?)
 
-価値観は内省で言葉にする。ただし、内省だけを根拠に価値観へ重みを与えず、エピソードへ対応づけて裏付ける。
+Values are put into words through introspection. Introspection alone never grounds the weight given to a value; back it up by mapping it to an episode.
 
-### career adaptability の4次元
+### The four dimensions of career adaptability
 
-次元名の枠組みのみを用いる（尺度項目の転載はしない）。各次元について、自己記述（self_note）と裏付けエピソード（evidence_episode_ids）を集める。
+Only the framework of dimension names is used (no scale item is reproduced). For each dimension, collect a self-description (`self_note`) and a supporting episode (`evidence_episode_ids`).
 
-- concern（関心）: 将来のキャリアを見据えて、早めに準備・行動した場面はあるか。
-- control（統制）: 外部要因に流されず、自分の選択で状況を方向づけた場面はあるか。
-- curiosity（好奇心）: 未知の分野・可能性を自ら調べ、試した場面はあるか。
-- confidence（自信）: 難所を、自分の手順・経験で乗り越えられた場面はあるか。
+- concern（関心）: 将来のキャリアを見据えて、早めに準備・行動した場面はあるか (Is there a situation where you looked ahead to your future career and prepared or acted early)?
+- control（統制）: 外部要因に流されず、自分の選択で状況を方向づけた場面はあるか (Is there a situation where you steered things by your own choice, holding your course against outside factors)?
+- curiosity（好奇心）: 未知の分野・可能性を自ら調べ、試した場面はあるか (Is there a situation where you looked into and tried an unfamiliar field or possibility on your own)?
+- confidence（自信）: 難所を、自分の手順・経験で乗り越えられた場面はあるか (Is there a situation where you got through a difficulty using your own approach or experience)?
 
-## Step 3.5: 性格・行動傾向の自己申告（二者択一）
+## Step 3.5: Self-report of personality and behavioural tendencies (forced choice)
 
-原本は `personality-guide.md` にある。行動に根ざした二者択一で聞き、1項目に答えるたびに、その傾向が表れたエピソードを1つ挙げてもらう（既存の `behavioral_episodes` から選ばせる。無ければその場で1件を STAR で聞く）。挙がらなければ `linked_episode_ids` を空のままにする。他者証言に同じ傾向の記述があれば `feedback_ids` で対応づける。15の構成概念を16問（`stress_trigger` だけ2問）で聞き、1回の AskUserQuestion で4問ずつ4回に分ける。追加の「なぜ」を重ねない。
+The canonical definition is in `personality-guide.md`. Ask a behaviour-grounded forced choice, and each time an item is answered, have the person name one episode where that tendency showed up (choose from the existing `behavioral_episodes`, and when none fits, ask for one episode in STAR form on the spot). When none comes up, leave `linked_episode_ids` empty. When feedback from others describes the same tendency, map it with `feedback_ids`. Ask about the 15 constructs across 16 questions (`stress_trigger` alone gets 2 questions), split into 4 AskUserQuestion calls of 4 questions each. Never layer an additional "why" on top.
 
-4つの選択肢はすべての項目で共通の形をとる。第1・第2の選択肢が対になる2つの行動、第3が「場面による」、第4が「どちらも当てはまらない」である。成果物の `personality.markers[].options` には、提示した4つの選択肢を原文のまま記録する。第1〜第4のいずれかをそのまま選んだ場合は `response` にその選択肢の文をそのまま書く。第4を選び、Other で近い行動を自由記述した場合は `options` を省き、その自由記述を `response` に、選択肢との食い違いを `note` に書く。
+The four options take the same form for every item. The first and second options are two paired behaviours, the third is "it depends on the situation," and the fourth is "neither applies." Record the four presented options in `personality.markers[].options` exactly as they read. When the person picks one of the first four directly, write that option's sentence as it stands in `response`. When the person picks the fourth and writes a close behaviour freely under Other, omit `options`, put that free text in `response`, and write the mismatch with the options in `note`.
 
-| `construct` | `header` | `question` | 選択肢1 | 選択肢2 |
+| `construct` | `header` | `question` | Option 1 | Option 2 |
 |---|---|---|---|---|
-| `planning_style` | 進め方 | 新しい仕事に着手するとき、ご自身に近いのはどちらですか。 | **段取りを先に固める** — 手順と順序を書き出してから着手します。 | **着手して組み替える** — まず動かし、状況に合わせて順序を変えます。 |
-| `conscientiousness` | やり切り方 | 締切が近いとき、ご自身に近いのはどちらですか。 | **残りを書き出して片づける** — 残作業を一覧にし、上から順に終わらせます。 | **要点に絞って仕上げる** — 影響の大きい部分を選び、そこに時間を集めます。 |
-| `decision_style` | 判断の型 | 方針を決めるとき、ご自身に近いのはどちらですか。 | **数字を先に置く** — 計測や集計の結果を見てから決めます。 | **仮説を先に置く** — まず仮説を立て、動かしながら確かめます。 |
-| `emotional_stability` | 負荷の下で | 障害や苦情が重なった場面で、ご自身に近いのはどちらですか。 | **手順に戻る** — 決めてある手順に沿って一つずつ処理します。 | **状況を組み替える** — その場で優先順位を組み替えて対処します。 |
-| `stress_trigger` | 消耗の要因 | 最も消耗するのはどの場面ですか。 | **曖昧なまま進む場面** — 何を求められているかが決まらないまま進みます。 | **締切に追われる場面** — 期限が重なり、時間が足りません。 |
-| `stress_trigger` | 消耗の要因（2） | 同じく、消耗するのはどちらの場面ですか。 | **人との摩擦がある場面** — 意見が食い違い、調整が続きます。 | **同じ作業が続く場面** — 変化のない作業が長く続きます。 |
-| `recovery_style` | 回復の型 | 消耗したあと、ご自身に近いのはどちらですか。 | **一人で整える** — 一人の時間を取って立て直します。 | **人と話して整える** — 誰かと話すことで立て直します。 |
-| `collaboration_style` | 協働の型 | 力を発揮しやすいのはどちらですか。 | **単独で集中する** — 一人で集中する時間が長いほど進みます。 | **対話で進める** — 相談や議論を挟むほど進みます。 |
-| `extraversion` | 人との関わり | 初めての相手が多い場に出たあと、ご自身に近いのはどちらですか。 | **勢いがつく** — 人と話したあとのほうが動けます。 | **一度休む** — 人と話したあとは、一度静かな時間が要ります。 |
-| `agreeableness` | 対立の場面 | 意見が食い違ったとき、ご自身に近いのはどちらですか。 | **先に相手の案を通す** — 相手の案を試してから自分の案を出します。 | **先に自分の案を通す** — 自分の案の根拠を示してから相手の案を聞きます。 |
-| `openness` | 未知の方法 | 使ったことのない方法を勧められたとき、ご自身に近いのはどちらですか。 | **まず試す** — 小さく試してから判断します。 | **実績を先に見る** — 他所での実績を確かめてから判断します。 |
-| `change_orientation` | 変化への向き | 環境として力を発揮しやすいのはどちらですか。 | **安定した環境** — 役割と手順が決まっている環境です。 | **変化の多い環境** — 役割と手順が変わり続ける環境です。 |
-| `feedback_timing` | 評価の間隔 | 結果の知り方として、ご自身に近いのはどちらですか。 | **短い間隔で知る** — 日々の結果をすぐ確かめたいほうです。 | **節目でまとめて知る** — 区切りでまとめて確かめたいほうです。 |
-| `grit` | 長期の目標 | 数年がかりの目標について、ご自身に近いのはどちらですか。 | **同じ目標を続ける** — 一度決めた目標を、途中で変えずに続けます。 | **目標を更新する** — 状況に合わせて目標そのものを見直します。 |
-| `honesty_humility` | 成果の帰属 | 成果を報告するとき、ご自身に近いのはどちらですか。 | **関わった人を先に挙げる** — 誰が何をしたかを先に述べます。 | **自分の判断を先に挙げる** — 自分が何を決めたかを先に述べます。 |
-| `self_efficacy` | 難所への見込み | 経験のない難所に当たったとき、ご自身に近いのはどちらですか。 | **自分の手順で越えられると見込む** — これまでの手順を当てはめれば進めると考えます。 | **先に詳しい人を探す** — 経験者を見つけて進め方を確かめます。 |
+| `planning_style` | Approach (進め方) | 新しい仕事に着手するとき、ご自身に近いのはどちらですか。(When starting new work, which is closer to you?) | **段取りを先に固める** — 手順と順序を書き出してから着手します。(Settle the plan first — write out the steps and order before starting.) | **着手して組み替える** — まず動かし、状況に合わせて順序を変えます。(Start and rearrange — get moving first, then change the order to fit the situation.) |
+| `conscientiousness` | Seeing it through (やり切り方) | 締切が近いとき、ご自身に近いのはどちらですか。(When a deadline is close, which is closer to you?) | **残りを書き出して片づける** — 残作業を一覧にし、上から順に終わらせます。(List the rest and clear it — list the remaining work and finish it from the top.) | **要点に絞って仕上げる** — 影響の大きい部分を選び、そこに時間を集めます。(Narrow to what matters and finish it — pick the highest-impact part and put your time there.) |
+| `decision_style` | Decision style (判断の型) | 方針を決めるとき、ご自身に近いのはどちらですか。(When settling a direction, which is closer to you?) | **数字を先に置く** — 計測や集計の結果を見てから決めます。(Numbers first — decide after looking at measured or aggregated results.) | **仮説を先に置く** — まず仮説を立て、動かしながら確かめます。(Hypothesis first — form a hypothesis, then test it while moving.) |
+| `emotional_stability` | Under strain (負荷の下で) | 障害や苦情が重なった場面で、ご自身に近いのはどちらですか。(When failures or complaints pile up, which is closer to you?) | **手順に戻る** — 決めてある手順に沿って一つずつ処理します。(Return to the procedure — handle things one by one, along a set procedure.) | **状況を組み替える** — その場で優先順位を組み替えて対処します。(Rearrange the situation — reorder priorities on the spot and deal with it.) |
+| `stress_trigger` | Source of strain (消耗の要因) | 最も消耗するのはどの場面ですか。(Which situation drains you most?) | **曖昧なまま進む場面** — 何を求められているかが決まらないまま進みます。(A situation that proceeds without clarity — moving ahead without a settled sense of what is asked.) | **締切に追われる場面** — 期限が重なり、時間が足りません。(A situation chased by deadlines — deadlines overlap and time runs short.) |
+| `stress_trigger` | Source of strain, second question (消耗の要因（2）) | 同じく、消耗するのはどちらの場面ですか。(Likewise, which situation drains you?) | **人との摩擦がある場面** — 意見が食い違い、調整が続きます。(A situation with friction with people — opinions clash and adjustment continues.) | **同じ作業が続く場面** — 変化のない作業が長く続きます。(A situation where the same work continues — unchanging work goes on for a long time.) |
+| `recovery_style` | Recovery style (回復の型) | 消耗したあと、ご自身に近いのはどちらですか。(After being drained, which is closer to you?) | **一人で整える** — 一人の時間を取って立て直します。(Settle down alone — take time alone to recover.) | **人と話して整える** — 誰かと話すことで立て直します。(Settle down by talking — recover by talking with someone.) |
+| `collaboration_style` | Collaboration style (協働の型) | 力を発揮しやすいのはどちらですか。(Which lets you perform better?) | **単独で集中する** — 一人で集中する時間が長いほど進みます。(Concentrate alone — the more time spent concentrating alone, the more progress.) | **対話で進める** — 相談や議論を挟むほど進みます。(Move forward through dialogue — the more discussion, the more progress.) |
+| `extraversion` | Engaging with people (人との関わり) | 初めての相手が多い場に出たあと、ご自身に近いのはどちらですか。(After being in a setting full of people you're meeting for the first time, which is closer to you?) | **勢いがつく** — 人と話したあとのほうが動けます。(It energises you — you can move better after talking with people.) | **一度休む** — 人と話したあとは、一度静かな時間が要ります。(You need a rest — after talking with people, you need a quiet moment.) |
+| `agreeableness` | A situation of conflict (対立の場面) | 意見が食い違ったとき、ご自身に近いのはどちらですか。(When opinions clash, which is closer to you?) | **先に相手の案を通す** — 相手の案を試してから自分の案を出します。(Let the other person's proposal go first — try their proposal before offering your own.) | **先に自分の案を通す** — 自分の案の根拠を示してから相手の案を聞きます。(Put your own proposal first — show its grounds before hearing theirs.) |
+| `openness` | An unfamiliar method (未知の方法) | 使ったことのない方法を勧められたとき、ご自身に近いのはどちらですか。(When recommended a method you've never used, which is closer to you?) | **まず試す** — 小さく試してから判断します。(Try it first — try it on a small scale, then judge.) | **実績を先に見る** — 他所での実績を確かめてから判断します。(Check the track record first — confirm results elsewhere before judging.) |
+| `change_orientation` | Orientation toward change (変化への向き) | 環境として力を発揮しやすいのはどちらですか。(As an environment, which lets you perform better?) | **安定した環境** — 役割と手順が決まっている環境です。(A stable environment — one where roles and procedures are set.) | **変化の多い環境** — 役割と手順が変わり続ける環境です。(A highly changeable environment — one where roles and procedures keep changing.) |
+| `feedback_timing` | Interval for evaluation (評価の間隔) | 結果の知り方として、ご自身に近いのはどちらですか。(In how you learn results, which is closer to you?) | **短い間隔で知る** — 日々の結果をすぐ確かめたいほうです。(Learn at short intervals — you want to check daily results right away.) | **節目でまとめて知る** — 区切りでまとめて確かめたいほうです。(Learn gathered at milestones — you want to check things gathered at a milestone.) |
+| `grit` | A long-term goal (長期の目標) | 数年がかりの目標について、ご自身に近いのはどちらですか。(About a goal that takes several years, which is closer to you?) | **同じ目標を続ける** — 一度決めた目標を、途中で変えずに続けます。(Keep the same goal — continue a goal you set, without changing it partway.) | **目標を更新する** — 状況に合わせて目標そのものを見直します。(Update the goal — revisit the goal itself to fit the situation.) |
+| `honesty_humility` | Attribution of results (成果の帰属) | 成果を報告するとき、ご自身に近いのはどちらですか。(When reporting a result, which is closer to you?) | **関わった人を先に挙げる** — 誰が何をしたかを先に述べます。(Name the people involved first — state who did what, first.) | **自分の判断を先に挙げる** — 自分が何を決めたかを先に述べます。(Name your own judgment first — state what you decided, first.) |
+| `self_efficacy` | Expectation toward a difficulty (難所への見込み) | 経験のない難所に当たったとき、ご自身に近いのはどちらですか。(When facing a difficulty you have no experience with, which is closer to you?) | **自分の手順で越えられると見込む** — これまでの手順を当てはめれば進めると考えます。(Expect to get through it your own way — you think applying your existing approach will work.) | **先に詳しい人を探す** — 経験者を見つけて進め方を確かめます。(Look for an expert first — find someone experienced and confirm how to proceed.) |
 
-共通の選択肢3・4の文言は次のとおりである。
+The wording of the common options 3 and 4 is as follows.
 
-| 選択肢 | 文言 |
+| Option | Wording |
 |---|---|
-| 選択肢3 | **場面による** — どちらも同じくらいあります。 |
-| 選択肢4 | **どちらも当てはまらない** — Other で近い行動をお書きください。 |
+| Option 3 | **場面による** — どちらも同じくらいあります。(It depends on the situation — both apply about equally.) |
+| Option 4 | **どちらも当てはまらない** — Other で近い行動をお書きください。(Neither applies — please write the closest behaviour under Other.) |
 
-各項目のあとに置く問い（自由記述・1回だけ）: 「その傾向が表れた場面を、これまでに挙げたエピソードから1つ選ぶとどれですか。無ければ、新しく1つ教えてください」。
+The question placed after each item (free text, once): 「その傾向が表れた場面を、これまでに挙げたエピソードから1つ選ぶとどれですか。無ければ、新しく1つ教えてください」(Which one of the episodes you've already named shows this tendency? If none does, tell me a new one.)
 
-自己申告の結果を型やタイプの名称で返さない。成果物の `personality.presentation` には、選んだ行動とエピソードの対応を描写文で書く（`personality-guide.md` の「結果の書き方」）。
+The result of a self-report is never returned as the name of a type or category. In the deliverable, `personality.presentation` writes the mapping between the chosen behaviour and the episode as a descriptive passage ("How to write the result" in `personality-guide.md`).
 
-### 強みの呼び名の候補
+### Candidate names for a strength
 
-強みを言葉にしにくいとき、候補として示してよい語彙である。エピソードと他者証言がそろってから、その2つに合う呼び名を選ばせる。呼び名から強みを作らない。
+This is vocabulary that may be shown as a candidate when a strength is hard to put into words. Once the episode and feedback from others are both in hand, have the person choose a name that fits the two of them. A strength is never built from the name alone.
 
-- グッドポイント診断が公開する18の呼び名（親密性・社交性・受容力・現実志向・慎重性・冷静沈着・柔軟性・俊敏性・継続力・挑戦心・自立・感受性・高揚性・悠然・自己信頼・バランス・独創性・決断力）。呼び名だけを使い、診断の項目や採点は使わない（`personality-guide.md`）。
-- VIA の24の強みの語彙（公開研究版の範囲）。
+- The 18 names GOOD POINT diagnosis publishes (親密性 intimacy, 社交性 sociability, 受容力 acceptance, 現実志向 realism, 慎重性 carefulness, 冷静沈着 calm composure, 柔軟性 flexibility, 俊敏性 agility, 継続力 persistence, 挑戦心 a spirit for challenge, 自立 independence, 感受性 sensitivity, 高揚性 exuberance, 悠然 composure, 自己信頼 self-trust, バランス balance, 独創性 originality, 決断力 decisiveness). Only the names are used; the diagnosis's items and scoring are not used (`personality-guide.md`).
+- The vocabulary of VIA's 24 strengths (within the scope of the public research version).
 
-### Schein のキャリア・アンカー（呼び水・ラベル確定禁止）
+### Schein's career anchors (a prompt; never settle a label)
 
-Schein の8分類（専門・職能別コンピタンス／全般管理コンピタンス／自律・独立／保障・安定／起業家的創造性／奉仕・社会貢献／純粋な挑戦／生活様式）は、価値観の内省を促す呼び水として提示してよい。ただし構成概念妥当性が弱い（self-analysis-methods.md）ため、結果を「あなたのアンカーはこれだ」という確定した判定として扱わない。分類名を手がかりに、対応する行動エピソードがあるかを確認する使い方に限る。
+Schein's eight categories — 専門・職能別コンピタンス (technical/functional competence) / 全般管理コンピタンス (general managerial competence) / 自律・独立 (autonomy/independence) / 保障・安定 (security/stability) / 起業家的創造性 (entrepreneurial creativity) / 奉仕・社会貢献 (service/dedication to a cause) / 純粋な挑戦 (pure challenge) / 生活様式 (lifestyle) — may be presented as a prompt for introspection on values. Because their construct validity is weak (self-analysis-methods.md), the result is never treated as a settled judgment such as "this is your anchor." Its use is limited to using the category name as a cue for checking whether a matching behavioural episode exists.
 
-### CCI 型の5問（キャリア・ナラティブの素材）
+### The five CCI-style questions (material for the career narrative)
 
-Career Construction Interview（Savickas のキャリア構築理論の枠組み[E43]）では、面接者と相談者が5〜7問でライフテーマを聞き取り、一貫したキャリアストーリーを共同で構築する。次の5問を、ナラティブ（career_narrative）の素材の収集に使う。5問はこの枠組みの各設問の趣旨を本スキルの言葉で書いたものであり、原文の設問をそのまま転載したものではない（利用条件は `personality-guide.md` の道具の表）。
+In the Career Construction Interview (the framework of Savickas's career construction theory [E43]), the interviewer and the client elicit a life theme across 5-7 questions, and jointly build a consistent career story. The following five questions are used to collect material for the narrative (`career_narrative`). The five questions are written in this skill's own words, carrying the intent of each question in that framework (the terms of use are in the instruments table in `personality-guide.md`).
 
-1. 幼少期に憧れた人物は誰か。その人物のどこに引かれたか（ロールモデルは自己の理想像の手がかり）。
-2. よく読む雑誌・見る番組・好きなサイトは何か（関心を向ける環境の手がかり）。
-3. 好きな物語（本・映画）は何か。その筋書きのどこが好きか（自己の物語の型の手がかり）。
-4. 座右の銘・好きな言葉は何か（自らへの助言の手がかり）。
-5. 幼少期の最も古い記憶は何か（今の関心の起点の手がかり）。
+1. 幼少期に憧れた人物は誰か。その人物のどこに引かれたか (Who did you admire as a child, and what drew you to that person?) — a role model is a clue to the ideal self.
+2. よく読む雑誌・見る番組・好きなサイトは何か (What magazine do you often read, what show do you watch, what site do you like?) — a clue to the environment your interest turns toward.
+3. 好きな物語（本・映画）は何か。その筋書きのどこが好きか (What story — a book or a film — do you like, and what part of its plot do you like?) — a clue to the pattern of your own story.
+4. 座右の銘・好きな言葉は何か (What is your motto, or a phrase you like?) — a clue to the advice you give yourself.
+5. 幼少期の最も古い記憶は何か (What is your earliest childhood memory?) — a clue to the origin of your present interest.
 
-これらの答えは、ライフテーマ・転機・一貫する動機を言葉にするための素材である。診断結果として扱わず、narrative-guide.md の構成へつなぐ。
+These answers are material for putting the life theme, the turning points, and the consistent motivation into words. They are never treated as a diagnostic result, and connect to the structure in narrative-guide.md.
 
-出典表記の詳細（[E43] を含む DOI・URL）は、self-analysis-methods.md と narrative-guide.md の出典一覧にある。
+The detail of the citation ([E43], including its DOI and URL) is in the sources list of self-analysis-methods.md and narrative-guide.md.

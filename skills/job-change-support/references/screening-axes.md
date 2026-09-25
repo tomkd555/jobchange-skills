@@ -1,203 +1,203 @@
-# スクリーニング軸と作業特性の原本（screening-axes）
+# The canonical definition of screening axes and work characteristics (screening-axes)
 
-求人を利用者の希望と突き合わせるための語彙を定める原本である。次の4つのスキルがこのファイルを参照する。
+This is the canonical definition of the vocabulary used to match a job posting against the user's preferences. The following 4 skills refer to this file.
 
-| 参照元 | 何に使うか |
+| Referrer | What it is used for |
 |---|---|
-| `job-change-profile` / `job-change-support` | `profile.json` の `job_change_axis.conditions[].axis` と `work_character_preferences[].trait` の値域 |
-| `job-change-job-search` | `job_search_results.json` の `axis_observations[]`・`duty_items[]`・`axis_judgements[]` の値域 |
-| `job-change-fit-assessment` | `work_character_fit` 次元の評価対象 |
+| `job-change-profile` / `job-change-support` | The value range of `job_change_axis.conditions[].axis` and `work_character_preferences[].trait` in `profile.json` |
+| `job-change-job-search` | The value range of `axis_observations[]`, `duty_items[]`, and `axis_judgements[]` in `job_search_results.json` |
+| `job-change-fit-assessment` | What the `work_character_fit` dimension evaluates |
 
-語彙はここにのみ置き、参照元へ複製しない。
+The vocabulary lives here alone, and is never duplicated into a referrer.
 
-## 設計の前提
+## Design premise
 
-求人票から読めた事実（観測）と、本人の条件との突き合わせ（判定）を分ける。観測は Web 検索を担う役割が書き、判定は利用者プロファイルを読めるスキル本体が書く。この分離により、個人情報を Web 送信手段を持つ役割へ渡さずに条件判定ができる。
+Facts read from a job posting (observation) are kept separate from the comparison against the user's own conditions (judgement). A role that carries out web search writes the observation; the skill body, which can read the user profile, writes the judgement. This separation lets condition judgement happen without passing personal information to a role that has a means of sending data to the web.
 
-観測できないものを推測で埋めない。記載がない軸は `stated: false` とし、判定は `unknown` になる。`unknown` が多い求人は、自動的に「追加調査候補」へ分類される。記載の無さを、条件を満たす証拠にも満たさない証拠にも使わない。
+Never fill in what cannot be observed by guessing. An axis with no statement in the posting is marked `stated: false`, and its judgement becomes `unknown`. A posting with many `unknown` values is automatically classified as `needs_more_research`（追加調査候補）. The absence of a statement is never used as evidence that a condition is met, nor as evidence that it is not met.
 
-## 8つのスクリーニング軸
+## The eight screening axes
 
-| 軸 id | 名称 | 観測値の型 | 列挙値・単位 |
+| Axis id | Name | Observed-value type | Enumeration / unit |
 |---|---|---|---|
-| `remote_certainty` | リモート確度 | 列挙 | `guaranteed` / `full_remote_possible` / `hybrid` / `onsite` |
-| `overtime_hours` | 残業時間 | 数値 | 月平均時間 |
-| `annual_holidays` | 年間休日 | 数値 | 日／年 |
-| `oncall_load` | 夜間・休日対応 | 列挙 | `none_stated` / `exists` |
-| `hands_on_ratio` | 手を動かす業務の比率 | 数値 | 0.0〜1.0（`duty_items` から導出） |
-| `coordination_ratio` | 調整・管理業務の比率 | 数値 | 0.0〜1.0（`duty_items` から導出） |
-| `experience_distance` | 経験との距離 | 列挙 | `near` / `adjacent` / `far`（判定でのみ決める） |
-| `salary_condition` | 年収条件 | 数値 | 年収下限（円） |
+| `remote_certainty` | Remote-work certainty | enum | `guaranteed` / `full_remote_possible` / `hybrid` / `onsite` |
+| `overtime_hours` | Overtime hours | number | monthly average hours |
+| `annual_holidays` | Annual holidays | number | days / year |
+| `oncall_load` | Night and holiday response | enum | `none_stated` / `exists` |
+| `hands_on_ratio` | Hands-on work ratio | number | 0.0-1.0 (derived from `duty_items`) |
+| `coordination_ratio` | Coordination and management ratio | number | 0.0-1.0 (derived from `duty_items`) |
+| `experience_distance` | Experience distance | enum | `near` / `adjacent` / `far` (decided only at judgement) |
+| `salary_condition` | Salary condition | number | salary floor (yen) |
 
-### remote_certainty（リモート確度）
+### remote_certainty (remote-work certainty)
 
-| 値 | 判定基準 |
+| Value | Judgement basis |
 |---|---|
-| `guaranteed` | 就業規則・人事制度としてフルリモートが明記されている。「フルリモート制度あり」「リモートワーク規程」など、制度の存在が読み取れる |
-| `full_remote_possible` | 「フルリモート可」「在宅勤務可」の記載のみ。制度の裏付けは読み取れない |
-| `hybrid` | 出社日数・出社頻度の指定がある。「週2日出社」「月数回の出社あり」など |
-| `onsite` | 常時出社、またはリモートへの言及が無く勤務地が固定である |
+| `guaranteed` | Full remote work is stated explicitly as part of the work rules or a personnel policy. Wording such as 「フルリモート制度あり」(a full-remote system is in place) or 「リモートワーク規程」(a remote-work policy) shows that a policy exists |
+| `full_remote_possible` | Only wording such as 「フルリモート可」(full remote possible) or 「在宅勤務可」(work from home possible) appears. No backing by a policy can be read |
+| `hybrid` | A number of office days or an office-attendance frequency is specified, such as 「週2日出社」(2 office days a week) or 「月数回の出社あり」(a few office days a month) |
+| `onsite` | Constant office attendance, or no mention of remote work with a fixed work location |
 
-「リモート可」と「リモートが制度として保証されている」は別である。文言だけで `guaranteed` と判定しない。制度の記載が読み取れないなら `full_remote_possible` にとどめる。
+「リモート可」 (remote work possible) and 「リモートが制度として保証されている」 (remote work guaranteed as a policy) are two different statements. Never judge `guaranteed` from the wording alone. When no statement of a policy can be read, keep the judgement at `full_remote_possible`.
 
-### overtime_hours（残業時間）
+### overtime_hours (overtime hours)
 
-月平均の残業時間を数値で観測する。「月平均20時間」なら `20`。「みなし残業30時間分を含む」という記載がある場合は、みなし時間を上限の目安として `30` を観測値にし、`note` にみなし残業である旨を書く。
+Observe the monthly average overtime hours as a number. 「月平均20時間」(monthly average 20 hours) becomes `20`. When wording such as 「みなし残業30時間分を含む」(includes 30 hours of deemed overtime pay) appears, treat the deemed hours as a ceiling estimate, use `30` as the observed value, and record the fact that it is deemed overtime in `note`.
 
-「残業少なめ」「残業ほぼなし」のような定性表現しか無い場合は、`stated: true`・`value: null` とし、`value_text` にその文言を転記する。定性表現から数値を推定しない。
+When only a qualitative expression appears, such as 「残業少なめ」(low overtime) or 「残業ほぼなし」(almost no overtime), set `stated: true` and `value: null`, and transcribe the wording into `value_text`. Never infer a number from a qualitative expression.
 
-### annual_holidays（年間休日）
+### annual_holidays (annual holidays)
 
-年間休日日数を数値で観測する。「年間休日125日」なら `125`。「完全週休2日制」だけの記載は日数が確定しないため、`stated: true`・`value: null` とし、`value_text` に文言を転記する。
+Observe the number of annual holiday days as a number. 「年間休日125日」(125 annual holidays) becomes `125`. A statement of only 「完全週休2日制」(a complete five-day work week) leaves the day count unsettled, so set `stated: true` and `value: null`, and transcribe the wording into `value_text`.
 
-### oncall_load（夜間・休日対応）
+### oncall_load (night and holiday response)
 
-| 値 | 判定基準 |
+| Value | Judgement basis |
 |---|---|
-| `none_stated` | 「夜間対応なし」「オンコールなし」と明記されている |
-| `exists` | 当番・オンコール・シフト・障害対応・24時間365日運用のいずれかの記載がある |
+| `none_stated` | States explicitly 「夜間対応なし」(no night response) or 「オンコールなし」(no on-call) |
+| `exists` | States any of: duty rotation, on-call, shift work, incident response, or 24/7 operation |
 
-記載が無い場合は `stated: false` である。記載が無いことを「夜間対応なし」の根拠にしない。運用・保守・インフラ系の求人では、記載が無くても夜間・休日対応が存在しうる。
+When there is no statement, `stated: false`. The absence of a statement is never used as grounds for 「夜間対応なし」 (no night response). A posting for operations, maintenance, or infrastructure work can carry night or holiday response even with no statement of it.
 
-### hands_on_ratio・coordination_ratio（業務比率）
+### hands_on_ratio / coordination_ratio (work-content ratios)
 
-業務内容の引用文を `duty_items[]` へ1件ずつ転記し、それぞれに分類を1つだけ付ける。比率は分類の件数から算出する。
+Transcribe each quoted phrase of job content into `duty_items[]`, one item at a time, and give each one exactly one category. The ratio is calculated from the count of items in each category.
 
-| category | 意味 | 例 | 比率への算入 |
+| category | Meaning | Example | Counts toward |
 |---|---|---|---|
-| `build` | 構築・実装 | 「システムの設計・構築」「アプリケーション開発」 | 手を動かす |
-| `operate` | 設定・運用 | 「サーバーの設定変更」「監視基盤の運用」 | 手を動かす |
-| `verify` | 検証・テスト | 「検証環境での動作確認」「テスト計画の実施」 | 手を動かす |
-| `automate` | 自動化・ツール化 | 「運用自動化スクリプトの作成」「CI/CD の整備」 | 手を動かす |
-| `coordinate` | 社内調整・折衝 | 「関係部署との調整」「ベンダーコントロール」 | 調整・管理 |
-| `manage` | 管理・進捗・要員 | 「プロジェクトの進捗管理」「メンバーの育成」 | 調整・管理 |
-| `customer_facing` | 顧客対応・提案 | 「顧客への提案」「要件のヒアリング」 | 調整・管理 |
-| `other` | 上記に当てはまらない | 「その他付随業務」 | 母数のみ |
+| `build` | Construction / implementation | 「システムの設計・構築」「アプリケーション開発」 | hands-on |
+| `operate` | Configuration / operation | 「サーバーの設定変更」「監視基盤の運用」 | hands-on |
+| `verify` | Verification / testing | 「検証環境での動作確認」「テスト計画の実施」 | hands-on |
+| `automate` | Automation / tooling | 「運用自動化スクリプトの作成」「CI/CD の整備」 | hands-on |
+| `coordinate` | Internal coordination / negotiation | 「関係部署との調整」「ベンダーコントロール」 | coordination / management |
+| `manage` | Management / progress / staffing | 「プロジェクトの進捗管理」「メンバーの育成」 | coordination / management |
+| `customer_facing` | Customer interaction / proposals | 「顧客への提案」「要件のヒアリング」 | coordination / management |
+| `other` | None of the above | 「その他付随業務」 | counted only in the denominator |
 
 ```
 hands_on_ratio     = (build + operate + verify + automate) / duty_items の全件数
 coordination_ratio = (coordinate + manage + customer_facing) / duty_items の全件数
 ```
 
-`duty_items` が3件未満のときは母数が足りず、比率が偶然に左右される。この場合は両軸とも `stated: false`・`value: null` とする。
+When `duty_items` has fewer than 3 entries, the denominator is too small and the ratio swings by chance. In this case, set both axes to `stated: false` and `value: null`.
 
-分類の境界例を示す。
+The following shows boundary examples for classification.
 
-| 引用文 | 分類 | 理由 |
+| Quoted phrase | Category | Reason |
 |---|---|---|
-| 「要件定義から設計・構築まで一貫して担当」 | `build` | 手を動かす工程が主たる内容である |
-| 「要件定義および関係部署との合意形成」 | `coordinate` | 合意形成が主たる内容である |
-| 「インフラ構築の外部委託先管理」 | `manage` | 管理が主たる内容であり、構築は委託先が行う |
-| 「障害発生時の一次対応」 | `operate` | 手を動かす対応である（夜間対応の有無は `oncall_load` で別に見る） |
-| 「技術選定と PoC の実施」 | `verify` | PoC は検証である |
-| 「セキュリティポリシーの策定」 | `coordinate` | 策定は関係者との合意を伴う |
-| 「チームリードとして5名を統括」 | `manage` | 統括が主たる内容である |
+| 「要件定義から設計・構築まで一貫して担当」 | `build` | The hands-on process is the primary content |
+| 「要件定義および関係部署との合意形成」 | `coordinate` | Building agreement is the primary content |
+| 「インフラ構築の外部委託先管理」 | `manage` | Management is the primary content; the outside vendor carries out the construction |
+| 「障害発生時の一次対応」 | `operate` | A hands-on response (whether it happens at night is judged separately, under `oncall_load`) |
+| 「技術選定と PoC の実施」 | `verify` | A PoC is verification |
+| 「セキュリティポリシーの策定」 | `coordinate` | Drafting a policy involves reaching agreement among stakeholders |
+| 「チームリードとして5名を統括」 | `manage` | Leading the team is the primary content |
 
-1つの引用文に構築と調整の両方が現れる場合は、文の主語・述語がどちらを主としているかで決める。迷う場合は `other` にせず、主たる述語で決めて `duty_items` の引用文を残す。引用文が残っていれば、後から人が判断し直せる。
+When one quoted phrase carries both construction and coordination, decide by which one the sentence's subject and predicate treat as primary. When in doubt, never fall back to `other`: decide by the primary predicate, and keep the quoted phrase in `duty_items`. As long as the quoted phrase remains, a person can revisit the judgement later.
 
-### experience_distance（経験との距離）
+### experience_distance (experience distance)
 
-この軸だけは、観測層で値を決めない。求人票から読めるのは要件であり、距離は利用者の経歴と突き合わせて初めて決まるためである。
+This axis alone never has its value decided at the observation layer. What a job posting shows is the requirement; the distance is settled only once it is compared against the user's own career history.
 
-観測層は `required_experience[]`（必須要件の引用文の配列）と `job_family`（職種の大分類。「インフラエンジニア」「バックエンドエンジニア」など）を持つ。`value` は `null` 固定とする。
+The observation layer holds `required_experience[]` (an array of quoted phrases stating the must-have requirements) and `job_family` (a broad job-type category, such as 「インフラエンジニア」(infrastructure engineer) or 「バックエンドエンジニア」(backend engineer)). `value` is fixed at `null`.
 
-判定層は次の基準で距離を決める。
+The judgement layer decides the distance by the following standard.
 
-| 値 | 判定基準 |
+| Value | Judgement basis |
 |---|---|
-| `near` | 必須要件を現在の実務経験で満たす。職種大分類が現職と同じか隣接する |
-| `adjacent` | 必須要件の一部を満たす。不足分は隣接技術の経験から補える |
-| `far` | 必須要件の多くを満たさない。職種大分類が現職と異なる |
+| `near` | The must-have requirements are met by current hands-on experience. The broad job-type category matches the current job or is adjacent to it |
+| `adjacent` | Some of the must-have requirements are met. The shortfall can be covered by experience in an adjacent technology |
+| `far` | Most of the must-have requirements are not met. The broad job-type category differs from the current job |
 
-**経験との距離は、志向との一致とは別である。** 経験が近いことを、その仕事を望んでいる根拠に使わない。志向の評価は `job-change-fit-assessment` の `aspiration_alignment` 次元が担う。
+**Experience distance is separate from alignment with the user's own aspiration.** Closeness of experience is never used as evidence that the user wants that job. Evaluating aspiration belongs to the `aspiration_alignment` dimension of `job-change-fit-assessment`.
 
-### salary_condition（年収条件）
+### salary_condition (salary condition)
 
-提示年収の下限を円単位の数値で観測する。「年収600万〜900万円」なら `6000000`。
+Observe the floor of the stated annual salary as a number in yen. 「年収600万〜900万円」(annual salary 6 million to 9 million yen) becomes `6000000`.
 
-「応相談」「経験・能力を考慮のうえ決定」は `stated: true`・`value: null` とする。月給表記のみで賞与の有無が読めず年収へ換算できない場合も同様である。推定で年収へ換算しない。
+「応相談」(negotiable) or 「経験・能力を考慮のうえ決定」(decided based on experience and ability) is set to `stated: true` and `value: null`. The same applies when only a monthly salary is stated, the existence of a bonus cannot be read, and the figure cannot be converted to an annual salary. Never convert to an annual salary by estimation.
 
-「モデル年収」（例: 「入社3年目のモデル年収600万円」）の記載だけで `value` を決めない。別の在籍年数の一例であり、当該求人の提示額ではない。「想定年収」は提示額として扱ってよいが、下限が「〜」で開いている場合は下限だけを読む。固定残業代を含む額が提示されている場合は、含む旨を `value_text` に転記し、`overtime_hours` 軸の観測にその時間数を書く。
+Never decide `value` from a statement of a 「モデル年収」(model annual salary) alone — for example, 「入社3年目のモデル年収600万円」(a model annual salary of 6 million yen in the third year of employment). It is an example for a different length of service. A 「想定年収」(expected annual salary) may be treated as the offered figure; when the floor is left open with a dash, read the floor alone. When the stated figure includes a fixed overtime allowance, record that fact in `value_text`, and write the hour count into the observation for the `overtime_hours` axis.
 
-## 8つの作業特性
+## The eight work characteristics
 
-利用者が「どのような働き方をしたいか」を表す語彙である。`profile.json` の `work_character_preferences[]` で、それぞれに希望度を持たせる。
+This is the vocabulary that expresses how the user wants to work. In `profile.json`, `work_character_preferences[]` gives each one a desire level.
 
-| 特性 id | 意味 | 求人票から観測できるか | 対応する軸 |
+| Trait id | Meaning | Observable from a job posting | Corresponding axis |
 |---|---|---|---|
-| `hands_on` | 自分で手を動かせる | 可 | `hands_on_ratio` |
-| `build_ops_ratio` | 構築・設定・検証・自動化の比率が高い | 可 | `hands_on_ratio` |
-| `low_coordination` | 顧客折衝・社内調整・管理業務が少ない | 可 | `coordination_ratio` |
-| `full_remote_guaranteed` | フルリモートが制度として保証されている | 一部可 | `remote_certainty` |
-| `no_oncall` | 夜間・休日対応が原則ない | 一部可 | `oncall_load` |
-| `clear_completion` | 完了条件が明確である | 不可 | なし |
-| `solo_completable` | 作業の手順・進め方を自分で決めて完結させられる | 不可 | なし |
-| `short_feedback` | 結果が短期間で確認できる | 不可 | なし |
+| `hands_on` | Able to do hands-on work | yes | `hands_on_ratio` |
+| `build_ops_ratio` | A high ratio of construction, configuration, verification, and automation | yes | `hands_on_ratio` |
+| `low_coordination` | Little customer negotiation, internal coordination, or management work | yes | `coordination_ratio` |
+| `full_remote_guaranteed` | Full remote work is guaranteed as a policy | partial | `remote_certainty` |
+| `no_oncall` | In principle, no night or holiday response | partial | `oncall_load` |
+| `clear_completion` | Completion conditions are clear | no | none |
+| `solo_completable` | Able to decide the work's procedure and approach and see it through | no | none |
+| `short_feedback` | Results can be confirmed within a short period | no | none |
 
-### 観測できない3特性の扱い
+### Handling the three unobservable traits
 
-`clear_completion`・`solo_completable`・`short_feedback` は、求人票の文面からは判定できない。同じ職種名でも組織によって異なり、求人票にはまず書かれない。
+`clear_completion`, `solo_completable`, and `short_feedback` cannot be judged from the wording of a job posting. They differ by organisation even under the same job title, and a job posting essentially never states them.
 
-これらを求人検索の分類の判断に一切影響させない。推測で「満たす」「満たさない」を付けない。扱いは次のとおりである。
+None of these ever affects the classification judgement in a job search. Never mark "met" or "not met" by guessing. They are handled as follows.
 
-- 求人検索では、これらの特性に対応する軸を持たないため、分類に関与しない。
-- 適合性評価では、`work_character_fit` 次元の `verdict` で「求人票・企業研究からは判定できない」と明記する。あわせて `overall.open_questions` へ面接での確認事項として挙げる。
-- 面接対策では、逆質問の素材として扱う（例:「このポジションで、着任後3か月の成果として何が期待されるか」）。
+- In a job search, these traits have no corresponding axis, so they play no part in classification.
+- In fit assessment, the `verdict` of the `work_character_fit` dimension states 「求人票・企業研究からは判定できない」 (cannot be judged from the job posting or company research). It is also listed in `overall.open_questions` as an item to confirm at the job interview.
+- In interview preparation, it is treated as material for a question the candidate asks the interviewer (for example, 「このポジションで、着任後3か月の成果として何が期待されるか」 (what results are expected from this position within three months of joining)).
 
-### 希望度（desire）
+### Desire level (desire)
 
-| 値 | 意味 | 判定への影響 |
+| Value | Meaning | Effect on judgement |
 |---|---|---|
-| `must` | 満たさないなら見送る | 必須条件として扱う。満たさない求人は除外候補になる |
-| `important` | 重視する | 評価には効くが、単独では除外しない |
-| `neutral` | どちらでもよい | 判定に使わない |
-| `not_required` | 不要である | 判定に使わない |
+| `must` | Rules out the posting if not met | Treated as a must-have condition. A posting that fails to meet it becomes a candidate for exclusion |
+| `important` | Given weight | Affects the evaluation, but never excludes a posting by itself |
+| `neutral` | No preference either way | Not used in judgement |
+| `not_required` | Not needed | Not used in judgement |
 
-8特性すべてに希望度を付ける。「未記入」と「どちらでもよい」を区別するためである。未記入を放置すると、下流のサブスキルが推測で補う余地が残る。
+Give a desire level to all 8 traits. This distinguishes "left blank" from "no preference either way." Leaving one blank leaves room for a downstream sub-skill to fill it in by guessing.
 
-## 作業特性の学術的根拠
+## The academic basis for the work characteristics
 
-求人票から観測できない3特性は、職務特性モデル（job characteristics model）の次元に対応する。この対応づけにより、3特性は実務上の言い回しではなく、職務満足・動機づけとの関連が実証されている構成概念として扱える。
+The three traits that cannot be observed from a job posting correspond to dimensions of the job characteristics model. This mapping lets the three traits be treated as constructs with a demonstrated link to job satisfaction and motivation.
 
-Humphrey ほか（2007）は259研究・219,625名の統合で、14の職務特性が19の労働者態度・行動の分散を平均43%説明し、動機づけ特性が職務満足の分散を34%説明することを示した。職務特性モデルそのものの検証は Fried と Ferris（1987）にある。Morgeson と Humphrey（2006）は自律性を作業スケジュール・意思決定・作業方法の3つへ分解する枠組みを示した。
+Humphrey and colleagues (2007), integrating 259 studies and 219,625 people, showed that 14 job characteristics explain an average of 43% of the variance in 19 worker attitudes and behaviours, and that motivational characteristics explain 34% of the variance in job satisfaction. The validation of the job characteristics model itself is in Fried and Ferris (1987). Morgeson and Humphrey (2006) presented a framework that decomposes autonomy into three parts: work scheduling, decision-making, and work methods.
 
-| 特性 id | 対応する職務特性 | 対応づけの内容 |
+| Trait id | Corresponding job characteristic | What the mapping states |
 |---|---|---|
-| `clear_completion` | タスク完結性 | 仕事を始まりから終わりまで1つのまとまりとして担い、完了した状態を識別できる |
-| `solo_completable` | 自律性のうち作業方法の自律性 | 作業の手順・進め方を本人が選べ、他者の判断を待たずに完結へ運べる |
-| `short_feedback` | フィードバック | 仕事そのものから、成果の良否を短い間隔で知ることができる |
+| `clear_completion` | Task identity | The work is carried out as one whole piece from start to finish, and its completed state can be identified |
+| `solo_completable` | Autonomy, in its work-methods form | The person can choose the work's procedure and approach, and carry it through to completion without waiting on another person's decision |
+| `short_feedback` | Feedback | The work itself lets the good or bad of the result be known at short intervals |
 
-尺度の項目文は転載しない。ここで示すのは特性と職務特性次元の対応づけだけであり、利用者へ尺度を回答させることは本語彙の用途に含まれない。
+The scale's item wording is not reproduced here. What is shown here is only the mapping between the traits and the job-characteristic dimensions; having the user answer the scale itself falls outside the purpose of this vocabulary.
 
 <!-- textlint-disable jtf-style/2.1.2.漢字 -->
-<!-- 著者名を原文のまま示す箇所である。人名の表外漢字はここでのみ許容する。 -->
+<!-- This is where author names are shown exactly as in the original. Non-standard kanji in personal names are permitted only here. -->
 
-### 日本の標本での確認
+### Confirmation in Japanese samples
 
-駒形ほか（2021）は急性期病院の看護職240名で日本語版職務特性尺度を検証した。下位尺度の信頼性係数はすべて0.7以上で、職務満足との相関は0.23〜0.53だった。石橋（2016）は日本の回答者832名で、タスク重要性・フィードバック・自律性を備えた職務設計が職務満足を高めることを報告した。あわせて、組織市民行動を直接促す効果が、職務満足を媒介した間接効果より強いことも示した。有本と熊谷（2021）は手術室看護師258名で、仕事のコントロールが高いほど精神的健康が良好であることを示した。
+Komagata and colleagues (2021) validated the Japanese-language version of the job characteristics scale on 240 nursing staff at an acute-care hospital. Every subscale's reliability coefficient was 0.7 or above, and the correlation with job satisfaction ranged from 0.23 to 0.53. Ishibashi (2016), working with 832 Japanese respondents, reported that job design carrying task significance, feedback, and autonomy raises job satisfaction. It also showed that the direct effect on organisational citizenship behaviour is stronger than the indirect effect mediated through job satisfaction. Arimoto and Kumagai (2021), working with 258 operating-room nurses, showed that higher control over one's work is tied to better mental health.
 
-### 対応づけの限界
+### Limits of the mapping
 
-職務特性の効果は職場の文脈に依存しうる。正木と村本（2018）は、仕事の相互依存性が情緒的コミットメントを高めるのは職場の性別多様性が相対的に低い場合に限られることを2件の調査で示した。作業特性の希望を満たすことが常に良い結果につながるとは限らない。希望との一致は判断材料の1つであり、それ自体を良否の結論にしない。
+The effect of a job characteristic can depend on the workplace context. Masaki and Muramoto (2018) showed, across two studies, that task interdependence raises affective commitment only where gender diversity in the workplace is relatively low. Meeting a work-characteristic preference does not always lead to a good outcome. Matching a preference is one piece of judgement material, and is never treated by itself as a conclusion of good or bad.
 
-日本語版尺度の検証は看護職1施設の240名を対象としており、職種の代表性が限られる。加えて、この検証の探索的因子分析では原版の5因子（スキル多様性・タスク重要性・タスク完結性・自律性・フィードバック）が再現されず、4因子が抽出された。上記の対応づけでは、原版の因子構造がそのまま日本の職場に成り立つことを前提にできない。
+The validation of the Japanese-language scale covered 240 nursing staff at one facility, so the representativeness across job types is limited. Its exploratory factor analysis also extracted 4 factors, where the original version has 5 (skill variety, task significance, task identity, autonomy, and feedback). The mapping above cannot assume that the original factor structure holds, as it stands, in Japanese workplaces.
 
-### 出典
+### Sources
 
-- Humphrey ほか（2007）、DOI:10.1037/0021-9010.92.5.1332
-- Fried と Ferris（1987）、DOI:10.1111/j.1744-6570.1987.tb00605.x
-- Morgeson と Humphrey（2006）、DOI:10.1037/0021-9010.91.6.1321
-- 駒形ほか（2021）、DOI:10.19012/janap.25.1_12
-- 石橋（2016）、DOI:10.11221/jima.66.309
-- 有本と熊谷（2021）、DOI:10.3861/kenko.87.5_229
-- 正木と村本（2018）、DOI:10.5651/jaas.30.133
+- Humphrey and colleagues (2007), DOI:10.1037/0021-9010.92.5.1332
+- Fried and Ferris (1987), DOI:10.1111/j.1744-6570.1987.tb00605.x
+- Morgeson and Humphrey (2006), DOI:10.1037/0021-9010.91.6.1321
+- Komagata and colleagues (2021), DOI:10.19012/janap.25.1_12
+- Ishibashi (2016), DOI:10.11221/jima.66.309
+- Arimoto and Kumagai (2021), DOI:10.3861/kenko.87.5_229
+- Masaki and Muramoto (2018), DOI:10.5651/jaas.30.133
 
 <!-- textlint-enable jtf-style/2.1.2.漢字 -->
 
-## 軸と条件の対応
+## Correspondence between axes and conditions
 
-`profile.json` の `job_change_axis.conditions[]` は、`axis` にこの8軸のいずれか、または `null` を取る。`null` は「8軸に当てはまらない質的な条件」を表す（例:「モダンな技術スタックが整備されていること」）。
+In `profile.json`, `job_change_axis.conditions[]` takes, for `axis`, either one of these 8 axes or `null`. `null` represents "a qualitative condition that fits none of the 8 axes" (for example, 「モダンな技術スタックが整備されていること」— "a modern technology stack is in place").
 
-`axis` が `null` の条件は、求人票からの機械的な判定ができない。`operator` を `qualitative` にし、`verification` を `research`（企業研究で確認）または `interview`（面接で確認）にする。この種の条件は求人検索の分類には用いず、適合性評価と面接での確認へ回す。
+A condition whose `axis` is `null` cannot be judged mechanically from a job posting. Set `operator` to `qualitative`, and set `verification` to `research` (confirmed through company research) or `interview` (confirmed at the job interview). This kind of condition is never used in job-search classification; it is passed on to fit assessment and to confirmation at the job interview.
 
-`axis` を持つ条件だけが、求人検索の8軸判定としきい値の突き合わせに使われる。
+Only a condition that has an `axis` is used in the 8-axis judgement and threshold comparison of a job search.

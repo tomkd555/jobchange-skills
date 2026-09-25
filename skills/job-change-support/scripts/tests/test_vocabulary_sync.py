@@ -23,8 +23,10 @@ sys.path.insert(0, _SCRIPTS_DIR)
 # 語彙のコピーは他スキルの検証スクリプトにもある。それらも同じ原本と突き合わせる。
 sys.path.insert(0, os.path.join(_SKILLS_DIR, "job-change-fit-assessment", "scripts"))
 sys.path.insert(0, os.path.join(_SKILLS_DIR, "job-change-job-search", "scripts"))
+sys.path.insert(0, os.path.join(_SKILLS_DIR, "job-change-company-research", "scripts"))
 
 import validate_company_index as vci  # noqa: E402
+import validate_company_research as vcr  # noqa: E402
 import validate_fit_assessment as vfa  # noqa: E402
 import validate_job_search_results as vjs  # noqa: E402
 import validate_profile as vp  # noqa: E402
@@ -35,6 +37,9 @@ _SCORE_RUBRIC_MD = os.path.join(
 )
 _JOB_SEARCH_FORMAT_MD = os.path.join(
     _SKILLS_DIR, "job-change-job-search", "references", "job-search-format.md"
+)
+_DERIVATION_LANES_MD = os.path.join(
+    _SKILLS_DIR, "job-change-job-search", "references", "derivation-lanes.md"
 )
 
 _CODE_RE = re.compile(r"`([^`]+)`")
@@ -77,7 +82,7 @@ class ScreeningAxesTest(unittest.TestCase):
     """8つのスクリーニング軸の id。原本は references/screening-axes.md にある。"""
 
     def setUp(self):
-        self.terms = _table_terms(_SCREENING_AXES_MD, "## 8つのスクリーニング軸")
+        self.terms = _table_terms(_SCREENING_AXES_MD, "## The eight screening axes")
 
     def test_extraction_yields_eight_axes(self):
         # 抽出が壊れたまま空一致で通らないよう、件数そのものを確かめる。
@@ -94,7 +99,7 @@ class QuantitativeScoreAxesTest(unittest.TestCase):
     """定量候補軸の軸キー。原本は job-change-company-research の company-score-rubric.md にある。"""
 
     def setUp(self):
-        self.terms = _table_terms(_SCORE_RUBRIC_MD, "## 定量候補軸")
+        self.terms = _table_terms(_SCORE_RUBRIC_MD, "## Quantitative candidate axes")
 
     def test_extraction_yields_nine_axes(self):
         self.assertEqual(len(self.terms), 9, self.terms)
@@ -110,7 +115,7 @@ class ScoreAxisKindTest(unittest.TestCase):
     """採点軸の種別（kind）。原本は company-score-rubric.md の「軸の2種類」にある。"""
 
     def setUp(self):
-        self.terms = _table_terms(_SCORE_RUBRIC_MD, "## 軸の2種類")
+        self.terms = _table_terms(_SCORE_RUBRIC_MD, "## The two kinds of axis")
 
     def test_extraction_yields_two_kinds(self):
         self.assertEqual(len(self.terms), 2, self.terms)
@@ -161,21 +166,54 @@ class JobSearchSchema22Test(unittest.TestCase):
 
     def test_matches_search_sets(self):
         terms = _table_terms(
-            _JOB_SEARCH_FORMAT_MD, "### results[].search_set（文字列・2.2 で必須）"
+            _JOB_SEARCH_FORMAT_MD, "### results[].search_set (string, required since 2.2)"
         )
         self.assertEqual(tuple(terms), vjs.SEARCH_SETS)
 
     def test_matches_role_matches(self):
         terms = _table_terms(
-            _JOB_SEARCH_FORMAT_MD, "### results[].role_match（文字列・2.2 で必須）"
+            _JOB_SEARCH_FORMAT_MD, "### results[].role_match (string, required since 2.2)"
         )
         self.assertEqual(tuple(terms), vjs.ROLE_MATCHES)
 
     def test_matches_related_info_keys(self):
         terms = _table_terms(
-            _JOB_SEARCH_FORMAT_MD, "### results[].related_info（オブジェクト・任意）"
+            _JOB_SEARCH_FORMAT_MD, "### results[].related_info (object, optional)"
         )
         self.assertEqual(tuple(terms), vjs.RELATED_INFO_KEYS)
+
+
+class JobSearchSchema23Test(unittest.TestCase):
+    """求人検索 2.3 の語彙（派生レーン・企業プロフィール）。原本は job-change-job-search の
+    job-search-format.md・derivation-lanes.md、および job-change-company-research の
+    company-score-rubric.md にある。"""
+
+    def test_metric_units_match_company_research(self):
+        self.assertEqual(vjs.COMPANY_METRIC_UNITS, vcr.QUANTITATIVE_AXIS_UNITS)
+
+    def test_metric_keys_match_score_rubric(self):
+        terms = _table_terms(_SCORE_RUBRIC_MD, "## Quantitative candidate axes")
+        self.assertEqual(terms, list(vjs.COMPANY_METRIC_UNITS))
+
+    def test_basics_keys(self):
+        self.assertEqual(
+            set(vjs.COMPANY_BASICS_KEYS) | set(vjs.POSTING_RELATED_INFO_KEYS), set(vjs.RELATED_INFO_KEYS)
+        )
+
+    def test_lanes_match_derivation_lanes_md(self):
+        if not os.path.exists(_DERIVATION_LANES_MD):
+            self.skipTest("derivation-lanes.md not yet written")
+        terms = _table_terms(_DERIVATION_LANES_MD, "## Lane list")
+        self.assertEqual(tuple(terms), vjs.DERIVATION_LANES)
+
+    def test_metric_table_in_format_md(self):
+        with open(_JOB_SEARCH_FORMAT_MD, encoding="utf-8") as f:
+            content = f.read()
+        heading = "#### Axis keys in metrics"
+        if heading not in content:
+            self.skipTest("job-search-format.md に #### metrics の軸キー が無い")
+        terms = _table_terms(_JOB_SEARCH_FORMAT_MD, heading)
+        self.assertEqual(terms, list(vjs.COMPANY_METRIC_UNITS))
 
 
 if __name__ == "__main__":

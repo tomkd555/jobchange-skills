@@ -1,88 +1,84 @@
-# 検索条件の偏りの点検と探索集合（bias-checklist）
+# Checking search-condition bias (bias-checklist)
 
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
-<!-- 本文中の [E1] 形式は出典 ID の記法である。半角大かっこを保つため、このファイルでは当該規則を無効化する。 -->
+<!-- The [E1] form in the body text is the notation for a source id. This file disables that rule to keep the half-width square brackets. -->
 
-利用者が持ち込む条件の偏りを、検索の前に点検し、検索の中で1本の探索集合として補う手順の原本である。SKILL.md の Step 1（条件の組み立て）・Step 2（検索の実行）・Step 5（納品）と、検索担当エージェント（job-change-job-searcher）の役割プロンプトが参照する。成果物側の記録（`search_sets`・`results[].search_set`・`screening.exploration`）の仕様は `job-search-format.md` にある。
+This is the canonical procedure for checking, before the search, the biases the user brings into the conditions, and compensating for them with derivation lanes (`derivation-lanes.md`). It is referenced by SKILL.md's Step 1 (building conditions), Step 2 (executing the search), Step 5 (delivery), and the searcher agent's (job-change-job-searcher's) role prompt. The specification for the deliverable-side records (`search_sets`, `results[].search_set`, `results[].lane`, `screening.derivations`) lives in `job-search-format.md`.
 
-エビデンスレベルは A〜D の4段階で表記する。定義の原本は `job-change-company-research/references/evidence-grading.md` にある。本ファイルの偏りの一覧は、日本の中途市場で利用者側の条件に現れやすいものを運用上の取り決めとして並べたものである。それぞれの偏りが求職の成果へ与える影響を実証した日本の研究は特定できていない。実証のある事項には出典を付し、無い事項は付けない。
+The evidence level is expressed on a four-step scale, A through D. The canonical definition lives in `job-change-company-research/references/evidence-grading.md`. This file's list of biases lays out, as an operational convention, the ones that tend to appear in a user's conditions in Japan's mid-career market. No Japanese study demonstrating each bias's effect on job-search outcomes could be identified. A matter with supporting evidence carries a source; a matter without one carries none.
 
-## 位置づけ
+## Position
 
-利用者の希望は条件シート（`search_sets.primary`）としてそのまま検索する。本ファイルが定めるのは、その希望を疑うことではなく、希望の書き方に紛れ込んだ「利用者が選んだわけではない絞り込み」を1回だけ可視化し、利用者に選び直す機会を作ることである。
+The user's wishes are searched as they stand, as the condition sheet (`search_sets.primary`). What this file establishes is a single visibility check: surfacing, once, a narrowing concealed in how a wish is worded that the user did not choose, and creating a chance for the user to choose again.
 
-- 主集合（`primary`）は利用者の指定条件であり、探索集合は主集合を置き換えない。探索集合の求人が応募候補になっても、主集合の応募候補の代わりにはしない。
-- 探索集合は主集合の12本とは別枠の追加クエリで作る。主集合の本数を削って探索へ回さない（根拠は後述の「探索集合の位置づけ」）。
-- 利用者が探索集合を要らないと言えば作らない。作らなかったことは成果物に残る（`search_sets.exploration` が `null`。fuzzy では WARN）。
+- The primary set (`primary`) is the user's specified conditions, and a derivation lane never replaces it. Even when a derived posting becomes an application candidate, it never substitutes for the primary set's application candidates.
+- A derivation lane is built from additional queries in a track separate from the primary set's twelve. The primary set's query count is never cut down to feed a lane (the grounds live in "Derivation lanes are never traded against the primary set" in `search-methods.md`).
+- When the user chooses no lane at all, none is built. That none was built stays on record in the deliverable (`search_sets.derivations` is an empty array; this is a WARN in fuzzy).
 
-## 利用者側の偏りの一覧
+## List of user-side biases
 
-条件シートを作るときに、次の偏りが条件へ紛れ込んでいないかを見る。該当する場合、Step 1 の確認で「その条件は必須か、選好か」を1問で聞く。条件そのものは書き換えない。必須でないと答えた条件は探索集合で外す候補になる。
+When building the condition sheet, check whether the following biases have crept into the conditions. When one matches, ask "is that condition required, or a preference?" as one question in Step 1's confirmation. The condition itself is never rewritten. A condition answered as not required becomes a candidate for the corresponding lane to move. The purpose and building method of the lanes live in `derivation-lanes.md`.
 
-| 偏り | 条件に現れる形 | 点検の問い | 探索集合での扱い |
+| Bias | How it appears in the conditions | Checking question | Corresponding lane |
 |---|---|---|---|
-| 職種名の固定 | 現職の職種名をそのまま `roles` に1つだけ書く | 職務の重なる別の職種も対象にしてよいか | 隣接職種を `roles` に足す（`query-catalog.md` の同義語表の「隣接職種」の欄。言い換え1・2は主集合で既に使う） |
-| 業界の固定 | 現職または直近の業界だけを `industries` に書く | 業界は必須条件か | `industries` を外す |
-| 大企業・知名度への偏り | `other` に「大手」「上場」を書く。企業例で条件を語る | 規模と知名度は、8軸のどれに対応する希望か | 規模の条件を外す。8軸の希望は残す |
-| 現年収への係留 | `salary_min` を現年収と同額かそれ以上に置く | 下限は「受け入れられる最低額」か「今の額」か | 下限は本人が決める値であり探索集合でも動かさない。問いだけを置く |
-| フルリモートの固定 | `remote_policy` にフルリモートだけを書く | 目的が通勤時間の削減なら、週の出社日数が少ない求人も対象になるか | リモート表現を広げる（`query-catalog.md` の「リモートの表現」） |
-| 役職名の固定 | 「マネージャー」「リーダー」の有無で職種名を絞る | 役職の段階は必須か | 役職の段階を1つ上と1つ下にずらす（`query-catalog.md` の「役職の段階」） |
-| 勤務地の前提 | 都道府県1つだけを書き、通勤圏の隣接県を含めない | 通勤時間の上限で決めるなら、隣接県の求人も対象になるか | 次点の地域は主集合の12本の内訳に既にある。探索集合では動かさない |
-| 転勤前提の総合職の除外 | 「転勤なし」を必須に置く | 就業場所の変更の範囲が限定されていれば足りるか | 就業場所の変更の範囲は8軸に無く、fuzzy では観測しない。求人票の記載は `match_notes` に転記し、確認は `open_questions` へ回す。探索集合では動かさない |
-| 転職回数・空白期間による自己制限 | 「自分は回数が多いから応募先を下げる」として条件を下げる | 条件を下げた理由は求人票の要件か、本人の見込みか | 条件を戻して主集合に置く。応募の可否は求人票の必須要件で判定する |
-| 年齢による自己制限 | 「35歳を超えたから」として職種や年収を下げる | 年齢で下げた根拠はあるか | 条件を戻して主集合に置く。年収の年齢別の傾向は `{HUB_SKILL_DIR}/references/market-data-sources.md` の規則4で扱う |
-| 学歴による自己制限 | 「学歴で落ちるから」として応募先を絞る | 求人票の必須要件に学歴があるか | 条件を戻して主集合に置く |
-| 直近に見た求人の影響 | スカウトメールや広告で見た求人を基準に条件を書く | その条件は自分で決めたものか | `search_log` で全件をクエリへ結び付ける。ログに無い求人を「見た」と書かない |
-| エージェントの推薦への依存 | 「勧められた求人だから」条件に合わなくても残す | 推薦の理由は本人の8軸のどれに当たるか | 本スキルは推薦を扱わない。8軸判定だけで分類する |
+| Fixation on the occupation name | Writing the current job's occupation name into `roles` as the only one, unchanged | May another occupation whose duties overlap also be a target? | `adjacent_role` (the "Adjacent occupation" column of the synonym table in `query-catalog.md`; paraphrases 1 and 2 are already used in the primary set) |
+| Fixation on the industry | Writing only the current or most recent industry into `industries` | Is the industry a required condition? | `industry_widen` |
+| Bias toward large, well-known companies | Writing 「大手」 (major company) or 「上場」 (listed) into `other`. Describing the condition through example companies | Which of the eight axes does the wish for scale and name recognition correspond to? | `company_type` (drops the scale condition and searches by each type — foreign-affiliated, startup, listed — while keeping the eight-axis wishes) |
+| Anchoring to the current salary | Setting `salary_min` at the same amount as the current salary, or higher | Is the floor "the lowest acceptable amount", or "the current amount"? | `better_salary` (moves only in the direction of raising the floor; there is no lane in the lowering direction, only the question) |
+| Fixation on full remote work | Writing only full remote work into `remote_policy` | If the goal is cutting commute time, does a posting with fewer office days per week also become a target? | `remote_widen` (`query-catalog.md`'s "Expressions of remote work") |
+| Fixation on the job title | Narrowing the occupation name by whether 「マネージャー」 (manager) or 「リーダー」 (leader) appears | Is the seniority level required? | `seniority_shift` (`query-catalog.md`'s "Seniority level") |
+| The work-location assumption | Writing only a single prefecture, excluding an adjacent prefecture within commuting range | If deciding by a commute-time ceiling, does a posting in an adjacent prefecture also become a target? | `region_widen` (the next-choice region is already part of the primary set's twelve queries; the lane widens beyond it) |
+| Excluding generalist roles that presuppose relocation | Setting 「転勤なし」 (no relocation) as required | Is it enough that the scope of change in work location is limited? | No lane. Scope of change in work location is not among the eight axes, and fuzzy does not observe it. Copy the posting's statement into `match_notes`, and send confirmation to `open_questions`. |
+| Self-limiting by job-change count or employment gaps | Lowering the condition on the reasoning "I have changed jobs several times, so I lower my target" | Is the reason the condition was lowered a requirement in the posting, or the user's own assumption? | No lane. Restore the condition and place it in the primary set. Judge whether to apply by the posting's required qualifications. |
+| Self-limiting by age | Lowering the occupation or salary on the reasoning "I am over 35" | Is there a basis for lowering it on account of age? | No lane. Restore the condition and place it in the primary set. The salary trend by age is handled in rule 4 of `{HUB_SKILL_DIR}/references/market-data-sources.md`. |
+| Self-limiting by education | Narrowing the target on the reasoning "my education will get me rejected" | Does the posting's required qualifications include education? | No lane. Restore the condition and place it in the primary set. |
+| Influence from a recently seen posting | Writing the condition based on a posting seen in a scout email or an advertisement | Did the user decide that condition themselves? | No lane. Tie every posting to a query in `search_log`. Never write that a posting was "seen" when it is absent from the log. |
+| Dependence on agent recommendations | Keeping a posting on the reasoning "it was recommended", even when it does not fit the conditions | Which of the user's eight axes does the reason for the recommendation correspond to? | `direct_careers` (enters through a company's own careers page directly). Classification runs on the eight-axis judgment alone; the recommendation itself plays no part. |
 
-現年収・転職回数・年齢・学歴・居住地と通勤時間（`commute.json`）は個人情報である。点検の問いは利用者と hub の間で完結させ、検索担当エージェントへは条件シートの値だけを渡す。沿線名や駅名は、利用者が自分の言葉で条件シートへ書いた場合に限り条件とし、`commute.json` から導かない（規則は `query-catalog.md` の「沿線・通勤圏」、境界の原本は `{HUB_SKILL_DIR}/references/pii-boundary.md`）。
+The current salary, the number of job changes, age, education, and residential detail and commute time (`commute.json`) are personal information. The checking question is completed entirely between the user and the hub, and only the condition sheet's values are passed to the searcher agent. A rail line name or station name is treated as a condition only when the user wrote it into the condition sheet in their own words, and is never derived from `commute.json` (the rule lives in "Rail lines and commuting range" in `query-catalog.md`; the canonical boundary lives in `{HUB_SKILL_DIR}/references/pii-boundary.md`).
 
-## 応募をためらう偏りについて
+## On the bias to hesitate before applying
 
-「男性は要件の60%を満たせば応募し、女性は100%を満たすまで応募しない」という言い回しが広く引かれるが、出所は米国企業の内部報告とされるだけで、一次資料は確認されていない。この数字を本スキルの文書に書かない。
+The line "men apply once they meet 60% of the requirements, and women wait until they meet 100%" is widely quoted, but its origin is only said to be an internal report at a U.S. company, and no primary source has been confirmed. This skill's documents never write that figure.
 
-確認できる一次資料は、英国の Behavioural Insights Team が2022年に公表したオンライン実験（回答10,468名、架空の求人票を用いた3条件）である[E1]。同資料は、男性は要件の52.1%を満たすと応募し、女性は55.7%を満たすと応募すると報告し、3条件のいずれでも「同程度の資格を持つ女性より男性のほうが応募に前向きだった」と述べる。60%対100%という数字を否定する経緯は、同チームのブログが記者の調査を引いて説明している[E2]。
+The primary source that can be confirmed is an online experiment the UK's Behavioural Insights Team published in 2022 (10,468 respondents, three conditions using fictitious job postings) [E1]. It reports that men apply once they meet 52.1% of the requirements, and women once they meet 55.7%, and states that in every one of the three conditions, men were more inclined to apply than equally qualified women. The team's own blog explains, citing a journalist's investigation, the course of events behind the 60%-versus-100% figure [E2].
 
-本スキルへの含意は、求人票の必須要件と歓迎要件を分けて読むことである。8軸判定では `must` の未充足だけが除外の根拠であり、`want` の未充足は除外にならない（決定表は `job-search-format.md`）。利用者が「要件を全部は満たさない」ことを理由に応募候補を自分で除外しようとした場合は、どの要件が必須でどれが歓迎かを求人票の文言で確かめる。英国の求人票約77,000件の分析によれば、上位職の求人ほど男性的とされる言葉（lead など）を多く使い、補助職の求人ほど女性的とされる言葉（support など）を多く使っていた[E3]。求人票の言葉の選び方が応募者の自己選択に影響しうることは、要件を必須と歓迎に分けて読む理由になる。いずれも英国の標本であり、日本の中途市場での追試は特定できていない。
+The implication for this skill is reading a posting's required qualifications separately from its preferred qualifications. In the eight-axis judgment, only an unmet `must` grounds exclusion, and an unmet `want` never excludes a posting (the decision table is in `job-search-format.md`). When a user tries to exclude an application candidate themselves on the reasoning that "I do not meet every requirement," confirm from the posting's own wording which requirements are required and which are preferred. An analysis of about 77,000 UK job postings found that postings for senior roles used more words coded masculine (such as "lead"), and postings for support roles used more words coded feminine (such as "support") [E3]. That a posting's choice of words can influence an applicant's self-selection is a reason to read requirements as required and preferred separately. Both are UK samples, and no replication in Japan's mid-career market could be identified.
 
-## 探索集合の位置づけ
+## Correspondence with derivation lanes
 
-探索集合は、主集合（利用者の指定条件、12本以内）に追加する最大6本のクエリで作る。fuzzy モードでは既定で作る。similar_better では作らない。similar_better は改善軸を決めて基準求人を上回る求人を探す手続きであり、条件を広げる目的と相反するためである。
+In 2.3, the search widened by the bias check is built as derivation lanes (`derivation-lanes.md`). A lane is a query added on top of the primary set (the user's specified conditions, twelve or fewer queries), up to three per lane. It is used in both fuzzy and similar_better. In similar_better, each lane's `salary_min` is kept at or above the reference posting's floor, and `baseline_comparison.axes` is written for derived postings too.
 
-主集合の本数を削って探索へ回さない。理由と限界は `search-methods.md` の「探索集合は主集合と交換しない」にある。
+The primary set's query count is never cut down to feed a lane. The reason and the limitations live in "Derivation lanes are never traded against the primary set" in `search-methods.md`.
 
-探索集合の6本の内訳は次のとおりである。該当する偏りが無い行は使わない。使わなかった本数を主集合へ回さない。
+2.2's exploration set (up to six queries, fuzzy only) corresponds to the following four lanes. Read 2.2's deliverable through this correspondence.
 
-| 本数 | 組み方 | 対応する偏り |
+| 2.2's query count | How it is built | Corresponding lane |
 |---|---|---|
-| 2 | 隣接職種2つ × 第一希望地域 × 条件なし | 職種名の固定 |
-| 1 | 主職種 × 第一希望地域 × `industries` を外す | 業界の固定 |
-| 2 | 主職種 × 第一希望地域 × 役職の段階を1つ上・1つ下 | 役職名の固定 |
-| 1 | 主職種 × 第一希望地域 × リモート表現を広げる | フルリモートの固定 |
+| 2 | Two adjacent occupations × the first-choice region × no condition | `adjacent_role` |
+| 1 | Main occupation × the first-choice region × dropping `industries` | `industry_widen` |
+| 2 | Main occupation × the first-choice region × one level up and one level down in seniority | `seniority_shift` |
+| 1 | Main occupation × the first-choice region × widening remote-work phrasing | `remote_widen` |
 
-探索集合でも `salary_min` は外さない。年収下限は本人が決める最低額であり、選好ではなく条件である。
+`salary_min` is never lowered in any lane. The salary floor is the minimum amount the user decides on, and it is a condition.
 
-探索集合で外した条件は `search_sets.exploration.dropped_conditions` に列挙し、外した理由を `rationale` に書く。外した条件は「本人が必須でないと答えた条件」に限る。Step 1 で必須と答えた条件は探索集合でも外さない。
+List the condition a lane moves in `search_sets.derivations[].changed_conditions`, and write the reason it was moved in `rationale`. The only condition ever dropped is one the user answered as not required. A condition answered as required in Step 1 is never dropped by any lane.
 
-## 探索集合の結果の扱い
+## How a derived posting is handled
 
-- 探索集合から得た求人は `results[].search_set` を `exploration` にする。主集合の求人と同じ観測層・判定層を持ち、8軸判定と3分類は同じ規則で行う。分類は「どう見つけたか」に依存しない。
-- `results[].role_match` に、条件の職種との関係（`same`・`adjacent`・`different`）を書く。主集合に `different` があれば、クエリが条件から外れた可能性があり WARN になる。
-- 報告（Step 5）では、分類ごとの表の中で探索集合の求人を「視野を広げた検索から」の小節に分けて置く。主集合の表より上に置かない。探索集合の応募候補を、主集合の応募候補が0件のときの最有力候補に仕立てない。`screening.recommendation` は主集合と探索集合を合わせた `apply_candidate` の件数から導くため、探索集合だけに応募候補がある場合は、その旨を `rationale` に書く。
-- 探索集合の求人の `match_notes` には、どの偏りの点検から出た求人か（例: 「隣接職種: インフラエンジニアの指定に対し SRE で検索」）を書く。利用者が業務内容で判断できるようにするためである。
-- `screening.exploration` に実施の有無と件数を記録する。実施しなかった場合は `performed: false` とし、件数は `null` にする。
+The recording and reporting rules for a derived posting live in "How results are handled" in `derivation-lanes.md`.
 
-## 報告に添える未充足の件数
+## The unmet count attached to the report
 
-分類は3値であり、`apply_candidate` の中に序列を持たない（`search-methods.md` の「最良を探し続けることの代償」）。ただし `want` の未充足が何件あるかは `axis_judgements` を読まないと分からないため、Step 5 の求人ごとの表に、`level` が `want` で `judgement` が `not_meets` の軸の件数を1列添える。これは報告の列であり、成果物のフィールドではない。件数で並べ替えて順位表にしない。
+Classification takes three values, and holds no ranking within `apply_candidate` ("The cost of always searching for the best" in `search-methods.md`). The count of unmet `want` conditions can only be known by reading `axis_judgements`, though, so attach one column to Step 5's per-posting table counting the axes whose `level` is `want` and whose `judgement` is `not_meets`. This column belongs only to the report; the deliverable schema omits it. Never sort by this count to make a ranking table.
 
-## 出典一覧
+## Source list
 
 <!-- textlint-disable -->
-<!-- 書誌形式（発行元. 表題. 年. レベル. URL）で出典を並べる節である。区切りのピリオドを和文の句読点として判定させないため、この節だけ無効化する。 -->
+<!-- This section lists sources in bibliographic form (publisher. title. year. level. URL). This section alone disables the rule, so the separating periods are never judged as Japanese punctuation. -->
 
-- [E1] Behavioural Insights Team. Gender differences in response to requirements in job adverts. 2022-03. レベルA（英国政府系の行動科学研究機関によるオンライン実験。回答10,468名。架空の求人票を用いた3条件）. https://www.bi.team/wp-content/uploads/2022/03/Gender-differences-in-response-to-requirements-in-job-adverts-March-2022.pdf
-- [E2] Behavioural Insights Team. Women Only Apply When 100% Qualified. Fact or Fake News?. レベルB（一次資料の不在を報告するブログ。60%対100%の数字の出所を記者の調査に基づいて説明する）. https://www.bi.team/blogs/women-only-apply-when-100-qualified-fact-or-fake-news/
-- [E3] Totaljobs. How UK job ads bias applicants by gender. 2017. レベルB（求人媒体自身による約77,000件の求人票の分析。原ページは本スキルのツールからは 403 で読めず、同社の Gender Bias Decoder の解説ページと業界誌の報道で内容を確認した）. https://www.totaljobs.com/media-centre/how-uk-job-ads-bias-applicants-by-gender/
+- [E1] Behavioural Insights Team. Gender differences in response to requirements in job adverts. 2022-03. Level A (an online experiment by a UK government-affiliated behavioral science research body; 10,468 respondents; three conditions using fictitious job postings). https://www.bi.team/wp-content/uploads/2022/03/Gender-differences-in-response-to-requirements-in-job-adverts-March-2022.pdf
+- [E2] Behavioural Insights Team. Women Only Apply When 100% Qualified. Fact or Fake News?. Level B (a blog reporting the absence of a primary source; explains the origin of the 60%-versus-100% figure based on a journalist's investigation). https://www.bi.team/blogs/women-only-apply-when-100-qualified-fact-or-fake-news/
+- [E3] Totaljobs. How UK job ads bias applicants by gender. 2017. Level B (an analysis of about 77,000 job postings by the job board itself; the original page returns a 403 from this skill's tools and cannot be read, so its content was confirmed through the company's own Gender Bias Decoder explainer page and trade-press coverage). https://www.totaljobs.com/media-centre/how-uk-job-ads-bias-applicants-by-gender/
 
 <!-- textlint-enable -->

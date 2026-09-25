@@ -9,7 +9,7 @@
       "name": "job-change",
       "source": ".",
       "description": "日本の中途採用での転職を支援するスキル群（9スキル・14エージェント）",
-      "version": "1.5.0",
+      "version": "1.6.0",
       "author": {
         "name": "TOMKD"
       }

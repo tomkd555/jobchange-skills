@@ -1,87 +1,87 @@
-# time_analysis.json の原本仕様（time-analysis-format）
+# Canonical specification of time_analysis.json (time-analysis-format)
 
-`time_analysis.json` の仕様と、`scripts/calculate_time_analysis.py` による算定の仕組みを定める原本である。応募先候補の求人票・企業研究・利用者入力から、1日および年間の拘束時間・労働時間・実質時給を機械的に算定し、time_fit（時間適合）評価の根拠として使う。
+This is the canonical definition of `time_analysis.json`'s specification and of the computation `scripts/calculate_time_analysis.py` performs. From the candidate company's job posting, company research, and user input, it mechanically computes the daily and annual committed time, the working hours, and the effective hourly wage, and uses these as grounds for the time_fit (time match) evaluation.
 
-## 配置と扱い
+## Placement and handling
 
-生成物は `career-private/fit/{企業スラッグ}/time_analysis.json` に置く。比較の基準となる現職の算定結果は、応募先の企業に対応しないため `career-private/fit/current/time_analysis.json` に置き、全企業で使い回す。拘束時間・実質時給は年収・通勤時間などの個人情報から導く派生値であるため、`career-private/` 配下に隔離し、Web 送信手段（WebSearch・WebFetch）を持つエージェントへ渡さない。
+The generated artifact is placed at `career-private/fit/{company slug}/time_analysis.json`. The current job's computation result, which serves as the comparison baseline, does not correspond to any target company, so it is placed at `career-private/fit/current/time_analysis.json` and reused across every company. Since committed time and effective hourly wage are values derived from personal information such as annual salary and commute time, they are isolated under `career-private/`, and are never handed to an agent holding a web transmission means (WebSearch, WebFetch).
 
-## 定義式
+## Formulas
 
-`calculate_time_analysis.py` は次の式で算定する。分母は「年間の実出勤日数」に一本化する。
+`calculate_time_analysis.py` computes with the following formulas. The denominator is unified to "the annual number of actual working days."
 
-- 月出勤日数 = `(365 − 年間休日) ÷ 12`
-- 日次残業 = `月平均の残業時間 ÷ 月出勤日数`
-- 1日拘束時間 = `所定労働時間 + 休憩 + 日次残業 + 通勤片道 × 2`
-- 有給取得日数 = `取得日数実績（あれば）／なければ 付与日数見込 × 取得率(%) ÷ 100`
-- 年間の実出勤日数 = `365 − 年間休日 − 有給取得日数`
-- 年間拘束時間 = `年間の実出勤日数 × 1日拘束時間`
-- 年間労働時間 = `年間の実出勤日数 × (所定労働時間 + 日次残業)`
-- 実質時給（binding_basis）= `想定年収 ÷ 年間拘束時間`
-- 実質時給（labor_basis）= `想定年収 ÷ 年間労働時間`
+- Monthly working days = `(365 − annual holidays) ÷ 12`
+- Daily overtime = `average monthly overtime ÷ monthly working days`
+- Daily committed time = `scheduled working hours + break + daily overtime + one-way commute × 2`
+- Paid-leave days taken = `actual days taken (if available) / otherwise, expected days granted × taken rate (%) ÷ 100`
+- Annual number of actual working days = `365 − annual holidays − paid-leave days taken`
+- Annual committed time = `annual number of actual working days × daily committed time`
+- Annual working hours = `annual number of actual working days × (scheduled working hours + daily overtime)`
+- Effective hourly wage (binding_basis) = `expected annual salary ÷ annual committed time`
+- Effective hourly wage (labor_basis) = `expected annual salary ÷ annual working hours`
 
-レベル付きの想定年収が無いとき、`effective_hourly_wage` は `null` にする。実質時給を創作しない。
+When there is no leveled expected annual salary, set `effective_hourly_wage` to `null`. Do not invent an effective hourly wage.
 
-内部計算では丸めない。出力時にのみ、時間は小数第1位、日数と円は整数へ丸める。
+The internal computation does not round. Rounding happens only at output time: hours to one decimal place, days and yen to integers.
 
-## 感度分析
+## Sensitivity analysis
 
-`sensitivity` は、他の入力を固定して次の1項目だけを動かしたときの、年間拘束時間の増減値（時間）を持つ。
+`sensitivity` holds the increase or decrease (in hours) of the annual committed time when a single item is moved, with the other inputs held fixed.
 
-- `overtime_plus10h` / `overtime_minus10h`: 月平均残業を ±10 時間動かしたときの増減
-- `commute_plus15min` / `commute_minus15min`: 通勤片道を ±15 分動かしたときの増減
+- `overtime_plus10h` / `overtime_minus10h`: the change from moving average monthly overtime by ±10 hours
+- `commute_plus15min` / `commute_minus15min`: the change from moving one-way commute by ±15 minutes
 
-年間の実出勤日数は残業・通勤に左右されない。そのため増減値は、プラス側とマイナス側で符号が反転した対称値になり、基準の水準によって変わらない。
+The annual number of actual working days is unaffected by overtime and commute. The increase and decrease therefore come out as symmetric values with the sign reversed between the plus side and the minus side, unchanged by the baseline level.
 
-## 現職との比較
+## Comparison with the current job
 
-応募先の拘束時間・実質時給は、単体の絶対値では良し悪しを判断できない。現職についても同じ式で算定し、その差分を time_fit と compensation_fit の判断材料にする。
+The target company's committed time and effective hourly wage cannot be judged good or bad from the absolute value alone. Compute the current job with the same formula, and use the difference as material for time_fit and compensation_fit.
 
-現職の算定結果を `--baseline-json` へ渡すと、出力へ `comparison` が加わる。渡さなければ `comparison` は加わらない。
+Passing the current job's computation result to `--baseline-json` adds `comparison` to the output. Without it, `comparison` is not added.
 
-| キー | 内容 |
+| Key | Content |
 |---|---|
-| `current` | 現職の値。`annual_binding_hours`・`annual_labor_hours`・`hourly_wage_binding_basis`・`hourly_wage_labor_basis` の4項目を持つ。 |
-| `delta` | 「応募先 − 現職」の差分。項目は `current` と同じ。 |
+| `current` | The current job's value. Holds the four items `annual_binding_hours`, `annual_labor_hours`, `hourly_wage_binding_basis`, `hourly_wage_labor_basis`. |
+| `delta` | The "target − current" difference. Same items as `current`. |
 
-どちらか一方でも数値として取れない項目は、`current`・`delta` ともに `null` にする。時間は小数第1位、円は整数へ丸める。
+If either side cannot be taken as a number for an item, set both `current` and `delta` to `null` for it. Round hours to one decimal place, yen to an integer.
 
-現職の算定に使う年収・労働時間・通勤時間は利用者入力（`user`）で取り、通勤時間は下記「通勤時間が未入力のときの扱い」と同じ系統を使う。
+The salary, working hours, and commute time used for the current job's computation are taken as user input (`user`), and the commute time uses the same lane as "Handling when commute time is not entered" below.
 
-## 入力の優先度
+## Input priority
 
-各入力の値は、次の優先順で決める。上位で確定した値を使い、下位へ下がるほど確度は落ちる。決定した出所は各入力の `source`（`posting` / `research` / `user` / `fallback`）に記録する。
+Each input's value is decided in the following priority order. The value fixed at the higher level is used; confidence falls as the level drops. Record the decided source in each input's `source` (`posting` / `research` / `user` / `fallback`).
 
-| 優先度 | 出所 | 内容 |
+| Priority | Source | Content |
 |---|---|---|
-| 1 | 求人票（`posting`） | `job_posting.json` の `working_hours`・`metrics` に引用付きで載る値。最優先とする。 |
-| 2 | 企業研究の指標（`research`） | `company_research.json` の `company_metrics`（月平均残業は `monthly_overtime`、年間休日は `annual_holidays`、有給取得率は `paid_leave_rate`、有給取得日数は `avg_paid_leave_days_taken`）。同一項目に複数の候補があるときはエビデンスレベル（A → B → C → D）が最も高いものを採用する。エビデンスレベルの定義の原本は `job-change-company-research` の `references/evidence-grading.md` にある。C・D 単独での断定は避け、値を採用するときも確度を下げて扱う。 |
-| 3 | 利用者入力（`user`） | 通勤時間など、利用者本人が申告する値。 |
-| 4 | 統計フォールバック（`fallback`） | 上位のいずれでも埋まらない項目に、官公庁の一次統計に基づく既定値を適用する。 |
+| 1 | Job posting (`posting`) | A value in `job_posting.json`'s `working_hours` / `metrics`, carrying a quote. Given top priority. |
+| 2 | Company-research indicators (`research`) | `company_research.json`'s `company_metrics` (average monthly overtime is `monthly_overtime`, annual holidays is `annual_holidays`, paid-leave-taken rate is `paid_leave_rate`, paid-leave days taken is `avg_paid_leave_days_taken`). When multiple candidates exist for the same item, adopt the one with the highest evidence level (A → B → C → D). The canonical definition of evidence levels lives in `job-change-company-research`'s `references/evidence-grading.md`. Avoid asserting from level C or D alone, and treat an adopted value at lower confidence even then. |
+| 3 | User input (`user`) | A value the user reports directly, such as commute time. |
+| 4 | Statistical fallback (`fallback`) | A default value based on a primary government statistic, applied to an item left unfilled at the levels above. |
 
-呼び出し側（fit-assessment スキル本体）が優先度に従って値を決め、確定値を CLI 引数へ、各値の出所のメタデータを `--sources-json` へ渡す。スクリプト自身は `job_posting.json`・`company_research.json` を読まず、渡された値と、未指定項目へのフォールバック適用だけを行う。
+The caller (the fit-assessment skill body) decides the value in priority order, passing the fixed value as a CLI argument and each value's source metadata to `--sources-json`. The script itself does not read `job_posting.json` or `company_research.json`; it only computes from the values passed to it and applies the fallback to unspecified items.
 
-## 通勤時間が未入力のときの扱い
+## Handling when commute time is not entered
 
-通勤片道の時間は、次の1系統だけで扱う。
+The one-way commute time is handled through this single lane only.
 
-1. `career-private/commute.json` の当該スラッグの `one_way_minutes` があれば、それを使う。
-2. 無ければ、AskUserQuestion で1回だけ確認する。
-3. それでも不明なら、統計フォールバックを適用し、`fallbacks_used` と `assumptions` に明示する。
+1. If `career-private/commute.json`'s `one_way_minutes` for the slug exists, use it.
+2. If not, ask once through AskUserQuestion.
+3. If still unknown, apply the statistical fallback, and note it explicitly in `fallbacks_used` and `assumptions`.
 
-住所からのジオコーディングや Web 経路検索は行わない。
+No address geocoding or web route search is performed.
 
-## フォールバック定数の原本
+## Canonical definition of the fallback constants
 
-統計フォールバックの値・調査名・調査年・出典 URL の原本は、`calculate_time_analysis.py` 内の定数 `FALLBACKS`（統計値）と `STATUTORY_DEFAULTS`（所定労働時間・休憩の法定既定値）である。本文書には数値を重複して書かない。定数を変更するときはスクリプトの当該定数を直接編集する。
+The canonical definition of the statistical fallback's values, survey name, survey year, and source URL is the constants `FALLBACKS` (statistical values) and `STATUTORY_DEFAULTS` (the statutory defaults for scheduled working hours and break) inside `calculate_time_analysis.py`. This document does not duplicate the numbers. To change a constant, edit that constant in the script directly.
 
-`FALLBACKS` の各項目には、厚生労働省・総務省いずれかの一次統計（官公庁ドメイン）の最新公表値を裏取りして設定し、`{value, survey, survey_year, source_url}` を保持させる。フォールバックを適用した項目は、生成物の `fallbacks_used`（構造化した記録）と `assumptions`（値・調査名・調査年・URL を含む文）の双方に必ず残す。
+Each item of `FALLBACKS` is set after checking the latest published value of a primary statistic (a government domain) from either the Ministry of Health, Labour and Welfare or the Ministry of Internal Affairs and Communications, and holds `{value, survey, survey_year, source_url}`. Whenever a fallback is applied to an item, it is always left in both the generated artifact's `fallbacks_used` (a structured record) and `assumptions` (a sentence including the value, survey name, survey year, and URL).
 
-## 出力構成
+## Output structure
 
 ```
 {
-  "inputs": { "<入力キー>": {"value", "source", "source_url"|null, "grade"|null}, ... },
+  "inputs": { "<input key>": {"value", "source", "source_url"|null, "grade"|null}, ... },
   "daily": {"scheduled_hours", "break_h", "daily_overtime_h", "commute_oneway_h", "binding_hours"},
   "annual": {"working_days", "paid_leave_taken_days", "binding_hours", "labor_hours"},
   "effective_hourly_wage": {"binding_basis", "labor_basis"} | null,
@@ -92,9 +92,9 @@
 }
 ```
 
-`inputs` には算定に使った数値のみを載せる。有給取得日数の実績（`paid_leave_taken`）を与えたときは、その値を `inputs` に載せ、付与日数・取得率は算定に使わないため載せない。実績を与えないときは、付与日数（`paid_leave_granted`）と取得率（`paid_leave_rate`。単位は % で、企業研究の `company_metrics.paid_leave_rate` と同じ尺度）を載せ、付与日数 × 取得率 ÷ 100 で取得日数を推計する。
+`inputs` holds only the values used in the computation. When the actual paid-leave-days-taken value (`paid_leave_taken`) is given, that value is loaded into `inputs`, and the days granted and taken rate are not loaded, since they are not used in the computation. When the actual value is not given, the days granted (`paid_leave_granted`) and taken rate (`paid_leave_rate`; in %, on the same scale as company research's `company_metrics.paid_leave_rate`) are loaded, and days taken is estimated as days granted × taken rate ÷ 100.
 
-記入例は `assets/time_analysis_example.json`（架空データ）にある。
+The example lives in `assets/time_analysis_example.json` (fictional data).
 
 ## CLI
 
@@ -106,4 +106,4 @@ python scripts/calculate_time_analysis.py \
     [--sources-json PATH] [--baseline-json PATH] [--out PATH] [--json]
 ```
 
-`--baseline-json` には現職の `time_analysis.json` のパスを渡す。指定しなかった項目にはフォールバックを適用する。`--out` は指定パスへ書き出し（親ディレクトリが無ければ作成する）、`--json` は結果を標準出力へ書き出す。年間休日が 365 以上、有給取得率が 0〜100（%）の範囲外など、入力に矛盾があるときは終了コード 2 で明確なメッセージを返す。
+`--baseline-json` takes the current job's `time_analysis.json` path. Any item not specified receives the fallback. `--out` writes to the given path (creating the parent directory if it does not exist), and `--json` writes the result to standard output. When the input is contradictory — annual holidays of 365 or more, a paid-leave-taken rate outside 0–100 (%), and the like — it returns exit code 2 with a clear message.
