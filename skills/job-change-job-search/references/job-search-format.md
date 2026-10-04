@@ -185,11 +185,11 @@ The current value is `"2.3"`. `"2.2"`, `"2.1"`, `"2.0"`, and `"1.0"` are also re
 | `"2.2"` | Exploration set (`search_sets`, `results[].search_set`, `results[].role_match`, `screening.exploration`), related information (`results[].related_info`) |
 | `"2.3"` | Derivation lanes (`search_sets.derivations`, `results[].lane`, `search_log[].lane`, `screening.derivations`), company information (`company_profiles`, `results[].company_key`) |
 
-A check added in a newer version does not apply to a deliverable written in an older version. A `"1.0"` deliverable is not checked against the observation layer, a `"2.0"` deliverable is not required to have `search_log`, a `"2.1"` deliverable is not required to have `search_sets`, and a `"2.2"` deliverable is not required to have `company_profiles`. A newly created deliverable is written as `"2.3"`.
+A check added in a version applies only to deliverables written in that version or a later one. A `"1.0"` deliverable is not checked against the observation layer, a `"2.0"` deliverable is not required to have `search_log`, a `"2.1"` deliverable is not required to have `search_sets`, and a `"2.2"` deliverable is not required to have `company_profiles`. A newly created deliverable is written as `"2.3"`.
 
 ### search_id (string, required)
 
-The identifier for this search run. Write the same value as the directory name that holds the deliverable (for `job-search/20260725-remote-infra/`, write `"20260725-remote-infra"`). Missing or empty is ERROR. The directory name sits outside the deliverable, so reading the file alone would not tell which search run it belongs to; the same value is written inside the file for that reason. Fit assessment identifies the search run from this value written in `screening_source.search_id`. The canonical specification for `screening_source` lives in job-change-fit-assessment's `references/fit-format.md`.
+The identifier for this search run. Write the same value as the directory name that holds the deliverable (for `job-search/20260725-remote-infra/`, write `"20260725-remote-infra"`). Missing or empty is ERROR. The directory name is outside the deliverable, so reading the file alone would not tell which search run it belongs to. The same value is written inside the file for that reason. Fit assessment identifies the search run from this value written in `screening_source.search_id`. The canonical specification for `screening_source` is in job-change-fit-assessment's `references/fit-format.md`.
 
 The format must match the following regular expression (a mismatch is ERROR).
 
@@ -206,7 +206,7 @@ The search mode. It must be one of the following two values. Missing, empty, or 
 | Value | Meaning |
 |---|---|
 | `fuzzy` | Fuzzy search. A search based on a condition sheet that structures the user's wishes |
-| `similar_better` | A search for postings that beat a reference posting. A search for postings that exceed the conditions of a reference posting (`baseline`) |
+| `similar_better` | A search for postings that improve on a reference posting. A search for postings that exceed the conditions of a reference posting (`baseline`) |
 
 ### executed_at (string, required)
 
@@ -220,15 +220,15 @@ The keys are free-form, but `roles`, `industries`, `salary_min`, `location`, `re
 
 ### baseline (object, optional)
 
-A reference to the reference posting used in `similar_better` mode. It carries either `url` (the posting's page URL) or `slug` (the slug under `companies/{company slug}/`).
+A reference to the reference posting used in `similar_better` mode. It contains either `url` (the posting's page URL) or `slug` (the slug under `companies/{company slug}/`).
 
 - If `baseline` is missing under `similar_better`, it is WARN (recording the reference posting is recommended).
 - If `baseline` is present under `fuzzy`, it is WARN (it is not used under fuzzy).
-- If neither `url` nor `slug` is present, it is ERROR. `slug` must match the company slug format (a mismatch is ERROR). The canonical definition of the format lives in job-change-support's `references/company-index-format.md`.
+- If neither `url` nor `slug` is present, it is ERROR. `slug` must match the company slug format (a mismatch is ERROR). The canonical definition of the format is in job-change-support's `references/company-index-format.md`.
 
 ### results (array, required)
 
-The array of postings obtained by the search. A non-array value is ERROR. An empty array is WARN (recording the circumstances that prevented retrieval in `coverage_notes` is recommended). Each element carries the following fields.
+The array of postings obtained by the search. A non-array value is ERROR. An empty array is WARN (recording the circumstances that prevented retrieval in `coverage_notes` is recommended). Each element has the following fields.
 
 | Field | Required | Entry criteria |
 |---|---|---|
@@ -238,11 +238,11 @@ The array of postings obtained by the search. A non-array value is ERROR. An emp
 | `source_site` | Required | The name of the listing site (求人ボックス, マイナビ転職エンジニア, type, Wantedly, etc. The canonical definition of covered sites is `query-catalog.md`). Missing or empty is ERROR |
 | `match_notes` | Required | A summary of the fit against, and gaps from, the conditions. Missing or empty is ERROR |
 | `quote` | Required | A quotation from the listing page. Missing or empty is ERROR |
-| `salary_range` | Optional | The salary range as a string. `null` when the listing reads 「応相談」 (negotiable) or similar and the value cannot be determined. A value that is neither a string nor null is ERROR |
-| `location` | Optional | The work location as a string, or `null`. A value that is neither a string nor null is ERROR |
-| `remote_policy` | Optional | The remote-work policy as a string, or `null`. A value that is neither a string nor null is ERROR |
+| `salary_range` | Optional | The salary range as a string. `null` when the listing reads 「応相談」 (negotiable) or similar and the value cannot be determined. A value other than a string or null is ERROR |
+| `location` | Optional | The work location as a string, or `null`. A value other than a string or null is ERROR |
+| `remote_policy` | Optional | The remote-work policy as a string, or `null`. A value other than a string or null is ERROR |
 | `annual_holidays` | Optional | The number of annual holidays. A number, a string, or `null` (a boolean is ERROR) |
-| `better_points` | Conditional | An array of points on which this posting improves on the reference posting. Only for `similar_better`. A non-array value, or an element that is not a non-empty string, is ERROR |
+| `better_points` | Conditional | An array of points on which this posting improves on the reference posting. Only for `similar_better`. A non-array value, or an element other than a non-empty string, is ERROR |
 | `baseline_comparison` | Conditional | A per-axis comparison against the reference posting. Only for `similar_better`. The specification follows below |
 
 `quote` must transcribe the wording of the listing page verbatim. A posting that could not be retrieved must not be fabricated. When the salary reads 「応相談」 (negotiable), 「経験を考慮」 (commensurate with experience), or the like and no number can be read, `salary_range` is `null`.
@@ -266,7 +266,7 @@ The four keys that allow `null` still cannot be omitted as keys (a failed retrie
 | `source` | Required | The name of the source (a site name, or `WebSearch`). Missing or empty is ERROR |
 | `url` | Required (null allowed) | The URL that was actually fetched. `null` when a `site:` search does not settle on a fixed results-page URL. A string not starting with `http` is ERROR |
 | `fetched_at` | Required (null allowed) | The retrieval date (an actual `YYYY-MM-DD` date, or ISO 8601 starting with a date). A malformed or non-existent date is ERROR |
-| `hit_count` | Required (null allowed) | The total number of hits for the search. `null` when the page shows no count. A negative value or a non-integer is ERROR |
+| `hit_count` | Required (null allowed) | The total number of hits for the search. `null` when the page does not show a count. A negative value or a non-integer is ERROR |
 | `adopted_count` | Required (null allowed) | The number of postings adopted into `results` from that query. A negative value or a non-integer is ERROR |
 | `search_set` | Required since 2.2 | The set this query belongs to. Under 2.2, `primary` or `exploration`; under 2.3, `primary` or `derived`. Anything else is ERROR |
 | `lane` | Conditionally required since 2.3 | The lane name when `search_set` is `derived`. A lane absent from `search_sets.derivations` is ERROR. A `lane` on a `primary` query is ERROR (`null` is allowed) |
@@ -275,11 +275,11 @@ If one or more results have `results[].search_set` equal to `exploration` while 
 
 After merging the partial files from job searchers who ran in parallel, `adopted_count` can end up larger than the actual adopted count, by however much deduplication removed. The validation script does not check this difference.
 
-`query` is part of the deliverable and falls within the scope of the PII lint (described below). Placing the user's name, current employer's name, or current salary into a search query makes this check ERROR.
+`query` is part of the deliverable and is within the scope of the PII lint (described below). Placing the user's name, current employer's name, or current salary into a search query makes this check ERROR.
 
 ## Observation layer (2.0)
 
-The layer that records the facts read from a job posting; **it is written by the job searcher agent**. It is limited to what can be filled in from the posting's own content alone, without knowing the user's own conditions. The canonical definition of the axes and classification vocabulary lives in job-change-support's `references/screening-axes.md`.
+The layer that records the facts read from a job posting. **It is written by the job searcher agent.** It is limited to what can be filled in from the posting's own content alone, without knowing the user's own conditions. The canonical definition of the axes and classification vocabulary is in job-change-support's `references/screening-axes.md`.
 
 ### results[].duty_items (array, required)
 
@@ -296,16 +296,16 @@ Carries exactly the 8 axes, one each, no more and no fewer (missing, duplicate, 
 
 | Field | Required | Entry criteria |
 |---|---|---|
-| `axis` | Required | One of the 8 axis ids |
+| `axis` | Required | One of the 8 axis IDs |
 | `stated` | Required | Whether the posting states anything on this axis (boolean) |
 | `value` | Required | The type per axis follows the table below (the value range and unit are defined by `screening-axes.md`). `null` when there is no statement, or when only a qualitative expression exists that cannot be reduced to a value |
 | `value_text` | Conditionally required | A summary of the qualitative expression. Required when `stated=true` and `value` is `null` |
 | `quote` | Conditionally required | A quotation from the listing page. Required and non-empty when `stated=true` |
 | `note` | Optional | Supplementary remarks |
 
-When `value` is not `null`, the validation script checks the following per axis. The enumeration values, value ranges, and units themselves live in job-change-support's `references/screening-axes.md`, and are not duplicated here.
+When `value` is not `null`, the validation script checks the following per axis. The enumeration values, value ranges, and units themselves are in job-change-support's `references/screening-axes.md`, and are not duplicated here.
 
-| Axis id | Type | Check |
+| Axis ID | Type | Check |
 |---|---|---|
 | `remote_certainty` | Enumeration | A value outside the enumeration for this axis in `screening-axes.md` is ERROR |
 | `oncall_load` | Enumeration | A value outside the enumeration for this axis in `screening-axes.md` is ERROR |
@@ -320,21 +320,21 @@ The validation script does not treat a boolean as a number (`true` is ERROR).
 
 `hands_on_ratio` and `coordination_ratio` are calculated from the category counts in `duty_items`. When `duty_items` has fewer than 3 entries, the sample is too small, so `stated` is set to `false` and `value` to `null`. The validation script recalculates the ratio from `duty_items` and treats a mismatch with `value` as ERROR (tolerance 0.01).
 
-The structure of the `experience_distance` observation is defined by `screening-axes.md`. The validation script treats a non-null `value` as ERROR. When `stated=true`, it is also ERROR if `required_experience` is not an array of non-empty strings, or if `job_family` is not a non-empty string. The three values for distance are the vocabulary of the judgement layer (`axis_judgements`) and do not appear in the observation layer.
+The structure of the `experience_distance` observation is defined by `screening-axes.md`. The validation script treats a non-null `value` as ERROR. When `stated=true`, it is also ERROR if `required_experience` is anything other than an array of non-empty strings, or if `job_family` is anything other than a non-empty string. The three values for distance are the vocabulary of the judgement layer (`axis_judgements`) and do not appear in the observation layer.
 
 ### improvement_axes (array, similar_better only, since 2.1)
 
-Lists the ids of the improvement axes the user has decided to target. The values are the five: `salary_condition`, `remote_certainty`, `annual_holidays`, `overtime_hours`, `scope_of_change`. These are anonymised conditions and may be passed to the job searcher agent.
+Lists the IDs of the improvement axes the user has decided to target. The values are the five: `salary_condition`, `remote_certainty`, `annual_holidays`, `overtime_hours`, `scope_of_change`. These are anonymised conditions and may be passed to the job searcher agent.
 
-This axis has no fixed direction on its own scale; whether `different` counts as an improvement or a worsening is not determined by the axis itself (a change from permanent to fixed-term employment also comes out as `different`). Therefore **`employment_type` cannot be taken as an improvement axis**. A wish about employment type is handled as a required condition in `conditions.employment_type`. `employment_type` present in `improvement_axes` is ERROR.
+The `employment_type` axis has no fixed direction on its own scale. Whether `different` counts as an improvement or a worsening is not determined by the axis itself (a change from permanent to fixed-term employment also comes out as `different`). So **`employment_type` cannot be taken as an improvement axis**. A wish about employment type is handled as a required condition in `conditions.employment_type`. `employment_type` present in `improvement_axes` is ERROR.
 
-Missing or empty under `similar_better` is WARN; present under `fuzzy` is WARN. A non-array value, an unknown axis id, `employment_type`, or a duplicate is ERROR.
+Missing or empty under `similar_better` is WARN; present under `fuzzy` is WARN. A non-array value, an unknown axis ID, `employment_type`, or a duplicate is ERROR.
 
-This array is used to derive `baseline_comparison.overall`. **Which axis the user wants to beat is the user's own preference and is not determined by the per-axis observation**, so the preference is gathered into this one array alone, and the observation layer carries no judgement of better or worse.
+This array is used to derive `baseline_comparison.overall`. **Which axis the user wants to beat is the user's own preference and is not determined by the per-axis observation**. So the preference is gathered into this one array alone, and the observation layer does not record any judgement of better or worse.
 
 ### results[].baseline_comparison (object, similar_better only, since 2.1)
 
-Records the result of comparing the reference posting and the candidate posting axis by axis. The free-text `better_points` is kept as is, and `baseline_comparison` holds the same comparison in a mechanically checkable form. It is the only field that crosses layers.
+Records the result of comparing the reference posting and the candidate posting axis by axis. The free-text `better_points` is kept as is, and `baseline_comparison` records the same comparison in a mechanically checkable form. It is the only field that crosses layers.
 
 | Part | Layer | Written by |
 |---|---|---|
@@ -359,7 +359,7 @@ Missing under `similar_better` is WARN (since 2.1); present under `fuzzy` is WAR
 }
 ```
 
-`axes` carries exactly the following 6 axes, one each, no more and no fewer (missing, duplicate, or an unknown `axis` is ERROR). The upper 4 axes use the axis ids from job-change-support's `references/screening-axes.md` as they are. The lower 2 axes are **additional axes reserved for the baseline comparison**, and are not among the 8 axes in `screening-axes.md` (they do not appear in the 8-axis judgement or in `screening.unmet_axis_summary`).
+`axes` contains exactly the following 6 axes, one each, no more and no fewer (missing, duplicate, or an unknown `axis` is ERROR). The upper 4 axes use the axis IDs from job-change-support's `references/screening-axes.md` as they are. The lower 2 axes are **additional axes reserved for the baseline comparison**, and are not among the 8 axes in `screening-axes.md` (they do not appear in the 8-axis judgement or in `screening.unmet_axis_summary`).
 
 | axis | Scale of the fact | Side that `higher` refers to |
 |---|---|---|
@@ -370,13 +370,19 @@ Missing under `similar_better` is WARN (since 2.1); present under `fuzzy` is WAR
 | `employment_type` (additional axis) | Whether the employment type is the same as the reference posting | Has no ordering, so `higher`/`lower` are not used |
 | `scope_of_change` (additional axis) | Breadth of the scope of changes to work location and duties (limited < unlimited) | The broader scope |
 
-`scope_of_change` comes from statute. The April 2024 amendment to the Employment Security Act made it mandatory for job listings to state three items: 「従事すべき業務の変更の範囲」 (scope of changes to duties), 「就業場所の変更の範囲」 (scope of changes to work location), and 「有期労働契約を更新する場合の基準」 (criteria for renewing a fixed-term contract) (Ministry of Health, Labour and Welfare, https://www.mhlw.go.jp/content/001114166.pdf, grade A). A posting that states none of these three items may not be meeting its statutory disclosure obligation. The observation layer leaves it as `unknown`, and the absence of the statement is written into `open_questions`.
+`scope_of_change` comes from statute. The April 2024 amendment to the Employment Security Act made it mandatory for job listings to state three items (Ministry of Health, Labour and Welfare, https://www.mhlw.go.jp/content/001114166.pdf, grade A):
 
-**`relation` states only the factual relationship; it carries no judgement of good or bad.** Which side is which on the scale is decided from the two job postings alone. Which side is desirable is the user's own preference, and cannot be decided in the observation layer (the basis for this separation is in "Separating observation from judgment" in `search-methods.md`).
+- 「従事すべき業務の変更の範囲」 (scope of changes to duties)
+- 「就業場所の変更の範囲」 (scope of changes to work location)
+- 「有期労働契約を更新する場合の基準」 (criteria for renewing a fixed-term contract)
+
+A posting that states none of these three items may not be meeting its statutory disclosure obligation. The observation layer leaves it as `unknown`, and the absence of the statement is written into `open_questions`.
+
+**`relation` states only the factual relationship. It does not record any judgement of good or bad.** Which side is which on the scale is decided from the two job postings alone. Which side is desirable is the user's own preference, and cannot be decided in the observation layer (the basis for this separation is in "Separating observation from judgment" in `search-methods.md`).
 
 | Field | Required | Entry criteria |
 |---|---|---|
-| `axis` | Required | One of the 6 axis ids above |
+| `axis` | Required | One of the 6 axis IDs above |
 | `relation` | Required | `higher` / `lower` / `same` / `unknown`. `employment_type` alone takes the three values `same` / `different` / `unknown` |
 | `baseline_value` | Conditionally required | The reference posting's value. Required and non-empty when `relation` is anything other than `unknown` |
 | `candidate_value` | Conditionally required | The candidate posting's value. Required and non-empty when `relation` is anything other than `unknown` |
@@ -412,14 +418,14 @@ The validation script recalculates from this table and treats a mismatch with `o
 
 ## Exploration set and related information (2.2)
 
-Records a search on the conditions the user specified (the primary set) separately from a broadened search run to check for bias in those conditions (the exploration set). The canonical definition of why the exploration set exists and how to build it lives in `bias-checklist.md`. This section defines only the recording on the deliverable's side.
+Records a search on the conditions the user specified (the primary set) separately from a broadened search run to check for bias in those conditions (the exploration set). The canonical definition of why the exploration set exists and how to build it is in `bias-checklist.md`. This section defines only the recording on the deliverable's side.
 
 ### search_sets (object, required since 2.2)
 
 | Field | Required | Entry criteria |
 |---|---|---|
 | `primary` | Required | The user's specified conditions. The same content as `conditions`, placed as is. A non-object value is ERROR |
-| `exploration` | Required since 2.2 (null allowed) | The exploration set's conditions. `null` when it was not built. A value that is neither an object nor null is ERROR. Under 2.3 it is `null` (an object is ERROR) |
+| `exploration` | Required since 2.2 (null allowed) | The exploration set's conditions. `null` when it was not built. A value other than an object or null is ERROR. Under 2.3 it is `null` (an object is ERROR) |
 | `derivations` | Required since 2.3 | The array of derivation lanes. Specified in the "Derivation lanes and company information (2.3)" section |
 
 When `exploration` is an object, it carries the following.
@@ -441,7 +447,7 @@ When `exploration` is an object, it carries the following.
 | `exploration` | A posting obtained from an exploration-set query (2.2) |
 | `derived` | A posting obtained from a derivation-lane query (2.3) |
 
-Under 2.2 there are two values, `primary` and `exploration`; under 2.3 there are two values, `primary` and `derived`; anything else is ERROR. `exploration` while `search_sets.exploration` is `null` is ERROR (a state where exploration results exist without an exploration set having been built). It is written by the job searcher agent, and carries the same value as the adopted query's `search_log[].search_set`.
+Under 2.2 there are two values, `primary` and `exploration`. Under 2.3 there are two values, `primary` and `derived`. Anything else is ERROR. `exploration` while `search_sets.exploration` is `null` is ERROR (a state where exploration results exist without an exploration set having been built). It is written by the job searcher agent, and has the same value as the adopted query's `search_log[].search_set`.
 
 ### results[].role_match (string, required since 2.2)
 
@@ -471,7 +477,7 @@ Records a company's related facts that lie outside the job posting, when they co
 | `posting_age` | The posting's listing or update date | String (`YYYY-MM-DD`) |
 | `salary_benchmark` | A benchmark market rate looked up under the same occupation name | String (e.g. `"中央値553万円（求人ボックス給料ナビ）"`) |
 
-Any key outside the above 9 is ERROR. Under 2.3, only the per-posting keys (`posting_age`, `salary_benchmark`) are written here. The 7 per-company keys (`employee_count` through `review_aggregate`) are placed in `company_profiles[].basics`; their presence in `related_info` under 2.3 is WARN.
+Any key outside the above 9 is ERROR. Under 2.3, only the per-posting keys (`posting_age`, `salary_benchmark`) are written here. The 7 per-company keys (`employee_count` through `review_aggregate`) are placed in `company_profiles[].basics`. Their presence in `related_info` under 2.3 is WARN.
 
 #### Each value in related_info
 
@@ -481,11 +487,11 @@ Each key's value is the following object.
 |---|---|---|
 | `value` | Required | The type from the table above. `null` when retrieval was attempted but failed |
 | `source_url` | Required | The source URL. When `value` is present, a URL without the `http` prefix is ERROR |
-| `grade` | Required | An evidence grade, A through D. When `value` is not `null`, a value outside these four is ERROR. The canonical definition lives in `job-change-company-research/references/evidence-grading.md` |
+| `grade` | Required | An evidence grade, A through D. When `value` is not `null`, a value outside these four is ERROR. The canonical definition is in `job-change-company-research/references/evidence-grading.md` |
 | `as_of` | Required (null allowed) | The point in time for the value. `YYYY` or `YYYY-MM`. A malformed value is ERROR |
 | `note` | Optional | Supplementary remarks (e.g. the registered founding date differs from the founding year in the company profile, only the count could be read for a review because the text requires login) |
 
-`related_info` holds only supporting facts; company research (`company_research.json`) remains a separate step. What it captures is only what was learned in the course of reading the job posting; it has been through neither the 8-topic coverage nor the audit that company research undergoes. `review_aggregate` is grade C and does not settle a fact on its own.
+`related_info` contains supporting facts only. Company research (`company_research.json`) remains a separate step. `related_info` captures only what was learned in the course of reading the job posting, and it has been through neither the 8-topic coverage nor the audit that company research undergoes. `review_aggregate` is grade C and does not settle a fact on its own.
 
 ### screening.exploration (object, required since 2.2)
 
@@ -501,7 +507,7 @@ Missing any of the 3 keys is ERROR. When `performed` is `true`, both counts must
 
 ## Derivation lanes and company information (2.3)
 
-Generalises the 2.2 exploration set into 10 lanes, in the direction of improving conditions and the direction of broadening scope, and records the company information for every company that appears in the results, into the same deliverable. The canonical definition of the purpose and construction of the lanes is `derivation-lanes.md`; the canonical definition of the sources for company information is "Sources for company information" in `query-catalog.md`. This section defines only the recording on the deliverable's side.
+Generalises the 2.2 exploration set into 10 lanes, in the direction of improving conditions and the direction of broadening scope, and records the company information for every company that appears in the results, into the same deliverable. The canonical definition of the purpose and construction of the lanes is `derivation-lanes.md`. The canonical definition of the sources for company information is "Sources for company information" in `query-catalog.md`. This section defines only the recording on the deliverable's side.
 
 ### search_sets.derivations (array, required since 2.3)
 
@@ -512,7 +518,7 @@ Places one element per chosen lane. An empty array when no lane was chosen (WARN
 | `lane` | Required | The lane name. A value outside the 10 in `derivation-lanes.md`, or a duplicate within the array, is ERROR |
 | `roles` | Required | The array of occupation names searched in this lane. An empty array when none apply. A non-array of non-empty strings is ERROR |
 | `industries` | Required (null allowed) | `null` when the industry restriction was dropped. An array of non-empty strings when kept. Anything else is ERROR |
-| `salary_min` | Required (null allowed) | This lane's salary floor (yen). A value that is neither a number nor null is ERROR. A value lower than `search_sets.primary.salary_min` is ERROR |
+| `salary_min` | Required (null allowed) | This lane's salary floor (yen). A value other than a number or null is ERROR. A value lower than `search_sets.primary.salary_min` is ERROR |
 | `location` | Required (null allowed) | The work location. A string or null |
 | `remote_policy` | Required (null allowed) | The remote-work policy. A string or null |
 | `employment_type` | Required (null allowed) | The employment type. A string or null |
@@ -536,7 +542,7 @@ When the normalised value of `company_name` differs from `company_key`, and matc
 
 ### company_profiles (object, required since 2.3)
 
-Company information for each company appearing in the results. The key is `company_key`, and the value is the following object. It is written by the job searcher agent (`company_profile` mode), and belongs to the observation layer. A non-object value is ERROR. An element that no posting references is WARN.
+Company information for each company appearing in the results. The key is `company_key`, and the value is the following object. It is written by the job searcher agent (`company_profile` mode), and belongs to the observation layer. A non-object value is ERROR. An element referenced by zero postings is WARN.
 
 | Field | Required | Entry criteria |
 |---|---|---|
@@ -569,7 +575,7 @@ Uses the 7 per-company keys from `related_info` as they are.
 
 #### Axis keys in metrics
 
-Carries the same 9 axes, in the same units, as `company_metrics` in `job-change-company-research`. Missing or containing an unknown key among the 9 keys is ERROR. The canonical definition of the vocabulary is "Quantitative candidate axes" in `job-change-company-research/references/company-score-rubric.md`, and the hub's `test_vocabulary_sync.py` cross-checks it down to the unit.
+Contains the same 9 axes, in the same units, as `company_metrics` in `job-change-company-research`. Missing or containing an unknown key among the 9 keys is ERROR. The canonical definition of the vocabulary is "Quantitative candidate axes" in `job-change-company-research/references/company-score-rubric.md`, and the hub's `test_vocabulary_sync.py` cross-checks it down to the unit.
 
 | Key | Metric | Unit |
 |---|---|---|
@@ -619,7 +625,7 @@ An absence from the list says nothing about whether violations occurred. A repor
 | `source_url` | Required | Not starting with `http` is ERROR |
 | `grade` | Required | A value outside A through D is ERROR |
 
-`company_profiles` is a preliminary record; company research (`company_research.json`) is still carried out separately. It has been through neither the 8-topic coverage nor the audit that company research undergoes, and company research must be done again once an application target is chosen. `review_aggregate` is grade C and does not settle a fact on its own.
+`company_profiles` is a preliminary record. Company research (`company_research.json`) is still carried out separately. It has been through neither the 8-topic coverage nor the audit that company research undergoes, and company research must be done again once an application target is chosen. `review_aggregate` is grade C and does not settle a fact on its own.
 
 ### screening.derivations (object, required since 2.3)
 
@@ -634,7 +640,7 @@ The set of lanes in `lanes` must match the set of lanes in `search_sets.derivati
 
 ## Judgement layer (2.0)
 
-Records the result of matching the observations against the user's own conditions. **The skill itself writes this locally.** Since it needs to read `profile.json`, an agent with a means of sending data to the web must not write it.
+Records the result of matching the observations against the user's own conditions. **The skill itself writes this locally.** Since it needs to read the axis source (`{AXIS}`), an agent with a means of sending data to the web must not write it.
 
 ### results[].axis_judgements (array, required)
 
@@ -642,10 +648,10 @@ Carries exactly the 8 axes, one each, no more and no fewer (missing, duplicate, 
 
 | Field | Required | Entry criteria |
 |---|---|---|
-| `axis` | Required | One of the 8 axis ids |
-| `level` | Required | `must` / `want` / `none`. Decided from the profile's condition and work-characteristic requirement levels by the following correspondence. A condition (`conditions[].level`) of `must` becomes `must`, `want` becomes `want`. A work characteristic (`work_character_preferences[].desire`) of `must` becomes `must`, `important` becomes `want`, and `neutral`/`not_required` becomes `none`. An axis with neither a condition nor a characteristic in the profile is `none` |
+| `axis` | Required | One of the 8 axis IDs |
+| `level` | Required | `must` / `want` / `none`. Decided from the condition and work-characteristic requirement levels in `{AXIS}` by the following correspondence. A condition (`conditions[].level`) of `must` becomes `must`, `want` becomes `want`. A work characteristic (`work_character_preferences[].desire`) of `must` becomes `must`, `important` becomes `want`, and `neutral`/`not_required` becomes `none`. An axis with neither a condition nor a characteristic in `{AXIS}` is `none` |
 | `judgement` | Required | `meets` / `not_meets` / `unknown` |
-| `threshold_ref` | Conditionally required | The `conditions[].id` or `work_character_preferences[].trait` from the profile used for the judgement. Required when `level` is `must` or `want` |
+| `threshold_ref` | Conditionally required | The `conditions[].id` or `work_character_preferences[].trait` from `{AXIS}` used for the judgement. Required when `level` is `must` or `want` |
 | `rationale` | Required | The basis for the judgement. States it as a comparison between the observed value and the threshold. Does not write the user's own career history or current salary |
 
 **Guessing is forbidden.** Each of the following is ERROR.
@@ -670,17 +676,17 @@ The validation script recalculates from this table and treats a mismatch with `c
 
 ### results[].classification_reasons (array, required)
 
-At least one element is required (empty is ERROR). Each element carries `axis` (one of the 8 axis ids) and `reason` (a non-empty string).
+At least one element is required (empty is ERROR). Each element has `axis` (one of the 8 axis IDs) and `reason` (a non-empty string).
 
 ### results[].classification_override (object or null, optional)
 
-Written only when the derived result was changed by hand. It carries `from` (the derived result), `to` (the actual classification), and `reason` (non-empty).
+Written only when the derived result was changed by hand. It contains `from` (the derived result), `to` (the actual classification), and `reason` (non-empty).
 
-**A change is permitted only in the stricter direction.** Only the direction `apply_candidate` → `needs_more_research` → `excluded` is permitted; the reverse direction is ERROR. This prevents fabricating a single candidate without grounds when there are zero candidates to apply to.
+**A change is permitted only in the stricter direction.** Only the direction `apply_candidate` → `needs_more_research` → `excluded` is permitted. The reverse direction is ERROR. This prevents fabricating one candidate without grounds when there are zero candidates to apply to.
 
 ### results[].slug (string or null, optional)
 
-Once the decision is made to proceed to company research, appends the company slug resolved in `company_index.json`. This is the sole linking key between the job search deliverable and the per-company tree.
+Once the decision is made to proceed to company research, appends the company slug resolved in `company_index.json`. This value alone links the job search deliverable to the per-company tree.
 
 ## screening (object, required since 2.0)
 
@@ -689,8 +695,8 @@ The summary of screening. Missing or a non-object value is ERROR.
 | Field | Required | Entry criteria |
 |---|---|---|
 | `screened_at` | Required | The judgement date (`YYYY-MM-DD`) |
-| `profile_schema_version` | Required | The `schema_version` of the profile used for judgement. Allows later verification of whether a fallback was used |
-| `axes_source` | Required | `job_change_axis.conditions` (the normal case) / `degraded` (the profile is 1.x and axis judgement is not possible) |
+| `profile_schema_version` | Required | The `schema_version` of the `{AXIS}` file used for judgement (the field keeps its name from before the axis moved to its own file). Allows later verification of whether a fallback was used |
+| `axes_source` | Required | `job_change_axis.conditions` (the normal case) / `degraded` (`{AXIS}` is 1.x and axis judgement is not possible) |
 | `counts` | Required | Integers for `apply_candidate`, `needs_more_research`, `excluded`, and `total`. A mismatch with the actual tally is ERROR |
 | `recommendation` | Required | `応募推奨あり` (recommended to apply) / `応募推奨なし` (not recommended to apply) / `判定不能` (unable to judge) |
 | `rationale` | Required | The basis for the judgement (non-empty) |
@@ -707,7 +713,7 @@ The summary of screening. Missing or a non-object value is ERROR.
 | `counts.apply_candidate` is 1 or more | `応募推奨あり` |
 | `counts.apply_candidate` is 0 | `応募推奨なし` |
 
-**When there are zero candidates to apply to, do not pick the strongest candidate anyway; state `応募推奨なし` explicitly.** The validation script treats `応募推奨あり` with zero apply candidates as ERROR.
+**When there are zero candidates to apply to, do not pick the strongest candidate anyway. State `応募推奨なし` explicitly.** The validation script treats `応募推奨あり` with zero apply candidates as ERROR.
 
 ### current_employer_exclusion
 
@@ -732,7 +738,7 @@ Records points that could not be corroborated, and points that should be confirm
 `scripts/validate_job_search_results.py` performs the mechanical checks. One or more ERROR results in FAIL (exit code 1); zero ERROR results in PASS (exit code 0, even with WARNs present).
 
 ```
-python validate_job_search_results.py <job_search_results.json> [--json] [--profile <profile.json>]
+python validate_job_search_results.py <job_search_results.json> [--json] [--profile <profile.json>] [--axis <axis.json>]
 ```
 
 **ERROR (the deliverable does not stand as valid, or a rule is violated)**
@@ -742,23 +748,23 @@ python validate_job_search_results.py <job_search_results.json> [--json] [--prof
 - `search_id` missing or empty, or not matching the directory-name format (`{YYYYMMDD}-{short slug for the conditions}`)
 - `mode` missing or empty, or other than `fuzzy`/`similar_better`
 - `executed_at` missing or empty
-- `conditions` is not an object
-- `results` is not an array
+- `conditions` is something other than an object
+- `results` is something other than an array
 - A result's `title`, `company_name`, `source_site`, `match_notes`, or `quote` is missing or empty
 - A result's `url` does not start with `http`
 - A result's `salary_range`, `location`, or `remote_policy` is neither a string nor null
 - A result's `annual_holidays` is none of a number, a string, or null
-- A result's `better_points` is not an array, or contains an element that is not a non-empty string
-- `baseline` is present and carries neither `url` nor `slug`, or `slug` does not match the format
-- `search_log` is not an array, or one of its elements is not an object
+- A result's `better_points` is something other than an array, or contains an element other than a non-empty string
+- `baseline` is present and contains neither `url` nor `slug`, or `slug` does not match the format
+- `search_log` is something other than an array, or one of its elements is something other than an object
 - A `search_log` element's `query` or `source` is empty, or the keys `url`, `fetched_at`, `hit_count`, or `adopted_count` are missing
 - A `search_log` element's `url` does not start with `http`, `fetched_at` is malformed or a non-existent date, or `hit_count`/`adopted_count` is neither a non-negative integer nor null
-- `improvement_axes` is not an array, contains an unknown axis id, contains `employment_type`, or has a duplicate axis
+- `improvement_axes` is something other than an array, contains an unknown axis ID, contains `employment_type`, or has a duplicate axis
 - `baseline_comparison.overall` is written under `similar_better` while `improvement_axes` is empty or missing
-- `baseline_comparison` is not an object, `axes` is not an array, it does not carry exactly the 6 axes (missing, unknown id, or duplicate), or `relation` is outside its per-axis fixed values
+- `baseline_comparison` is something other than an object, `axes` is something other than an array, it does not contain exactly the 6 axes (missing, unknown ID, or duplicate), or `relation` is outside its per-axis fixed values
 - A `baseline_comparison` element has `relation` other than `unknown` while `baseline_value`, `candidate_value`, or `quote` is empty
 - `baseline_comparison.overall` is other than `better`/`not_better`, or does not match the result derived from `improvement_axes` and `relation`
-- **PII contamination** (only when `--profile` is given): a value derived from the profile — the current employer's name, a value that looks like a name, or the current salary (`salary.current`) — has leaked into the deliverable
+- **PII contamination** (only when `--profile` is given): a value derived from the profile or the axis (the current employer's name, a value that looks like a name, or the current salary `salary.current` from `{AXIS}`) has leaked into the deliverable
 
 When `schema_version` is `"2.1"`, the following is also ERROR.
 
@@ -766,47 +772,47 @@ When `schema_version` is `"2.1"`, the following is also ERROR.
 
 When `schema_version` is `"2.2"`, the following is also ERROR.
 
-- `search_sets` is not an object, `primary` is not an object, or `exploration` is neither an object nor null
-- `search_sets.exploration`'s `roles` or `dropped_conditions` is not an array of non-empty strings, `industries` is neither an array nor null, or `rationale` is empty
+- `search_sets` is something other than an object, `primary` is something other than an object, or `exploration` is neither an object nor null
+- `search_sets.exploration`'s `roles` or `dropped_conditions` is something other than an array of non-empty strings, `industries` is neither an array nor null, or `rationale` is empty
 - A result's `search_set` is outside the two values, or is `exploration` while `search_sets.exploration` is null
 - A `search_log` element's `search_set` is missing, or outside the two values
 - A result has `search_set` equal to `exploration` while no `search_log` element has `search_set` equal to `exploration`
-- When `--profile` is given: `level` does not match the value determined from the profile's requirement level by the correspondence above
+- When axis data is given (`--axis`, or a 1.x/2.0 `--profile`): `level` does not match the value determined from the requirement level in `{AXIS}` by the correspondence above
 - A result's `role_match` is outside the three values
-- A result's `related_info` is not an object, has a key outside the 9 keys, an element value that is not an object, or the keys `value`, `source_url`, `grade`, or `as_of` are missing
+- A result's `related_info` is something other than an object, has a key outside the 9 keys, an element value that is something other than an object, or the keys `value`, `source_url`, `grade`, or `as_of` are missing
 - In a result's `related_info`, `value` is not null while `source_url` does not start with `http`, or `grade` is outside the four values. A `value` other than for `listed` is a boolean. `as_of` is malformed
-- `screening.exploration` is not an object, one of the 3 keys is missing, or `performed` is not a boolean
+- `screening.exploration` is something other than an object, one of the 3 keys is missing, or `performed` is something other than a boolean
 - `screening.exploration.performed` is `true` while the two counts are not integers, or do not match the actual tally
 - `screening.exploration.performed` is `false` while the two counts are not null, or `search_sets.exploration` is an object
 
 When `schema_version` is `"2.3"`, the following is also ERROR.
 
-- `search_sets` is not an object, `primary` is not an object, `derivations` is not an array, or `exploration` is an object
-- A `search_sets.derivations` element is not an object, `lane` is outside the 10 values or duplicated, `roles` is not an array of non-empty strings, `industries` is neither an array nor null, `salary_min` is neither a number nor null, `salary_min` is lower than `primary.salary_min`, `changed_conditions` is empty or not an array of non-empty strings, or `rationale` is empty
+- `search_sets` is something other than an object, `primary` is something other than an object, `derivations` is something other than an array, or `exploration` is an object
+- A `search_sets.derivations` element is something other than an object, `lane` is outside the 10 values or duplicated, or `roles` is something other than an array of non-empty strings. Within an element, `industries` is neither an array nor null, `salary_min` is neither a number nor null, `salary_min` is lower than `primary.salary_min`, `changed_conditions` is empty or something other than an array of non-empty strings, or `rationale` is empty
 - A result's `search_set` is other than `primary`/`derived`
 - A result's `search_set` is `derived` while `lane` is missing, or is a lane name absent from `search_sets.derivations`. `lane` is other than null while `search_set` is `primary`
 - A `search_log` element's `search_set` is other than `primary`/`derived`. It is `derived` while `lane` is missing or absent from `derivations`. It is `primary` while `lane` is other than null
 - A result has `lane` X while no `search_log` element has `lane` X
 - A result's `company_key` is missing, empty, or absent from `company_profiles`
-- `company_profiles` is not an object. A key matches neither the normalised `name` nor `aliases`. `name` is empty. `aliases` is not an array of non-empty strings. `official_url`/`careers_url` is a string not starting with `http`. `hq_location`/`industry` is neither a string nor null
+- `company_profiles` is something other than an object. A key matches neither the normalised `name` nor `aliases`. `name` is empty. `aliases` is something other than an array of non-empty strings. `official_url`/`careers_url` is a string not starting with `http`. `hq_location`/`industry` is neither a string nor null
 - `business_summary` is neither an object nor null. When an object, `text`/`quote` is empty, `source_url` does not start with `http`, or `grade` is outside the four values
-- `basics` is not an object, has a key outside the 7 keys, or an element value violates the rule for the corresponding value in `related_info`
-- `metrics` is not an object, does not carry exactly the 9 keys, an element value is not an object, the keys `value`, `unit`, `source_url`, `grade`, or `as_of` are missing, `unit` differs from the axis's unit, `value` is a boolean or is not a number, a negative value appears other than for `revenue_growth`/`operating_margin`, one of the 4 ratio axes is outside the range 0-100, or `value` is not null while `source_url` does not start with `http`, `grade` is outside the four values, or `as_of` is malformed
-- `negative_checks.labor_law_violation_list` is missing or not an object, `checked` is not a boolean, `checked` is `true` while `hit` is not a boolean, `source_url` does not start with `http`, or `as_of` is malformed, `checked` is `false` while `hit` is other than null, or `hit` is `true` while `note` is empty
-- `recent_news` is not an array, an element's `headline` is empty, `date` is malformed, `source_url` does not start with `http`, or `grade` is outside the four values
-- A company profile's (`company_profiles[]`) `open_questions` is not an array of strings
-- `screening.derivations` is not an object, `performed`/`lanes` is missing, or `performed` is not a boolean
+- `basics` is something other than an object, has a key outside the 7 keys, or an element value violates the rule for the corresponding value in `related_info`
+- `metrics` is something other than an object, does not contain exactly the 9 keys, or has an element value that is something other than an object. An element lacks one of the keys `value`, `unit`, `source_url`, `grade`, or `as_of`. `unit` differs from the axis's unit. `value` is a boolean or is something other than a number, a negative value appears other than for `revenue_growth`/`operating_margin`, or one of the 4 ratio axes is outside the range 0-100. `value` is not null while `source_url` does not start with `http`, `grade` is outside the four values, or `as_of` is malformed
+- `negative_checks.labor_law_violation_list` is missing or something other than an object, or `checked` is something other than a boolean. `checked` is `true` while `hit` is something other than a boolean, `source_url` does not start with `http`, or `as_of` is malformed. `checked` is `false` while `hit` is other than null. `hit` is `true` while `note` is empty
+- `recent_news` is something other than an array, an element's `headline` is empty, `date` is malformed, `source_url` does not start with `http`, or `grade` is outside the four values
+- A company profile's (`company_profiles[]`) `open_questions` is something other than an array of strings
+- `screening.derivations` is something other than an object, `performed`/`lanes` is missing, or `performed` is something other than a boolean
 - `screening.derivations.performed` is `true` while `search_sets.derivations` is empty, or is `false` while `derivations` or `lanes` is non-empty
-- The set of lanes in `screening.derivations.lanes` does not match `search_sets.derivations` (missing, extra, or duplicate), a count is not an integer, or does not match the actual tally
+- The set of lanes in `screening.derivations.lanes` does not match `search_sets.derivations` (missing, extra, or duplicate), a count is something other than an integer, or does not match the actual tally
 
 When `schema_version` is `"2.0"`, `"2.1"`, `"2.2"`, or `"2.3"`, the following is also ERROR.
 
-- `screening` missing, or not an object
-- `axis_observations` / `axis_judgements` does not carry exactly the 8 axes (missing, unknown id, or duplicate)
-- `duty_items` is not an array, `duty_items[].quote` is empty, or `category` is outside the 8 fixed values
+- `screening` missing, or something other than an object
+- `axis_observations` / `axis_judgements` does not contain exactly the 8 axes (missing, unknown ID, or duplicate)
+- `duty_items` is something other than an array, `duty_items[].quote` is empty, or `category` is outside the 8 fixed values
 - `stated=true` while `quote` is empty
 - `stated=true` and `value` is `null` while `value_text` is empty
-- `value` falls outside the type or range per axis (the canonical definition is `screening-axes.md`) — a value outside the enumeration, a non-number, a negative value, or a value outside a ratio's range
+- `value` falls outside the type or range per axis (the canonical definition is `screening-axes.md`): a value outside the enumeration, a non-number, a negative value, or a value outside a ratio's range
 - The `experience_distance` observation's `value` is not `null`
 - `experience_distance` has `stated=true` while `required_experience`/`job_family` does not meet the required form
 - An axis with `stated=false` is judged `meets`/`not_meets`
@@ -819,13 +825,13 @@ When `schema_version` is `"2.0"`, `"2.1"`, `"2.2"`, or `"2.3"`, the following is
 - `screening.counts` / `unmet_axis_summary` does not match the actual tally
 - `recommendation` is `応募推奨あり` with zero apply candidates, or `応募推奨なし` with one or more
 - `axes_source` is `degraded` while `recommendation` is other than `判定不能`
-- `current_employer_exclusion.performed` is `false` while `excluded_count` is an integer, or is `true` while it is not an integer
-- When `--profile` is given: `threshold_ref` does not exist among the profile's condition ids or characteristic ids, or `level` does not match the profile's requirement level
+- `current_employer_exclusion.performed` is `false` while `excluded_count` is an integer, or is `true` while it is something other than an integer
+- When axis data is given (`--axis`, or a 1.x/2.0 `--profile`): `threshold_ref` does not exist among the condition IDs or characteristic IDs in `{AXIS}`, or `level` does not match the requirement level in `{AXIS}`
 
 **WARN (it stands as valid, but something is missing or a consistency point needs attention)**
 
 - `schema_version` is outside the 5 known values
-- `--profile` was not given (the PII lint and the threshold cross-check were not performed)
+- `--profile` or `--axis` was not given (the PII lint, or the threshold cross-check, was not performed). With `--profile` alone on a `schema_version` 3.0 profile, the axis data is absent and the threshold cross-check and the salary lint are skipped
 - `search_sets.exploration` is null under `fuzzy` (2.2) (skipping the check for bias)
 - `search_sets.exploration` is an object under `similar_better` (2.2)
 - `search_sets.derivations` is empty under `fuzzy` (2.3) (no derivation lane was carried out)
@@ -854,14 +860,14 @@ When `schema_version` is `"2.0"`, `"2.1"`, `"2.2"`, or `"2.3"`, the following is
 
 ## PII lint (when --profile is given)
 
-When `--profile <profile.json>` is given, the PII lint runs in addition to the schema check. It extracts the following from `profile.json`, stringifies the entire deliverable JSON, and detects contamination. Contamination is ERROR.
+When `--profile <profile.json>` is given, the PII lint runs together with the schema check. It extracts the following from `profile.json` and from `{AXIS}` (passed as `--axis`, or a 1.x/2.0 `profile.json`, which holds both), stringifies the entire deliverable JSON, and detects contamination. Contamination is ERROR.
 
-These 3 items are the range that can be mechanically detected by string matching. The canonical definition of the personal-information boundary itself (what may be passed, and what the exceptions are) lives in the hub's `references/pii-boundary.md`; a PASS on this lint is not evidence that the boundary was honoured.
+These 3 items are the range that can be mechanically detected by string matching. The canonical definition of the personal-information boundary itself (what may be passed, and what the exceptions are) is in the hub's `references/pii-boundary.md`. A PASS on this lint is not evidence that the boundary was honoured.
 
 | Extraction target | Extracted from |
 |---|---|
 | Current employer's name | The `company` of the entry in `career_history` that is currently held (`period` is `〜現在`). When the currently-held entry cannot be identified, the `company` of the first entry. |
 | A value that looks like a name | The 5 keys `name`, `full_name`, `氏名`, `kana`, `name_kana` inside `basic`. |
-| Current salary | `salary.current` (a number). A value under 10000 is not extracted, to avoid a false match against a non-salary number. The floor of the desired salary is not within the scope of this check (it may be written as a condition). |
+| Current salary | `salary.current` (a number), read from `{AXIS}`. A value under 10000 is not extracted, to avoid a false match against a non-salary number. The floor of the desired salary is not within the scope of this check (it may be written as a condition). |
 
-profile.json is read only locally and is never sent externally. Every example is fictitious data, found in `assets/job_search_results_example.json` and `assets/job_search_results_similar_better_example.json`.
+profile.json and `{AXIS}` are read only locally and are never sent externally. Every example is fictitious data, found in `assets/job_search_results_example.json` and `assets/job_search_results_similar_better_example.json`.

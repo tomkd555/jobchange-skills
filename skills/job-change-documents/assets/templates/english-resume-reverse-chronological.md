@@ -5,7 +5,7 @@
 - Choose this style by default, for a move within the same field where the work history runs without breaks (sources E8, E13, E15).
 - Keep the resume to one page; go to two only past ten years of experience (source E8). Give 3 to 5 bullets to the most recent role where the profile supports it; never pad with invented bullets. Give each earlier role 3, at one or two lines per bullet (sources E4, E8).
 - Write the current role in the present tense and every past role in the past tense (source E4). Start each bullet with an action verb and drop the subject "I".
-- Keep the file ATS-readable: one column, no tables, text boxes, images or skill bars, name and contact details in the body rather than a header or footer, the standard headings below, a standard 10 to 12 point font, and a text-based PDF or .docx (sources E2, E11, E12, E15).
+- Keep the file ATS-readable (sources E2, E11, E12, E15). Use one column with no tables, text boxes, images or skill bars. Put the name and contact details in the body, outside the header and footer. Use the standard headings below, a standard 10 to 12 point font, and a text-based PDF or .docx.
 - Never include a photo, age, date of birth, gender or marital status (sources E1, E4, E15).
 - `{profile.…}` marks a field of profile.json, `{…}` marks input from elsewhere (the job posting, company research, the date of writing). `<!-- -->` lines are notes to the writer and never appear in the finished resume.
 
@@ -27,11 +27,11 @@
 
 ### {profile.career_history[].role} - {profile.career_history[].company}
 {profile.career_history[].period} | {location}
-<!-- Ask the user for the company's own English name rather than translating it yourself. Write the period as month and year. Drop the location when the user does not supply it. -->
+<!-- Ask the user for the company's own English name and use it as given; the writer never translates the name. Write the period as month and year. Drop the location when the user does not supply it. -->
 
 - {action verb} … {profile.career_history[].achievements[].description}, {profile.career_history[].achievements[].metric}
 - {action verb} … {profile.career_history[].responsibilities[]}
-<!-- Carry every figure across from metric exactly as written; do not round it and do not invent one. An achievement whose metric is null gets a bullet with scope and role and no number. Write fewer bullets rather than filling the count with something profile.json does not support. -->
+<!-- Carry every figure across from metric exactly as written; do not round it and do not invent one. An achievement whose metric is null gets a bullet with scope and role and no number. When profile.json supports fewer bullets than the count, write fewer. -->
 
 ## Education
 <!-- Required, and placed after Work Experience for a mid-career applicant (sources E8, E14, E15). One line per entry in {profile.basic.education[]}, newest first. Name the institution and the field of study, and give the graduation month and year. Do not state a degree title that profile.json does not record. -->

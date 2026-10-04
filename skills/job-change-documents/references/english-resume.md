@@ -37,9 +37,9 @@ reliable secondary).
 | QUALIFICATIONS (SPECIAL SKILLS) | Qualifications and skills. |
 | ADDITIONAL INFORMATION | Supplementary information. |
 
-The table above reflects a single company, エンワールド. The structure this skill uses (SUMMARY
-required, OBJECTIVE optional, with three styles — Reverse-chronological, Combination, and
-Functional) and its grounds live in `references/templates.md`.
+The table above reflects one company, エンワールド. The structure this skill uses (SUMMARY
+required, OBJECTIVE optional, and three styles: Reverse-chronological, Combination, and
+Functional) and its grounds are in `references/templates.md`.
 
 ## Personal information to omit
 
@@ -66,22 +66,22 @@ https://www.indeed.com/career-advice/resumes-cover-letters/ats-resume-keywords, 
 | Guideline | Content |
 |---|---|
 | Contextual match with the job posting | Reflect the language the job posting (job description) uses, in a form that fits the context of the experience. Use the posting's keywords naturally, within a description of the actual work and result. |
-| Avoid keyword stuffing | A modern NLP-based ATS scores keywords by their context and relevance. Repeating the same word unnaturally is judged as low quality and lowers the score, and it also reads as unnatural to a human reviewer. Reflecting the posting's language works only when it comes with accurate extraction and quantified backing. The point is contextual match with the job posting. |
+| Avoid keyword stuffing | A modern NLP-based ATS scores keywords by their context and relevance. Repeating the same word unnaturally is judged as low quality and lowers the score, and it also reads as unnatural to a human reviewer. Reflecting the posting's language works only when it comes with accurate extraction and quantified backing. Aim for contextual match with the job posting. |
 | Avoid a table, an image, or graphics | An ATS can fail to parse a table, an image, or graphics (including a graph or a chart) correctly. Build the résumé with plain text formatting. |
 
 ### The problem of an ATS turning away a capable candidate
 
-An ATS can screen out a capable candidate in error. ATS handling therefore serves two ends: getting
-through, and guarding against a wrongful rejection (source: Harvard Business
-School / Accenture "Hidden Workers: Untapped Talent," 2021, reported in a secondary article
-https://jobcannon.io/research/stats/hbs-accenture-hidden-workers-2021, word of mouth/aggregated grade;
-the primary source is the HBS/Accenture report by Fuller, Raman, and others).
+An ATS can screen out a capable candidate in error. ATS handling serves two ends: getting through,
+and guarding against a wrongful rejection. (Source: Harvard Business School / Accenture "Hidden
+Workers: Untapped Talent," 2021. A secondary article reports it at
+https://jobcannon.io/research/stats/hbs-accenture-hidden-workers-2021, word of mouth/aggregated grade.
+The primary source is the HBS/Accenture report by Fuller, Raman, and others.)
 
 The following two statistics are separate; do not state them as causally linked.
 
 | Statistic | Content |
 |---|---|
-| 88% of employers | The share of employers who acknowledged that a capable, highly skilled candidate is being vetted out during the selection process. This reflects the employers' own self-awareness that a selection mechanism, including an ATS, can screen out a capable candidate. This figure comes from a single survey report (HBS/Accenture 2021) (grade C). |
+| 88% of employers | The share of employers who acknowledged that a capable, highly skilled candidate is being vetted out during the selection process. This reflects the employers' own self-awareness that a selection mechanism, including an ATS, can screen out a capable candidate. This figure comes from one survey report (HBS/Accenture 2021) (grade C). |
 | About 27 million people (hidden workers) | The total number of hidden workers, defined by employment status. Do not causally link this total with the 88% figure, as in a claim that "an ATS excluded 27 million people." |
 
 The practical response to this problem is a contextual match with the job posting, a simplified
@@ -102,7 +102,7 @@ official support documentation (source: Greenhouse Support "Resume parsing with 
 languages" https://support.greenhouse.io/hc/en-us/articles/205019689-Resume-parsing-with-non-English-languages,
 grade A). This is the vendor's own claim, however, unverified by any third party. Japanese
 appears on the list of supported languages, but that states only that it falls within the spec's
-parsing scope. The same document carries no figure showing the actual extraction accuracy for
+parsing scope. The same document does not give a figure showing the actual extraction accuracy for
 Japanese (CJK text, with no word segmentation, in full-width characters).
 
 Japan-based recruiting agencies also offer practical ATS-related advice for foreign-affiliated
@@ -113,24 +113,24 @@ that a PDF file format is preferable, since a complex layout can be more than an
 (source: Morgan McKinley "英文レジュメの書き方：DX対応編," 2023-10-05,
 https://www.morganmckinley.com/jp-ja/article/%E8%8B%B1%E6%96%87%E3%83%AC%E3%82%B8%E3%83%A5%E3%83%A1%E3%81%AE%E6%9B%B8%E3%81%8D%E6%96%B9%EF%BC%9ADX%E5%AF%BE%E5%BF%9C%E7%B7%A8,
 grade B). The publisher, however, is a recruiting agency that offers resume-editing and job-placement
-services and holds an interest in emphasizing the importance of ATS handling (a single source).
+services and has an interest in stressing ATS handling (one source only).
 
 ## The scope and limits of this standard
 
 - The format, structure, information to omit, and quantification rest on a normative guide from a
   foreign-affiliated specialist agency and a US university career center (reliable secondary).
-- The concrete ATS vendors used inside Japan (Workday, Greenhouse) and the fact that a
-  Japanese-language document falls within their parsing scope by specification (Greenhouse's own
-  documentation) are confirmed (see "The state of foreign-affiliated ATS use inside Japan" above). On
-  the other hand, primary quantitative data on the adoption rate of a foreign-affiliated ATS and a
-  figure showing the actual parsing accuracy for a Japanese resume remain unconfirmed even after
-  additional search as of July 2026 (IMARC's Japan ATS market report, Greenhouse's own parsing
-  documentation, and explanatory articles from recruiting agencies serving foreign-affiliated hiring).
-  IMARC's market report is a single source that discloses no methodology (grade C), so its individual
-  figures cannot be independently confirmed, and Greenhouse's own documentation carries no figure on
-  actual parsing accuracy either. Confirming with the target company or the agency directly is the
+- Two facts are confirmed (see "The state of foreign-affiliated ATS use inside Japan" above): the
+  concrete ATS vendors used inside Japan (Workday, Greenhouse), and that a Japanese-language document
+  falls within their parsing scope by specification (Greenhouse's own documentation). Two items
+  remain unconfirmed even after additional search as of July 2026: primary quantitative data on the
+  adoption rate of a foreign-affiliated ATS, and a figure showing the actual parsing accuracy for a
+  Japanese resume. The search covered IMARC's Japan ATS market report, Greenhouse's own parsing
+  documentation, and explanatory articles from recruiting agencies serving foreign-affiliated hiring.
+  IMARC's market report is one source that does not disclose its methodology (grade C), so its
+  individual figures cannot be independently confirmed, and Greenhouse's own documentation gives no
+  figure on actual parsing accuracy either. Confirming with the target company or the agency directly is the
   reliable way to learn how much a domestic foreign-affiliated posting relies on an ATS.
-- The 88% and 27-million figures for hidden workers come from a single survey report (HBS/Accenture
+- The 88% and 27-million figures for hidden workers come from one survey report (HBS/Accenture
   2021, grade C). Do not use them in an assertively causal statement.
 
 <!-- textlint-enable @textlint-ja/no-synonyms -->

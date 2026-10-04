@@ -508,7 +508,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         document = load_self_analysis(args.self_analysis_path)
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError) as exc:
         result = ValidationResult()
         result.add_error(args.self_analysis_path, f"JSON として読み込めない（{exc}）")
         if args.json:

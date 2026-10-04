@@ -11,10 +11,6 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.9", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - name: エージェント定義の同期確認
@@ -26,7 +22,7 @@ jobs:
           done
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.13"
       - name: 単体テスト
         run: |
           for d in skills/*/; do

@@ -141,7 +141,7 @@ def load_partials(search_dir: str) -> tuple[list[tuple[str, dict]], list[str]]:
     for path, name in zip(paths, names):
         try:
             partials.append((name, load_json(path)))
-        except (OSError, json.JSONDecodeError) as exc:
+        except (OSError, ValueError) as exc:
             errors.append(f"[ERROR] {name}: JSON として読み込めない（{exc}）")
     return partials, errors
 
@@ -532,7 +532,7 @@ def merge(
         name = os.path.basename(path)
         try:
             batch_docs.append(load_json(path))
-        except (OSError, json.JSONDecodeError) as exc:
+        except (OSError, ValueError) as exc:
             errors.append(f"[ERROR] {name}: JSON として読み込めない（{exc}）")
     if errors:
         return _make_result(errors, warnings, excluded_count)
@@ -674,7 +674,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.profile:
         try:
             profile = load_json(args.profile)
-        except (OSError, json.JSONDecodeError) as exc:
+        except (OSError, ValueError) as exc:
             result = MergeResult()
             result.add_error(args.profile, f"profile.json を読み込めない（{exc}）")
             _print_result(result, args.json)

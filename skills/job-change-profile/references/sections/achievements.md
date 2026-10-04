@@ -1,6 +1,6 @@
 # Section: Responsibilities and achievements (achievements)
 
-For each position, deep-dives in the order responsibilities → key projects → achievements, and supports quantifying the achievements. The first pass skips this section; it is done as a section update right before writing the application documents. The `skills` section uses what comes up while discussing this section as its material, so do that section immediately afterward. The section catalogue and the definition of reach stages live in `../sections.md`.
+For each position, ask in detail in the order responsibilities → key projects → achievements, and supports quantifying the achievements. The first pass skips this section. It is done as a section update right before writing the application documents. The `skills` section uses what comes up while discussing this section as its material, so do that section immediately afterward. The section catalogue and the definition of reach stages are in `../sections.md`.
 
 ## Fields to fill
 
@@ -19,7 +19,7 @@ For each position, deep-dives in the order responsibilities → key projects →
 | Stage | Condition |
 |---|---|
 | `skeleton` | Some career-history entry has `responsibilities` or `achievements` |
-| `deep` | Every career-history entry has `responsibilities`, and at least one achievement carries a quantitative `metric` |
+| `deep` | Every career-history entry has `responsibilities`, and at least one achievement has a quantitative `metric` |
 
 ## Procedure
 
@@ -34,11 +34,11 @@ Opening questions:
 
 Record a stated figure into `metric` as given. Do not ask where the figure came from. Note the figure's uncertainty only when the user volunteers it themselves.
 
-The wording for the quantification question lives in "Supporting quantification" in `../answer-handling.md`.
+The wording for the quantification question is in "Supporting quantification" in `../answer-handling.md`.
 
-For a colloquial or vague phrase (「手伝った」「作った」「いろいろやった」), show a candidate phrasing that would read well in an application document, following the substitution table in `../answer-handling.md`, and record in the elicitation notes, under a `言い換え（本人了承）:` (reworded, user-approved) line, only the sentence the user approved. Do not raise the description of a role's involvement above the scope the user themselves reported.
+For a colloquial or vague phrase (「手伝った」「作った」「いろいろやった」), show a candidate phrasing that would read well in an application document, following the substitution table in `../answer-handling.md`. Record in the elicitation notes only the sentence the user approved, under a `言い換え（本人了承）:` (reworded, user-approved) line. Do not raise the description of a role's involvement above the scope the user themselves reported.
 
-When a single position involved multiple concurrent projects, ask, for each achievement, for the project's name (`project`) and that project's period (`period`), so that which project produced which result, and when, stays distinguishable. Skip these two questions for a position that involved only one project.
+When one position involved multiple concurrent projects, ask for each achievement's project name (`project`) and that project's period (`period`). This keeps it clear which project produced which result, and when. Skip these two questions for a position that involved only one project.
 
 ### Update operation
 

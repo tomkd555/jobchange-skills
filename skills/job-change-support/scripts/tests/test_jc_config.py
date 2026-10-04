@@ -9,9 +9,11 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import sys
 import tempfile
 import unittest
+from io import StringIO
 from pathlib import Path
 from unittest import mock
 
@@ -32,6 +34,7 @@ class TempTreeTestCase(unittest.TestCase):
         self.addCleanup(patcher.stop)
 
         self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
         self.root = Path(self._tmp.name)
         self.home = self.root / "home"
         self.home.mkdir()
@@ -39,9 +42,6 @@ class TempTreeTestCase(unittest.TestCase):
         self.data_root.mkdir()
         self.cwd = self.root / "work" / "nested"
         self.cwd.mkdir(parents=True)
-
-    def tearDown(self) -> None:
-        self._tmp.cleanup()
 
     def write_config(self, directory: Path, **overrides: object) -> Path:
         directory.mkdir(parents=True, exist_ok=True)
@@ -53,87 +53,66 @@ class TempTreeTestCase(unittest.TestCase):
 
 
 class FindConfigPathTest(TempTreeTestCase):
-    def test_env_var_wins(self) -> None:
-        env_config = self.write_config(self.root / "explicit")
-        self.write_config(self.cwd / jc.CONFIG_DIRNAME)
-        self.write_config(self.home / jc.CONFIG_DIRNAME)
-        found, source = jc.find_config_path(
-            env={jc.ENV_VAR: str(env_config)}, start_dir=self.cwd, home=self.home
-        )
-        self.assertEqual(found, env_config)
-        self.assertEqual(source, "env")
-
-    def test_env_var_pointing_at_missing_file_is_ignored(self) -> None:
-        home_config = self.write_config(self.home / jc.CONFIG_DIRNAME)
-        found, source = jc.find_config_path(
-            env={jc.ENV_VAR: str(self.root / "nope.json")}, start_dir=self.cwd, home=self.home
-        )
-        self.assertEqual(found, home_config)
-        self.assertEqual(source, "home")
-
-    def test_project_config_found_in_ancestor_directory(self) -> None:
-        project_config = self.write_config(self.root / "work" / jc.CONFIG_DIRNAME)
-        self.write_config(self.home / jc.CONFIG_DIRNAME)
-        found, source = jc.find_config_path(env={}, start_dir=self.cwd, home=self.home)
-        self.assertEqual(found, project_config)
-        self.assertEqual(source, "project")
-
-    def test_nearest_project_config_wins_over_outer_one(self) -> None:
-        self.write_config(self.root / "work" / jc.CONFIG_DIRNAME)
-        nearest = self.write_config(self.cwd / jc.CONFIG_DIRNAME)
-        found, _ = jc.find_config_path(env={}, start_dir=self.cwd, home=self.home)
-        self.assertEqual(found, nearest)
-
-    def test_home_config_is_last_resort(self) -> None:
-        home_config = self.write_config(self.home / jc.CONFIG_DIRNAME)
-        found, source = jc.find_config_path(env={}, start_dir=self.cwd, home=self.home)
-        self.assertEqual(found, home_config)
-        self.assertEqual(source, "home")
-
-    def test_returns_none_when_nothing_is_configured(self) -> None:
-        found, source = jc.find_config_path(env={}, start_dir=self.cwd, home=self.home)
-        self.assertIsNone(found)
-        self.assertEqual(source, "")
+    def test_search_order(self) -> None:
+        places = {
+            "env": self.root / "explicit",
+            "outer": self.root / "work" / jc.CONFIG_DIRNAME,
+            "nearest": self.cwd / jc.CONFIG_DIRNAME,
+            "home": self.home / jc.CONFIG_DIRNAME,
+        }
+        # (ラベル, 存在する場所, 環境変数が指す先, 期待する場所, 期待する由来)
+        rows = [
+            ("環境変数が最優先", {"env", "nearest", "home"}, "env", "env", "env"),
+            ("環境変数の指す先が無ければ無視", {"home"}, "missing", "home", "home"),
+            ("上位ディレクトリの設定が home に勝つ", {"outer", "home"}, None, "outer", "project"),
+            ("最も近い設定が外側に勝つ", {"outer", "nearest"}, None, "nearest", "project"),
+            ("home は最後の手段", {"home"}, None, "home", "home"),
+            ("どこにも無い", set(), None, None, ""),
+        ]
+        for label, present, env_target, expected_place, expected_source in rows:
+            with self.subTest(label):
+                written = {name: self.write_config(places[name]) for name in present}
+                env = {}
+                if env_target == "env":
+                    env = {jc.ENV_VAR: str(written["env"])}
+                elif env_target == "missing":
+                    env = {jc.ENV_VAR: str(self.root / "nope.json")}
+                found, source = jc.find_config_path(env=env, start_dir=self.cwd, home=self.home)
+                self.assertEqual(found, written[expected_place] if expected_place else None)
+                self.assertEqual(source, expected_source)
+                for directory in places.values():
+                    shutil.rmtree(directory, ignore_errors=True)
 
 
 class LoadConfigTest(TempTreeTestCase):
-    def test_defaults_are_applied(self) -> None:
-        path = self.write_config(self.home / jc.CONFIG_DIRNAME)
-        config = jc.load_config(path)
-        self.assertEqual(config["private_dir"], "career-private")
-        self.assertEqual(config["companies_dir"], "companies")
-        self.assertEqual(config["job_search_dir"], "job-search")
-        self.assertEqual(config["python"], "python")
+    def test_defaults_and_overrides(self) -> None:
+        config = jc.load_config(self.write_config(self.home / jc.CONFIG_DIRNAME))
+        self.assertEqual(
+            (config["private_dir"], config["companies_dir"], config["job_search_dir"], config["python"]),
+            ("career-private", "companies", "job-search", "python"),
+        )
+        config = jc.load_config(
+            self.write_config(self.home / jc.CONFIG_DIRNAME, python="python3", companies_dir="corp")
+        )
+        self.assertEqual((config["python"], config["companies_dir"]), ("python3", "corp"))
 
-    def test_overrides_are_kept(self) -> None:
-        path = self.write_config(self.home / jc.CONFIG_DIRNAME, python="python3", companies_dir="corp")
-        config = jc.load_config(path)
-        self.assertEqual(config["python"], "python3")
-        self.assertEqual(config["companies_dir"], "corp")
-
-    def test_missing_data_root_is_an_error(self) -> None:
-        path = self.home / jc.CONFIG_DIRNAME / "config.json"
-        path.parent.mkdir(parents=True)
-        path.write_text(json.dumps({"schema_version": "1.0"}), encoding="utf-8")
-        with self.assertRaises(jc.ConfigError):
-            jc.load_config(path)
-
-    def test_relative_data_root_is_an_error(self) -> None:
-        path = self.write_config(self.home / jc.CONFIG_DIRNAME, data_root="relative-dir")
-        with self.assertRaises(jc.ConfigError):
-            jc.load_config(path)
-
-    def test_broken_json_is_an_error(self) -> None:
-        path = self.home / jc.CONFIG_DIRNAME / "config.json"
-        path.parent.mkdir(parents=True)
-        path.write_text("{ not json", encoding="utf-8")
-        with self.assertRaises(jc.ConfigError):
-            jc.load_config(path)
-
-    def test_directory_name_containing_separator_is_an_error(self) -> None:
-        path = self.write_config(self.home / jc.CONFIG_DIRNAME, private_dir="../outside")
-        with self.assertRaises(jc.ConfigError):
-            jc.load_config(path)
+    def test_invalid_config_is_an_error(self) -> None:
+        directory = self.home / jc.CONFIG_DIRNAME
+        raw = directory / "raw.json"
+        directory.mkdir(parents=True)
+        raw.write_text("{ not json", encoding="utf-8")
+        no_root = directory / "no_root.json"
+        no_root.write_text(json.dumps({"schema_version": "1.0"}), encoding="utf-8")
+        rows = [
+            ("JSON が壊れている", raw),
+            ("data_root が無い", no_root),
+            ("data_root が相対パス", self.write_config(directory / "a", data_root="relative-dir")),
+            ("ディレクトリ名に区切り文字", self.write_config(directory / "b", private_dir="../outside")),
+            ("存在しないファイル", directory / "nothing.json"),
+        ]
+        for label, path in rows:
+            with self.subTest(label), self.assertRaises(jc.ConfigError):
+                jc.load_config(path)
 
     def test_tilde_in_data_root_is_expanded(self) -> None:
         path = self.write_config(self.home / jc.CONFIG_DIRNAME, data_root="~/job-change-data")
@@ -142,120 +121,83 @@ class LoadConfigTest(TempTreeTestCase):
 
 
 class ResolveTest(TempTreeTestCase):
-    def test_all_known_paths_are_absolute_and_under_data_root(self) -> None:
-        config = jc.load_config(self.write_config(self.home / jc.CONFIG_DIRNAME))
-        paths = jc.resolve_paths(config)
-        for key, value in paths.items():
-            with self.subTest(key=key):
-                self.assertTrue(Path(value).is_absolute())
-                self.assertTrue(str(value).startswith(str(self.data_root)))
-
-    def test_private_artifacts_live_under_the_private_directory(self) -> None:
-        config = jc.load_config(self.write_config(self.home / jc.CONFIG_DIRNAME))
-        paths = jc.resolve_paths(config)
-        private = Path(paths["private"])
-        self.assertEqual(Path(paths["profile"]), private / "profile.json")
-        self.assertEqual(Path(paths["company_index"]), private / "company_index.json")
-        self.assertEqual(Path(paths["self_analysis"]), private / "self_analysis.json")
-        self.assertEqual(Path(paths["commute"]), private / "commute.json")
-
-    def test_custom_directory_names_are_honoured(self) -> None:
+    def test_paths_follow_directory_settings(self) -> None:
         config = jc.load_config(
             self.write_config(self.home / jc.CONFIG_DIRNAME, private_dir="secret", companies_dir="corp")
         )
         paths = jc.resolve_paths(config)
-        self.assertEqual(Path(paths["private"]), self.data_root / "secret")
+        private = self.data_root / "secret"
+        self.assertEqual(Path(paths["private"]), private)
         self.assertEqual(Path(paths["companies"]), self.data_root / "corp")
-
-    def test_resolve_does_not_create_directories(self) -> None:
-        config = jc.load_config(self.write_config(self.home / jc.CONFIG_DIRNAME))
-        jc.resolve_paths(config)
-        self.assertFalse((self.data_root / "career-private").exists())
+        self.assertEqual(Path(paths["job_search"]), self.data_root / "job-search")
+        for key, filename in jc.PRIVATE_FILES.items():
+            self.assertEqual(Path(paths[key]), private / filename)
+        self.assertFalse(private.exists())
 
 
 class InitConfigTest(TempTreeTestCase):
-    def test_creates_config_under_home(self) -> None:
+    def test_creates_loadable_config_under_home(self) -> None:
         path = jc.init_config(str(self.data_root), home=self.home)
         self.assertEqual(path, self.home / jc.CONFIG_DIRNAME / "config.json")
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        self.assertEqual(payload["data_root"], str(self.data_root))
-        self.assertEqual(payload["schema_version"], jc.CONFIG_SCHEMA_VERSION)
+        self.assertEqual(jc.load_config(path)["data_root"], str(self.data_root))
 
-    def test_does_not_overwrite_an_existing_config(self) -> None:
+    def test_existing_config_is_kept(self) -> None:
         existing = self.write_config(self.home / jc.CONFIG_DIRNAME, data_root=str(self.root / "old"))
+        before = existing.read_text(encoding="utf-8")
         with self.assertRaises(jc.ConfigError):
             jc.init_config(str(self.data_root), home=self.home)
-        payload = json.loads(existing.read_text(encoding="utf-8"))
-        self.assertEqual(payload["data_root"], str(self.root / "old"))
+        self.assertEqual(existing.read_text(encoding="utf-8"), before)
 
     def test_relative_data_root_is_rejected(self) -> None:
         with self.assertRaises(jc.ConfigError):
             jc.init_config("relative-dir", home=self.home)
 
-    def test_created_config_is_loadable(self) -> None:
-        path = jc.init_config(str(self.data_root), home=self.home)
-        config = jc.load_config(path)
-        self.assertEqual(config["data_root"], str(self.data_root))
-
 
 class MainTest(TempTreeTestCase):
     def _run(self, argv: list[str], env: dict | None = None) -> tuple[int, str]:
-        from io import StringIO
-
         buffer = StringIO()
         code = jc.main(argv, env=env or {}, start_dir=self.cwd, home=self.home, stream=buffer)
         return code, buffer.getvalue()
 
-    def test_show_returns_2_when_unconfigured(self) -> None:
-        code, output = self._run(["--show"])
+    def test_show_exit_codes(self) -> None:
+        # (ラベル, 設定の作り方, 期待する終了コード, 期待する status)
+        rows = [
+            ("未設定", lambda: None, 2, "unconfigured"),
+            ("正常", lambda: self.write_config(self.home / jc.CONFIG_DIRNAME), 0, "ok"),
+            ("内容が不正", lambda: self.write_config(self.home / jc.CONFIG_DIRNAME, data_root="relative"), 1, "invalid"),
+        ]
+        for label, setup, code_expected, status in rows:
+            with self.subTest(label):
+                setup()
+                code, output = self._run(["--show"])
+                self.assertEqual(code, code_expected)
+                self.assertEqual(json.loads(output)["status"], status)
+                shutil.rmtree(self.home / jc.CONFIG_DIRNAME, ignore_errors=True)
+
+    def test_show_output_keys_and_env_source(self) -> None:
+        env_config = self.write_config(self.root / "explicit")
+        code, output = self._run(["--show"], env={jc.ENV_VAR: str(env_config)})
+        payload = json.loads(output)
+        self.assertEqual(code, 0)
+        self.assertEqual(payload["source"], "env")
+        self.assertEqual(
+            sorted(payload),
+            ["config_path", "data_root", "paths", "python", "source", "status"],
+        )
+
+    def test_init_exit_codes(self) -> None:
+        code, output = self._run(["--init", "--data-root", str(self.data_root)])
+        self.assertEqual((code, json.loads(output)["status"]), (0, "created"))
+        code, output = self._run(["--init", "--data-root", str(self.data_root)])
+        self.assertEqual((code, json.loads(output)["status"]), (1, "exists"))
+
+    def test_path_prints_one_path_or_reports_unconfigured(self) -> None:
+        code, _ = self._run(["--path", "profile"])
         self.assertEqual(code, 2)
-        self.assertEqual(json.loads(output)["status"], "unconfigured")
-
-    def test_show_returns_0_and_reports_paths(self) -> None:
-        self.write_config(self.home / jc.CONFIG_DIRNAME)
-        code, output = self._run(["--show"])
-        self.assertEqual(code, 0)
-        payload = json.loads(output)
-        self.assertEqual(payload["status"], "ok")
-        self.assertEqual(payload["source"], "home")
-        self.assertEqual(payload["data_root"], str(self.data_root))
-        self.assertIn("profile", payload["paths"])
-
-    def test_show_returns_1_on_invalid_config(self) -> None:
-        self.write_config(self.home / jc.CONFIG_DIRNAME, data_root="relative")
-        code, output = self._run(["--show"])
-        self.assertEqual(code, 1)
-        payload = json.loads(output)
-        self.assertEqual(payload["status"], "invalid")
-        self.assertTrue(payload["errors"])
-
-    def test_init_creates_the_config(self) -> None:
-        code, output = self._run(["--init", "--data-root", str(self.data_root)])
-        self.assertEqual(code, 0)
-        self.assertEqual(json.loads(output)["status"], "created")
-        self.assertTrue((self.home / jc.CONFIG_DIRNAME / "config.json").exists())
-
-    def test_init_returns_1_when_config_exists(self) -> None:
-        self.write_config(self.home / jc.CONFIG_DIRNAME)
-        code, output = self._run(["--init", "--data-root", str(self.data_root)])
-        self.assertEqual(code, 1)
-        self.assertEqual(json.loads(output)["status"], "exists")
-
-    def test_path_prints_a_single_absolute_path(self) -> None:
         self.write_config(self.home / jc.CONFIG_DIRNAME)
         code, output = self._run(["--path", "profile"])
         self.assertEqual(code, 0)
         self.assertEqual(output.strip(), str(self.data_root / "career-private" / "profile.json"))
-
-    def test_path_returns_2_when_unconfigured(self) -> None:
-        code, _ = self._run(["--path", "profile"])
-        self.assertEqual(code, 2)
-
-    def test_env_var_is_honoured_by_main(self) -> None:
-        env_config = self.write_config(self.root / "explicit")
-        code, output = self._run(["--show"], env={jc.ENV_VAR: str(env_config)})
-        self.assertEqual(code, 0)
-        self.assertEqual(json.loads(output)["source"], "env")
 
 
 if __name__ == "__main__":

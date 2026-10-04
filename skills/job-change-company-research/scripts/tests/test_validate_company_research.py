@@ -7,7 +7,9 @@
 """
 from __future__ import annotations
 
+import contextlib
 import copy
+import io
 import json
 import os
 import sys
@@ -103,396 +105,144 @@ def _all_null_company_metrics() -> dict:
     return {key: _null_metric(entry["unit"]) for key, entry in _full_company_metrics().items()}
 
 
-class ValidatePassTest(unittest.TestCase):
-    def test_full_research_passes_without_warnings(self):
-        result = vcr.validate(_valid_research())
-        self.assertTrue(result.ok)
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
-
-    def test_low_grade_claim_with_non_high_confidence_passes(self):
-        r = _valid_research()
-        # reputation を C レベル・confidence=medium にする。ERROR にはならない。
-        r["claims"][6] = _claim("C007", "reputation", "C", "medium")
-        result = vcr.validate(r)
-        self.assertTrue(result.ok)
-        # トピック reputation が全て C になるため WARN は出る。
-        self.assertTrue(any("reputation" in w for w in result.warnings))
+def _lowgrade(r: dict, confidence: str) -> None:
+    r["claims"][6] = _claim("C007", "reputation", "C", confidence)
 
 
-class RootAndCompanyErrorTest(unittest.TestCase):
-    def test_root_not_object(self):
-        result = vcr.validate(["not", "an", "object"])
-        self.assertFalse(result.ok)
-
-    def test_company_not_object(self):
-        r = _valid_research()
-        r["company"] = "文字列"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("company" in e for e in result.errors))
-
-    def test_company_name_missing(self):
-        r = _valid_research()
-        del r["company"]["name"]
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("company.name" in e for e in result.errors))
+def _mixed_grade_high(r: dict) -> None:
+    claim = _claim("C007", "reputation", "A", "high")
+    claim["evidence"].append({**claim["evidence"][0], "grade": "C"})
+    r["claims"][6] = claim
 
 
-class ClaimsErrorTest(unittest.TestCase):
-    def test_claims_empty(self):
-        r = _valid_research()
-        r["claims"] = []
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("claims" in e for e in result.errors))
-
-    def test_claims_missing(self):
-        r = _valid_research()
-        del r["claims"]
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-
-    def test_claim_missing_id(self):
-        r = _valid_research()
-        del r["claims"][0]["id"]
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("id" in e for e in result.errors))
-
-    def test_claim_missing_statement(self):
-        r = _valid_research()
-        r["claims"][0]["statement"] = "  "
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("statement" in e for e in result.errors))
-
-    def test_claim_missing_topic(self):
-        r = _valid_research()
-        del r["claims"][0]["topic"]
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("topic" in e for e in result.errors))
-
-    def test_claim_invalid_topic(self):
-        r = _valid_research()
-        r["claims"][0]["topic"] = "culture"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        # philosophy が欠けるため必須トピック欠落 ERROR も併発する。
-        self.assertTrue(any("topic" in e for e in result.errors))
-
-    def test_claim_missing_confidence(self):
-        r = _valid_research()
-        del r["claims"][0]["confidence"]
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("confidence" in e for e in result.errors))
-
-    def test_claim_invalid_confidence(self):
-        r = _valid_research()
-        r["claims"][0]["confidence"] = "確定"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("confidence" in e for e in result.errors))
+_DEL = object()
 
 
-class EvidenceErrorTest(unittest.TestCase):
-    def test_evidence_empty(self):
-        r = _valid_research()
-        r["claims"][0]["evidence"] = []
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("evidence" in e for e in result.errors))
+def _set(path: list, value=_DEL) -> "callable":
+    """path 末端に value を代入する変異を返す（value 省略で削除）。"""
 
-    def test_evidence_missing(self):
-        r = _valid_research()
-        del r["claims"][0]["evidence"]
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
+    def mutate(r: dict) -> None:
+        node = r
+        for key in path[:-1]:
+            node = node[key]
+        if value is _DEL:
+            del node[path[-1]]
+        else:
+            node[path[-1]] = value
 
-    def test_source_url_not_http(self):
-        r = _valid_research()
-        r["claims"][0]["evidence"][0]["source_url"] = "www.example.com"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("source_url" in e for e in result.errors))
-
-    def test_grade_out_of_range(self):
-        r = _valid_research()
-        r["claims"][0]["evidence"][0]["grade"] = "E"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("grade" in e for e in result.errors))
-
-    def test_quote_empty(self):
-        r = _valid_research()
-        r["claims"][0]["evidence"][0]["quote"] = ""
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("quote" in e for e in result.errors))
+    return mutate
 
 
-class RequiredTopicErrorTest(unittest.TestCase):
-    def test_missing_required_topic_errors(self):
-        r = _valid_research()
-        # financials の claim を除去する。
-        r["claims"] = [c for c in r["claims"] if c["topic"] != "financials"]
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("financials" in e for e in result.errors))
+def _without_topic(topic: str) -> "callable":
+    def mutate(r: dict) -> None:
+        r["claims"] = [c for c in r["claims"] if c["topic"] != topic]
 
-    def test_selection_process_not_required_error(self):
-        r = _valid_research()
-        # selection_process を除いても ERROR にはならず WARN になる。
-        r["claims"] = [c for c in r["claims"] if c["topic"] != "selection_process"]
-        result = vcr.validate(r)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("selection_process" in w for w in result.warnings))
+    return mutate
 
 
-class LowGradeConfidenceErrorTest(unittest.TestCase):
-    def test_cd_only_with_high_confidence_errors(self):
-        r = _valid_research()
-        r["claims"][6] = _claim("C007", "reputation", "C", "high")
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("C007" in e for e in result.errors))
-
-    def test_mixed_grade_with_high_confidence_passes(self):
-        r = _valid_research()
-        # C と A を併記した claim は low_only ではないため confidence=high でも ERROR にならない。
-        claim = _claim("C007", "reputation", "A", "high")
-        claim["evidence"].append(
-            {
-                "source_url": "https://openwork.example/reviews",
-                "source_name": "口コミ集計サイト",
-                "grade": "C",
-                "quote": "口コミの引用。",
-                "accessed": "2026-07-12",
-            }
-        )
-        r["claims"][6] = claim
-        result = vcr.validate(r)
-        self.assertTrue(result.ok)
-
-
-class WarnTest(unittest.TestCase):
-    def test_all_cd_topic_warns(self):
-        r = _valid_research()
-        r["claims"][6] = _claim("C007", "reputation", "C", "medium")
-        result = vcr.validate(r)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("reputation" in w for w in result.warnings))
-
-    def test_missing_research_date_warns(self):
-        r = _valid_research()
-        del r["research_date"]
-        result = vcr.validate(r)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("research_date" in w for w in result.warnings))
-
-
-class CliTest(unittest.TestCase):
-    def _write_tmp(self, obj) -> str:
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(obj, f, ensure_ascii=False)
-        self.addCleanup(os.remove, path)
-        return path
-
-    def test_main_returns_0_on_valid(self):
-        path = self._write_tmp(_valid_research())
-        self.assertEqual(vcr.main([path]), 0)
-
-    def test_main_returns_1_on_invalid(self):
-        r = _valid_research()
-        del r["company"]["name"]
-        path = self._write_tmp(r)
-        self.assertEqual(vcr.main([path]), 1)
-
-    def test_main_returns_1_on_broken_json(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            f.write("{ not valid json ")
-        self.addCleanup(os.remove, path)
-        self.assertEqual(vcr.main([path]), 1)
-
-    def test_main_json_flag_valid(self):
-        path = self._write_tmp(_valid_research())
-        self.assertEqual(vcr.main([path, "--json"]), 0)
-
-    def test_main_returns_0_on_valid_with_bom(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
-            json.dump(_valid_research(), f, ensure_ascii=False)
-        self.addCleanup(os.remove, path)
-        self.assertEqual(vcr.main([path]), 0)
-
-
-class CompanyMetricsTest(unittest.TestCase):
-    def test_full_metrics_no_warning(self):
-        result = vcr.validate(_valid_research())
-        self.assertTrue(result.ok)
-        self.assertFalse(any("company_metrics" in w for w in result.warnings))
-
-    def test_partial_metrics_passes(self):
-        r = _valid_research()
-        m = _full_company_metrics()
-        m["annual_holidays"] = _null_metric("日")
-        m["turnover_rate"] = _null_metric("%")
-        r["company_metrics"] = m
-        result = vcr.validate(r)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.warnings, [])
-
-    def test_metrics_missing_errors(self):
-        r = _valid_research()
-        del r["company_metrics"]
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("company_metrics" in e for e in result.errors))
-
-    def test_metrics_not_object_errors(self):
-        r = _valid_research()
-        r["company_metrics"] = "年間休日125日"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("company_metrics" in e for e in result.errors))
-
-    def test_unknown_key_errors(self):
-        r = _valid_research()
-        r["company_metrics"]["brand_power"] = _metric(80, "%")
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("company_metrics.brand_power" in e for e in result.errors))
-
-    def test_non_axis_metric_keys_error(self):
-        # 定量候補軸でないキーは、指標として自然な名前でも ERROR にする。
-        for key in ("avg_tenure", "mid_career_ratio", "female_manager_ratio"):
-            with self.subTest(key=key):
-                r = _valid_research()
-                r["company_metrics"][key] = _metric(5.8, "年")
-                result = vcr.validate(r)
-                self.assertFalse(result.ok)
-                self.assertTrue(
-                    any(f"company_metrics.{key}" in e for e in result.errors)
-                )
-
-    def test_auxiliary_key_passes(self):
-        r = _valid_research()
-        r["company_metrics"]["avg_paid_leave_days_taken"] = _metric(12.4, "日")
-        result = vcr.validate(r)
-        self.assertTrue(result.ok)
-
-    def test_entry_not_object_errors(self):
-        r = _valid_research()
-        r["company_metrics"]["annual_holidays"] = 125
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("company_metrics.annual_holidays" in e for e in result.errors))
-
-    def test_value_not_number_errors(self):
-        r = _valid_research()
-        r["company_metrics"]["annual_holidays"]["value"] = "125"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("company_metrics.annual_holidays.value" in e for e in result.errors)
-        )
-
-    def test_value_bool_errors(self):
-        r = _valid_research()
-        r["company_metrics"]["monthly_overtime"]["value"] = True
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("company_metrics.monthly_overtime.value" in e for e in result.errors)
-        )
-
-    def test_unit_mismatch_errors(self):
-        r = _valid_research()
-        r["company_metrics"]["compensation_level"]["unit"] = "万円"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("company_metrics.compensation_level.unit" in e for e in result.errors)
-        )
-
-    def test_source_url_missing_errors(self):
-        r = _valid_research()
-        del r["company_metrics"]["paid_leave_rate"]["source_url"]
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("company_metrics.paid_leave_rate.source_url" in e for e in result.errors)
-        )
-
-    def test_source_url_not_http_errors(self):
-        r = _valid_research()
-        r["company_metrics"]["paid_leave_rate"]["source_url"] = "edinet.example"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("company_metrics.paid_leave_rate.source_url" in e for e in result.errors)
-        )
-
-    def test_invalid_grade_errors(self):
-        r = _valid_research()
-        r["company_metrics"]["annual_holidays"]["grade"] = "E"
-        result = vcr.validate(r)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("company_metrics.annual_holidays.grade" in e for e in result.errors)
-        )
-
-    def test_all_null_passes_with_warning(self):
-        r = _valid_research()
-        r["company_metrics"] = _all_null_company_metrics()
-        result = vcr.validate(r)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("company_metrics" in w for w in result.warnings))
-
-    def test_null_value_without_source_url_passes(self):
-        r = _valid_research()
-        r["company_metrics"]["equity_ratio"] = _null_metric("%")
-        result = vcr.validate(r)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.warnings, [])
-
-    def test_missing_as_of_warns(self):
-        r = _valid_research()
-        del r["company_metrics"]["turnover_rate"]["as_of"]
-        result = vcr.validate(r)
-        self.assertTrue(result.ok)
-        self.assertTrue(
-            any("company_metrics.turnover_rate.as_of" in w for w in result.warnings)
-        )
-
-
-class ResultShapeTest(unittest.TestCase):
-    def test_to_dict_shape(self):
-        result = vcr.validate(_valid_research())
-        d = result.to_dict()
-        self.assertEqual(d["status"], "PASS")
-        self.assertEqual(d["error_count"], 0)
-        self.assertIn("warnings", d)
-
-    def test_immutability_of_input(self):
+class ValidateTest(unittest.TestCase):
+    def test_valid_research_has_no_errors_or_warnings(self):
         r = _valid_research()
         snapshot = copy.deepcopy(r)
-        vcr.validate(r)
-        self.assertEqual(r, snapshot)
+        result = vcr.validate(r)
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.warnings, [])
+        self.assertEqual(r, snapshot)  # 入力を書き換えない
 
-
-class ExampleAssetTest(unittest.TestCase):
     def test_bundled_example_passes(self):
         base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         document = vcr.load_research(os.path.join(base, "assets", "company_research_example.json"))
         result = vcr.validate(document)
         self.assertEqual(result.errors, [])
         self.assertEqual(result.warnings, [])
+
+    def test_error_rules(self):
+        rows = [
+            ("ルートがオブジェクトでない", None, "(root)"),
+            ("company がオブジェクトでない", _set(["company"], "文字列"), "company"),
+            ("company.name が無い", _set(["company", "name"]), "company.name"),
+            ("claims が空", _set(["claims"], []), "claims"),
+            ("claim の statement が空白", _set(["claims", 0, "statement"], "  "), "statement"),
+            ("claim の topic が列挙外", _set(["claims", 0, "topic"], "culture"), "topic"),
+            ("evidence が空", _set(["claims", 0, "evidence"], []), "evidence"),
+            ("evidence の source_url が http でない", _set(["claims", 0, "evidence", 0, "source_url"], "www.example.com"), "source_url"),
+            ("必須トピック欠落", _without_topic("financials"), "financials"),
+            ("C・D のみの根拠に confidence=high", lambda r: _lowgrade(r, "high"), "C007"),
+            ("company_metrics が無い", _set(["company_metrics"]), "company_metrics"),
+            ("company_metrics がオブジェクトでない", _set(["company_metrics"], "年間休日125日"), "company_metrics"),
+            ("company_metrics が定量候補軸以外のキー", _set(["company_metrics", "avg_tenure"], _metric(5.8, "年")), "company_metrics.avg_tenure"),
+            ("company_metrics の項目がオブジェクトでない", _set(["company_metrics", "annual_holidays"], 125), "company_metrics.annual_holidays"),
+            ("company_metrics の value が bool", _set(["company_metrics", "monthly_overtime", "value"], True), "company_metrics.monthly_overtime.value"),
+            ("company_metrics の unit が軸の単位と違う", _set(["company_metrics", "compensation_level", "unit"], "万円"), "company_metrics.compensation_level.unit"),
+            ("非 null の value に source_url が無い", _set(["company_metrics", "paid_leave_rate", "source_url"]), "company_metrics.paid_leave_rate.source_url"),
+        ]
+        for label, mutate, expected in rows:
+            with self.subTest(label):
+                r = _valid_research()
+                result = vcr.validate(["not", "object"] if mutate is None else (mutate(r), r)[1])
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected in e for e in result.errors), result.errors)
+
+    def test_warn_rules(self):
+        rows = [
+            ("research_date が無い", _set(["research_date"]), "research_date"),
+            ("トピックの claim がすべて C・D", lambda r: _lowgrade(r, "medium"), "reputation"),
+            ("selection_process が0件", _without_topic("selection_process"), "selection_process"),
+            ("非 null の value に as_of が無い", _set(["company_metrics", "turnover_rate", "as_of"]), "company_metrics.turnover_rate.as_of"),
+            ("実測値が1件も無い", _set(["company_metrics"], _all_null_company_metrics()), "company_metrics"),
+        ]
+        for label, mutate, expected in rows:
+            with self.subTest(label):
+                r = _valid_research()
+                mutate(r)
+                result = vcr.validate(r)
+                self.assertTrue(result.ok, result.errors)
+                self.assertTrue(any(expected in w for w in result.warnings), result.warnings)
+
+    def test_accepted_variants_stay_clean(self):
+        """ERROR にも WARN にもならない許容形。"""
+        rows = [
+            ("A と C を併記した claim の confidence=high", _mixed_grade_high),
+            ("一部の軸が value=null", _set(["company_metrics", "annual_holidays"], _null_metric("日"))),
+            ("補助指標のキー", _set(["company_metrics", "avg_paid_leave_days_taken"], _metric(12.4, "日"))),
+        ]
+        for label, mutate in rows:
+            with self.subTest(label):
+                r = _valid_research()
+                mutate(r)
+                result = vcr.validate(r)
+                self.assertEqual(result.errors, [])
+                self.assertEqual(result.warnings, [])
+
+
+class CliTest(unittest.TestCase):
+    def _write(self, text: str, encoding: str = "utf-8") -> str:
+        fd, path = tempfile.mkstemp(suffix=".json")
+        with os.fdopen(fd, "w", encoding=encoding) as f:
+            f.write(text)
+        self.addCleanup(os.remove, path)
+        return path
+
+    def test_exit_codes_and_json_keys(self):
+        invalid = _valid_research()
+        del invalid["company"]["name"]
+        rows = [
+            ("正常", json.dumps(_valid_research(), ensure_ascii=False), "utf-8", 0),
+            ("BOM 付きの正常", json.dumps(_valid_research(), ensure_ascii=False), "utf-8-sig", 0),
+            ("ERROR あり", json.dumps(invalid, ensure_ascii=False), "utf-8", 1),
+            ("壊れた JSON", "{ not valid json ", "utf-8", 1),
+        ]
+        for label, text, encoding, code in rows:
+            with self.subTest(label):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(vcr.main([self._write(text, encoding)]), code)
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            vcr.main([self._write(json.dumps(_valid_research())), "--json"])
+        self.assertEqual(
+            set(json.loads(buf.getvalue())),
+            {"status", "error_count", "warning_count", "errors", "warnings"},
+        )
 
 
 if __name__ == "__main__":

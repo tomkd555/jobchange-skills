@@ -27,10 +27,10 @@
 <!-- 必須。応募する意思と、{profile.basic.current_role}・{profile.basic.years_of_experience} による自分の立ち位置を短く述べ、志望の結論を1文で置く。 -->
 
 【業界】約150〜200字
-<!-- 必須。{profile.targets.industries} または応募先の属する業界について、自分がその業界で働き続けたい理由を、経験した事実に結び付けて述べる。業界の一般論だけで終えない。{company_research} の claim があれば根拠に用いる。 -->
+<!-- 必須。{axis.targets.industries} または応募先の属する業界について、自分がその業界で働き続けたい理由を、経験した事実に結び付けて述べる。業界の一般論だけで終えない。{company_research} の claim があれば根拠に用いる。 -->
 
 【企業】約200字
-<!-- 必須。その企業を選ぶ理由を、{company_research} の claim（理念・事業・求める人物像・技術の方針）に固有の要素で述べる。競合他社にも当てはまる内容にしない。{profile.job_change_axis.reasons[]} と対応づける。企業研究が無い場合、この段は書けない。汎用の骨子に留め、企業研究の後に書き直す旨を利用者へ伝える。 -->
+<!-- 必須。その企業を選ぶ理由を、{company_research} の claim（理念・事業・求める人物像・技術の方針）に固有の要素で述べる。競合他社にも当てはまる内容にしない。{axis.job_change_axis.reasons[]} と対応づける。企業研究が無い場合、この段は書けない。汎用の骨子に留め、企業研究の後に書き直す旨を利用者へ伝える。 -->
 
 【職種】約200字
 <!-- 必須。{求人要件} と {profile.career_history[]} の重なりを述べる。数値は {profile.career_history[].achievements[].metric} を一字一句そのまま引く。丸め・水増しをしない。規模・範囲・主体を表す言葉は profile.json が裏づける範囲に限る。 -->

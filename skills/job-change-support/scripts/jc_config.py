@@ -44,6 +44,7 @@ DEFAULTS: dict[str, str] = {
 # private_dir 配下に置く、原本が1つだけのファイル。
 PRIVATE_FILES: dict[str, str] = {
     "profile": "profile.json",
+    "axis": "axis.json",
     "company_index": "company_index.json",
     "self_analysis": "self_analysis.json",
     "commute": "commute.json",
@@ -109,7 +110,7 @@ def load_config(path: Path | str, home: Path | str | None = None) -> dict[str, A
         raw = json.loads(path.read_text(encoding="utf-8"))
     except OSError as exc:
         raise ConfigError(f"設定ファイルを読めない: {path}（{exc}）") from exc
-    except json.JSONDecodeError as exc:
+    except ValueError as exc:
         raise ConfigError(f"設定ファイルが JSON として壊れている: {path}（{exc}）") from exc
 
     if not isinstance(raw, dict):

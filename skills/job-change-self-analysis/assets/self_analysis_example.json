@@ -133,7 +133,7 @@
       "深夜の緊急対応が個人の負担のまま残っている"
     ],
     "constructive_version": "個人の対応を仕組みへ残して再現性を上げる働き方を、より広い範囲で発揮したい。運用の設計まで踏み込める環境で、基盤と運用の両面を担いたい。",
-    "consistency_note": "profile.json の job_change_axis.reasons（運用設計まで担える範囲を求める）と、発揮したい価値の軸が一致する。"
+    "consistency_note": "axis.json の job_change_axis.reasons（運用設計まで担える範囲を求める）と、発揮したい価値の軸が一致する。"
   },
   "notes": "架空の人物による記入例。実在の個人・企業とは無関係である。"
 }

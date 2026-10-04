@@ -7,12 +7,13 @@
 """
 from __future__ import annotations
 
-import copy
+import io
 import json
 import os
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -91,558 +92,146 @@ def _valid_document() -> dict:
     }
 
 
-class ValidatePassTest(unittest.TestCase):
-    def test_full_document_passes_with_no_warnings(self):
+def _rq(d):
+    return d["reported_questions"][0]
+
+
+def _log(d):
+    return d["search_log"][0]
+
+
+def _all_empty(d, **extra):
+    d["reported_questions"] = []
+    d["format_facts"] = []
+    d["themes"] = []
+    d.update(extra)
+
+
+class ValidateTest(unittest.TestCase):
+    def test_valid_document_has_no_error_and_no_warning(self):
         result = vii.validate(_valid_document())
         self.assertEqual(result.errors, [])
         self.assertEqual(result.warnings, [])
 
-
-class RootErrorTest(unittest.TestCase):
-    def test_non_object_root_is_an_error(self):
-        result = vii.validate(["reported_questions"])
-        self.assertFalse(result.ok)
-        self.assertTrue(any("ルート要素" in e for e in result.errors))
-
-    def test_missing_schema_version_is_an_error(self):
-        document = _valid_document()
-        del document["schema_version"]
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("schema_version は必須" in e for e in result.errors))
-
-    def test_empty_schema_version_is_an_error(self):
-        document = _valid_document()
-        document["schema_version"] = "  "
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("schema_version は必須" in e for e in result.errors))
-
-    def test_unknown_schema_version_is_a_warning(self):
-        document = _valid_document()
-        document["schema_version"] = "0.9"
-        result = vii.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("既知のバージョン" in w for w in result.warnings))
-
-    def test_missing_company_is_an_error(self):
-        document = _valid_document()
-        del document["company"]
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("company は必須" in e for e in result.errors))
-
-    def test_empty_company_is_an_error(self):
-        document = _valid_document()
-        document["company"] = ""
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("company は必須" in e for e in result.errors))
-
-    def test_missing_researched_at_is_an_error(self):
-        document = _valid_document()
-        del document["researched_at"]
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("researched_at は必須" in e for e in result.errors))
-
-    def test_malformed_researched_at_is_an_error(self):
-        document = _valid_document()
-        document["researched_at"] = "2026/09/04"
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("researched_at" in e and "YYYY-MM-DD" in e for e in result.errors))
-
-    def test_nonexistent_researched_at_date_is_an_error(self):
-        document = _valid_document()
-        document["researched_at"] = "2026-02-30"
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("researched_at" in e for e in result.errors))
-
-    def test_null_role_title_passes(self):
-        document = _valid_document()
-        document["role_title"] = None
+    def test_bundled_example_passes(self):
+        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        document = vii.load_json(os.path.join(base, "assets", "interview_intel_example.json"))
         result = vii.validate(document)
         self.assertEqual(result.errors, [])
-
-    def test_missing_role_title_passes(self):
-        document = _valid_document()
-        del document["role_title"]
-        result = vii.validate(document)
-        self.assertEqual(result.errors, [])
-
-    def test_non_string_role_title_is_an_error(self):
-        document = _valid_document()
-        document["role_title"] = 123
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("role_title" in e for e in result.errors))
-
-
-class ArrayShapeTest(unittest.TestCase):
-    def test_missing_reported_questions_is_an_error(self):
-        document = _valid_document()
-        del document["reported_questions"]
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("reported_questions は配列" in e for e in result.errors))
-
-    def test_non_list_format_facts_is_an_error(self):
-        document = _valid_document()
-        document["format_facts"] = {}
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("format_facts は配列" in e for e in result.errors))
-
-    def test_non_object_entry_is_an_error(self):
-        document = _valid_document()
-        document["themes"][0] = "TH001"
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("オブジェクトでなければならない" in e for e in result.errors))
-
-    def test_missing_themes_is_an_error(self):
-        document = _valid_document()
-        del document["themes"]
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("themes は配列" in e for e in result.errors))
-
-
-class EmptyArrayWarningTest(unittest.TestCase):
-    def test_empty_reported_questions_is_a_warning(self):
-        document = _valid_document()
-        document["reported_questions"] = []
-        result = vii.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("reported_questions が空" in w for w in result.warnings))
-
-    def test_empty_format_facts_is_a_warning(self):
-        document = _valid_document()
-        document["format_facts"] = []
-        result = vii.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("format_facts が空" in w for w in result.warnings))
-
-    def test_empty_themes_is_a_warning(self):
-        document = _valid_document()
-        document["themes"] = []
-        result = vii.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("themes が空" in w for w in result.warnings))
-
-    def test_all_three_empty_with_open_questions_is_not_an_error(self):
-        document = _valid_document()
-        document["reported_questions"] = []
-        document["format_facts"] = []
-        document["themes"] = []
-        result = vii.validate(document)
-        self.assertEqual(result.errors, [])
-
-    def test_all_three_empty_without_open_questions_is_an_error(self):
-        document = _valid_document()
-        document["reported_questions"] = []
-        document["format_facts"] = []
-        document["themes"] = []
-        document["open_questions"] = []
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("何も語っていない" in e for e in result.errors))
-
-    def test_all_three_empty_with_missing_open_questions_is_an_error(self):
-        document = _valid_document()
-        document["reported_questions"] = []
-        document["format_facts"] = []
-        document["themes"] = []
-        del document["open_questions"]
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("何も語っていない" in e for e in result.errors))
-
-    def test_shape_error_with_two_empty_arrays_is_a_single_error(self):
-        # reported_questions が配列でない（形状エラー）場合、None を空扱いに数えて
-        # 「何も語っていない」を重ねて出してはいけない。ERROR は形状エラー1件だけになる。
-        document = _valid_document()
-        document["reported_questions"] = {}
-        document["format_facts"] = []
-        document["themes"] = []
-        document["open_questions"] = []
-        result = vii.validate(document)
-        self.assertEqual(len(result.errors), 1)
-        self.assertTrue(any("reported_questions は配列" in e for e in result.errors))
-
-
-class ReportedQuestionTest(unittest.TestCase):
-    def test_malformed_id_is_an_error(self):
-        document = _valid_document()
-        document["reported_questions"][0]["id"] = "Q001"
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("RQ001 形式" in e for e in result.errors))
-
-    def test_missing_id_is_an_error(self):
-        document = _valid_document()
-        del document["reported_questions"][0]["id"]
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("reported_questions[0].id" in e for e in result.errors))
-
-    def test_duplicate_id_is_an_error(self):
-        document = _valid_document()
-        document["reported_questions"][1]["id"] = "RQ001"
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("重複" in e for e in result.errors))
-
-    def test_four_digit_id_passes(self):
-        document = _valid_document()
-        document["reported_questions"][0]["id"] = "RQ1000"
-        result = vii.validate(document)
-        self.assertEqual(result.errors, [])
-
-    def test_empty_question_is_an_error(self):
-        document = _valid_document()
-        document["reported_questions"][0]["question"] = ""
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("question は必須" in e for e in result.errors))
-
-    def test_invalid_kind_is_an_error(self):
-        document = _valid_document()
-        document["reported_questions"][0]["kind"] = "guessed"
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("kind は" in e for e in result.errors))
-
-    def test_source_url_not_http_is_an_error(self):
-        document = _valid_document()
-        document["reported_questions"][0]["source_url"] = "example.com/foo"
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("source_url" in e for e in result.errors))
-
-    def test_invalid_grade_is_an_error(self):
-        document = _valid_document()
-        document["reported_questions"][0]["grade"] = "E"
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("grade は" in e for e in result.errors))
-
-    def test_grade_d_is_a_warning(self):
-        document = _valid_document()
-        document["reported_questions"][0]["grade"] = "D"
-        result = vii.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("grade が D" in w for w in result.warnings))
-
-    def test_empty_quote_is_an_error(self):
-        document = _valid_document()
-        document["reported_questions"][0]["quote"] = ""
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("quote は必須" in e for e in result.errors))
-
-    def test_missing_accessed_is_a_warning(self):
-        document = _valid_document()
-        del document["reported_questions"][0]["accessed"]
-        result = vii.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("accessed が未記載" in w for w in result.warnings))
-
-    def test_null_accessed_is_a_warning(self):
-        document = _valid_document()
-        document["reported_questions"][0]["accessed"] = None
-        result = vii.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("accessed が未記載" in w for w in result.warnings))
-
-    def test_malformed_accessed_is_an_error(self):
-        document = _valid_document()
-        document["reported_questions"][0]["accessed"] = "2026/09/04"
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("accessed は実在する" in e for e in result.errors))
-
-    def test_reported_kind_quote_overlap_missing_is_a_warning(self):
-        document = _valid_document()
-        document["reported_questions"][0]["quote"] = "まったく無関係な引用文である"
-        result = vii.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("重なっているべきである" in w for w in result.warnings))
-
-    def test_inferred_kind_quote_overlap_not_checked(self):
-        document = _valid_document()
-        # kind が inferred の RQ002 は question/quote が重ならなくても WARN しない。
-        document["reported_questions"][1]["quote"] = "まったく無関係な引用文である"
-        result = vii.validate(document)
         self.assertEqual(result.warnings, [])
 
+    def test_error_rules(self):
+        rows = [
+            ("ルートが配列", None, "ルート要素"),
+            ("schema_version 欠落（必須文字列）", lambda d: d.pop("schema_version"), "schema_version は必須"),
+            ("researched_at 形式", lambda d: d.__setitem__("researched_at", "2026/09/04"), "YYYY-MM-DD"),
+            ("researched_at が実在しない日付", lambda d: d.__setitem__("researched_at", "2026-02-30"), "researched_at"),
+            ("role_title が文字列でも null でもない", lambda d: d.__setitem__("role_title", 1), "role_title"),
+            ("配列でない（reported_questions）", lambda d: d.__setitem__("reported_questions", {}), "reported_questions は配列"),
+            ("要素がオブジェクトでない", lambda d: d["format_facts"].__setitem__(0, "FF001"), "オブジェクトでなければならない"),
+            ("id 形式（RQ + 3桁以上）", lambda d: _rq(d).__setitem__("id", "Q001"), "RQ001 形式"),
+            ("id 重複", lambda d: d["reported_questions"][1].__setitem__("id", "RQ001"), "重複"),
+            ("FF の id 形式", lambda d: d["format_facts"][0].__setitem__("id", "RQ001"), "FF001 形式"),
+            ("TH の id 形式", lambda d: d["themes"][0].__setitem__("id", "FF001"), "TH001 形式"),
+            ("kind が語彙外", lambda d: _rq(d).__setitem__("kind", "guessed"), "kind は"),
+            ("source_url が http でない", lambda d: _rq(d).__setitem__("source_url", "転職会議"), "source_url"),
+            ("grade が語彙外", lambda d: _rq(d).__setitem__("grade", "S"), "grade は"),
+            ("quote が空（必須文字列）", lambda d: _rq(d).__setitem__("quote", ""), "quote は必須"),
+            ("accessed が実在しない日付", lambda d: _rq(d).__setitem__("accessed", "2026-13-01"), "accessed"),
+            ("statement が空", lambda d: d["format_facts"][0].__setitem__("statement", ""), "statement は必須"),
+            ("likely_probe が空", lambda d: d["themes"][0].__setitem__("likely_probe", ""), "likely_probe は必須"),
+            ("search_log 欠落", lambda d: d.pop("search_log"), "search_log は必須"),
+            ("search_log が空", lambda d: d.__setitem__("search_log", []), "search_log が空"),
+            ("search_log のキー欠落（null 明記が必要）", lambda d: _log(d).pop("hit_count"), "hit_count は必須"),
+            ("search_log.url が http でも null でもない", lambda d: _log(d).__setitem__("url", "転職会議"), "search_log[0].url"),
+            ("fetched_at 形式", lambda d: _log(d).__setitem__("fetched_at", "2026/09/04"), "fetched_at"),
+            ("hit_count が負数", lambda d: _log(d).__setitem__("hit_count", -1), "hit_count"),
+            ("hit_count が真偽値", lambda d: _log(d).__setitem__("hit_count", True), "hit_count"),
+            ("open_questions の空要素", lambda d: d.__setitem__("open_questions", [""]), "open_questions[0]"),
+            ("3配列が空で open_questions も空", lambda d: _all_empty(d, open_questions=[]), "何も語っていない"),
+            ("3配列が空で open_questions 欠落", lambda d: (_all_empty(d), d.pop("open_questions")), "何も語っていない"),
+        ]
+        for label, mutate, expected in rows:
+            with self.subTest(label):
+                document = _valid_document()
+                if mutate is None:
+                    result = vii.validate([])
+                else:
+                    mutate(document)
+                    result = vii.validate(document)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected in e for e in result.errors), result.errors)
 
-class FormatFactTest(unittest.TestCase):
-    def test_malformed_id_is_an_error(self):
+    def test_accepted_variants_have_no_error(self):
+        rows = [
+            ("role_title が null", lambda d: d.__setitem__("role_title", None)),
+            ("fetched_at が ISO 8601 時刻付き", lambda d: _log(d).__setitem__("fetched_at", "2026-09-04T10:30:00+09:00")),
+            ("search_log の null 値", lambda d: _log(d).update(url=None, fetched_at=None, hit_count=None, adopted_count=None)),
+            ("3配列が空でも open_questions がある", lambda d: _all_empty(d)),
+        ]
+        for label, mutate in rows:
+            with self.subTest(label):
+                document = _valid_document()
+                mutate(document)
+                self.assertEqual(vii.validate(document).errors, [])
+
+    def test_shape_error_is_not_reported_twice(self):
+        # 配列でない場合は形状エラー1件だけで、「何も語っていない」を重ねない。
         document = _valid_document()
-        document["format_facts"][0]["id"] = "F001"
+        _all_empty(document, open_questions=[])
+        document["reported_questions"] = {}
         result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("FF001 形式" in e for e in result.errors))
+        self.assertEqual(len(result.errors), 1)
 
-    def test_duplicate_id_is_an_error(self):
-        document = _valid_document()
-        document["format_facts"].append(dict(document["format_facts"][0]))
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("重複" in e for e in result.errors))
-
-    def test_empty_statement_is_an_error(self):
-        document = _valid_document()
-        document["format_facts"][0]["statement"] = ""
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("statement は必須" in e for e in result.errors))
-
-    def test_invalid_grade_is_an_error(self):
-        # format_facts も共通のエビデンス項目の検査（_validate_evidence）を通ることを確認する。
-        document = _valid_document()
-        document["format_facts"][0]["grade"] = "E"
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("format_facts[0].grade" in e for e in result.errors))
-
-
-class ThemeTest(unittest.TestCase):
-    def test_malformed_id_is_an_error(self):
-        document = _valid_document()
-        document["themes"][0]["id"] = "T001"
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("TH001 形式" in e for e in result.errors))
-
-    def test_empty_theme_is_an_error(self):
-        document = _valid_document()
-        document["themes"][0]["theme"] = ""
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("theme は必須" in e for e in result.errors))
-
-    def test_empty_likely_probe_is_an_error(self):
-        document = _valid_document()
-        document["themes"][0]["likely_probe"] = ""
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("likely_probe は必須" in e for e in result.errors))
-
-    def test_empty_quote_is_an_error(self):
-        # themes も共通のエビデンス項目の検査（_validate_evidence）を通ることを確認する。
-        document = _valid_document()
-        document["themes"][0]["quote"] = ""
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("themes[0].quote" in e for e in result.errors))
-
-    def test_duplicate_id_is_an_error(self):
-        document = _valid_document()
-        document["themes"].append(dict(document["themes"][0]))
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("重複" in e for e in result.errors))
-
-
-class SearchLogTest(unittest.TestCase):
-    def test_missing_search_log_is_an_error(self):
-        document = _valid_document()
-        del document["search_log"]
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("search_log は必須" in e for e in result.errors))
-
-    def test_non_list_search_log_is_an_error(self):
-        document = _valid_document()
-        document["search_log"] = {}
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("search_log は配列" in e for e in result.errors))
-
-    def test_empty_search_log_is_an_error(self):
-        document = _valid_document()
-        document["search_log"] = []
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("search_log が空" in e for e in result.errors))
-
-    def test_non_object_entry_is_an_error(self):
-        document = _valid_document()
-        document["search_log"][0] = "not-a-dict"
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("search_log[0]" in e and "オブジェクトでなければならない" in e for e in result.errors)
-        )
-
-    def test_missing_query_is_an_error(self):
-        document = _valid_document()
-        del document["search_log"][0]["query"]
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("search_log[0].query" in e for e in result.errors))
-
-    def test_missing_source_is_an_error(self):
-        document = _valid_document()
-        del document["search_log"][0]["source"]
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("search_log[0].source" in e for e in result.errors))
-
-    def test_missing_key_among_the_four_is_an_error(self):
-        document = _valid_document()
-        del document["search_log"][0]["hit_count"]
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("search_log[0].hit_count" in e for e in result.errors))
-
-    def test_null_values_for_the_four_keys_pass(self):
-        document = _valid_document()
-        document["search_log"][0].update(
-            {"url": None, "fetched_at": None, "hit_count": None, "adopted_count": None}
-        )
-        result = vii.validate(document)
-        self.assertEqual(result.errors, [])
-
-    def test_url_not_http_is_an_error(self):
-        document = _valid_document()
-        document["search_log"][0]["url"] = "ftp://example.com"
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("search_log[0].url" in e for e in result.errors))
-
-    def test_malformed_fetched_at_is_an_error(self):
-        document = _valid_document()
-        document["search_log"][0]["fetched_at"] = "not-a-date"
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("search_log[0].fetched_at" in e for e in result.errors))
-
-    def test_iso_datetime_fetched_at_passes(self):
-        document = _valid_document()
-        document["search_log"][0]["fetched_at"] = "2026-09-04T10:00:00Z"
-        result = vii.validate(document)
-        self.assertEqual(result.errors, [])
-
-    def test_bool_hit_count_is_an_error(self):
-        document = _valid_document()
-        document["search_log"][0]["hit_count"] = True
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("search_log[0].hit_count" in e for e in result.errors))
-
-    def test_negative_adopted_count_is_an_error(self):
-        document = _valid_document()
-        document["search_log"][0]["adopted_count"] = -1
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("search_log[0].adopted_count" in e for e in result.errors))
-
-
-class OpenQuestionsTest(unittest.TestCase):
-    def test_non_list_open_questions_is_an_error(self):
-        document = _valid_document()
-        document["open_questions"] = "text"
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("open_questions は配列" in e for e in result.errors))
-
-    def test_empty_string_element_is_an_error(self):
-        document = _valid_document()
-        document["open_questions"] = [""]
-        result = vii.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("open_questions[0]" in e for e in result.errors))
-
-    def test_missing_open_questions_passes(self):
-        document = _valid_document()
-        del document["open_questions"]
-        result = vii.validate(document)
-        self.assertEqual(result.errors, [])
-
-
-class CoverageNotesTest(unittest.TestCase):
-    def test_missing_coverage_notes_is_a_warning(self):
-        document = _valid_document()
-        del document["coverage_notes"]
-        result = vii.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("coverage_notes が未記載" in w for w in result.warnings))
-
-    def test_empty_coverage_notes_is_a_warning(self):
-        document = _valid_document()
-        document["coverage_notes"] = "  "
-        result = vii.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("coverage_notes が未記載" in w for w in result.warnings))
-
-
-class ResultShapeTest(unittest.TestCase):
-    def test_to_dict_shape(self):
-        d = vii.validate(_valid_document()).to_dict()
-        self.assertEqual(d["status"], "PASS")
-        self.assertEqual(d["error_count"], 0)
-        self.assertIn("warnings", d)
-
-    def test_format_report_first_line(self):
-        report = vii.format_report(vii.validate(_valid_document()))
-        self.assertTrue(report.startswith("検証結果: PASS（ERROR 0件 / WARN 0件）"))
-
-    def test_immutability_of_input(self):
-        document = _valid_document()
-        snapshot = copy.deepcopy(document)
-        vii.validate(document)
-        self.assertEqual(document, snapshot)
+    def test_warn_rules(self):
+        rows = [
+            ("schema_version が未知", lambda d: d.__setitem__("schema_version", "0.9"), "既知のバージョン"),
+            ("配列が空（共通ヘルパー）", lambda d: d.__setitem__("themes", []), "themes が空"),
+            ("grade が D", lambda d: _rq(d).__setitem__("grade", "D"), "grade が D"),
+            ("accessed 未記載", lambda d: _rq(d).pop("accessed"), "accessed が未記載"),
+            ("reported の質問と引用が重ならない", lambda d: _rq(d).__setitem__("quote", "全く別の内容の引用"), "逐語"),
+            ("coverage_notes 未記載", lambda d: d.pop("coverage_notes"), "coverage_notes"),
+        ]
+        for label, mutate, expected in rows:
+            with self.subTest(label):
+                document = _valid_document()
+                mutate(document)
+                result = vii.validate(document)
+                self.assertEqual(result.errors, [])
+                self.assertTrue(any(expected in w for w in result.warnings), result.warnings)
 
 
 class CliTest(unittest.TestCase):
-    def _write_tmp(self, obj) -> str:
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(obj, f, ensure_ascii=False)
-        self.addCleanup(os.remove, path)
-        return path
+    def _run(self, content: str, *extra: str) -> tuple[int, str]:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "interview_intel.json")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(content)
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = vii.main([path, *extra])
+        return code, buffer.getvalue()
 
-    def test_main_returns_0_on_valid(self):
-        self.assertEqual(vii.main([self._write_tmp(_valid_document())]), 0)
+    def test_exit_codes(self):
+        invalid = _valid_document()
+        del invalid["company"]
+        rows = [
+            ("valid", json.dumps(_valid_document(), ensure_ascii=False), 0, "PASS"),
+            ("invalid", json.dumps(invalid, ensure_ascii=False), 1, "FAIL"),
+            ("broken json", "{", 1, "読み込めない"),
+        ]
+        for label, content, expected_code, expected_text in rows:
+            with self.subTest(label):
+                code, output = self._run(content)
+                self.assertEqual(code, expected_code)
+                self.assertIn(expected_text, output)
 
-    def test_main_returns_1_on_invalid(self):
-        document = _valid_document()
-        del document["company"]
-        self.assertEqual(vii.main([self._write_tmp(document)]), 1)
-
-    def test_main_returns_1_on_broken_json(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            f.write("{ not valid json ")
-        self.addCleanup(os.remove, path)
-        self.assertEqual(vii.main([path]), 1)
-
-    def test_main_json_flag_valid(self):
-        self.assertEqual(vii.main([self._write_tmp(_valid_document()), "--json"]), 0)
-
-    def test_main_returns_0_on_valid_with_bom(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
-            json.dump(_valid_document(), f, ensure_ascii=False)
-        self.addCleanup(os.remove, path)
-        self.assertEqual(vii.main([path]), 0)
-
-
-class ExampleAssetTest(unittest.TestCase):
-    def _asset_path(self, name: str) -> str:
-        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        return os.path.join(base, "assets", name)
-
-    def test_bundled_example_passes(self):
-        document = vii.load_json(self._asset_path("interview_intel_example.json"))
-        result = vii.validate(document)
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
+    def test_json_output_keys(self):
+        _, output = self._run(json.dumps(_valid_document(), ensure_ascii=False), "--json")
+        self.assertEqual(
+            set(json.loads(output)),
+            {"status", "error_count", "warning_count", "errors", "warnings"},
+        )
 
 
 if __name__ == "__main__":

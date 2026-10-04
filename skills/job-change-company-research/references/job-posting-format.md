@@ -2,7 +2,7 @@
 
 This is the canonical specification defining the field specification, entry criteria, and mechanical validation rules for `job_posting.json`, the structured data of an imported job posting. The job posting intake agent (job-change-posting-parser) assembles an object conforming to this specification, and `scripts/validate_job_posting.py` mechanically checks it against this specification.
 
-The output location is `{DATA_ROOT}/companies/{company slug}/job_posting.json`. The calling skill (the job-change-company-research body itself) writes the file, and only after the slug is resolved. The posting-parser agent writes no file; it returns `{company_name, aliases, job_posting}` as JSON in its final message.
+The output location is `{DATA_ROOT}/companies/{company slug}/job_posting.json`. The calling skill (the job-change-company-research body itself) writes the file, and only after the slug is resolved. The posting-parser agent returns `{company_name, aliases, job_posting}` as JSON in its final message and does not write a file.
 
 ## Entry points for intake
 
@@ -63,15 +63,15 @@ A URL may also be written for reference at any entry point besides `url`. `sourc
 
 `source_url` is required only when `source_type` is `url`, and must be a string starting with `http`. It may be null or omitted at any other entry point.
 
-An ERROR occurs when any field in the table above is missing or empty. In addition, it is an ERROR when `source_type` is none of the four values, when `source_type` is `url` but `source_url` does not start with `http`, or when `fetched_at` is not an actual date in `YYYY-MM-DD` form.
+An ERROR occurs when any field in the table above is missing or empty. It is also an ERROR when `source_type` is none of the four values, when `source_type` is `url` but `source_url` does not start with `http`, or when `fetched_at` is something other than an actual date in `YYYY-MM-DD` form.
 
 ### Optional fields
 
 | Field | Type | Content |
 |---|---|---|
-| `employment_type` | String | The employment type (正社員, 契約社員, and so on) — these are field values |
+| `employment_type` | String | The employment type (正社員, 契約社員, and so on; these are field values) |
 | `location` | Object | `work_location` (the place of work), `remote_policy` (the remote-work policy) |
-| `salary` | Object | `min`, `max`, `currency`, `basis` (年収/月給 and so on) — field values, `notes` |
+| `salary` | Object | `min`, `max`, `currency`, `basis` (年収/月給 and so on, which are field values), `notes` |
 | `working_hours` | Object | `scheduled_hours` (scheduled working hours), `break_minutes` (break minutes), `discretionary` (whether discretionary work applies), `overtime_notes` |
 | `metrics` | Object | The 4 metrics described below |
 | `scope_of_change` | Object | The 3 items described below (schema_version 1.1 and later) |
@@ -80,7 +80,7 @@ An ERROR occurs when any field in the table above is missing or empty. In additi
 | `selection_process` | Array | An array of strings listing the selection stages in order |
 | `open_questions` | Array | Items that could not be fetched, and points to confirm |
 
-For an optional field, it is an ERROR when it is present and violates the type in the table above (an array or scalar where an object is expected, an object or scalar where an array is expected, and so on). It is not checked when it is absent.
+An optional field that is present and violates the type in the table above is an ERROR. Examples are an array or scalar where an object is expected, and an object or scalar where an array is expected. It is not checked when it is absent.
 
 ### metrics (object, optional)
 
@@ -100,7 +100,7 @@ Each metric has the following fields.
 | `value` | Required | A number. A string or a boolean is not allowed |
 | `quote` | Required | A quote from the job posting (non-empty). Transcribe the passage that grounds the number, verbatim |
 
-**Rule**: enter `value` and a quote `quote` only when the job posting states them explicitly. Set it to `null` when there is no explicit statement (estimation or invention is prohibited). A missing `metrics` as a whole, and `null` for an individual metric, are both normal and raise neither an ERROR nor a WARN. It is an ERROR when `metrics` is present and is not an object, or when a metric is neither `null` nor `{value, quote}`, or when its `value` is not a number, or when its `quote` is empty.
+**Rule**: enter `value` and a quote `quote` only when the job posting states them explicitly. Set it to `null` when there is no explicit statement (estimation or invention is prohibited). A missing `metrics` as a whole, and `null` for an individual metric, are both normal and raise neither an ERROR nor a WARN. It is an ERROR when `metrics` is present with a type other than object, when a metric is neither `null` nor `{value, quote}`, when its `value` is anything other than a number, or when its `quote` is empty.
 
 ### scope_of_change (object, optional. schema_version 1.1 and later)
 
@@ -128,7 +128,7 @@ Each item has the following fields.
 }
 ```
 
-**Rule**: write only content you confirmed by reading the job posting. When you cannot find the item itself in the job posting, set that item to `null`. Set `stated` to false only when the job posting touches on the item but you can read that it discloses no scope (for example, a statement that a renewal cap does not apply because employment is unlimited-term). The difference between `null` and `stated: false` is the difference between "the job posting was read but no relevant passage was found" and "the job posting touches on it but does not state a scope."
+**Rule**: write only content you confirmed by reading the job posting. When you cannot find the item itself in the job posting, set that item to `null`. Set `stated` to false only when the job posting touches on the item but you can read that it does not disclose a scope (such as a statement that employment is unlimited-term, so no renewal cap exists). The difference between `null` and `stated: false` is the difference between "the job posting was read but no relevant passage was found" and "the job posting touches on it but does not state a scope."
 
 **Judgment criteria for `unlimited`**: treat it as true when the stated scope is written so that the company can broaden it later at its own discretion.
 
@@ -140,11 +140,11 @@ Each item has the following fields.
 | 「変更の範囲: 本社および東京23区内の事業所」「変更なし」 | False |
 | 「更新上限: 通算契約期間5年」「更新回数3回まで」 | False |
 
-For wording that is hard to judge (for example, 「原則として現在の勤務地」, where the scope of an exception cannot be read), set `unlimited` to false and write that fact into `open_questions`. Route to `open_questions` only this kind of ambiguous wording. The stated content itself goes into `scope_of_change`, so do not write it into `open_questions` again.
+For wording that is hard to judge (such as 「原則として現在の勤務地」, where the scope of an exception cannot be read), set `unlimited` to false and write that fact into `open_questions`. Route to `open_questions` only this kind of ambiguous wording. The stated content itself goes into `scope_of_change`, so do not write it into `open_questions` again.
 
 All three items being `null` (including `scope_of_change` itself being absent) is a WARN. A job posting listed since April 2024 carries a disclosure obligation, and not having obtained all three items raises a suspicion that the intake was incomplete.
 
-When `schema_version` is `1.0`, `scope_of_change` is not checked. Version 1.0 has no such field, so this keeps an existing deliverable readable as is. Only 1.0 is excluded from the check; every later version is checked.
+When `schema_version` is `1.0`, `scope_of_change` is not checked. Version 1.0 has no such field, so this exemption keeps an existing 1.0 deliverable readable as it is. Only 1.0 is excluded from the check; every later version is checked.
 
 ## Handling a page that cannot be fetched
 
@@ -154,25 +154,29 @@ This handling applies regardless of the entry point. When `source_type` is `dial
 
 ## Mechanical validation rules (validate_job_posting.py)
 
-`scripts/validate_job_posting.py` performs the mechanical check. Even a single ERROR is a FAIL (exit code 1); zero ERRORs is a PASS (exit code 0, even with WARNs present).
+`scripts/validate_job_posting.py` performs the mechanical check. Even one ERROR is a FAIL (exit code 1); zero ERRORs is a PASS (exit code 0, even with WARNs present).
 
 **ERROR (the deliverable does not hold together, or a type is violated)**
 
 - It cannot be parsed as JSON
-- The root is not an object
+- The root has a type other than object
 - Any of `schema_version`, `source_type`, `fetched_at`, `company_name`, or `title` is missing or empty
 - `source_type` is none of `url` / `text` / `file` / `dialogue`
 - `source_type` is `url` but `source_url` does not start with `http`
-- `fetched_at` is not an actual date in `YYYY-MM-DD` form
-- `metrics` is present and is not an object
-- A metric in `metrics` is present (non-null), and is not a `{value, quote}` object, or its `value` is not a number, or its `quote` is empty
-- `schema_version` is not `1.0`, and `scope_of_change` is present and is not an object
-- `schema_version` is not `1.0`, and an item in `scope_of_change` is present (non-null), and is not an object, or its `stated` is not a boolean, or its `unlimited` is not a boolean, or `stated` is true while `quote` is empty, or `quote` is not a string
-- `location`, `salary`, `working_hours`, or `requirements` is present and is not an object
-- `selection_process`, `open_questions`, or `benefits` is present and is not an array
-- An element of `benefits` is not an object, or its `name` is empty
+- `fetched_at` is something other than an actual date in `YYYY-MM-DD` form
+- `metrics` is present with a type other than object
+- A metric in `metrics` is present (non-null) and is something other than a `{value, quote}` object, or its `value` is anything other than a number, or its `quote` is empty
+- `schema_version` is not `1.0`, and `scope_of_change` is present with a type other than object
+- `schema_version` is not `1.0`, and an item in `scope_of_change` is present (non-null) and has any of these defects:
+  - it has a type other than object
+  - its `stated` or its `unlimited` has a type other than boolean
+  - `stated` is true while `quote` is empty
+  - `quote` is present (non-null) with a type other than string
+- `location`, `salary`, `working_hours`, or `requirements` is present with a type other than object
+- `selection_process`, `open_questions`, or `benefits` is present with a type other than array
+- An element of `benefits` has a type other than object, or its `name` is empty
 
 **WARN (it holds together, but information is insufficient)**
 
-- `schema_version` is not a known version (`1.0` / `1.1`)
+- `schema_version` is a version other than the known ones (`1.0` / `1.1`)
 - `schema_version` is not `1.0`, and all 3 items of `scope_of_change` are `null` (including `scope_of_change` itself being absent)

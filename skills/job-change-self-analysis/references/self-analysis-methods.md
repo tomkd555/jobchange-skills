@@ -3,20 +3,20 @@
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
 <!-- The [E1] form in the body is the notation for a source id. This file disables that rule to keep the half-width square brackets. -->
 
-This is the canonical definition setting the empirical grounding and the limits of the analytical axes the job-change-self-analysis skill adopts. SKILL.md's principles, question-bank.md's question design, and the two agents (writer / auditor) all reference this file. Evidence levels are marked on a four-level A-D scale (A = primary or official, B = a reliable secondary source, C = word of mouth or an aggregation site, D = a personal blog, hearsay, or unconfirmed), and academic research carries a DOI. The canonical definition lives in `job-change-company-research/references/evidence-grading.md`, and peer-reviewed academic research is included in Level A. The citation format is `[E-number] title (year) level DOI:xxx https://doi.org/xxx`, matched to the "Sources" list at the end.
+This is the canonical definition setting the empirical grounding and the limits of the analytical axes the job-change-self-analysis skill adopts. SKILL.md's principles, question-bank.md's question design, and the two agents (writer / auditor) all reference this file. Evidence levels are marked on a four-level A-D scale (A = primary or official, B = a reliable secondary source, C = word of mouth or an aggregation site, D = a personal blog, hearsay, or unconfirmed). Academic research carries a DOI. The canonical definition is in `job-change-company-research/references/evidence-grading.md`, and peer-reviewed academic research is included in Level A. The citation format is `[E-number] title (year) level DOI:xxx https://doi.org/xxx`, matched to the "Sources" list at the end.
 
 ## The core constraint: introspection alone is unreliable
 
-Self-analysis is never done through introspection alone. This skill's design places this constraint at its core, as the one with the strongest support (confidence: near-certain, above 90%).
+Self-analysis is never done through introspection alone. This skill's design treats this constraint as central, as the one with the strongest support (confidence: near-certain, above 90%).
 
 - A person can barely grasp a higher-order cognitive process directly through introspection, and a verbal report of a mental process comes from an implicit causal theory [E45]. Introspection is no means of directly knowing an unconscious mental process. The effective routes to greater self-knowledge are self-observation through the eyes of others, and observation of one's own behaviour [E44]. A person readily assumes that their own mental workings are visible to themselves (the introspection illusion) [E51].
-- Evaluation by others (an observer's rating) has higher predictive validity than self-evaluation in predicting academic performance and job performance, and holds incremental validity over self-evaluation (a meta-analysis of 263 samples and 44,178 people) [E49]. **This figure comes from a single large-scale meta-analysis.**
-- Feedback, though, is no cure-all. A feedback intervention raises performance on average (d=.41), and over a third of interventions lower performance; effectiveness falls the more attention turns from the task to the self (character) [E50]. **This d=.41 comes from a single large-scale meta-analysis.**
+- Evaluation by others (an observer's rating) has higher predictive validity than self-evaluation in predicting academic performance and job performance, and holds incremental validity over self-evaluation (a meta-analysis of 263 samples and 44,178 people) [E49]. **This figure comes from one large-scale meta-analysis.**
+- Feedback, though, is no cure-all. A feedback intervention raises performance on average (d=.41), and over a third of interventions lower performance. Effectiveness falls the more attention turns from the task to the self (character) [E50]. **This d=.41 comes from one large-scale meta-analysis.**
 
 From this constraint, this skill sets the following as its operating rules.
 
 1. A strength (`strengths`) requires mapping to behavioural evidence (`behavioral_episodes`) or feedback from others (`others_feedback`). A strength grounded in introspection alone is never accepted in the deliverable (the validation script reports it as an ERROR).
-2. Feedback from others is taken in with a task-oriented focus. It is recorded as a mapping between an action and a result — "which action led to which result" [E50].
+2. Feedback from others is taken in with a task-oriented focus. It is recorded as a mapping between an action and a result: "which action led to which result" [E50].
 3. A value or an interest reached through introspection is backed up, wherever possible, by mapping it to a past behavioural episode.
 
 ## The four adopted analytical axes and their empirical grounding
@@ -31,17 +31,17 @@ The analytical axes are set at four: interests, values, the four dimensions of c
 
 ### The four dimensions of career adaptability
 
-- The Japanese-language Career Adapt-Abilities Scale (CAAS-J) showed a high fit for a four-factor, 24-item model targeting young workers, with internal consistency of α=.97 [E8]. **This α=.97 comes from that single study.** It runs somewhat higher than the typical value for versions in other languages (α≈.93), and the reservation stands that it rests on a single validity study.
-- The four dimensions — concern, control, curiosity, and confidence — form the analytical framework. Only the framework of dimension names is used, and no scale item text is reproduced (a copyrighted scale item is never reproduced as it stands).
+- The Japanese-language Career Adapt-Abilities Scale (CAAS-J) showed a high fit for a four-factor, 24-item model targeting young workers, with internal consistency of α=.97 [E8]. **This α=.97 comes from that one study.** It runs somewhat higher than the typical value for versions in other languages (α≈.93), and the reservation stands that it rests on one validity study.
+- The four dimensions (concern, control, curiosity, and confidence) form the analytical framework. Only the framework of dimension names is used, and no scale item text is reproduced (a copyrighted scale item is never reproduced as it stands).
 
 ### Past behaviour (behavioural evidence)
 
-- A mid-career hiring interview attends to the behavioural process leading to a result — how the person thought and acted in a given situation — and judges whether the same behaviour reproduces even when the environment changes [E42]. This is the point where the result of self-analysis (a concrete past behaviour) connects with the STAR/behavioural interview.
+- A mid-career hiring interview attends to the behavioural process leading to a result (how the person thought and acted in a situation), and judges whether the same behaviour reproduces even when the environment changes [E42]. This is the point where the result of self-analysis (a concrete past behaviour) connects with the STAR/behavioural interview.
 - Given the limits of introspection cited above [E44], observing behaviour is a more reliable route to self-knowledge than introspection. This is the ground for placing `behavioral_episodes` as a required element of the deliverable.
 
 ### Values
 
-- A value is put into words through introspection. Grounding it in introspection alone, though, carries the same limits described above. The operating rule is to back it up by mapping it to a past behavioural episode (`values` maps to an episode with `evidence_episode_ids`).
+- A value is put into words through introspection. Grounding it in introspection alone, though, has the same limits described above. The operating rule is to back it up by mapping it to a past behavioural episode (`values` maps to an episode with `evidence_episode_ids`).
 
 ### A supplementary point: strengths interventions (the well-being side)
 
@@ -53,9 +53,9 @@ The analytical axes are set at four: interests, values, the four dimensions of c
 The following frameworks are never used as a diagnosis that gives a settled judgment, and are used only as a prompt (a set of questions) for introspection.
 
 - Schein's career anchors have weak construct validity. Even the Career Orientations Inventory's best-fitting model, built from seven studies' data, fits poorly [E7]. Even among 1,083 employees at large Japanese companies, the conceptual reality of the creativity factor was found to need reconsideration [E6]. The eight categories may be listed as a prompt in question-bank.md, and their result is never treated as a settled "your anchor."
-- A commercial strengths tool has limited independent validity. The claim that psychological strengths and interpersonal resources buffer the effect of symptoms on subjective well-being found no clear support in a meta-analysis of 223 studies and N=127,587 [E10]. **This result comes from a single large-scale meta-analysis.** Dependence on a commercial tool such as CliftonStrengths is avoided, and a free self-description substitutes for it. No item text is reproduced as it stands.
+- A commercial strengths tool has limited independent validity. The claim that psychological strengths and interpersonal resources buffer the effect of symptoms on subjective well-being was not confirmed in a meta-analysis of 223 studies and N=127,587 [E10]. **This result comes from one large-scale meta-analysis.** Dependence on a commercial tool such as CliftonStrengths is avoided, and a free self-description substitutes for it. No item text is reproduced as it stands.
 - For a RIASEC self-diagnosis tool, a peer-reviewed paper points out that the existing evidence for its effectiveness as a career intervention is dated and geographically limited, and not yet at a stage where a decisive conclusion can be drawn [E23]. RIASEC is used as the framework for interests, and an intervention effect claimed for a diagnostic tool never grounds anything here.
-- MBTI and 16Personalities are not used. A format that sorts a person into a four-letter type splits a person near the midpoint in two, so the type itself is unstable. The sources for this reason, how to handle a result the user brings in, and the distinction and terms of use between a framework that may be used for the self-report of personality and a framework whose construct alone is borrowed are all in `personality-guide.md`.
+- MBTI and 16Personalities are not used. A format that sorts a person into a four-letter type splits a person near the midpoint in two, so the type itself is unstable. The sources for this reason and how to handle a result the user brings in are in `personality-guide.md`. That file also gives the distinction and terms of use between a framework that may be used for the self-report of personality and a framework whose construct alone is borrowed.
 - A Dark Triad scale (Machiavellianism, narcissism, psychopathy) is not used. It is a scale for judging risk in others, and has no constructive use in self-analysis. It can be harmful as a label a person applies to themselves.
 
 ## Operating rules for preventing rumination
@@ -63,23 +63,23 @@ The following frameworks are never used as a diagnosis that gives a settled judg
 Excessive introspection is harmful (confidence: very likely, 80% to under 90%).
 
 - Rumination worsens depression, impairs problem-solving, and forfeits support from those around a person. It is distinguished from adaptive self-reflection [E52]. In a longitudinal study of Japanese speakers too, self-rumination predicted an increase in fear while self-reflection predicted a decrease in avoidance behaviour, and the kind of self-focus divides the effect [E54]. Practitioners, too, point out that introspection can become counterproductive once excessive, and that relationships with and observation by those around a person should be weighted [E22].
-- A person systematically misreads a future feeling. A person overestimates the intensity and duration of a future emotional reaction (the impact bias, caused by focalism) [E55]. An affective forecast such as "taking this job will make me happy" or "I will regret changing jobs" never grounds a firm conclusion in self-analysis.
+- People systematically misread a future feeling: they overestimate the intensity and duration of a future emotional reaction (the impact bias, caused by focalism) [E55]. An affective forecast such as "taking this job will make me happy" or "I will regret changing jobs" never grounds a firm conclusion in self-analysis.
 
 Operating rules:
 
 1. Self-analysis is limited to the fixed, structured questions in question-bank.md, and never encourages unlimited introspection.
 2. Probing further with "why" never leads to emotional rumination, and always maps to a behaviour or a fact (an episode).
-3. An affective forecast never grounds a judgment or a firm conclusion. `emotion_note` is a record of the motivation and feeling at the time, and carries no forecast of the future.
+3. An affective forecast never grounds a judgment or a firm conclusion. `emotion_note` is a record of the motivation and feeling at the time, and does not contain a forecast of the future.
 
 ## A contested point (both sides stated)
 
-The mechanism behind the Dunning-Kruger effect remains unsettled. The phenomenon of a low performer overestimating themselves (a bottom quartile that measured at the 12th percentile estimated itself at the 62nd) [E46] is confirmed as a figure, and the interpretation that explains its mechanism as "a lack of metacognitive ability" is contested. A counterargument holds that the asymmetric error can be explained by regression to the mean and the better-than-average heuristic, and disappears once the two are removed [E47]. A reanalysis using a test suited to individual-difference data, on the other hand, finds the effect could be far smaller than previously reported [E48]. **This skill does not assert a settled mechanism for overconfidence in self-evaluation.** This dispute reinforces the operating rule stated above, of never treating a self-evaluation grounded in introspection alone as settled.
+The mechanism behind the Dunning-Kruger effect remains unsettled. The phenomenon of a low performer overestimating themselves (a bottom quartile that measured at the 12th percentile estimated itself at the 62nd) [E46] is confirmed as a figure, and the interpretation that explains its mechanism as "a lack of metacognitive ability" is contested. A counterargument states that the asymmetric error can be explained by regression to the mean and the better-than-average heuristic, and disappears once the two are removed [E47]. A reanalysis using a test suited to individual-difference data, however, finds the effect could be far smaller than previously reported [E48]. **This skill does not assert a settled mechanism for overconfidence in self-evaluation.** This dispute reinforces the operating rule stated above, of never treating a self-evaluation grounded in introspection alone as settled.
 
 ## The place of practical methods
 
 Practical methods (Will-Can-Must, the motivation graph, a personal history or a career stock-take, evaluation by others, the Johari window) are useful as a basis for moving the process forward. Most of the claims of their effectiveness, though, are self-reports by staffing-service providers themselves [E14][E17][E19], and the evidence itself for the intervention effect of an interest-diagnosis tool is weak [E23].
 
-Application: a practical method is adopted as a basis for question design and moving the process forward, while the user is never led to treat "a diagnostic result" as "the settled self." A result obtained through a method is taken into the deliverable only once backed up by introspection, behaviour, and testimony from others.
+Application: a practical method is adopted as a basis for question design and moving the process forward. The user is never led to treat "a diagnostic result" as "the settled self." A result obtained through a method is taken into the deliverable only once backed up by introspection, behaviour, and testimony from others.
 
 ## Sources
 

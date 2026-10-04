@@ -363,7 +363,7 @@ def main(argv: list[str] | None = None) -> int:
     def _load(path: str, label: str) -> tuple[Any, ValidationResult | None]:
         try:
             return load_json(path), None
-        except (OSError, json.JSONDecodeError) as exc:
+        except (OSError, ValueError) as exc:
             failure = ValidationResult()
             failure.add_error(path, f"{label}を読み込めない（{exc}）")
             return None, failure

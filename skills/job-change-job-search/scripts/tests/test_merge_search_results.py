@@ -20,6 +20,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import merge_search_results as msr  # noqa: E402
 
+_PRIMARY = "job_search_results.partial-primary.json"
+_LANES_1 = "job_search_results.partial-lanes-1.json"
+_OUT = "job_search_results.json"
+
 
 def _write(dir_path: str, name: str, obj) -> str:
     path = os.path.join(dir_path, name)
@@ -58,7 +62,8 @@ def _result_item(
     return item
 
 
-def _base_doc(**overrides) -> dict:
+def _partial(search_set="primary", lane=None, results=None, **overrides) -> dict:
+    """partial ドキュメントの雛形を返す。derived で lane を渡すと該当レーンの derivations を1件用意する。"""
     doc = {
         "schema_version": "2.3",
         "search_id": "20260901-remote-be",
@@ -66,561 +71,261 @@ def _base_doc(**overrides) -> dict:
         "executed_at": "2026-09-01",
         "conditions": {"roles": ["バックエンドエンジニア"]},
         "search_sets": {"primary": {"roles": ["バックエンドエンジニア"]}, "derivations": []},
-        "results": [],
-        "search_log": [
-            {
-                "query": "バックエンドエンジニア リモート",
-                "source": "求人ボックス",
-                "url": "https://example.com/search",
-                "fetched_at": "2026-09-01",
-                "hit_count": 10,
-                "adopted_count": 1,
-            }
-        ],
+        "results": results or [],
+        "search_log": [{"query": "q", "source": "求人ボックス", "url": None, "fetched_at": None,
+                        "hit_count": 1, "adopted_count": 1}],
         "coverage_notes": "",
         "open_questions": [],
     }
-    doc.update(overrides)
-    return doc
-
-
-def _partial(search_set="primary", lane=None, results=None, derivations=None, **overrides) -> dict:
-    """partial ドキュメントの雛形を返す。lane を渡すと該当レーンの derivations を1件だけ用意する。"""
-    doc = _base_doc()
-    if results is not None:
-        doc["results"] = results
-    if derivations is not None:
-        doc["search_sets"]["derivations"] = derivations
-    elif search_set == "derived" and lane is not None:
-        doc["search_sets"]["derivations"] = [
-            {"lane": lane, "queries": ["q"], "rationale": "隣接職種へ広げた"}
-        ]
+    if search_set == "derived" and lane is not None:
+        doc["search_sets"]["derivations"] = [{"lane": lane, "queries": ["q"], "rationale": "隣接職種へ広げた"}]
     doc.update(overrides)
     return doc
 
 
 def _profile(company="架空現職株式会社") -> dict:
-    return {
-        "career_history": [{"company": company, "period": "2020年4月〜現在"}],
-        "basic": {},
-        "salary": {},
-    }
+    return {"career_history": [{"company": company, "period": "2020年4月〜現在"}], "basic": {}, "salary": {}}
 
 
 def _company_profile(name: str, filled: int = 9) -> dict:
-    metrics = {}
-    for i, (axis, unit) in enumerate(msr._METRIC_UNITS.items()):
-        metrics[axis] = {
-            "value": (100 + i) if i < filled else None,
-            "unit": unit,
-            "source_url": "https://example.com/ir",
-            "grade": "B",
-            "as_of": "2026",
-            "note": "",
-        }
-    return {
-        "name": name,
-        "aliases": [],
-        "basics": {},
-        "metrics": metrics,
-        "negative_checks": {},
-        "recent_news": [],
-        "open_questions": [],
+    metrics = {
+        axis: {"value": (100 + i) if i < filled else None, "unit": unit, "source_url": "https://example.com/ir",
+               "grade": "B", "as_of": "2026", "note": ""}
+        for i, (axis, unit) in enumerate(msr._METRIC_UNITS.items())
     }
+    return {"name": name, "aliases": [], "basics": {}, "metrics": metrics, "negative_checks": {},
+            "recent_news": [], "open_questions": []}
 
 
-class MergeTests(unittest.TestCase):
+def _setup(d, primary, lane_items=None, lane="adjacent_role", profile_names=None) -> None:
+    """partial と企業プロファイルの batch を書く。profile_names 省略時は全企業ぶんを書く。"""
+    _write(d, _PRIMARY, _partial(results=primary))
+    if lane_items is not None:
+        _write(d, _LANES_1, _partial(search_set="derived", lane=lane, results=lane_items))
+    if profile_names is None:
+        profile_names = {i["company_name"] for i in primary + (lane_items or [])}
+    if profile_names:
+        profiles = {msr.normalize_company_key(n): _company_profile(n) for n in profile_names}
+        _write(d, "company_profiles.batch-1.json", {"schema_version": "2.3", "company_profiles": profiles})
+
+
+def _merged(result) -> dict:
+    with open(result.output_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _main_json(argv) -> tuple[int, str, dict]:
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        code = msr.main(argv + ["--json"])
+    return code, out.getvalue(), json.loads(out.getvalue())
+
+
+class MergeTest(unittest.TestCase):
     def test_merges_primary_and_lane_partial(self):
         with tempfile.TemporaryDirectory() as d:
-            primary_item = _result_item(company_name="架空テック株式会社")
-            lane_item = _result_item(
-                company_name="架空クラウド株式会社",
-                title="SRE",
-                url="https://findy-code.io/jobs/2",
-                search_set="derived",
-                lane="adjacent_role",
-            )
-            _write(d, "job_search_results.partial-primary.json", _partial(results=[primary_item]))
-            _write(
-                d,
-                "job_search_results.partial-lanes-1.json",
-                _partial(search_set="derived", lane="adjacent_role", results=[lane_item]),
-            )
-            _write(
-                d,
-                "company_profiles.batch-1.json",
-                {
-                    "schema_version": "2.3",
-                    "company_profiles": {
-                        "架空テック": _company_profile("架空テック株式会社"),
-                        "架空クラウド": _company_profile("架空クラウド株式会社"),
-                    },
-                },
-            )
-
-            result = msr.merge(d)
-
+            lane_item = _result_item(company_name="架空クラウド株式会社", title="SRE",
+                                     url="https://findy-code.io/jobs/2", search_set="derived", lane="adjacent_role")
+            _setup(d, [_result_item()], [lane_item])
+            result = msr.merge(d, lanes=["adjacent_role", "region_widen"])
             self.assertTrue(result.ok, result.errors)
-            self.assertTrue(os.path.exists(result.output_path))
-            with open(result.output_path, "r", encoding="utf-8") as f:
-                merged = json.load(f)
+            merged = _merged(result)
             self.assertEqual(merged["schema_version"], "2.3")
-            self.assertEqual(len(merged["results"]), 2)
-            self.assertEqual(len(merged["search_sets"]["derivations"]), 1)
-            self.assertEqual(merged["search_sets"]["derivations"][0]["lane"], "adjacent_role")
+            self.assertEqual([r["company_key"] for r in merged["results"]], ["架空テック", "架空クラウド"])
+            self.assertEqual([x["lane"] for x in merged["search_sets"]["derivations"]], ["adjacent_role"])
             self.assertIsNone(merged["search_sets"]["exploration"])
+            # 応答の無かったレーンは ERROR にせず報告だけする。
+            self.assertEqual(result.missing_lanes, ["region_widen"])
+            self.assertIn("レーン region_widen は検索担当が応答せず未実施", merged["coverage_notes"])
+            # 統合しても partial・batch は残る。
+            self.assertEqual(len(glob.glob(os.path.join(d, "job_search_results.partial-*.json"))), 2)
+            self.assertEqual(len(glob.glob(os.path.join(d, "company_profiles.batch-*.json"))), 1)
 
-    def test_missing_primary_is_error(self):
-        with tempfile.TemporaryDirectory() as d:
-            _write(
-                d,
-                "job_search_results.partial-lanes-1.json",
-                _partial(search_set="derived", lane="adjacent_role", results=[_result_item()]),
-            )
-            result = msr.merge(d)
-            self.assertFalse(result.ok)
-            self.assertTrue(any("primary" in e for e in result.errors))
-            self.assertIsNone(result.output_path)
+    def test_dedup_keeps_expected_item(self):
+        low = "https://xn--pckua2a7gp15o89zb.com/kakuu/jobs/1"
+        high = "https://hrmos.co/pages/kakuu/jobs/9"
+        mid1, mid2 = "https://green-japan.example.com/jobs/1", "https://green-japan.example.com/jobs/2"
+        # (ラベル, primary の url 群, derived の url 群, 残る url, 残る search_set)
+        rows = [
+            ("主集合は出典順位が低くても派生に置き換えない", [low], [high], low, "primary"),
+            ("同じ集合では出典順位が高い方を残す", [low, high], [], high, "primary"),
+            ("同順位は primary を残す", [mid1], [mid2], mid1, "primary"),
+        ]
+        for label, primary_urls, lane_urls, expected_url, expected_set in rows:
+            with self.subTest(label):
+                with tempfile.TemporaryDirectory() as d:
+                    def item(url, **kw):
+                        return _result_item(company_name="架空データ株式会社", title="データアナリスト",
+                                            location="大阪府大阪市北区", salary_range="500万〜700万円", url=url, **kw)
 
-    def test_no_partials_is_error(self):
-        with tempfile.TemporaryDirectory() as d:
-            result = msr.merge(d)
-            self.assertFalse(result.ok)
-            self.assertIsNone(result.output_path)
+                    lane_items = [item(u, search_set="derived", lane="adjacent_role") for u in lane_urls]
+                    _setup(d, [item(u) for u in primary_urls], lane_items or None)
+                    result = msr.merge(d)
+                    self.assertTrue(result.ok, result.errors)
+                    results = _merged(result)["results"]
+                    self.assertEqual(len(results), 1)
+                    self.assertEqual(results[0]["url"], expected_url)
+                    self.assertEqual(results[0]["search_set"], expected_set)
 
-    def test_search_id_mismatch_is_error(self):
+    def test_near_dup_keeps_both_and_notes(self):
         with tempfile.TemporaryDirectory() as d:
-            _write(d, "job_search_results.partial-primary.json", _partial(search_id="20260901-a"))
-            _write(
-                d,
-                "job_search_results.partial-lanes-1.json",
-                _partial(search_id="20260902-b", search_set="derived", lane="adjacent_role"),
-            )
-            result = msr.merge(d)
-            self.assertFalse(result.ok)
-            self.assertTrue(any("search_id" in e for e in result.errors))
-
-    def test_schema_version_other_than_2_3_is_error(self):
-        with tempfile.TemporaryDirectory() as d:
-            _write(d, "job_search_results.partial-primary.json", _partial(schema_version="2.2"))
-            result = msr.merge(d)
-            self.assertFalse(result.ok)
-            self.assertTrue(any("schema_version" in e for e in result.errors))
-
-    def test_duplicate_lane_across_partials_is_error(self):
-        with tempfile.TemporaryDirectory() as d:
-            _write(d, "job_search_results.partial-primary.json", _partial())
-            _write(
-                d,
-                "job_search_results.partial-lanes-1.json",
-                _partial(search_set="derived", lane="adjacent_role"),
-            )
-            _write(
-                d,
-                "job_search_results.partial-lanes-2.json",
-                _partial(search_set="derived", lane="adjacent_role"),
-            )
-            result = msr.merge(d)
-            self.assertFalse(result.ok)
-            self.assertTrue(any("adjacent_role" in e for e in result.errors))
-
-    def test_exact_dup_keeps_lower_rank_source(self):
-        with tempfile.TemporaryDirectory() as d:
-            low_rank_primary = _result_item(
-                company_name="架空データ株式会社",
-                title="データアナリスト",
-                location="大阪府大阪市北区",
-                salary_range="500万〜700万円",
-                url="https://xn--pckua2a7gp15o89zb.com/kakuu/jobs/1",
-                source_site="求人ボックス",
-            )
-            high_rank_lane = _result_item(
-                company_name="架空データ株式会社",
-                title="データアナリスト",
-                location="大阪府大阪市北区",
-                salary_range="500万〜700万円",
-                url="https://hrmos.co/pages/kakuu/jobs/9",
-                source_site="HRMOS",
-                search_set="derived",
-                lane="direct_careers",
-            )
-            _write(d, "job_search_results.partial-primary.json", _partial(results=[low_rank_primary]))
-            _write(
-                d,
-                "job_search_results.partial-lanes-1.json",
-                _partial(search_set="derived", lane="direct_careers", results=[high_rank_lane]),
-            )
-            _write(
-                d,
-                "company_profiles.batch-1.json",
-                {"schema_version": "2.3", "company_profiles": {"架空データ": _company_profile("架空データ株式会社")}},
-            )
+            a = _result_item(company_name="架空基盤株式会社", title="クラウド基盤エンジニア",
+                             location="福岡県福岡市中央区")
+            b = _result_item(company_name="架空基盤株式会社", title="クラウド基盤エンジニア候補",
+                             location="福岡県福岡市中央区", url="https://hrmos.co/pages/kakuu/jobs/12",
+                             search_set="derived", lane="adjacent_role")
+            _setup(d, [a], [b])
             result = msr.merge(d)
             self.assertTrue(result.ok, result.errors)
-            with open(result.output_path, "r", encoding="utf-8") as f:
-                merged = json.load(f)
-            self.assertEqual(len(merged["results"]), 1)
-            # 主集合の求人は、出典の順位が低くても派生の求人に置き換えない。
-            self.assertEqual(merged["results"][0]["search_set"], "primary")
-            self.assertEqual(merged["results"][0]["url"], "https://xn--pckua2a7gp15o89zb.com/kakuu/jobs/1")
-
-    def test_exact_dup_same_set_keeps_lower_rank_source(self):
-        with tempfile.TemporaryDirectory() as d:
-            low_rank = _result_item(
-                company_name="架空データ株式会社",
-                title="データアナリスト",
-                location="大阪府大阪市北区",
-                salary_range="500万〜700万円",
-                url="https://xn--pckua2a7gp15o89zb.com/kakuu/jobs/1",
-                source_site="求人ボックス",
-            )
-            high_rank = _result_item(
-                company_name="架空データ株式会社",
-                title="データアナリスト",
-                location="大阪府大阪市北区",
-                salary_range="500万〜700万円",
-                url="https://hrmos.co/pages/kakuu/jobs/9",
-                source_site="HRMOS",
-            )
-            _write(d, "job_search_results.partial-primary.json", _partial(results=[low_rank, high_rank]))
-            _write(
-                d,
-                "company_profiles.batch-1.json",
-                {"schema_version": "2.3", "company_profiles": {"架空データ": _company_profile("架空データ株式会社")}},
-            )
-            result = msr.merge(d)
-            self.assertTrue(result.ok, result.errors)
-            with open(result.output_path, "r", encoding="utf-8") as f:
-                merged = json.load(f)
-            self.assertEqual(len(merged["results"]), 1)
-            self.assertEqual(merged["results"][0]["url"], "https://hrmos.co/pages/kakuu/jobs/9")
-
-    def test_exact_dup_tie_keeps_primary(self):
-        with tempfile.TemporaryDirectory() as d:
-            primary_item = _result_item(
-                company_name="架空グリーン株式会社",
-                title="フロントエンドエンジニア",
-                location="東京都新宿区",
-                salary_range="550万〜750万円",
-                url="https://green-japan.example.com/jobs/1",
-                source_site="Green",
-            )
-            lane_item = _result_item(
-                company_name="架空グリーン株式会社",
-                title="フロントエンドエンジニア",
-                location="東京都新宿区",
-                salary_range="550万〜750万円",
-                url="https://green-japan.example.com/jobs/2",
-                source_site="Green",
-                search_set="derived",
-                lane="adjacent_role",
-            )
-            _write(d, "job_search_results.partial-primary.json", _partial(results=[primary_item]))
-            _write(
-                d,
-                "job_search_results.partial-lanes-1.json",
-                _partial(search_set="derived", lane="adjacent_role", results=[lane_item]),
-            )
-            _write(
-                d,
-                "company_profiles.batch-1.json",
-                {"schema_version": "2.3", "company_profiles": {"架空グリーン": _company_profile("架空グリーン株式会社")}},
-            )
-            result = msr.merge(d)
-            self.assertTrue(result.ok, result.errors)
-            with open(result.output_path, "r", encoding="utf-8") as f:
-                merged = json.load(f)
-            self.assertEqual(len(merged["results"]), 1)
-            self.assertEqual(merged["results"][0]["url"], "https://green-japan.example.com/jobs/1")
-
-    def test_near_dup_listed_in_coverage_notes_and_both_kept(self):
-        with tempfile.TemporaryDirectory() as d:
-            item_a = _result_item(
-                company_name="架空基盤株式会社",
-                title="クラウド基盤エンジニア",
-                location="福岡県福岡市中央区",
-                salary_range="600万〜850万円",
-                url="https://hrmos.co/pages/kakuu/jobs/11",
-            )
-            item_b = _result_item(
-                company_name="架空基盤株式会社",
-                title="クラウド基盤エンジニア候補",
-                location="福岡県福岡市中央区",
-                salary_range="600万〜850万円",
-                url="https://hrmos.co/pages/kakuu/jobs/12",
-                search_set="derived",
-                lane="adjacent_role",
-            )
-            _write(d, "job_search_results.partial-primary.json", _partial(results=[item_a]))
-            _write(
-                d,
-                "job_search_results.partial-lanes-1.json",
-                _partial(search_set="derived", lane="adjacent_role", results=[item_b]),
-            )
-            _write(
-                d,
-                "company_profiles.batch-1.json",
-                {"schema_version": "2.3", "company_profiles": {"架空基盤": _company_profile("架空基盤株式会社")}},
-            )
-            result = msr.merge(d)
-            self.assertTrue(result.ok, result.errors)
-            with open(result.output_path, "r", encoding="utf-8") as f:
-                merged = json.load(f)
+            merged = _merged(result)
             self.assertEqual(len(merged["results"]), 2)
-            self.assertTrue(any("類似の可能性" in line for line in merged["coverage_notes"].splitlines()))
+            self.assertIn("類似の可能性", merged["coverage_notes"])
 
     def test_current_employer_excluded_and_never_named(self):
+        employer = "架空現職株式会社"
         with tempfile.TemporaryDirectory() as d:
-            employer_name = "架空現職株式会社"
-            employer_item = _result_item(company_name=employer_name, title="採用中ポジション")
-            other_item = _result_item(company_name="架空テック株式会社")
-            _write(
-                d,
-                "job_search_results.partial-primary.json",
-                _partial(results=[employer_item, other_item]),
-            )
-            _write(
-                d,
-                "company_profiles.batch-1.json",
-                {"schema_version": "2.3", "company_profiles": {"架空テック": _company_profile("架空テック株式会社")}},
-            )
-            result = msr.merge(d, profile=_profile(employer_name))
+            _setup(d, [_result_item(company_name=employer), _result_item()], profile_names=["架空テック株式会社"])
+            result = msr.merge(d, profile=_profile(employer))
             self.assertTrue(result.ok, result.errors)
             self.assertEqual(result.excluded_count, 1)
             self.assertEqual(len(result.companies), 1)
             with open(result.output_path, "r", encoding="utf-8") as f:
-                raw_text = f.read()
-            self.assertNotIn(employer_name, raw_text)
+                self.assertNotIn(employer, f.read())
 
-    def test_current_employer_excluded_via_cli_json(self):
+    def test_list_companies_excludes_employer_groups_aliases_and_writes_nothing(self):
+        employer = "架空現職株式会社"
         with tempfile.TemporaryDirectory() as d:
-            employer_name = "架空現職株式会社"
-            employer_item = _result_item(company_name=employer_name, title="採用中ポジション")
-            other_item = _result_item(company_name="架空テック株式会社")
-            _write(
-                d,
-                "job_search_results.partial-primary.json",
-                _partial(results=[employer_item, other_item]),
-            )
-            _write(
-                d,
-                "company_profiles.batch-1.json",
-                {"schema_version": "2.3", "company_profiles": {"架空テック": _company_profile("架空テック株式会社")}},
-            )
-            profile_path = _write(d, "profile.json", _profile(employer_name))
-
-            stdout = io.StringIO()
-            with contextlib.redirect_stdout(stdout):
-                exit_code = msr.main([d, "--profile", profile_path, "--json"])
-            output_text = stdout.getvalue()
-            self.assertEqual(exit_code, 0)
-            self.assertNotIn(employer_name, output_text)
-            payload = json.loads(output_text)
-            self.assertEqual(payload["excluded_count"], 1)
-            self.assertEqual(payload["status"], "PASS")
-
-    def test_list_companies_excludes_current_employer_and_writes_nothing(self):
-        with tempfile.TemporaryDirectory() as d:
-            employer_name = "架空現職株式会社"
-            employer_item = _result_item(company_name=employer_name)
-            other_item = _result_item(company_name="架空テック株式会社")
-            _write(
-                d,
-                "job_search_results.partial-primary.json",
-                _partial(results=[employer_item, other_item]),
-            )
-            result = msr.list_companies(d, _profile(employer_name))
+            _write(d, _PRIMARY, _partial(results=[
+                _result_item(company_name=employer),
+                _result_item(company_name="架空テック株式会社", url="https://hrmos.co/pages/kakuu/jobs/1"),
+                _result_item(company_name="架空テック(株)", url="https://hrmos.co/pages/kakuu/jobs/2"),
+            ]))
+            result = msr.list_companies(d, _profile(employer))
             self.assertTrue(result.ok)
             self.assertEqual(result.excluded_count, 1)
             self.assertEqual(len(result.companies), 1)
-            self.assertEqual(result.companies[0]["company_key"], msr.normalize_company_key("架空テック株式会社"))
-            self.assertFalse(os.path.exists(os.path.join(d, "job_search_results.json")))
-
-    def test_list_companies_collects_aliases_and_urls(self):
-        with tempfile.TemporaryDirectory() as d:
-            item_a = _result_item(company_name="架空テック株式会社", url="https://hrmos.co/pages/kakuu/jobs/1")
-            item_b = _result_item(company_name="架空テック(株)", url="https://hrmos.co/pages/kakuu/jobs/2")
-            _write(d, "job_search_results.partial-primary.json", _partial(results=[item_a, item_b]))
-            result = msr.list_companies(d)
-            self.assertEqual(len(result.companies), 1)
             entry = result.companies[0]
-            self.assertIn("架空テック(株)", entry["aliases"])
+            self.assertEqual(entry["company_key"], "架空テック")
+            self.assertEqual(entry["aliases"], ["架空テック(株)"])
             self.assertEqual(len(entry["urls"]), 2)
-
-    def test_company_key_assigned(self):
-        with tempfile.TemporaryDirectory() as d:
-            item = _result_item(company_name="架空テック株式会社")
-            _write(d, "job_search_results.partial-primary.json", _partial(results=[item]))
-            _write(
-                d,
-                "company_profiles.batch-1.json",
-                {"schema_version": "2.3", "company_profiles": {"架空テック": _company_profile("架空テック株式会社")}},
-            )
-            result = msr.merge(d)
-            self.assertTrue(result.ok, result.errors)
-            with open(result.output_path, "r", encoding="utf-8") as f:
-                merged = json.load(f)
-            self.assertEqual(merged["results"][0]["company_key"], msr.normalize_company_key("架空テック株式会社"))
-
-    def test_missing_company_profile_is_error_and_nothing_written(self):
-        with tempfile.TemporaryDirectory() as d:
-            item = _result_item(company_name="架空テック株式会社")
-            _write(d, "job_search_results.partial-primary.json", _partial(results=[item]))
-            result = msr.merge(d)
-            self.assertFalse(result.ok)
-            self.assertFalse(os.path.exists(os.path.join(d, "job_search_results.json")))
-
-    def test_stub_missing_writes_full_stub(self):
-        with tempfile.TemporaryDirectory() as d:
-            item = _result_item(company_name="架空テック株式会社")
-            _write(d, "job_search_results.partial-primary.json", _partial(results=[item]))
-            result = msr.merge(d, stub_missing=True)
-            self.assertTrue(result.ok, result.errors)
-            with open(result.output_path, "r", encoding="utf-8") as f:
-                merged = json.load(f)
-            key = msr.normalize_company_key("架空テック株式会社")
-            stub = merged["company_profiles"][key]
-            self.assertEqual(len(stub["metrics"]), 9)
-            for axis, unit in msr._METRIC_UNITS.items():
-                self.assertIsNone(stub["metrics"][axis]["value"])
-                self.assertEqual(stub["metrics"][axis]["unit"], unit)
-            self.assertIn("企業情報の未収集: 架空テック株式会社", merged["open_questions"])
-
-    def test_conflicting_profiles_keep_more_complete_one(self):
-        with tempfile.TemporaryDirectory() as d:
-            item = _result_item(company_name="架空テック株式会社")
-            _write(d, "job_search_results.partial-primary.json", _partial(results=[item]))
-            key = "架空テック"
-            _write(
-                d,
-                "company_profiles.batch-1.json",
-                {"schema_version": "2.3", "company_profiles": {key: _company_profile("架空テック株式会社", filled=3)}},
-            )
-            _write(
-                d,
-                "company_profiles.batch-2.json",
-                {"schema_version": "2.3", "company_profiles": {key: _company_profile("架空テック株式会社", filled=9)}},
-            )
-            result = msr.merge(d)
-            self.assertTrue(result.ok, result.errors)
-            self.assertTrue(any("架空テック" in w for w in result.warnings))
-            with open(result.output_path, "r", encoding="utf-8") as f:
-                merged = json.load(f)
-            merged_key = msr.normalize_company_key("架空テック株式会社")
-            filled_count = sum(
-                1 for m in merged["company_profiles"][merged_key]["metrics"].values() if m["value"] is not None
-            )
-            self.assertEqual(filled_count, 9)
+            self.assertFalse(os.path.exists(os.path.join(d, _OUT)))
 
     def test_judgement_fields_stripped_with_warning(self):
         with tempfile.TemporaryDirectory() as d:
             item = _result_item(
-                company_name="架空テック株式会社",
-                axis_judgements=[{"axis": "overtime_hours", "level": "want", "judgement": "meets"}],
+                axis_judgements=[{"axis": "overtime_hours"}],
                 classification="apply_candidate",
                 classification_reasons=[{"axis": "overtime_hours", "reason": "残業が少ない"}],
+                classification_override=None,
                 slug="kakuu-tech",
                 baseline_comparison={"axes": [], "overall": "better"},
             )
-            doc = _partial(results=[item], screening={"screened_at": "2026-09-01"})
-            _write(d, "job_search_results.partial-primary.json", doc)
-            _write(
-                d,
-                "company_profiles.batch-1.json",
-                {"schema_version": "2.3", "company_profiles": {"架空テック": _company_profile("架空テック株式会社")}},
-            )
+            _write(d, _PRIMARY, _partial(results=[item], screening={"screened_at": "2026-09-01"}))
+            _write(d, "company_profiles.batch-1.json", {"company_profiles": {"架空テック": _company_profile("架空テック株式会社")}})
             result = msr.merge(d)
             self.assertTrue(result.ok, result.errors)
             self.assertTrue(result.warnings)
-            with open(result.output_path, "r", encoding="utf-8") as f:
-                merged = json.load(f)
+            merged = _merged(result)
             self.assertNotIn("screening", merged)
-            merged_item = merged["results"][0]
-            for key in ("axis_judgements", "classification", "classification_reasons", "slug"):
-                self.assertNotIn(key, merged_item)
-            self.assertNotIn("overall", merged_item["baseline_comparison"])
+            for key in msr._JUDGEMENT_RESULT_KEYS:
+                self.assertNotIn(key, merged["results"][0])
+            self.assertNotIn("overall", merged["results"][0]["baseline_comparison"])
 
-    def test_missing_lane_reported_but_not_error(self):
-        with tempfile.TemporaryDirectory() as d:
-            item = _result_item(company_name="架空テック株式会社")
-            _write(d, "job_search_results.partial-primary.json", _partial(results=[item]))
-            _write(
-                d,
-                "company_profiles.batch-1.json",
-                {"schema_version": "2.3", "company_profiles": {"架空テック": _company_profile("架空テック株式会社")}},
-            )
-            result = msr.merge(d, lanes=["region_widen"])
-            self.assertTrue(result.ok, result.errors)
-            self.assertEqual(result.missing_lanes, ["region_widen"])
-            with open(result.output_path, "r", encoding="utf-8") as f:
-                merged = json.load(f)
-            self.assertIn("レーン region_widen は検索担当が応答せず未実施", merged["coverage_notes"])
+    def test_company_profile_handling(self):
+        key = "架空テック"
+        with self.subTest("batch が無いと ERROR で何も書かない"):
+            with tempfile.TemporaryDirectory() as d:
+                _setup(d, [_result_item()], profile_names=[])
+                result = msr.merge(d)
+                self.assertFalse(result.ok)
+                self.assertFalse(os.path.exists(os.path.join(d, _OUT)))
+        with self.subTest("stub_missing は9指標すべて null のスタブを補う"):
+            with tempfile.TemporaryDirectory() as d:
+                _setup(d, [_result_item()], profile_names=[])
+                result = msr.merge(d, stub_missing=True)
+                self.assertTrue(result.ok, result.errors)
+                merged = _merged(result)
+                metrics = merged["company_profiles"][key]["metrics"]
+                self.assertEqual(len(metrics), 9)
+                for axis, unit in msr._METRIC_UNITS.items():
+                    self.assertIsNone(metrics[axis]["value"])
+                    self.assertEqual(metrics[axis]["unit"], unit)
+                self.assertIn("企業情報の未収集: 架空テック株式会社", merged["open_questions"])
+        with self.subTest("重複は metrics の充足数が多い方を残す"):
+            with tempfile.TemporaryDirectory() as d:
+                _setup(d, [_result_item()], profile_names=[])
+                for n, filled in ((1, 3), (2, 9)):
+                    _write(d, f"company_profiles.batch-{n}.json",
+                           {"company_profiles": {key: _company_profile("架空テック株式会社", filled=filled)}})
+                result = msr.merge(d)
+                self.assertTrue(result.ok, result.errors)
+                self.assertTrue(any(key in w for w in result.warnings))
+                metrics = _merged(result)["company_profiles"][key]["metrics"]
+                self.assertEqual(sum(1 for m in metrics.values() if m["value"] is not None), 9)
 
-    def test_partials_kept_after_merge(self):
+    def test_merge_errors_write_nothing(self):
+        # (ラベル, {ファイル名: partial}, 期待する ERROR の部分文字列)
+        rows = [
+            ("primary が無い", {_LANES_1: _partial(search_set="derived", lane="adjacent_role")}, "primary"),
+            ("partial が無い", {}, "partials"),
+            ("search_id の不一致",
+             {_PRIMARY: _partial(search_id="20260901-a"), _LANES_1: _partial(search_id="20260902-b")}, "search_id"),
+            ("schema_version が 2.3 でない", {_PRIMARY: _partial(schema_version="2.2")}, "schema_version"),
+            ("レーンの重複",
+             {_PRIMARY: _partial(),
+              _LANES_1: _partial(search_set="derived", lane="adjacent_role"),
+              "job_search_results.partial-lanes-2.json": _partial(search_set="derived", lane="adjacent_role")},
+             "adjacent_role"),
+        ]
+        for label, files, expected in rows:
+            with self.subTest(label):
+                with tempfile.TemporaryDirectory() as d:
+                    for name, doc in files.items():
+                        _write(d, name, doc)
+                    result = msr.merge(d)
+                    self.assertFalse(result.ok)
+                    self.assertTrue(any(expected in e for e in result.errors), result.errors)
+                    self.assertIsNone(result.output_path)
+                    self.assertFalse(os.path.exists(os.path.join(d, _OUT)))
+
+    def test_cleanup(self):
         with tempfile.TemporaryDirectory() as d:
-            item = _result_item(company_name="架空テック株式会社")
-            _write(d, "job_search_results.partial-primary.json", _partial(results=[item]))
-            _write(
-                d,
-                "company_profiles.batch-1.json",
-                {"schema_version": "2.3", "company_profiles": {"架空テック": _company_profile("架空テック株式会社")}},
-            )
-            result = msr.merge(d)
-            self.assertTrue(result.ok, result.errors)
+            _setup(d, [_result_item()])
+            result = msr.cleanup(d)
+            self.assertFalse(result.ok)
             self.assertEqual(len(glob.glob(os.path.join(d, "job_search_results.partial-*.json"))), 1)
-            self.assertEqual(len(glob.glob(os.path.join(d, "company_profiles.batch-*.json"))), 1)
-
-    def test_cleanup_deletes_partials_after_merge(self):
-        with tempfile.TemporaryDirectory() as d:
-            item = _result_item(company_name="架空テック株式会社")
-            _write(d, "job_search_results.partial-primary.json", _partial(results=[item]))
-            _write(
-                d,
-                "company_profiles.batch-1.json",
-                {"schema_version": "2.3", "company_profiles": {"架空テック": _company_profile("架空テック株式会社")}},
-            )
             self.assertTrue(msr.merge(d).ok)
             result = msr.cleanup(d)
             self.assertTrue(result.ok, result.errors)
             self.assertEqual(glob.glob(os.path.join(d, "job_search_results.partial-*.json")), [])
             self.assertEqual(glob.glob(os.path.join(d, "company_profiles.batch-*.json")), [])
-            self.assertTrue(os.path.isfile(os.path.join(d, "job_search_results.json")))
+            self.assertTrue(os.path.isfile(os.path.join(d, _OUT)))
 
-    def test_cleanup_without_merged_file_is_error_and_keeps_partials(self):
-        with tempfile.TemporaryDirectory() as d:
-            _write(d, "job_search_results.partial-primary.json", _partial(results=[]))
-            result = msr.cleanup(d)
-            self.assertFalse(result.ok)
-            self.assertEqual(len(glob.glob(os.path.join(d, "job_search_results.partial-*.json"))), 1)
 
-    def test_cli_exit_codes_and_json_shape(self):
+class CliTest(unittest.TestCase):
+    def test_exit_codes_json_keys_and_employer_not_echoed(self):
+        employer = "架空現職株式会社"
         with tempfile.TemporaryDirectory() as d:
-            item = _result_item(company_name="架空テック株式会社")
-            _write(d, "job_search_results.partial-primary.json", _partial(results=[item]))
-            _write(
-                d,
-                "company_profiles.batch-1.json",
-                {"schema_version": "2.3", "company_profiles": {"架空テック": _company_profile("架空テック株式会社")}},
-            )
-            stdout = io.StringIO()
-            with contextlib.redirect_stdout(stdout):
-                exit_code = msr.main([d, "--json"])
-            self.assertEqual(exit_code, 0)
-            payload = json.loads(stdout.getvalue())
+            _setup(d, [_result_item(company_name=employer), _result_item()], profile_names=["架空テック株式会社"])
+            profile_path = _write(d, "profile.json", _profile(employer))
+            code, text, payload = _main_json([d, "--profile", profile_path])
+            self.assertEqual(code, 0)
+            self.assertEqual(payload["status"], "PASS")
+            self.assertEqual(payload["excluded_count"], 1)
+            self.assertNotIn(employer, text)
             self.assertEqual(
-                set(payload.keys()),
+                set(payload),
                 {"status", "errors", "warnings", "excluded_count", "companies", "missing_lanes", "output_path"},
             )
-            self.assertEqual(payload["status"], "PASS")
-
         with tempfile.TemporaryDirectory() as d:
-            stdout = io.StringIO()
-            with contextlib.redirect_stdout(stdout):
-                exit_code = msr.main([d, "--json"])
-            self.assertEqual(exit_code, 1)
-            payload = json.loads(stdout.getvalue())
+            code, _, payload = _main_json([d])
+            self.assertEqual(code, 1)
             self.assertEqual(payload["status"], "FAIL")
             self.assertIsNone(payload["output_path"])
+        with tempfile.TemporaryDirectory() as d:
+            code, _, payload = _main_json([d, "--profile", os.path.join(d, "missing.json")])
+            self.assertEqual(code, 1)
+            self.assertEqual(payload["status"], "FAIL")
 
 
 if __name__ == "__main__":

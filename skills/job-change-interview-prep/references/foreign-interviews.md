@@ -11,19 +11,19 @@ An interview that evaluates the competency (job-performance capability) the empl
 
 | Criterion | Content |
 |---|---|
-| Correspondence between question and competency | Each question maps to a specific competency (for example, leadership, problem-solving, or collaboration). The candidate prepares one piece of past behavior demonstrating each competency the employer defines[E69]. |
+| Correspondence between question and competency | Each question maps to a specific competency (such as leadership, problem-solving, or collaboration). The candidate prepares one piece of past behavior demonstrating each competency the employer defines[E69]. |
 | Scoring method (BARS) | Answers are scored with BARS (a Behaviorally Anchored Rating Scale). Evaluation criteria are documented explicitly for each level of behavior, so specific behavior determines the score[E69]. |
 | Answer structure | The answer is structured with STAR (Situation, Task, Action, Result), devoting 50 to 60 percent of the answer time to Action. The candidate states the role, the judgment, and the action they themselves took, with themselves as the subject[E69]. The evaluation anchors are shared with `evaluation-rubric.md`. |
 
 ## Case interviews
 
-An interview in which the candidate builds a solution to a given business problem while showing their thought process; it may include Fermi estimation (a question that estimates a quantity from limited information).
+An interview in which the candidate builds a solution to a business problem set in the interview while showing their thought process. It may include Fermi estimation (a question that estimates a quantity from limited information).
 
 ### Standard procedure
 
 1. Confirm the scope, definition, and constraints of the question, aligning premises with the interviewer[E68].
 2. Break the issue down into three to five points, mutually exclusive and collectively exhaustive (MECE), analyze the current state, and identify the problem. Never apply a generic framework unmodified; adjust it to the context of the problem[E70].
-3. List countermeasures along the decomposed points and prioritize them[E68].
+3. List countermeasures along the decomposed points and rank them by priority[E68].
 4. State the conclusion first, followed by the supporting reasoning (answer-first)[E68].
 5. Update the hypothesis in response to the interviewer's counterarguments and additional conditions[E68].
 
@@ -37,7 +37,7 @@ Proceed by first forming a hypothesis. Form a hypothesis before all the informat
 | Number sense | The soundness of the estimation and quantitative analysis[E42]. |
 | Communication | Whether the thinking can be explained in a way the other party can follow[E68]. |
 
-What is evaluated is whether the candidate can show the other party how they thought[E42][E68]. Showing the thought process matters more than the correctness of the conclusion itself.
+What is evaluated is whether the candidate can show the other party how they thought[E42][E68]. The evaluation weighs the thought process above the correctness of the conclusion itself.
 
 ## Sources
 

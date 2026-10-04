@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """profile.json の節ごとの到達段階（missing / skeleton / deep）を報告する。
 
+profile.json は職歴の事実（基本情報・職歴・実績・スキル）を持つ。転職の軸の節は
+job-change-axis の axis_sections.py が報告する。
 節の一覧と判定条件の原本は references/sections.md にある。合否の判定は hub の
 validate_profile.py が担い、本スクリプトは節ごとの段階を報告するだけである。
 終了コードは常に 0（読み込めない場合だけ 1）。--json で構造化出力する。
@@ -17,7 +19,7 @@ import os
 import sys
 from typing import Any, Callable
 
-# period の解析と作業特性の語彙は hub の validate_profile.py と共有する（二重管理しない）。
+# period の解析は hub の validate_profile.py と共有する（二重管理しない）。
 _HUB_SCRIPTS = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "job-change-support",
@@ -51,15 +53,6 @@ def _entries(profile: dict) -> list[dict]:
 
 def _complete(entry: dict) -> bool:
     return all(_is_str(entry.get(k)) for k in ("company", "period", "role"))
-
-
-def _axis(profile: dict) -> dict:
-    axis = profile.get("job_change_axis")
-    return axis if isinstance(axis, dict) else {}
-
-
-def _is_v2(profile: dict) -> bool:
-    return vp.schema_version_of(profile) == vp._V2_SCHEMA_VERSION
 
 
 # --- 節ごとの判定 -------------------------------------------------------------
@@ -125,66 +118,6 @@ def _skills_deep(p: dict) -> bool:
     ) and _nonempty_list(skills.get("portable"))
 
 
-def _reasons_skeleton(p: dict) -> bool:
-    reasons = _axis(p).get("reasons")
-    return isinstance(reasons, list) and any(_is_str(r) for r in reasons)
-
-
-def _conditions_skeleton(p: dict) -> bool:
-    axis = _axis(p)
-    if _is_v2(p):
-        conditions = axis.get("conditions")
-        return isinstance(conditions, list) and any(isinstance(c, dict) for c in conditions)
-    return _nonempty_list(axis.get("must_conditions")) or _nonempty_list(
-        axis.get("want_conditions")
-    )
-
-
-def _conditions_deep(p: dict) -> bool:
-    if not _is_v2(p):
-        return False
-    must = vp._must_conditions(_axis(p))
-    return bool(must) and all(
-        isinstance(c.get("priority"), int) and not isinstance(c.get("priority"), bool)
-        for c in must
-    )
-
-
-def _work_character_skeleton(p: dict) -> bool:
-    preferences = _axis(p).get("work_character_preferences")
-    if not isinstance(preferences, list):
-        return False
-    traits = [x.get("trait") for x in preferences if isinstance(x, dict)]
-    return len(traits) == len(vp._WORK_CHARACTER_TRAITS) and set(traits) == set(
-        vp._WORK_CHARACTER_TRAITS
-    )
-
-
-def _score_axes_skeleton(p: dict) -> bool:
-    return _nonempty_list(p.get("company_score_axes"))
-
-
-def _targets_skeleton(p: dict) -> bool:
-    targets = p.get("targets")
-    if not isinstance(targets, dict):
-        return False
-    return any(_nonempty_list(targets.get(c)) for c in ("industries", "roles", "companies"))
-
-
-def _salary_skeleton(p: dict) -> bool:
-    salary = p.get("salary")
-    return isinstance(salary, dict) and _is_num(salary.get("desired"))
-
-
-def _salary_deep(p: dict) -> bool:
-    return _is_num(p.get("salary", {}).get("current"))
-
-
-def _same(_: dict) -> bool:
-    """deep の条件が skeleton と同じ節に使う。"""
-    return True
-
-
 # (id, initial, needed_by, skeleton, deep)。順序は references/sections.md の表と同じ。
 _Check = Callable[[dict], bool]
 SECTIONS: list[tuple[str, bool, list[str], _Check, _Check]] = [
@@ -204,42 +137,6 @@ SECTIONS: list[tuple[str, bool, list[str], _Check, _Check]] = [
         _skills_skeleton,
         _skills_deep,
     ),
-    (
-        "reasons",
-        True,
-        ["job-change-documents", "job-change-interview-prep", "job-change-self-analysis"],
-        _reasons_skeleton,
-        _same,
-    ),
-    (
-        "conditions",
-        True,
-        ["job-change-job-search", "job-change-fit-assessment"],
-        _conditions_skeleton,
-        _conditions_deep,
-    ),
-    (
-        "work_character",
-        True,
-        ["job-change-job-search", "job-change-fit-assessment"],
-        _work_character_skeleton,
-        _same,
-    ),
-    (
-        "score_axes",
-        False,
-        ["job-change-fit-assessment", "job-change-company-research"],
-        _score_axes_skeleton,
-        _same,
-    ),
-    (
-        "targets",
-        False,
-        ["job-change-company-research", "job-change-job-search"],
-        _targets_skeleton,
-        _same,
-    ),
-    ("salary", False, ["job-change-fit-assessment"], _salary_skeleton, _salary_deep),
 ]
 
 SECTION_IDS = [s[0] for s in SECTIONS]
@@ -299,7 +196,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         profile = vp.load_profile(args.profile_path)
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError) as exc:
         print(f"JSON として読み込めない（{exc}）")
         return 1
 

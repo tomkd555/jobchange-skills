@@ -280,7 +280,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         document = load_posting(args.posting_path)
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError) as exc:
         result = ValidationResult()
         result.add_error(args.posting_path, f"JSON として読み込めない（{exc}）")
         if args.json:

@@ -8,7 +8,7 @@ and quantification.
 
 厚生労働省 (the Ministry of Health, Labour and Welfare) and ハローワーク (Hello Work) position the
 shokumu-keirekisho as a document 「履歴書では書ききれない具体的なキャリアとやる気をアピールするためのもの」 (for
-presenting the concrete career and motivation a rirekisho cannot fully convey), and distribute format
+presenting the concrete career and motivation a rirekisho cannot fully convey). They distribute format
 examples free of charge (source: 厚生労働省
 ハローワークインターネットサービス "履歴書・職務経歴書の書き方"
 https://www.hellowork.mhlw.go.jp/member/career_doc01.html, primary/official). Where the rirekisho
@@ -74,9 +74,10 @@ achievement creates the difference from other applicants.
 
 ## Length
 
-The canonical definition of the numeric guide for length and for the summary section's length lives in
-`references/templates.md` (one to two A4 pages for roughly seven years of work experience or less,
-two to three pages beyond that; 200–300 characters for the summary). What follows is its background.
+The canonical definition of the numeric guide for length and for the summary section's length is in
+`references/templates.md`. It sets one to two A4 pages for roughly seven years of work experience or
+less, two to three pages beyond that, and 200 to 300 characters for the summary. The points below give
+its background.
 
 - The page count splits across sources between one to two pages and two to three pages (the full list
   is in `templates.md`). Treat this as a guide for measuring conciseness and relevance. The English
@@ -102,9 +103,9 @@ them.
 ## The scope and limits of this standard
 
 - The distinction among the three formats rests on a major recruiting agency's practical guide
-  (reliable secondary). A hiring manager's evaluation varies by company and occupation, and no single
-  correct answer exists.
+  (reliable secondary). A hiring manager's evaluation varies by company and occupation, and the
+  right choice differs from case to case.
 - The character-count guide for the summary section differs by practical media outlet (some count
   characters, others lines). This document states the principle "the connection to the target job
-  first, an achievement in quantified form," and places the numeric guide (200–300 characters) in
+  first, an achievement in quantified form," and places the numeric guide (200 to 300 characters) in
   `templates.md`.

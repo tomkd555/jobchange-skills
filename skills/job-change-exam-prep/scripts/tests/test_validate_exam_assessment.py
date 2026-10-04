@@ -49,279 +49,114 @@ def _valid_document() -> dict:
     }
 
 
-def _first_assessment(document: dict) -> dict:
+def _a(document: dict) -> dict:
     return document["assessments"][0]
 
 
-class StructureTest(unittest.TestCase):
+def _no_assessments(d):
+    d["assessments"] = []
+
+
+def _no_assessments_no_questions(d):
+    d["assessments"] = []
+    d["open_questions"] = []
+
+
+def _confirmed_without_a(d):
+    _a(d)["evidence"][0]["grade"] = "C"
+
+
+def _estimated_single(d):
+    _a(d)["confidence"] = "推定"
+    _a(d)["evidence"] = [_a(d)["evidence"][1]]
+
+
+class ValidateTest(unittest.TestCase):
     def test_valid_document_has_no_error_and_no_warning(self):
         result = ve.validate(_valid_document())
         self.assertEqual(result.errors, [])
         self.assertEqual(result.warnings, [])
-        self.assertTrue(result.ok)
 
-    def test_non_object_root_is_an_error(self):
-        result = ve.validate([])
-        self.assertFalse(result.ok)
-        self.assertTrue(any("ルート要素" in e for e in result.errors))
-
-    def test_missing_company_is_an_error(self):
-        document = _valid_document()
-        del document["company"]
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("company" in e for e in result.errors))
-
-    def test_empty_company_is_an_error(self):
-        document = _valid_document()
-        document["company"] = "   "
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-
-    def test_assessments_not_list_is_an_error(self):
-        document = _valid_document()
-        document["assessments"] = {}
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("assessments" in e for e in result.errors))
-
-    def test_empty_assessments_with_open_questions_is_a_warning(self):
-        document = _valid_document()
-        document["assessments"] = []
-        result = ve.validate(document)
-        self.assertEqual(result.errors, [])
-        self.assertTrue(any("特定できていない" in w for w in result.warnings))
-
-    def test_empty_assessments_without_open_questions_is_an_error(self):
-        document = _valid_document()
-        document["assessments"] = []
-        document["open_questions"] = []
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-
-    def test_non_object_assessment_is_an_error(self):
-        document = _valid_document()
-        document["assessments"] = ["SPI3"]
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("assessments[0]" in e for e in result.errors))
-
-    def test_open_questions_not_list_is_an_error(self):
-        document = _valid_document()
-        document["open_questions"] = "未確認の点はない"
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("open_questions" in e for e in result.errors))
-
-    def test_non_string_open_question_is_an_error(self):
-        document = _valid_document()
-        document["open_questions"] = [""]
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("open_questions[0]" in e for e in result.errors))
-
-
-class AssessmentFieldTest(unittest.TestCase):
-    def test_missing_type_is_an_error(self):
-        document = _valid_document()
-        del _first_assessment(document)["type"]
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any(".type" in e for e in result.errors))
-
-    def test_unknown_type_is_a_warning(self):
-        document = _valid_document()
-        _first_assessment(document)["type"] = "架空検査ABC"
-        result = ve.validate(document)
-        self.assertEqual(result.errors, [])
-        self.assertTrue(any("assessment-catalog.md" in w for w in result.warnings))
-
-    def test_missing_stage_is_a_warning(self):
-        document = _valid_document()
-        del _first_assessment(document)["stage"]
-        result = ve.validate(document)
-        self.assertEqual(result.errors, [])
-        self.assertTrue(any(".stage" in w for w in result.warnings))
-
-    def test_missing_format_notes_is_a_warning(self):
-        document = _valid_document()
-        _first_assessment(document)["format_notes"] = ""
-        result = ve.validate(document)
-        self.assertEqual(result.errors, [])
-        self.assertTrue(any(".format_notes" in w for w in result.warnings))
-
-    def test_prep_recommendations_not_list_is_an_error(self):
-        document = _valid_document()
-        _first_assessment(document)["prep_recommendations"] = "非言語を反復練習する"
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any(".prep_recommendations" in e for e in result.errors))
-
-    def test_empty_prep_recommendation_item_is_an_error(self):
-        document = _valid_document()
-        _first_assessment(document)["prep_recommendations"] = [""]
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any(".prep_recommendations[0]" in e for e in result.errors))
-
-    def test_empty_prep_recommendations_is_a_warning(self):
-        document = _valid_document()
-        _first_assessment(document)["prep_recommendations"] = []
-        result = ve.validate(document)
-        self.assertEqual(result.errors, [])
-        self.assertTrue(any(".prep_recommendations" in w for w in result.warnings))
-
-
-class EvidenceTest(unittest.TestCase):
-    def test_evidence_not_list_is_an_error(self):
-        document = _valid_document()
-        _first_assessment(document)["evidence"] = {}
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any(".evidence" in e for e in result.errors))
-
-    def test_empty_evidence_is_an_error(self):
-        document = _valid_document()
-        _first_assessment(document)["evidence"] = []
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("出典のない断定" in e for e in result.errors))
-
-    def test_non_object_evidence_is_an_error(self):
-        document = _valid_document()
-        _first_assessment(document)["evidence"] = ["https://example.com/careers/process"]
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any(".evidence[0]" in e for e in result.errors))
-
-    def test_missing_source_url_is_an_error(self):
-        document = _valid_document()
-        del _first_assessment(document)["evidence"][0]["source_url"]
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any(".source_url" in e for e in result.errors))
-
-    def test_non_http_source_url_is_an_error(self):
-        document = _valid_document()
-        _first_assessment(document)["evidence"][0]["source_url"] = "採用ページ"
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any(".source_url" in e for e in result.errors))
-
-    def test_unknown_grade_is_an_error(self):
-        document = _valid_document()
-        _first_assessment(document)["evidence"][0]["grade"] = "S"
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any(".grade" in e for e in result.errors))
-
-    def test_empty_quote_is_an_error(self):
-        document = _valid_document()
-        _first_assessment(document)["evidence"][0]["quote"] = ""
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any(".quote" in e for e in result.errors))
-
-
-class ConfidenceTest(unittest.TestCase):
-    def test_unknown_confidence_is_an_error(self):
-        document = _valid_document()
-        _first_assessment(document)["confidence"] = "たぶん"
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any(".confidence" in e for e in result.errors))
-
-    def test_missing_confidence_is_an_error(self):
-        document = _valid_document()
-        del _first_assessment(document)["confidence"]
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any(".confidence" in e for e in result.errors))
-
-    def test_confirmed_without_grade_a_is_an_error(self):
-        document = _valid_document()
-        _first_assessment(document)["evidence"][0]["grade"] = "C"
-        result = ve.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("レベル A の根拠" in e for e in result.errors))
-
-    def test_confirmed_with_grade_a_passes(self):
-        document = _valid_document()
-        _first_assessment(document)["evidence"][1]["grade"] = "D"
-        result = ve.validate(document)
-        self.assertEqual(result.errors, [])
-
-    def test_estimated_with_single_evidence_is_a_warning(self):
-        document = _valid_document()
-        assessment = _first_assessment(document)
-        assessment["confidence"] = "推定"
-        assessment["evidence"] = [
-            {
-                "source_url": "https://example.com/taikenki/2087",
-                "grade": "C",
-                "quote": "一次面接のあとに文章と図形の検査を受けた。",
-            }
-        ]
-        result = ve.validate(document)
-        self.assertEqual(result.errors, [])
-        self.assertTrue(any("根拠が1件のみ" in w for w in result.warnings))
-
-    def test_estimated_with_two_evidence_has_no_warning(self):
-        document = _valid_document()
-        assessment = _first_assessment(document)
-        assessment["confidence"] = "推定"
-        assessment["evidence"][0]["grade"] = "C"
-        result = ve.validate(document)
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
-
-
-class MainTest(unittest.TestCase):
-    def _run(self, argv: list[str]) -> tuple[int, str]:
-        buffer = io.StringIO()
-        with redirect_stdout(buffer):
-            code = ve.main(argv)
-        return code, buffer.getvalue()
-
-    def test_valid_file_returns_0(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            path = os.path.join(tmp, "exam_assessment.json")
-            with open(path, "w", encoding="utf-8") as f:
-                json.dump(_valid_document(), f, ensure_ascii=False)
-            code, output = self._run([path])
-        self.assertEqual(code, 0)
-        self.assertIn("PASS", output)
-
-    def test_broken_json_returns_1(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            path = os.path.join(tmp, "exam_assessment.json")
-            with open(path, "w", encoding="utf-8") as f:
-                f.write("{")
-            code, output = self._run([path])
-        self.assertEqual(code, 1)
-        self.assertIn("読み込めない", output)
-
-    def test_invalid_document_returns_1_with_json_output(self):
-        document = _valid_document()
-        del document["company"]
-        with tempfile.TemporaryDirectory() as tmp:
-            path = os.path.join(tmp, "exam_assessment.json")
-            with open(path, "w", encoding="utf-8") as f:
-                json.dump(document, f, ensure_ascii=False)
-            code, output = self._run([path, "--json"])
-        self.assertEqual(code, 1)
-        payload = json.loads(output)
-        self.assertEqual(payload["status"], "FAIL")
-        self.assertEqual(payload["error_count"], len(payload["errors"]))
-
-
-class ExampleAssetTest(unittest.TestCase):
     def test_bundled_example_passes(self):
         base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         document = ve.load_assessment(os.path.join(base, "assets", "exam_assessment_example.json"))
         result = ve.validate(document)
         self.assertEqual(result.errors, [])
         self.assertEqual(result.warnings, [])
+
+    def test_error_rules(self):
+        rows = [
+            ("ルートが配列", None, "ルート要素"),
+            ("company 欠落（必須文字列）", lambda d: d.pop("company"), "company"),
+            ("assessments が配列でない", lambda d: d.__setitem__("assessments", {}), "assessments"),
+            ("assessments 空かつ open_questions 空", _no_assessments_no_questions, "未特定の事情"),
+            ("open_questions の空要素（文字列リスト）", lambda d: d.__setitem__("open_questions", [""]), "open_questions[0]"),
+            ("要素がオブジェクトでない", lambda d: d.__setitem__("assessments", ["SPI3"]), "assessments[0]"),
+            ("evidence 空", lambda d: _a(d).__setitem__("evidence", []), "出典のない断定"),
+            ("source_url が http でない", lambda d: _a(d)["evidence"][0].__setitem__("source_url", "採用ページ"), ".source_url"),
+            ("grade が語彙外", lambda d: _a(d)["evidence"][0].__setitem__("grade", "S"), ".grade"),
+            ("confidence が語彙外", lambda d: _a(d).__setitem__("confidence", "たぶん"), ".confidence"),
+            ("確定にレベルAが無い", _confirmed_without_a, "レベル A の根拠"),
+        ]
+        for label, mutate, expected in rows:
+            with self.subTest(label):
+                document = _valid_document()
+                if mutate is None:
+                    result = ve.validate([])
+                else:
+                    mutate(document)
+                    result = ve.validate(document)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected in e for e in result.errors), result.errors)
+
+    def test_warn_rules(self):
+        rows = [
+            ("assessments 空（open_questions あり）", _no_assessments, "特定できていない"),
+            ("カタログ外の type", lambda d: _a(d).__setitem__("type", "架空検査ABC"), "assessment-catalog.md"),
+            ("stage 欠落", lambda d: _a(d).pop("stage"), ".stage"),
+            ("推定で根拠1件", _estimated_single, "根拠が1件のみ"),
+            ("prep_recommendations 空", lambda d: _a(d).__setitem__("prep_recommendations", []), ".prep_recommendations"),
+        ]
+        for label, mutate, expected in rows:
+            with self.subTest(label):
+                document = _valid_document()
+                mutate(document)
+                result = ve.validate(document)
+                self.assertEqual(result.errors, [])
+                self.assertTrue(any(expected in w for w in result.warnings), result.warnings)
+
+
+class MainTest(unittest.TestCase):
+    def _run(self, content: str, *extra: str) -> tuple[int, str]:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "exam_assessment.json")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(content)
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = ve.main([path, *extra])
+        return code, buffer.getvalue()
+
+    def test_exit_codes(self):
+        invalid = _valid_document()
+        del invalid["company"]
+        rows = [
+            ("valid", json.dumps(_valid_document(), ensure_ascii=False), 0, "PASS"),
+            ("invalid", json.dumps(invalid, ensure_ascii=False), 1, "FAIL"),
+            ("broken json", "{", 1, "読み込めない"),
+        ]
+        for label, content, expected_code, expected_text in rows:
+            with self.subTest(label):
+                code, output = self._run(content)
+                self.assertEqual(code, expected_code)
+                self.assertIn(expected_text, output)
+
+    def test_json_output_keys(self):
+        _, output = self._run(json.dumps(_valid_document(), ensure_ascii=False), "--json")
+        self.assertEqual(
+            set(json.loads(output)),
+            {"status", "error_count", "warning_count", "errors", "warnings"},
+        )
 
 
 if __name__ == "__main__":

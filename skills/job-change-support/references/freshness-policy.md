@@ -4,7 +4,7 @@ The canonical reference defining the policy for judging whether a per-company de
 
 ## Policy
 
-- `companies/{company slug}/` is a storage location that keeps everything without deleting it; a deliverable file is never deleted or moved even after its TTL has elapsed.
+- `companies/{company slug}/` is a storage location that keeps everything without deleting it. A deliverable file is never deleted or moved even after its TTL has elapsed.
 - A TTL that has elapsed gives the hub (job-change-support) grounds to instruct `job-change-company-research` to "investigate only the topics judged stale." A topic that is not stale, and a deliverable that is fresh, is never re-investigated. The existing deliverable is reused as is.
 - The skill that creates each deliverable writes `_manifest.json` itself. `job-change-company-research` updates the `job_posting` field when it obtains the job posting, and updates the `company_research` field when it finishes investigating a topic. `check_freshness.py` only judges; it never rewrites `_manifest.json`.
 
@@ -40,7 +40,7 @@ The canonical reference defining the policy for judging whether a per-company de
 | `artifacts.company_research.audit_verdict` | string | The independent audit's verdict. One of `CLEAN`, `CONCERNS`, or `BLOCK`. `job-change-company-research` writes it |
 | `artifacts.company_research.audited_at` | string | The date the audit was carried out (`YYYY-MM-DD`) |
 
-`artifacts` may freely add a deliverable such as `exam_assessment` in the form `{updated_at: "YYYY-MM-DD"}`, beyond the two above. Only a deliverable name and a date may be recorded; personal information and any value derived from it are never written (canonical definition: `pii-boundary.md`). `check_freshness.py` always judges the two deliverables `job_posting` and `company_research`.
+`artifacts` may freely add a deliverable such as `exam_assessment` in the form `{updated_at: "YYYY-MM-DD"}`, beyond the two above. Only a deliverable name and a date may be recorded. Personal information and any value derived from it are never written (canonical definition: `pii-boundary.md`). `check_freshness.py` always judges the two deliverables `job_posting` and `company_research`.
 
 Beyond these, the following optional deliverable is judged only when `artifacts` holds a record for it. When there is no record, and when the value is explicitly `null` (stating it has not been obtained), it is never treated as `missing` and never appears in the judgment result. When a record exists but `updated_at` is missing or invalid, or the value is of an invalid type, it is treated as `missing`. Any key other than the ones above is skipped without judgment.
 
@@ -48,7 +48,7 @@ Beyond these, the following optional deliverable is judged only when `artifacts`
 |---|---|---|
 | `interview_intel` | `job-change-interview-prep` (writes `{updated_at: "YYYY-MM-DD"}` when Step 0.9's job-interview information investigation finishes) | 180 |
 
-When an optional deliverable is judged `stale` or `missing`, the hub hands the re-investigation to the skill that writes that deliverable (the Writer column above).
+When an optional deliverable is judged `stale` or `missing`, the hub passes the re-investigation to the skill that writes that deliverable (the Writer column above).
 
 ## Topic names and the TTL table
 

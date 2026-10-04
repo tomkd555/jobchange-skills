@@ -11,8 +11,8 @@ description: >-
   not score, weight, or rate the company (independent of profile). It runs when dispatched by
   job-change-support (the hub).
   Use when the user researches a target company for a job change in Japan (including foreign-affiliated
-  selection) — its philosophy, business, financials, compensation, benefits, work style, reputation, and
-  selection process — or imports a job posting from a URL, and needs sourced, evidence-graded findings.
+  selection): its philosophy, business, financials, compensation, benefits, work style, reputation, and
+  selection process; or imports a job posting from a URL, and needs sourced, evidence-graded findings.
   trigger words: 企業研究, 会社を調べる, 企業分析, 事業内容, 財務, 平均年収, 有価証券報告書, 評判, 口コミ,
   選考プロセス, 理念, パーパス, 求人URL, 求人票の取り込み, この求人を調べて。
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion, Skill
@@ -26,24 +26,24 @@ This skill runs when dispatched by the hub (job-change-support). The company res
 
 ## Purpose and principles
 
-1. **Attach a source and an evidence level to every claim.** Each claim about a company carries a source URL, a quote, an evidence level (A = primary/official, B = reliable secondary, C = aggregated review-site posts, D = personal blog/hearsay/unconfirmed), and a confidence value. The canonical definition of the levels, the criteria for assigning them, and the operating rules live in `references/evidence-grading.md`. The hub and each agent treat this file as canonical too.
+1. **Attach a source and an evidence level to every claim.** Each claim about a company has a source URL, a quote, an evidence level, and a confidence value. The evidence levels are A = primary/official, B = reliable secondary, C = aggregated review-site posts, and D = personal blog/hearsay/unconfirmed. The canonical definition of the levels, the criteria for assigning them, and the operating rules are in `references/evidence-grading.md`. The hub and each agent treat this file as canonical too.
 
 2. **Do not assert a fact on C or D alone.** Do not assert a fact on review-site posts or hearsay (C or D) alone. Write a statement based on C or D with a hedge (「口コミでは〜という声がある。選択バイアスがあり傍証にとどめる」). Use review-site posts as a supporting signal only under three conditions: the figure is an aggregated overall score, it rests on a sufficient number of responses, and it can be corroborated across multiple sources. Do not use individual posts, aggregates with few responses, or per-facet scores to assert a fact.
 
-3. **Do not give a company's own claim about itself a confidence of high.** A claim a company makes to present itself favorably (for example, a "good communication culture" statement on its recruiting site) is not guaranteed true even when the source is level A. State in the source that the claim comes from a page the company itself owns, and do not set confidence to high (treat it as B-equivalent). Separate the fact (what the company states, a disclosed figure, whether a certification exists) from the evaluation (whether the culture is actually good) into different claims.
+3. **Do not give a company's own claim about itself a confidence of high.** A company's claim that presents itself favorably, such as a "good communication culture" statement on its recruiting site, may be untrue even when the source is level A. State in the source that the claim comes from a page the company itself owns, and do not set confidence to high (treat it as B-equivalent). Separate the fact (what the company states, a disclosed figure, whether a certification exists) from the evaluation (whether the culture is actually good) into different claims.
 
-4. **A primary source has limits too.** Even a level-A primary source has limits on representativeness and comparability (for example, the average annual salary in a securities report is a company-wide average and lacks a breakdown by job type). State these limits in the statement or in open_questions.
+4. **A primary source has limits too.** Even a level-A primary source has limits on representativeness and comparability (the average annual salary in a securities report is a company-wide average and lacks a breakdown by job type). State these limits in the statement or in open_questions.
 
-5. **Do not send personal information externally.** Do not use the user's personal information in any external transmission, including search queries, fetches, and external API calls. The canonical list of what this covers and its exceptions lives in the hub's `{HUB_SKILL_DIR}/references/pii-boundary.md`. This skill's job-change-company-researcher and job-change-posting-parser, and the auditor job-change-research-auditor, all hold WebSearch and WebFetch, so none of them receives paths or content under `profile.json` or `career-private/`. The only thing they may receive is the array of axis identifiers from `company_score_axes` whose `kind` is `quantitative` (the exception this canonical file allows). Areas of focus are given from the user's own instructions.
+5. **Do not send personal information externally.** Do not use the user's personal information in any external transmission, including search queries, fetches, and external API calls. The canonical list of what this covers and its exceptions is in the hub's `{HUB_SKILL_DIR}/references/pii-boundary.md`. This skill's job-change-company-researcher and job-change-posting-parser, and the auditor job-change-research-auditor, all hold WebSearch and WebFetch, so none of them receives paths or content under `profile.json`, `axis.json` or `career-private/`. They may receive only the array of axis identifiers from `{AXIS}`'s `company_score_axes` whose `kind` is `quantitative` (the hub reads `{AXIS}`, resolved by the rule in `{HUB_SKILL_DIR}/references/axis-format.md`, section "Location") (the exception this canonical file allows). Areas of focus are given from the user's own instructions.
 
-6. **Collect published figures, with sources, for the metrics of the instructed axes. Do not evaluate or rate.** Company research collects published figures for the quantitative metrics that correspond to the array of axis identifiers given in the instruction (for example `["compensation_level", "annual_holidays"]`), and writes `value`, `unit`, `source_url`, `grade`, and `as_of` into `company_metrics`. When no axes are specified, it collects `compensation_level`. A published figure is a fact about the company and does not depend on the user's profile (desired salary, skills, criteria for changing jobs), so this step needs no profile.json. Scoring, weighting, and the overall score depend on how much weight the user gives each axis, so the fit assessment (job-change-fit-assessment) computes them. The canonical definition of the nine quantitative candidate axes (axis key, metric, unit, direction, source) and the entry format live in `references/company-score-rubric.md`. Set `value` to `null` for an item that cannot be confirmed, and do not enter an estimate or an approximation.
+6. **Collect published figures, with sources, for the metrics of the instructed axes. Do not evaluate or rate.** Company research collects published figures for the quantitative metrics of the axis identifiers given in the instruction, such as `["compensation_level", "annual_holidays"]`. It writes `value`, `unit`, `source_url`, `grade`, and `as_of` into `company_metrics`. When no axes are specified, it collects `compensation_level`. A published figure is a fact about the company and does not depend on the user's profile (desired salary, skills, criteria for changing jobs). This step does not need profile.json or `{AXIS}`; the hub reads `{AXIS}` only to pick the quantitative axis IDs. Scoring, weighting, and the overall score depend on how much weight the user gives each axis, so the fit assessment (job-change-fit-assessment) computes them. The canonical definition of the nine quantitative candidate axes (axis key, metric, unit, direction, source) and the entry format are in `references/company-score-rubric.md`. Set `value` to `null` for an item that cannot be confirmed, and do not enter an estimate or an approximation.
 
 ## Out of scope
 
-- **Creating and managing the user's profile.** The hub (job-change-support) creates, updates, and validates profile.json. This skill does not take profile.json as input (per principle 5, profile.json is not given to a role with web access).
+- **Creating and managing the user's profile and axis.** `job-change-profile` and `job-change-axis` (through the hub, job-change-support) create, update, and validate profile.json and axis.json. This skill does not take either file as input (per principle 5, neither is given to a role with web access).
 - **Generating application documents, interview preparation, or exam preparation.** Downstream sub-skills (job-change-documents / job-change-interview-prep / job-change-exam-prep) use the company research result (company_research.json) as grounding; this skill does not run them.
-- **Detailed investigation of the selection exam type.** An overview of the selection process (its stages, whether a written test or aptitude test exists) is handled as topic=selection_process, but identifying the exam type (SPI3, 玉手箱 (Tamatebako), and so on) and preparing for it belongs to job-change-exam-prep (job-change-exam-scout).
-- **Investment advice or ranking companies as better or worse.** Financial information is organized as fact, but this skill makes no stock-trading judgment and no "good company / bad company" determination.
+- **Detailed investigation of the selection exam type.** An overview of the selection process (its stages, whether a written test or aptitude test exists) is handled as topic=selection_process. Identifying the exam type (SPI3, 玉手箱 (Tamatebako), and so on) and preparing for it belong to job-change-exam-prep (job-change-exam-scout).
+- **Investment advice or ranking companies as better or worse.** Financial information is organized as fact, but this skill does not make a stock-trading judgment or a "good company / bad company" determination.
 
 ## Resolving paths
 
@@ -57,15 +57,15 @@ python {HUB_SKILL_DIR}/scripts/jc_config.py --show
 
 | Exit code | State | Action |
 |---|---|---|
-| 0 | Configured | The `paths` in the output holds the absolute path for each piece of data. Proceed with the work. |
+| 0 | Configured | The `paths` in the output contains the absolute path for each piece of data. Proceed with the work. |
 | 1 | Configured but invalid | Show the user the `errors` in the output and do not proceed until it is fixed. |
 | 2 | Not configured | Start `job-change-support` with the Skill tool to have it create the configuration, resolve `{DATA_ROOT}`, then return here. |
 
-`{SKILL_DIR}` refers to this skill's own absolute path; `{HUB_SKILL_DIR}` refers to the absolute path of `job-change-support`, located alongside it. The canonical specification of the configuration file, including its lookup order, lives in `docs/configuration.md`.
+`{SKILL_DIR}` refers to this skill's own absolute path; `{HUB_SKILL_DIR}` refers to the absolute path of `job-change-support`, located alongside it. The canonical specification of the configuration file, including its lookup order, is in `docs/configuration.md`.
 
 ## Intermediate artifact: company_research.json
 
-All company research judgments are gathered into `company_research.json`. Its output location is `{DATA_ROOT}/companies/{company slug}/company_research.json`. The company slug is the identifier used as the per-company directory name; its canonical format lives in job-change-support's `references/company-index-format.md`. Step 0 resolves it by looking it up in `career-private/company_index.json`, and it is never re-derived afterward (example: a fictional company 架空クラウドワークス株式会社 → `kakuu-cloudworks`, `S_アクメクラウド`).
+All company research judgments are gathered into `company_research.json`. Its output location is `{DATA_ROOT}/companies/{company slug}/company_research.json`. The company slug is the identifier used as the per-company directory name; its canonical format is defined in job-change-support's `references/company-index-format.md`. Step 0 resolves it by looking it up in `career-private/company_index.json`, and it is never re-derived afterward (example: a fictional company 架空クラウドワークス株式会社 → `kakuu-cloudworks`, `S_アクメクラウド`).
 
 ```json
 {
@@ -84,7 +84,7 @@ All company research judgments are gathered into `company_research.json`. Its ou
 }
 ```
 
-There are eight kinds of `topic`: `philosophy`, `business`, `financials`, `compensation`, `benefits`, `workstyle`, `reputation`, and `selection_process`. `company_metrics` holds the measured figures for the quantitative candidate axes (principle 6, above). The canonical definition of the complete field specification, entry criteria, and validation rules lives in `references/company-research-format.md`; a worked example (a fictional company) lives in `assets/company_research_example.json`.
+There are eight kinds of `topic`: `philosophy`, `business`, `financials`, `compensation`, `benefits`, `workstyle`, `reputation`, and `selection_process`. `company_metrics` holds the measured figures for the quantitative candidate axes (principle 6, above). The canonical definition of the complete field specification, entry criteria, and validation rules is in `references/company-research-format.md`; a worked example (a fictional company) is in `assets/company_research_example.json`.
 
 ## Pipeline
 
@@ -104,7 +104,7 @@ Resolve the company slug in `career-private/company_index.json`. When the compan
 
 Job posting intake is the first stage of the per-company pipeline. The `job_posting.json` built here is read as input by the company research and fit assessment that follow. Do not skip intake and move ahead.
 
-There are four entry points. This skill selects an entry point according to what material the user can provide, and builds the same `job_posting.json` in every case. The specification lives in `references/job-posting-format.md`.
+There are four entry points. This skill selects an entry point according to what material the user can provide, and builds the same `job_posting.json` in every case. The specification is in `references/job-posting-format.md`.
 
 | Entry point | `source_type` | Handler |
 |---|---|---|
@@ -113,11 +113,11 @@ There are four entry points. This skill selects an entry point according to what
 | A PDF or image of the job posting | `file` | This skill |
 | Company name only (the job posting cannot be identified) | `dialogue` | This skill |
 
-**When the entry point is a job posting URL (job-change-posting-parser, sonnet).** Launch the job posting intake agent with the Agent tool, passing it the job posting URL and `{SKILL_DIR}` (the location of `references/job-posting-format.md`). The agent fetches the page with WebFetch and returns a JSON of `{company_name, aliases, job_posting}` (it writes no file). **Do not pass it the user's personal information (the items listed in principle 5)**, since posting-parser holds WebFetch. Use the returned `company_name` and `aliases` to resolve the slug through the same procedure as Step 0 (deriving and registering one exactly once, only when there is no match).
+**When the entry point is a job posting URL (job-change-posting-parser, sonnet).** Launch the job posting intake agent with the Agent tool, passing it the job posting URL and `{SKILL_DIR}` (the location of `references/job-posting-format.md`). The agent fetches the page with WebFetch and returns a JSON of `{company_name, aliases, job_posting}` (it does not write a file). **Do not pass it the user's personal information (the items listed in principle 5)**, since posting-parser holds WebFetch. Use the returned `company_name` and `aliases` to resolve the slug through the same procedure as Step 0 (deriving and registering one exactly once, only when there is no match).
 
-**When the entry point is the pasted text or a file of the job posting.** This skill assembles the `job_posting` object according to the specification. It reads the pasted text as the user gave it, and reads a file with Read. It sets `source_type` to `text` or `file`, and sets `source_url` to null. It uses the company name and slug already confirmed and resolved in Step 0. It fills the scope of change to duties and work location, and the cap on contract renewal, into `scope_of_change` (the entry criteria live in the section of the same name in `references/job-posting-format.md`).
+**When the entry point is the pasted text or a file of the job posting.** This skill assembles the `job_posting` object according to the specification. It reads the pasted text as the user gave it, and reads a file with Read. It sets `source_type` to `text` or `file`, and sets `source_url` to null. It uses the company name and slug already confirmed and resolved in Step 0. It fills `scope_of_change` with the scope of change to duties and work location and the cap on contract renewal. The entry criteria are in the section of the same name in `references/job-posting-format.md`.
 
-**When only the company name is available.** Confirm the applied position (`title`) through dialogue, and fill only the items among salary, location, employment type, and requirements that the user can answer. Set `source_type` to `dialogue` and `source_url` to null. Fill `scope_of_change` — the scope of change to duties and work location, and the cap on contract renewal — as far as the user can answer by looking at the job posting (the entry criteria live in the section of the same name in `references/job-posting-format.md`). Do not fill an item the user could not answer with an estimate; write what remains unconfirmed into `open_questions`. Accept a job posting with sparse content as it stands. Carry unconfirmed items forward as items to confirm in the company research and interview that follow.
+**When only the company name is available.** Confirm the applied position (`title`) through dialogue, and fill only the items among salary, location, employment type, and requirements that the user can answer. Set `source_type` to `dialogue` and `source_url` to null. Fill `scope_of_change` (the scope of change to duties and work location, and the cap on contract renewal) as far as the user can answer by looking at the job posting. The entry criteria are in the section of the same name in `references/job-posting-format.md`. Do not fill an item the user could not answer with an estimate; write what remains unconfirmed into `open_questions`. Accept a job posting with sparse content as it stands. Carry unconfirmed items forward as items to confirm in the company research and interview that follow.
 
 **Common follow-up.**
 
@@ -137,14 +137,14 @@ The imported job posting is used in the Step 1 collection to cross-check the sel
 Launch the company researcher agent (job-change-company-researcher) with the Agent tool and have it build company_research.json. Pass the following in the brief.
 
 - The company name (its formal name), areas of focus (if any), the output directory, and the location of the job posting (if any).
-- The array of axis identifiers for which to collect measured figures (for example `["compensation_level", "annual_holidays"]`). When the caller specifies no axes, pass `["compensation_level"]`. Do not pass the description of a qualitative axis the user defined, since it reflects the user's own situation and the fit assessment makes that judgment. When something related to a qualitative axis needs investigating, the user gives it as an area of focus in their own words.
+- The array of axis identifiers for which to collect measured figures (such as `["compensation_level", "annual_holidays"]`; the hub takes them from the `quantitative` axes of `{AXIS}`). When the caller specifies no axes, pass `["compensation_level"]`. Do not pass the description of a qualitative axis the user defined, since it reflects the user's own situation and the fit assessment makes that judgment. When something related to a qualitative axis needs investigating, the user gives it as an area of focus in their own words.
 - This skill's absolute path `{SKILL_DIR}` (the location of references and scripts).
 
-Normalize areas of focus into a weight-of-emphasis specification across the eight topics (philosophy, business, financials, compensation, benefits, work style, reputation, selection) before passing them. Rephrase personal information from the user's free-form description as a weight-of-emphasis specification for the relevant topic (principle 5; the canonical definition lives in `{HUB_SKILL_DIR}/references/pii-boundary.md`), and pass only that specification in the brief.
+Normalize areas of focus into a weight-of-emphasis specification across the eight topics (philosophy, business, financials, compensation, benefits, work style, reputation, selection) before passing them. Rephrase personal information from the user's free-form description as a weight-of-emphasis specification for the relevant topic (principle 5; the canonical definition is in `{HUB_SKILL_DIR}/references/pii-boundary.md`), and pass only that specification in the brief.
 
-**Do not pass profile.json** (principle 5; the researcher holds WebSearch and WebFetch). When job_posting.json was built in Step 0.5, pass its location in the brief and have the agent use it to cross-check the selection process and the desired candidate profile. The agent treats `references/evidence-grading.md`, `references/company-research-format.md`, `references/source-catalog.md`, `references/philosophy-analysis.md`, `references/compensation-benefits.md`, and `references/company-score-rubric.md` as canonical, and follows them to gather the collected claims into the claims array. For figures such as average annual salary, annual holidays, average monthly overtime, paid-leave-taking rate, and turnover rate, store them in a prose claim and, structured, into `company_metrics` (with the unit, source URL, and level noted together; set value to null when it cannot be confirmed).
+**Do not pass profile.json or axis.json** (principle 5; the researcher holds WebSearch and WebFetch). When job_posting.json was built in Step 0.5, pass its location in the brief and have the agent use it to cross-check the selection process and the desired candidate profile. The agent treats `references/evidence-grading.md`, `references/company-research-format.md`, `references/source-catalog.md`, `references/philosophy-analysis.md`, `references/compensation-benefits.md`, and `references/company-score-rubric.md` as canonical, and follows them to gather the collected claims into the claims array. Store figures such as average annual salary, annual holidays, average monthly overtime, paid-leave-taking rate, and turnover rate both in a prose claim and in structured form in `company_metrics`. Note the unit, source URL, and level with each figure, and set value to null when it cannot be confirmed.
 
-Prioritize collecting the metrics for the axes given in the brief, and write the measured figure and its source into each item of `company_metrics` (principle 6; collecting a fact about the company that needs no profile). Attach no score and no rating. For anything given as an area of focus, write into claims the facts and sources that could be confirmed. Have the agent run `validate_company_research.py` itself and get a PASS before returning (a missing or malformed `company_metrics` is an ERROR). This is the extent of this agent's responsibility.
+Give priority to collecting the metrics for the axes given in the brief, and write the measured figure and its source into each item of `company_metrics` (principle 6: a fact about the company, which does not depend on the profile). Attach no score and no rating. For anything given as an area of focus, write into claims the facts and sources that could be confirmed. Have the agent run `validate_company_research.py` itself and get a PASS before returning (a missing or malformed `company_metrics` is an ERROR). This is the extent of this agent's responsibility.
 
 ### Step 2: Mechanical validation
 
@@ -158,16 +158,16 @@ Send it back to Step 1 when there is even one ERROR. Do not proceed until it rea
 
 ### Step 3: Independent audit (job-change-research-auditor, opus)
 
-Launch the company research auditor agent (job-change-research-auditor) in a new context that withholds the researcher's rationale. Pass the brief the absolute path of company_research.json, the array of axis identifiers whose collection was instructed in Step 1, and `{SKILL_DIR}`.
+Launch the research auditor agent (job-change-research-auditor) in a new context that withholds the researcher's rationale. Pass the brief the absolute path of company_research.json, the array of axis identifiers whose collection was instructed in Step 1, and `{SKILL_DIR}`.
 
 The audit does the following. The verdict returns as `BLOCK` / `CONCERNS` / `CLEAN`.
 
-- Rerunning `validate_company_research.py` (recording the result as `validation_rerun` — PASS when there are zero ERRORs, FAIL otherwise). When `validation_rerun` is FAIL, the verdict is unconditionally BLOCK.
+- Rerunning `validate_company_research.py` (recording the result as `validation_rerun`: PASS when there are zero ERRORs, FAIL otherwise). When `validation_rerun` is FAIL, the verdict is unconditionally BLOCK.
 - Stratified sampling of claims, confirming that each source URL exists and that its quote matches the original text (the sample must always include level-A financial claims and claims with confidence=high).
 - The validity of the assigned levels (whether a review-site post has been upgraded to A or B, or a primary source downgraded to C).
 - Whether a fact is asserted on level C or D alone, and whether confidence high has been given to a claim in which the company presents itself favorably.
 - Coverage of the seven required topics (`philosophy`, `business`, `financials`, `compensation`, `benefits`, `workstyle`, `reputation`), and how well `selection_process` is filled in (zero items counts as a WARN-level issue, and collecting it is recommended). Do not treat a missing `selection_process` as critical.
-- The validity of `company_metrics` (against the standard in `references/company-score-rubric.md`). Check whether each measured figure matches what its source states, whether the assigned evidence level is appropriate, and whether the metrics for the instructed axes have been collected completely, with nothing missing and nothing extra.
+- The validity of `company_metrics` (against the standard in `references/company-score-rubric.md`). Check whether each measured figure matches what its source states, whether the assigned evidence level is appropriate, and whether the metrics for the instructed axes have been collected, with nothing missing and nothing extra.
 
 Send it back to Step 1 when the verdict is `BLOCK`, or when there is a finding with severity=重大. When sending it back, pass the researcher the audit's findings (target, evidence, fix) as they are.
 
@@ -184,11 +184,18 @@ At delivery, update `artifacts.company_research` in `companies/{company slug}/_m
 
 Do not change the company slug prefix (the directory name). Do not write a company's score or rating into the classification or listing fields of `career-private/company_index.json`, because the fit assessment is what computes the score.
 
-Summarize, in the final message, the key points of the measured figures and sources for each axis, the key points of the main topics, the validation result (the validate PASS, the audit verdict), and any remaining open items (a point not resolved after two rounds of sending back). Both the report and the final message state their conclusion first. Include no empty section, no repeated content, and no boilerplate preamble.
+Summarize the following in the final message.
+
+- The key points of the measured figures and sources for each axis
+- The key points of the main topics
+- The validation result (the validate PASS and the audit verdict)
+- Any remaining open items (a point not resolved after two rounds of sending back)
+
+Both the report and the final message state their conclusion first. Leave out empty sections, repeated content, and boilerplate preambles.
 
 ## Updating _manifest.json
 
-`companies/{company slug}/_manifest.json` is a record holding the last-updated date of each per-company artifact and the last-researched date of each company_research topic. This skill writes this record; determining whether re-research is needed is the hub's responsibility, and this skill makes no such determination.
+`companies/{company slug}/_manifest.json` is a record holding the last-updated date of each per-company artifact and the last-researched date of each company_research topic. This skill writes this record; determining whether re-research is needed is the hub's responsibility, and this skill does not make that determination.
 
 The structure is as follows. Use the existing company_research topic names (`philosophy`, `business`, `financials`, `compensation`, `benefits`, `workstyle`, `reputation`, `selection_process`) as topic names.
 
@@ -209,7 +216,7 @@ The structure is as follows. Use the existing company_research topic names (`phi
 
 - Create `_manifest.json` if it does not exist. When it exists, update only the relevant part and preserve the record of other artifacts (such as `fit_assessment`).
 - Update `artifacts.job_posting` when job_posting.json was built in Step 0.5.
-- At Step 4 delivery, update `artifacts.company_research.updated_at` and `topics.<topic name>.last_researched` for each topic that was researched. At the same time, write `audit_verdict` (the Step 3 verdict, one of `CLEAN`, `CONCERNS`, or `BLOCK`) and `audited_at` (the date it was audited). When it was sent back and re-audited, overwrite these with the result of the last audit.
+- At Step 4 delivery, update `artifacts.company_research.updated_at` and `topics.<topic name>.last_researched` for each topic that was researched. In the same update, also write `audit_verdict` (the Step 3 verdict, one of `CLEAN`, `CONCERNS`, or `BLOCK`) and `audited_at` (the date it was audited). When it was sent back and re-audited, overwrite these with the result of the last audit.
 
 ### Topic-scoped incremental re-research
 
@@ -232,11 +239,11 @@ The pipeline has two gates.
 | The Step 2 mechanical validation gate | Do not proceed to Step 3 or any later step unless `validate_company_research.py` reaches a PASS (zero ERRORs). Send an ERROR back to Step 1. |
 | The Step 3 independent audit gate | Send it back to Step 1 when `job-change-research-auditor`'s verdict is `BLOCK`, or when there is a finding with severity=重大. |
 
-Send a given company's research back at most twice. Record a finding not resolved after two rounds into company-research-report.md's open items, and deliver only after leaving the judgment to the user. Resolve a mechanical-validation ERROR before delivery regardless of the send-back limit; delivery is allowed, with the item stated explicitly as an open item, only when what remains unresolved is solely an audit finding. When sending back, pass the researcher the mechanical validation's ERROR content or the audit's findings as they are, and run it through Step 2 again after the fix.
+Send a company's research back at most twice. Record a finding not resolved after two rounds into company-research-report.md's open items, and deliver only after leaving the judgment to the user. Resolve a mechanical-validation ERROR before delivery regardless of the send-back limit; delivery is allowed, with the item stated explicitly as an open item, only when what remains unresolved is solely an audit finding. When sending back, pass the researcher the mechanical validation's ERROR content or the audit's findings as they are, and run it through Step 2 again after the fix.
 
 ## Executing the role (by harness)
 
-This skill's pipeline is written to delegate the work to specialized roles. The content of each role lives in `references/roles/`, which is canonical.
+This skill's pipeline is written to delegate the work to specialized roles. The content of each role is in `references/roles/`, which is canonical.
 
 | Agent name | Canonical role prompt |
 |---|---|
@@ -244,7 +251,7 @@ This skill's pipeline is written to delegate the work to specialized roles. The 
 | `job-change-research-auditor` | `{SKILL_DIR}/references/roles/research-auditor.md` |
 | `job-change-posting-parser` | `{SKILL_DIR}/references/roles/posting-parser.md` |
 
-The canonical definition of the execution procedure by harness, how to decide how many to launch, and the reason for separating drafting from auditing lives in the hub's `{HUB_SKILL_DIR}/references/role-execution.md`.
+The canonical definition of the execution procedure by harness, how to decide how many to launch, and the reason for separating drafting from auditing is in the hub's `{HUB_SKILL_DIR}/references/role-execution.md`.
 
 ## Agent model policy
 
@@ -252,7 +259,7 @@ The canonical definition of the execution procedure by harness, how to decide ho
 |---|---|---|
 | `job-change-company-researcher` | opus | Collecting primary and secondary-or-lower information → building company_research.json with sources and assigned levels |
 | `job-change-research-auditor` | opus | Auditing source existence, quote agreement, level validity, and topic coverage, in an independent context |
-| `job-change-posting-parser` | sonnet | Fetching the job posting URL → assembling an object conforming to the job_posting.json specification (writes no file) |
+| `job-change-posting-parser` | sonnet | Fetching the job posting URL → assembling an object conforming to the job_posting.json specification (does not write a file) |
 
 This policy is fixed in each agent's frontmatter, and `model` is never overridden at launch.
 
@@ -267,7 +274,7 @@ python {SKILL_DIR}/scripts/validate_job_posting.py {job_posting.json}
 python {SKILL_DIR}/scripts/validate_job_posting.py {job_posting.json} --json
 ```
 
-`--json` outputs the result in JSON form (`status`, `error_count`, `warning_count`, `errors`, `warnings`). A worked example lives in `assets/company_research_example.json`; the canonical field specification and validation rules live in `references/company-research-format.md` (company research) and `references/job-posting-format.md` (job posting intake). Run the unit tests with the following.
+`--json` outputs the result in JSON form (`status`, `error_count`, `warning_count`, `errors`, `warnings`). A worked example is in `assets/company_research_example.json`. The canonical field specification and validation rules are in `references/company-research-format.md` (company research) and `references/job-posting-format.md` (job posting intake). Run the unit tests with the following.
 
 ```bash
 cd {SKILL_DIR} && python -m unittest discover -s scripts/tests

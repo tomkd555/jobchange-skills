@@ -6,8 +6,8 @@
 This is the canonical definition of the grounding and limits behind job-change-profile's design decisions.
 SKILL.md's principles and both agents' (writer / auditor) audit perspectives reference this file. Evidence level is
 written on a 4-step scale, A through D (A = primary/official, B = a reliable secondary source, C = word-of-mouth or
-an aggregator site, D = a personal blog, hearsay, or unconfirmed), and a piece of academic research carries a DOI.
-The canonical definition lives in `job-change-company-research/references/evidence-grading.md`, and a peer-reviewed
+an aggregator site, D = a personal blog, hearsay, or unconfirmed). A piece of academic research also has a DOI.
+The canonical definition is in `job-change-company-research/references/evidence-grading.md`, and a peer-reviewed
 academic study falls under Level A.
 
 ## What the hiring side looks at in document screening
@@ -25,19 +25,19 @@ readability and freedom from typos also weigh on whether it passes (confidence: 
   [E15].
 
 Implication for the design: profile.json holds career history, achievements, and quantified values at the job
-level, at a granularity that lets the application-documents sub-skill reconstruct relevance for each application.
-Because relevance itself changes with each application, it is never held fixed in profile.json — this avoids an
-old mapping lingering in the data.
+level, at a level of detail that lets the application-documents sub-skill reconstruct relevance for each
+application. Because relevance itself changes with each application, it is never held fixed in profile.json, so an
+old mapping never lingers in the data.
 
-**Evidence that lowers confidence (a limit)**: the sheer "volume" of a career history predicts an outcome very
-little on its own. The corrected correlation between pre-hire work experience's amount, duration, and type and job
+**Evidence that lowers confidence (a limit)**: the sheer "volume" of a career history predicts an outcome only
+weakly on its own. The corrected correlation between pre-hire work experience's amount, duration, and type and job
 performance stays at .06 [E14]. Writing a career history in detail does not by itself guarantee a favorable
 evaluation.
 
 ## Skill classification
 
 The rough division into "technical / business / language / certification" exists in practice. Public
-classification systems, by contrast, separate specialized skills from transferable skills and treat
+classification systems, however, separate specialized skills from transferable skills and treat
 transferability as a continuous degree that depends on context. A skill inventory does not function from simply
 applying a generic taxonomy as it stands (confidence: very likely, 80%-90%).
 
@@ -47,7 +47,7 @@ applying a generic taxonomy as it stands (confidence: very likely, 80%-90%).
   out work that can be carried from one industry or occupation to another," made up of 9 elements: 5 in how one
   approaches tasks (対課題) and 4 in how one relates to people (対人) [E44].
 - ESCO (European Skills, Competences, Qualifications and Occupations) classifies a skill's reusability into 4
-  stages — transversal, cross-sectoral, sector-specific, and occupation-specific. ESCO also states explicitly that
+  stages: transversal, cross-sectoral, sector-specific, and occupation-specific. ESCO also states explicitly that
   an abstract, cross-cutting skill becomes usable only once placed in an occupation's context [E47].
 
 Implication for the design: profile.json takes technical / business / languages / certifications as its entry
@@ -55,32 +55,10 @@ point, and holds the 9 elements of portable skills (対課題 (task-facing) and 
 (`skills.portable`). These two layers give a structure that separates specialized skills from transferable skills
 in the inventory. Mapping to a requirement is done by the application-documents sub-skill at application time.
 
-**Evidence that lowers confidence (a limit)**: transferability is context-dependent and dynamic, and an
+**Evidence that lowers confidence (a limit)**: transferability is context-dependent and changes over time, and an
 occupation-specific model is recommended over a generic one [E53]. No quantitative causal evidence
 could be identified showing that a skill-classification framework predicts success at inventory-taking or at
 changing jobs (an evidence gap).
-
-## The grounding and limits of must/want
-
-Separating must from want carries the same structure as the requirements-engineering practice MoSCoW, and is a
-practical standard. Separating the two alone, however, does not by itself improve a decision. It is reasonable to
-keep must-have conditions to a small number while treating them as open to reassessment (confidence: likely,
-65%-80%).
-
-- A major Japanese agency presents dividing desired conditions into MUST/WANT and prioritizing them as how to build
-  a job-change axis [E54], and holds narrowing the axes to about 3 as the ideal [E55]. A job-search textbook also
-  narrows must-haves to a small number [E56]. Requirements engineering's MoSCoW (Must/Should/Could/Won't) carries
-  the same structure [E60].
-
-Implication for the design: `job_change_axis` keeps the separation between conditions that cannot be given up and
-conditions that are merely desirable, while narrowing must-have conditions to about 3 items and keeping a ranking
-and a reassessment time in `priority_note`. This holds back an arbitrary bias toward MUST and a fixed set of axes.
-
-**Evidence that lowers confidence (a limit)**: MoSCoW lacks an objective method for ranking requirements against
-each other, and which item becomes MUST is left to subjective judgment [E61]. A meta-analysis of choice overload
-found the average effect size for the benefit of narrowing choices close to zero [E69]. A preference is constructed
-over the course of elicitation and shifts over time [E71][E66]. No level-A or level-B empirical study verifying the
-effect of a must/want split or a decision matrix has been obtained (an evidence gap).
 
 ## The real picture of ATS and support for hiring abroad
 
@@ -96,7 +74,7 @@ needs (excluding gender, age, and photo). Excessive keyword optimization is unne
   or salary [E85]. An achievement is shown as action verb + figure + result [E86].
 
 Implication for the design: the current career_history unit (each job's company, period, role, and achievements)
-can be mapped to standard headings. profile.json holds no field for name, age, gender, or photo (these are items an
+can be mapped to standard headings. profile.json does not hold a field for name, age, gender, or photo (these are items an
 English résumé never states, and this also agrees with the policy of holding a minimum of personal information). No
 ATS-keyword field or keyword-optimization field is provided.
 
@@ -104,20 +82,20 @@ ATS-keyword field or keyword-optimization field is provided.
 traces to 2012 corporate marketing with no supporting basis [E77]. A survey of 25 recruiters found 92% said their
 own company's ATS does not auto-reject by format or content [E79]. Keyword stuffing is detected and penalized by a
 modern ATS. **The decision not to provide a keyword-optimization field therefore rests on refuting the myth.**
-That said, the effect size of structuring and organizing a document has no grounding beyond vendor claims, and
+However, the effect size of structuring and organizing a document has no grounding beyond vendor claims, and
 controlled studies remain scarce [E79].
 
 ## The consequences of falsifying a career history
 
-Managing accuracy, comprehensiveness, and currency prevents the typical failure. The consequences of falsifying a
+Managing accuracy, completeness, and currency prevents the typical failure. The consequences of falsifying a
 career history vary with severity, relevance to the job, and time elapsed. A falsehood, however, is exposed with
 high probability in practice, and the consequences are severe (confidence: likely, 65%-80%).
 
-- In Japan, for a disciplinary dismissal on grounds of falsifying a career history to hold, both requirements must
-  be met: that the company would not have hired the person had it known beforehand, and that the dismissal has
-  objective reasonableness [E92]. Court cases exist where a dismissal was held invalid on grounds such as no
-  disruption to the work, an old criminal record, or a minor falsehood — not every falsehood is fatal [E94]. A
-  falsehood that amounts to document forgery, fraud for financial gain, or falsifying a qualification is subject to
+- In Japan, a disciplinary dismissal on grounds of falsifying a career history holds only when both requirements
+  are met. The company would not have hired the person had it known beforehand, and the dismissal has objective
+  reasonableness [E92]. Court cases exist where a dismissal was held invalid on grounds such as no disruption to
+  the work, an old criminal record, or a minor falsehood [E94], so a falsehood does not always justify
+  dismissal. A falsehood that amounts to document forgery, fraud for financial gain, or falsifying a qualification is subject to
   criminal punishment [E101]. A falsehood is exposed by objective facts through cross-checking against social
   insurance, withholding tax, and a reference check [E102].
 - A U.S. survey found that among people hired on a false statement, 41% had their offer withdrawn and 18% were
@@ -134,30 +112,28 @@ The following two figures are never used alone to assert a fact, because they co
 because conflicting surveys exist.
 
 - **A 37.3% pass rate for document screening** [E7]: Mynavi states the pass rate for document screening in
-  mid-career hiring as 37.3%, but this figure is limited to people who succeeded in changing jobs, and it conflicts
+  mid-career hiring as 37.3%. This figure is limited to people who succeeded in changing jobs, and it conflicts
   with the general figure from independent outlets (20%-30%). As a representative figure for the pass rate in
   general, this is disputed.
 - **An 81.4% detection rate for career-history falsification** [E95]: StandOutCV states that 81.4% is detected,
-  while another survey states that about 79% goes undetected — the level is disputed. No settled representative
+  while another survey states that about 79% goes undetected. The level is disputed. No settled representative
   figure for the detection rate exists.
 
 ## Limits of the research and evidence gaps (this skill's premises)
 
 - No peer-reviewed field experiment isolating the effect of quantification alone has been obtained (see
   `quantification-guide.md`).
-- No level-A or level-B empirical study verifying the effect of a must/want split and a decision matrix has been
-  obtained.
+- The grounding and limits of a must/want split are in `job-change-axis`'s `references/axis-methods.md`.
 - For Japanese mid-career hiring, a Level-A (MHLW survey) primary-source figure for the most-weighed items could not
   be obtained from that survey's own text; this skill relies instead on doda's and Geekly's Level-B/C surveys
   (single-source).
 - The effect size of an employment gap on a selection outcome could not be obtained from the source text (see
   `elicitation-guide.md`).
 
-Given these gaps, this skill's design treats as settled "the core backed by strong evidence" — structured
+Given these gaps, this skill's design treats as settled "the core backed by strong evidence": structured
 elicitation, elicitation itself never manufacturing a fact (the separation of writer and auditor), avoiding the
 typical failures, and separating specialized skills from transferable skills. It treats "a point whose effect size
-is small" — the effect of quantification itself, and improved decision-making from a must/want split — with a
-reservation attached.
+is small" (the effect of quantification itself) with a reservation attached.
 
 ## Sources
 
@@ -175,14 +151,6 @@ reservation attached.
 - [E44] 厚生労働省. ポータブルスキル見える化ツール（職業能力診断ツール）. 2021. Level A. https://www.mhlw.go.jp/stf/newpage_23112.html
 - [E47] European Commission (ESCO). Skill contextualisation — ESCOpedia. 2025. Level A. https://esco.ec.europa.eu/en/about-esco/escopedia/escopedia/skill-contextualisation
 - [E53] Workitect. The One-Size-Fits-All Competency Model. 2023. Level C. https://workitect.com/the-one-size-fits-all-competency-model/
-- [E54] リクルートエージェント. 転職の軸とは？転職の軸の作り方や譲れない条件一覧. 2023-12-22. Level C. https://www.r-agent.com/guide/start/21312/
-- [E55] JAC Recruitment. 転職先の選び方｜キャリアを実現する業界・企業選びのポイントと具体例. 2024-12-02. Level C. https://www.jac-recruitment.jp/market/knowhow/preparation/points-to-select/
-- [E56] Saylor Academy (open textbook). Personal Decision Criteria When Considering Possible Job Targets. 2020. Level B. https://saylordotorg.github.io/text_six-steps-to-job-search-success/s07-03-personal-decision-criteria-whe.html
-- [E60] ProductPlan. MoSCoW Prioritization | Glossary. 2024. Level B. https://www.productplan.com/glossary/moscow-prioritization/
-- [E61] ProductPlan. MoSCoW Prioritization | Glossary. 2024. Level B. https://www.productplan.com/glossary/moscow-prioritization/
-- [E66] Vero Recruitment. Shifting Priorities. 2024. Level C. https://verorecruitment.com/blog/shifting-priorities-career-advancement-tips
-- [E69] Journal of Consumer Research. Can There Ever Be Too Many Options? A Meta-Analytic Review of Choice Overload. 2010. Level A. DOI:10.1086/651235. https://doi.org/10.1086/651235
-- [E71] American Psychologist. The construction of preference. 1995. Level A. DOI:10.1037/0003-066x.50.5.364. https://doi.org/10.1037/0003-066x.50.5.364
 - [E72] Resume Optimizer Pro. How Resume Parsers Actually Work: Inside Workday, Greenhouse, Lever, iCIMS, Taleo. 2026-04-22. Level C. https://resumeoptimizerpro.com/blog/how-resume-parsers-actually-work
 - [E73] Resume Optimizer Pro. How Resume Parsers Actually Work. 2026-04-22. Level C. https://resumeoptimizerpro.com/blog/how-resume-parsers-actually-work
 - [E77] UnchartedCareer. The '75% of resumes are auto-rejected' myth, traced to its source. 2026-07-04. Level C. https://unchartedcareer.com/blog/the-75-of-resumes-are-auto-rejected-myth-traced-to-its-source

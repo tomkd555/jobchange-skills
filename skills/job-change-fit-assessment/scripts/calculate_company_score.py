@@ -1,7 +1,7 @@
 """job-change-fit-assessment: 企業スコア（0〜100点）の機械的な（非LLM）算出ツール。
 
 標準ライブラリのみで、企業研究（company_research.json）の実測値（company_metrics）と、
-利用者プロファイル（profile.json）の採点軸・重み・基準（company_score_axes）から、軸ごとの
+転職の軸（axis.json）の採点軸・重み・基準（company_score_axes）から、軸ごとの
 点数・総合点・判定できた軸の重みの合計（coverage）・暫定フラグ（provisional）を機械的に
 算出し、fit_assessment.json の company_score オブジェクトを組み立てる。定性軸の判定は
 求人票と企業研究の事実を読んで決まるため機械では決められず、fit-assessor が判定した結果を
@@ -12,10 +12,11 @@ references/company-score-rubric.md、出力形式の原本は references/fit-for
 官公庁ドメイン（mhlw.go.jp / stat.go.jp / e-stat.go.jp 等）の一次統計から裏取りして設定し、
 本文書の外へ数値を重複して書かない。
 
-総合点は利用者が選んだ軸と重みに依存するため、profile.json を読める本スキルが担う。
+総合点は利用者が選んだ軸と重みに依存するため、axis.json を読める本スキルが担う。
+--axis は、軸を内包する 1.x/2.0 の profile.json も受け付ける（--profile は --axis の別名）。
 
 CLI:
-    python calculate_company_score.py --research PATH --profile PATH \
+    python calculate_company_score.py --research PATH --axis PATH \
         [--qualitative-json PATH] [--out PATH] [--json]
 
 終了コード: 0 = 正常、2 = 入力の矛盾（採点軸の形式違反・判定条件に無い点数・入力の読み込み失敗）。
@@ -172,7 +173,11 @@ def declared_axes(profile: Any) -> list[dict[str, Any]]:
     申告が無い（フィールドの欠落・空配列）場合は空リストを返す。
     """
     if not isinstance(profile, dict):
-        raise CalcError("profile.json のルートがオブジェクトでない")
+        raise CalcError("--axis の文書のルートがオブジェクトでない")
+    if profile.get("schema_version") == "3.0":
+        raise CalcError(
+            "schema_version 3.0 の profile.json は職歴だけを持つ。--axis には axis.json を指定する"
+        )
     declared = profile.get("company_score_axes")
     if declared is None:
         return []
@@ -421,7 +426,13 @@ def main(argv: list[str] | None = None) -> int:
         description="job-change-fit-assessment 企業スコア（0〜100点）の算出ツール"
     )
     parser.add_argument("--research", required=True, help="company_research.json のパス")
-    parser.add_argument("--profile", required=True, help="profile.json のパス")
+    parser.add_argument(
+        "--axis",
+        "--profile",
+        dest="axis",
+        required=True,
+        help="axis.json のパス（軸を内包する 1.x/2.0 の profile.json も受け付ける）",
+    )
     parser.add_argument(
         "--qualitative-json",
         default=None,
@@ -433,9 +444,9 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         research = _load_json(args.research)
-        profile = _load_json(args.profile)
+        profile = _load_json(args.axis)
         qualitative = _load_json(args.qualitative_json) if args.qualitative_json else None
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError) as exc:
         print(f"[ERROR] 入力を読み込めない（{exc}）", file=sys.stderr)
         return 2
 

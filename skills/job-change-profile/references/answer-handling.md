@@ -3,14 +3,14 @@
 This is the canonical definition of how job-change-profile's elicitation receives a user's answer, and how far it
 may go in shaping it. SKILL.md's Principles 2 and 3, question-bank.md's question design, and both agents (writer
 and auditor) reference this file. The grounding for recall cues and the elicitation notes' recording format lives
-in `elicitation-guide.md`, and the patterns for quantification live in `quantification-guide.md`; neither is
+in `elicitation-guide.md`, and the patterns for quantification are in `quantification-guide.md`; neither is
 duplicated here.
 
 ## A statement is a fact
 
 The career history, role, achievement, figure, and period a user states are recorded as fact, as stated.
 Elicitation never places a question that doubts them. Elicitation may perform only the three operations described
-below — making a statement concrete, supporting quantification, and rewording into language the job market
+below: making a statement concrete, supporting quantification, and rewording into language the job market
 accepts.
 
 The following types of question are never placed, whatever their content.
@@ -38,7 +38,7 @@ treated as a conflict.
 ### Making a statement concrete
 
 Of the elements "what, when, where, at what scale, and how something changed," ask about one missing element at a
-time. Never place an open-ended question such as "could you tell me more" — name the missing element explicitly
+time. Never place an open-ended question such as "could you tell me more." Name the missing element explicitly
 when asking. Leave an element with no answer empty; elicitation never fills it in.
 
 | Missing element | Example question (polite form) |
@@ -52,11 +52,11 @@ when asking. Leave an element with no answer empty; elicitation never fills it i
 | Period/budget | 「その取り組みはどれくらいの期間でしたか。予算の規模は分かりますか」 (About how long did that effort take? Do you know the scale of the budget?) |
 | The user's own share | 「そのプロジェクトのうち、ご自身が受け持った部分はどこでしたか」 (Of that project, which part did you personally handle?) |
 
-When an answer is phrased with a subject other than the user themselves — "we," "the team," "it was done" — ask
-once about the user's own share. This question separates the scope of the user's involvement. When the answer is "I
+When an answer is phrased with a subject other than the user themselves (such as "we," "the team," or "it was
+done"), ask once about the user's own share. This question separates the scope of the user's involvement. When the answer is "I
 did the whole thing myself," record it as stated.
 
-Making a statement concrete only breaks down what the user said into a granularity the downstream processes
+Making a statement concrete only breaks down what the user said into a level of detail the downstream processes
 (application documents, job interview preparation) can use.
 
 ### Supporting quantification
@@ -79,15 +79,12 @@ When no figure is available, keep the question to the wording below, and never a
 | Item | Wording |
 |---|---|
 | Quantification question | その成果は数字で表せそうですか。難しければ、前後の変化や、覚えている活動量（1日の件数など）からの概算でも構いません。 (Can that result be expressed as a number? If that is difficult, an approximation from the change before and after, or from an activity volume you recall, such as a daily count, is fine too.) |
-| Annual salary question | 年収は、直近1年の額面（賞与を含み、残業代を含む）でお答えください。別の数え方であれば、その旨を添えてください。 (For annual salary, please answer with the gross figure for the most recent year, including bonus and overtime pay. If you count it a different way, please note that as well.) |
 
-Annual salary changes in value depending on whether it is gross or net, whether it includes bonus or overtime pay,
-and whether it is a projection or an actual figure. Ask with the definition fixed on the question's side to one
-meaning, and when the user answers by a different reckoning, add that reckoning to the notes. Elicitation never
-converts it itself.
+The settled wording for the annual salary question, and the fixed meaning it asks for, are in
+`job-change-axis`'s `references/sections/salary.md`.
 
-A value elicitation places by calculation (a qualification's year obtained, back-calculated from the graduation
-year, for example) is marked as distinct from the user's own statement, as an estimate (`elicitation-guide.md`).
+A value elicitation places by calculation (such as a qualification's year obtained, back-calculated from the
+graduation year) is marked as distinct from the user's own statement, as an estimate (`elicitation-guide.md`).
 
 ### Rewording into language the job market accepts
 
@@ -125,10 +122,10 @@ involvement the statement lacks through phrasing.
 | Took on one area at their own discretion | 主担当、〜を一貫して担当、専任 (principal owner, consistently in charge of 〜, sole owner) | 統括、責任者 (oversaw, responsible for) |
 | Assigned work to several people and managed progress | リード、進行管理、取りまとめ (led, managed progress of, coordinated) | 責任者（決裁権の申告が無い場合）(responsible for, with no statement of decision-making authority) |
 | Was the starting point from planning through execution | 企画、立ち上げ、推進 (planned, launched, drove) | 統括（他の担当者の管理を申告していない場合）(oversaw, when not stating management of other staff) |
-| Held decision-making, personnel, or budget authority | 責任者、統括、マネジメント (responsible for, oversaw, managed) | — |
+| Held decision-making, personnel, or budget authority | 責任者、統括、マネジメント (responsible for, oversaw, managed) | None |
 
-The same word carries a different weight depending on the company or occupation (for example, 「リード」 (lead)
-points to the center of hands-on work at a small team, and to a title at a large company). Which rung a user's own word falls on
+The same word carries a different weight depending on the company or occupation. For example, 「リード」 (lead) points to the
+center of hands-on work at a small team, and to a title at a large company. Which rung a user's own word falls on
 is decided by asking about the scope of involvement, never by the sound of the word.
 
 ## Verb and noun replacement table
@@ -162,7 +159,7 @@ before making the replacement.
 
 ## Handling each answer format
 
-The user decides the form of the answer. Elicitation never corrects how the user answers — whether the user
+The user decides the form of the answer. Elicitation never corrects how the user answers, whether the user
 answers a choice-format question in free text, or answers several questions at once.
 
 | Answer format | Response |
@@ -174,19 +171,19 @@ answers a choice-format question in free text, or answers several questions at o
 | "I don't remember" | Record it as `本人が不明とした` (the user called it unknown). Ask once whether a range or a rough time can be given, and leave it empty if none comes, without asking again |
 | Answering with a range or an approximation | Record it as stated. Never round it to a single value |
 | "I'd rather not say" | Record it as `未回答（本人の意向）` (unanswered, at the user's own wish). Never ask the reason, and never return to that item. This handling is kept especially for annual salary, reasons for leaving, and the circumstances of an employment gap |
-| "That's not important" | Follow the user's own judgment and do not deep-dive. When said about a work-character preference or a condition, this is itself the answer, and is recorded as a desired level of `not_required`. This holds except for profile.json's required items (current role, company name, tenure period, job title, reasons for changing jobs); for those alone, state once that the item is required and what a downstream process cannot do without it |
+| "That's not important" | Follow the user's own judgment and do not ask about it in detail. When said about a work-character preference or a condition, this is itself the answer, and is recorded as a desired level of `not_required`. This holds except for the required items (in profile.json: current role, company name, tenure period, job title; in axis.json: reasons for changing jobs); for those alone, state once that the item is required and what a downstream process cannot do without it |
 | Asking back what a question is for | Answer in one sentence which downstream process uses it and for what |
 | An answer outside the choices | Take it as stated through Other. Never round it to the nearest choice |
 | Asking to change the order of questions | Follow it. Because the elicitation notes' headings and item names allow the answers to be matched up regardless of order, the order does not affect the result |
 
 ## A career history with an atypical shape
 
-None of the following career histories are treated as unusual; each is recorded as the table below states. An
+Each of the following career histories is an ordinary case and is recorded as the table below states. An
 item in the "Never ask" column is recorded only when the user brings it up unprompted.
 
 | Type of career history | How to record it | Never ask |
 |---|---|---|
-| Temporary staffing, SES (system engineering service), client-site assignment | `company` is the employer (the staffing agency or the employing company), `assignment` is the client site or place of dispatch, `employment_type` is 「派遣」「正社員（客先常駐）」(temporary staffing, permanent employee — client-site assignment), and the like | When the user would rather not name the client site, a description such as 「大手製造業」 (a major manufacturer) is fine |
+| Temporary staffing, SES (system engineering service), client-site assignment | `company` is the employer (the staffing agency or the employing company), `assignment` is the client site or place of dispatch, `employment_type` is 「派遣」「正社員（客先常駐）」(temporary staffing; permanent employee, client-site assignment), and the like | When the user would rather not name the client site, a description such as 「大手製造業」 (a major manufacturer) is fine |
 | Contract employee, advisory position, part-time work | Write the employment type into `employment_type`. Treat it as one entry, the same as a permanent position | Why the user did not become a permanent employee |
 | Contract work, freelance, sole proprietorship | `company` is the trade name or 「個人事業」 (sole proprietorship); write the main client into `assignment` or `responsibilities` | The breakdown of income |
 | Secondment, transfer | For a secondment, make the seconding company and the receiving company two separate entries and keep the overlap in periods (concurrent employment). For a transfer, make the destination company a new entry | The circumstances of the secondment |
@@ -195,7 +192,7 @@ item in the "Never ask" column is recorded only when the user brings it up unpro
 | Childcare leave, family-care leave, medical leave of absence | A leave taken while still employed counts within the tenure period (it stays part of employment). Write the leave's period into `career_history[].note` only when the user brings it up | The reason for the leave, the diagnosis |
 | Returning to study (graduate school, vocational training, study abroad) | For a period not employed, write it into `career_gaps[].activities`; for a degree, also write it into `basic.education` | |
 | Working overseas, a foreign company | The company name and job title may stand in the original language. Write the location into `assignment` or `note` | |
-| Wanting to move into an unfamiliar occupation | Write the career history as fact, as it stands. Write the desired occupation into `targets.roles`, without bending the career history toward it | |
+| Wanting to move into an unfamiliar occupation | Write the career history as fact, as it stands. The desired occupation goes into `targets.roles` of axis.json through `job-change-axis`, without bending the career history toward it | |
 | A short tenure (a few months) | Write it as fact, as one entry | The reason for leaving (write it to `note` only if the user states it) |
 | Many job changes | No special handling. Never merge career-history entries to reduce the count | |
 | A side job, holding multiple jobs | Follow `elicitation-guide.md`'s rule for concurrent employment | The income from the side job |
@@ -206,8 +203,8 @@ item in the "Never ask" column is recorded only when the user brings it up unpro
 `assignment`, `employment_type`, and `note` are optional fields of `career_history[]` (the specification is in the
 hub's `references/profile-format.md`). An item absent from the user's statement is never written.
 
-For a matter that calls for particular legal care, such as medical treatment, caregiving, disability, or
-nationality, only what the user states is recorded. When asking a choice-format question about
+Some matters call for legal care: medical treatment, caregiving, disability, and nationality are examples. For
+such a matter, only what the user states is recorded. When asking a choice-format question about
 activities during a gap period, add one sentence on what it is for (to decide how the document will explain the
 gap), and show that declining to answer is an option.
 
@@ -219,13 +216,13 @@ gap), and show that declining to answer is an option.
 - Using, in a rewording, a role's phrasing stronger than the scope of involvement the user stated. Adding a figure,
   a scale, a scope, or an acting subject.
 - Returning to an item the user said they would rather not answer. Asking the reason.
-- Deep-diving into an item the user called "not important," when it is not a required item.
+- Asking in detail about an item the user called "not important," when the item is outside the required items.
 - Reshaping a career history with an atypical shape into a typical form (writing the place of assignment as the
   employer, writing a leave of absence as a gap, merging several career-history entries into one).
 
 ## Recording in the elicitation notes
 
-The recording format of `profile_interview_notes.md` is set by `elicitation-guide.md`. What this file adds is the
+The recording format of `profile_interview_notes.md` is set by `elicitation-guide.md`. This file adds the
 following line formats.
 
 | Line type | How to write it |
@@ -237,15 +234,15 @@ following line formats.
 | Declining to answer | `- {item}: 未回答（本人の意向）` |
 | Presenting a conflict | `- 確認: {statement A}／{statement B} → 本人の選択: {A or B}` |
 
-The writer uses the reworded sentence for an item that carries a rewording line, and confirms that it never
-exceeds the original's role or scale. The auditor checks whether an item with no rewording line carries
+The writer uses the reworded sentence for an item that has a rewording line, and confirms that it never
+exceeds the original's role or scale. The auditor checks whether an item with no rewording line contains
 document-ready phrasing, and whether a rewording exceeds the original's scope of involvement. Neither checks the
 truth of the statement itself.
 
 ## Grounding and limits
 
 "The scale of role phrasing" and the "Verb and noun replacement table" are this skill's own operating convention;
-citations cover the two failure types below, and the individual replacement words carry none. The two types are writing
+citations cover only the two failure types below and leave the individual replacement words uncited. The two types are writing
 "project leader experience" for work that was in fact only supporting [E1], and writing a team's achievement as an
 individual's achievement [E2]. The latter source names, as a countermeasure, making the role and the degree of
 involvement explicit ("as team leader," "was in charge of 〜, and 〜"). "The scale of role phrasing" is that

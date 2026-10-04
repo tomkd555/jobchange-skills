@@ -18,14 +18,19 @@ import json
 import re
 import sys
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable
 
 _PERIOD_RE = re.compile(r"^(\d{4})-(\d{2})〜(?:(\d{4})-(\d{2})|現在)$")
 _ONGOING_SENTINEL = 999912  # "〜現在" の終端を表す、実在しえない大きな月インデックス
 _PORTABLE_CATEGORIES = ("対課題", "対人")
-_KNOWN_SCHEMA_VERSIONS = ("1.0", "1.1", "2.0")
+_KNOWN_SCHEMA_VERSIONS = ("1.0", "1.1", "2.0", "3.0")
 _V1_SCHEMA_VERSIONS = ("1.0", "1.1")
 _V2_SCHEMA_VERSION = "2.0"
+# 3.0 の profile.json は職歴の事実だけを持つ。転職の軸は axis.json に置く。
+_V3_SCHEMA_VERSION = "3.0"
+# 転職の軸の版。axis.json と、軸を内包する 1.x/2.0 の profile.json に共通する。
+_AXIS_SCHEMA_VERSIONS = ("1.0", "1.1", "2.0")
+_AXIS_KEYS = ("job_change_axis", "company_score_axes", "targets", "salary")
 
 # 語彙の原本は references/screening-axes.md にある。
 _SCREENING_AXES = (
@@ -221,13 +226,15 @@ def _warn_updated_at(profile: dict, result: ValidationResult) -> None:
         result.add_warning("updated_at", "updated_at が未設定である")
 
 
-def _warn_schema_version_known(profile: dict, result: ValidationResult) -> None:
-    """W1: schema_version が既知のバージョン（1.0/1.1/2.0）以外である。"""
+def _warn_schema_version_known(
+    profile: dict, result: ValidationResult, known: tuple[str, ...] = _KNOWN_SCHEMA_VERSIONS
+) -> None:
+    """W1: schema_version が既知のバージョン（known に挙げた版）以外である。"""
     version = profile.get("schema_version")
-    if _is_nonempty_str(version) and version not in _KNOWN_SCHEMA_VERSIONS:
+    if _is_nonempty_str(version) and version not in known:
         result.add_warning(
             "schema_version",
-            f"schema_version が既知のバージョン（{'/'.join(_KNOWN_SCHEMA_VERSIONS)}）ではない",
+            f"schema_version が既知のバージョン（{'/'.join(known)}）ではない",
         )
 
 
@@ -700,12 +707,13 @@ def _validate_company_score_axes(profile: dict, result: ValidationResult) -> Non
 
 
 def _warn_v1_migration(profile: dict, result: ValidationResult) -> None:
-    """v1 のプロファイルへ、v2 への移行を促す。"""
+    """v1 の転職の軸へ、v2 の形式への移行を促す。"""
     if schema_version_of(profile) not in _V1_SCHEMA_VERSIONS:
         return
     result.add_warning(
         "schema_version",
-        "schema_version 2.0 への移行を推奨する（8軸スクリーニングと作業特性の評価は 2.0 で働く）",
+        "転職の軸は schema_version 2.0 への移行を推奨する"
+        "（8軸スクリーニングと作業特性の評価は 2.0 で働く）",
     )
 
 
@@ -768,6 +776,33 @@ def _warn_skills_portable_category(profile: dict, result: ValidationResult) -> N
             )
 
 
+def check_axis(document: dict, result: ValidationResult) -> None:
+    """転職の軸（job_change_axis・company_score_axes・targets・salary）を検査する。
+
+    axis.json と、軸を内包する 1.x/2.0 の profile.json の両方に使う。
+    """
+    _validate_job_change_axis(document, result)
+    _validate_v2_axis(document, result)
+    _validate_company_score_axes(document, result)
+
+    _warn_targets(document, result)
+    _warn_salary_types(document, result)
+    _warn_must_conditions_count(document, result)
+    _warn_v1_migration(document, result)
+    _warn_salary_floor_above_desired(document, result)
+
+
+def _warn_axis_keys_in_v3(profile: dict, result: ValidationResult) -> None:
+    """v3: 職歴だけを持つ profile.json に、転職の軸のキーが残っている。"""
+    for key in _AXIS_KEYS:
+        if key in profile:
+            result.add_warning(
+                key,
+                f"{key} は axis.json に置く項目である"
+                "（schema_version 3.0 の profile.json は職歴の事実だけを持つ）",
+            )
+
+
 def validate(document: Any) -> ValidationResult:
     result = ValidationResult()
 
@@ -780,25 +815,23 @@ def validate(document: Any) -> ValidationResult:
 
     _validate_basic(document, result)
     _validate_career_history(document, result)
-    _validate_job_change_axis(document, result)
-    _validate_v2_axis(document, result)
-    _validate_company_score_axes(document, result)
 
     _warn_achievements(document, result)
     _warn_skills(document, result)
-    _warn_targets(document, result)
     _warn_updated_at(document, result)
 
     _warn_schema_version_known(document, result)
     _warn_career_history_period_format(document, result)
     _warn_career_gaps(document, result)
     _warn_skills_languages_shape(document, result)
-    _warn_salary_types(document, result)
-    _warn_must_conditions_count(document, result)
     _warn_career_gaps_shape(document, result)
     _warn_skills_portable_category(document, result)
-    _warn_v1_migration(document, result)
-    _warn_salary_floor_above_desired(document, result)
+
+    # 1.x/2.0 の profile.json は転職の軸を内包するので、軸も併せて検査する。
+    if document.get("schema_version") == _V3_SCHEMA_VERSION:
+        _warn_axis_keys_in_v3(document, result)
+    else:
+        check_axis(document, result)
 
     return result
 
@@ -816,20 +849,26 @@ def format_report(result: ValidationResult) -> str:
     return "\n".join(lines)
 
 
-def main(argv: list[str] | None = None) -> int:
+def run_cli(
+    argv: list[str] | None,
+    validate_fn: Callable[[Any], ValidationResult],
+    description: str,
+    path_help: str,
+) -> int:
+    """検証ツールの CLI 本体。validate_axis.py もこれを使う。"""
     try:
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
 
-    parser = argparse.ArgumentParser(description="job-change-support プロファイル検証ツール")
-    parser.add_argument("profile_path", help="検証対象の profile.json ファイルパス")
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument("profile_path", help=path_help)
     parser.add_argument("--json", action="store_true", help="結果をJSON形式で出力する")
     args = parser.parse_args(argv)
 
     try:
         document = load_profile(args.profile_path)
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError) as exc:
         result = ValidationResult()
         result.add_error(args.profile_path, f"JSON として読み込めない（{exc}）")
         if args.json:
@@ -838,7 +877,7 @@ def main(argv: list[str] | None = None) -> int:
             print(format_report(result))
         return 1
 
-    result = validate(document)
+    result = validate_fn(document)
 
     if args.json:
         print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
@@ -846,6 +885,15 @@ def main(argv: list[str] | None = None) -> int:
         print(format_report(result))
 
     return 0 if result.ok else 1
+
+
+def main(argv: list[str] | None = None) -> int:
+    return run_cli(
+        argv,
+        validate,
+        "job-change-support プロファイル検証ツール",
+        "検証対象の profile.json ファイルパス",
+    )
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ This is the canonical definition, in the job-change-self-analysis skill, for col
 
 ## Position
 
-Self-reported personality is the third material, after behavioural episodes and feedback from others. A self-report shows the person's own self-image, and carries no evidence of the trait itself ("Introspection alone is unreliable" in `self-analysis-methods.md`). The items in a self-report are therefore limited to the following three roles.
+Self-reported personality is the third material, after behavioural episodes and feedback from others. A self-report shows the person's own self-image, and does not show the trait itself ("Introspection alone is unreliable" in `self-analysis-methods.md`). So the items in a self-report are limited to the following three roles.
 
 1. A prompt that draws out an episode. After the person answers an item, have them name one episode where that tendency showed up, and map it with `linked_episode_ids`.
 2. Material that makes the agreement and disagreement between self-image and feedback from others visible (the Johari window). A disagreement is recorded as it stands, without leaning toward the more favourable side.
@@ -21,11 +21,11 @@ For a personality assessment, whether it is public and the terms of its use diff
 
 | Instrument | Terms of use | Handling in this skill |
 |---|---|---|
-| IPIP (International Personality Item Pool) | Public domain. Copying, editing, translating, and using it requires no permission or fee [E1] | The Big Five framework and the intent of its items, and honesty-humility (the IPIP version derived from HEXACO), may be used. Items are rewritten into this skill's forced-choice form before being asked |
+| IPIP (International Personality Item Pool) | Public domain. Copying, editing, translating, and using it does not require permission or a fee [E1] | The Big Five framework and the intent of its items, and honesty-humility (the IPIP version derived from HEXACO), may be used. Items are rewritten into this skill's forced-choice form before being asked |
 | HEXACO-PI-R (the original version) | Free for non-commercial academic research only. Any other use requires contacting the author [E2] | The original items are not used. Only the honesty-humility framework is used, in the sense of the IPIP version |
 | Short Grit Scale (Grit-S) | Free for non-commercial research and education only. The author's terms exclude commercial use, wide public distribution, and use in a setting with a stake, such as hiring [E3] | The scale is not used. Only the construct of grit is referenced, and it is asked through a forced-choice item this skill wrote on its own |
 | General Self-Efficacy Scale (GSE) | The original (English) version is free for research purposes. The standard Japanese scale (一般性セルフ・エフィカシー尺度, the General Self-Efficacy Scale) is a paid assessment [E4] | The scale is not used. Only the construct of self-efficacy is referenced, and it is asked through an item this skill wrote on its own |
-| O*NET Interest Profiler | CC BY 4.0. Modification, including translation, is allowed when the source is credited [E5] | This skill offers no scored assessment, so its items are not used. Only the name of the interests (RIASEC) framework is used |
+| O*NET Interest Profiler | CC BY 4.0. Modification, including translation, is allowed when the source is credited [E5] | This skill does not offer a scored assessment, so its items are not used. Only the name of the interests (RIASEC) framework is used |
 | The content of the O*NET Work Importance Profiler and the other Career Exploration Tools | CC BY-ND 4.0. Using the items unchanged is allowed, and modifying them (including rewriting into Japanese) requires a separate developer licence and verification obligation [E5] | Items are not rewritten into Japanese and offered. Only the name of the work-values framework is used |
 | VPI Vocational Interest Inventory (Japanese version) | A paid assessment kit, and JILPT does not sell it [E6] | Not used. RIASEC is used only as the name of the framework |
 | The self-diagnosis tool on the Ministry of Health, Labour and Welfare's job tag site, JILPT Career Insight, the VRT card, and the GATB | Provided by public institutions, and the user can take them independently. Some are available at a Hello Work office (ハローワーク, the public employment service) | Not offered by this skill. When the user brings in a result they took elsewhere, treat it as a prompt, never as a settled judgment |
@@ -64,13 +64,13 @@ The Big Five factors and honesty-humility are the framework whose link to job pe
 
 ## How to ask
 
-A self-report is asked as a behaviour-grounded forced choice. Two behaviours whose desirability is balanced are set side by side, and the person picks which is closer to them. This produces less bias toward the more desirable side than a format that answers a single sentence with 「当てはまる／当てはまらない」 (applies / does not apply) [E13][E14]. AskUserQuestion's choice form (up to 4 options) suits a forced choice.
+A self-report is asked as a behaviour-grounded forced choice. Two behaviours whose desirability is balanced are set side by side, and the person picks which is closer to them. This produces less bias toward the more desirable side than a format where the person rates one sentence with 「当てはまる／当てはまらない」 (applies / does not apply) [E13][E14]. AskUserQuestion's choice form (up to 4 options) suits a forced choice.
 
 Rules to keep.
 
 - Write both options so each works as a strength in some situation. Never build a pair where one side is clearly more desirable, as in 「計画的」 (planned) against 「場当たり的」 (haphazard).
 - Write a situation and a behaviour, as in 「締切が迫ったとき、まず残りの作業を書き出す」 (when a deadline is close, first list the remaining work).
-- Each time an item is answered, have the person name one episode where that tendency showed up. Have them choose from the existing `behavioral_episodes`, and when none fits, ask for one episode in STAR form on the spot. When none comes up, leave `linked_episode_ids` empty. An item that maps to neither an episode nor feedback from others produces a WARN, and the deliverable still stands.
+- Each time an item is answered, have the person name one episode where that tendency showed up. Have them choose from the existing `behavioral_episodes`, and when none fits, ask immediately for one episode in STAR form. When none comes up, leave `linked_episode_ids` empty. An item that maps to neither an episode nor feedback from others produces a WARN, and the deliverable still stands.
 - 「どちらも同じくらい」 (both about equally) and 「場面による」 (it depends on the situation) are accepted as answers too. Never force the person toward one side.
 - The questions asked in one Step are limited to 16 (covering 15 constructs; `stress_trigger` alone gets 2 questions; the breakdown is in `question-bank.md`), and no further "why" is layered on top (to prevent rumination).
 - When feedback from others (`others_feedback`) describes the same tendency, map it with `feedback_ids`. When a self-report disagrees with feedback from others, write the disagreement as it stands in `note`.
@@ -83,14 +83,14 @@ The settled wording is in Step 3.5 of `question-bank.md`.
 - Write a descriptive passage. Write it in the past tense, mapped to an episode, as in 「事前に計画を固めてから着手する行動が、ep-1 と ep-2 で繰り返し見られた」 (the behaviour of settling a plan before starting showed up repeatedly, in ep-1 and ep-2).
 - Attach no number, percentile, or five-point score. A number looks like a measured value, so a reader gives it more weight than the evidence supports.
 - Write it as a self-image at one point in time. It states 「現時点でこう自己申告している」 (what the person reports about themselves at this point), and stays open to revision as a trait.
-- Never write a sentence that fits anyone (「慎重なときもあれば大胆なときもある」). When a sentence could move unchanged into another person's set of episodes, it carries no grounding (the Barnum effect [E15]). The auditor checks from this perspective.
+- Never write a sentence that fits anyone (「慎重なときもあれば大胆なときもある」). When a sentence could move unchanged into another person's set of episodes, it has no grounding (the Barnum effect [E15]). The auditor checks from this perspective.
 - Write a disagreement between a self-report and feedback from others as it stands.
 
 ## Connection downstream
 
 | Destination | How it is used |
 |---|---|
-| `job_change_axis.work_character_preferences` (profile.json, held by the hub) | `planning_style` is checked against the preference level for `clear_completion`, `collaboration_style` against `solo_completable`, and `feedback_timing` against `short_feedback`. A disagreement is written in `notes`, and the skill never decides which side is true |
+| `job_change_axis.work_character_preferences` (`{AXIS}`, owned by `job-change-axis`; skipped when no `{AXIS}` exists) | `planning_style` is checked against the preference level for `clear_completion`, `collaboration_style` against `solo_completable`, and `feedback_timing` against `short_feedback`. A disagreement is written in `notes`, and the skill never decides which side is true |
 | `culture_fit` and `work_character_fit` in `job-change-fit-assessment` | `change_orientation`, `stress_trigger`, and `recovery_style` become material for checking against the facts about working style and reputation from company research. A self-report alone never raises a `score` |
 | Self-promotion and weaknesses in `job-change-interview-prep` | The grounds for `strengths` (episodes, feedback from others) and the description in `personality.markers` become material for the answer to a question about weaknesses. From "source of strain" and "recovery style," the user can talk about a weakness while naming the improving behaviour that goes with it |
 | The personality test in `job-change-exam-prep` | For a personality test, a consistent, honest answer is recommended (`prep-methods.md` of that skill). The self-image organised here is material for keeping that consistency |

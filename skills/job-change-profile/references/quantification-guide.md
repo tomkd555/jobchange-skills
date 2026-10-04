@@ -9,15 +9,15 @@ reference this file. Evidence level is written on a 4-step scale, and a piece of
 
 ## Recommend quantification, without mechanically forcing a number
 
-Quantifying an achievement is strongly recommended in practice. A figure's relevance to the requirement matters
-more than its mere quantity, and attaching a number to every achievement mechanically can backfire (confidence:
+Quantifying an achievement is strongly recommended in practice. A figure's relevance to the requirement outweighs
+its quantity, and attaching a number to every achievement mechanically can backfire (confidence:
 likely, 65%-80%).
 
 - A recruiting agency recommends expressing an achievement in a quantitative figure, shown against the prior year
   and the like [E25].
 - Academically, adding competency statements (a description of ability or achievement) to an application document
   raises its evaluation and the probability of passing document screening. This effect, however, does not depend
-  on where the statement sits; it "arises even from ordinary phrasing" [E34]. **A large part of this effect comes
+  on where the statement sits. It "arises even from ordinary phrasing" [E34]. **A large part of this effect comes
   from the statement's mere presence.**
 - An excessive or inaccurate figure backfires. Attaching a number mechanically to every bullet point, and a figure
   that departs from fact, invite the hiring side's distrust. An article written from the hiring side's viewpoint
@@ -36,19 +36,19 @@ together with the user which pattern applies.
 
 | Pattern | How to show it |
 |---|---|
-| Year-on-year change, a rate of change | Show a change in sales, cost, or workload as a proportion (for example, 「前年度比で処理件数を1.4倍」, processing count up 1.4× year on year) [E25]. |
+| Year-on-year change, a rate of change | Show a change in sales, cost, or workload as a proportion (such as 「前年度比で処理件数を1.4倍」, processing count up 1.4× year on year) [E25]. |
 | A count or a scale | Show an absolute quantity such as the number of projects or clients handled, the data volume, or the system's scale [E28]. |
 | Frequency | Show the frequency or the number of times a routine task was carried out [E28]. |
 | The number of people or the scope handled | Show the number of people managed or negotiated with, or the department or region handled [E28]. |
 | A reduction rate or an efficiency gain | For operations and maintenance or routine work, show a process reduction rate, a processing-time cut, or a reduction in errors [E32][E26]. |
 | Linking a qualitative outcome | For an outcome that resists quantification, show it linked to a later quantitative outcome (an order won, a renewed contract) [E32]. |
-| A comparison against a benchmark | Show it against the prior year, the prior period, or a team's or department's average (for example, 「達成率80%から90%へ」, achievement rate up from 80% to 90%; 「チーム平均95%に対して98%」, 98% against a team average of 95%) [E38]. |
-| An approximation from an activity volume | When no record is on hand, have the user approximate it from an activity volume they recall (a daily call count × days worked, a weekly visit count × weeks) [E39]. Elicitation notes that it is an approximation and records the value in the user's own words. |
+| A comparison against a benchmark | Show it against the prior year, the prior period, or a team's or department's average (such as 「達成率80%から90%へ」, achievement rate up from 80% to 90%; 「チーム平均95%に対して98%」, 98% against a team average of 95%) [E38]. |
+| An approximation from an activity volume | When the user has no record at hand, have the user approximate it from an activity volume they recall (a daily call count × days worked, a weekly visit count × weeks) [E39]. Elicitation notes that it is an approximation and records the value in the user's own words. |
 
 ## Alternative phrasing for a hard-to-quantify task
 
-For work in an indirect department, routine work, or operations and maintenance, where a direct figure is hard to
-produce, use the following alternative phrasing (confidence: likely, 65%-80%).
+Use the following alternative phrasing for work where a direct figure is hard to produce: work in an indirect
+department, routine work, and operations and maintenance (confidence: likely, 65%-80%).
 
 - Even routine work can be expressed through a point worked on, a reduction in errors, or an efficiency gain [E26].
   When quantification is difficult, writing the point worked on and the point evaluated concretely is enough [E27].
@@ -67,14 +67,14 @@ without support becomes a target for the auditor's finding.
 - No peer-reviewed field experiment isolating and measuring the effect of quantification itself has been confirmed,
   in any language (an evidence gap). Many of the claimed effect sizes rest on a staffing provider's own
   self-reported figures. A statement's mere presence is shown to raise evaluation [E34], but no monotonic
-  relationship — "the more figures, the higher the evaluation" — has been demonstrated.
+  relationship ("the more figures, the higher the evaluation") has been demonstrated.
 - The persuasive effect of a figure or a specific detail depends on context. In a probability statement, whether a
   figure or a word raises trust more depends on the context [E37]. A figure that is too fine-grained can itself
   invite suspicion [E36].
 
 ## Dependency on occupation
 
-The weight an achievement figure carries depends on the occupation (confidence: very likely, 80%-90%).
+The weight of an achievement figure depends on the occupation (confidence: very likely, 80%-90%).
 
 - For an IT role, the item weighed most heavily in an application document was "skills and usable tools" (48.4% in a
   survey of 150 hiring staff) [E2][E31]. **This figure comes from a single survey.**

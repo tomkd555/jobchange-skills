@@ -5,7 +5,7 @@
 - Choose this style for a move that changes industry or job function, where the skills and results have to be read before the job titles (sources E9, E5). Skills and achievements come first; the work history stays and is listed newest first.
 - Keep the resume to one page; go to two only past ten years of experience (source E8). Give each skill group 2 to 4 achievement bullets and each role in the work history one or two lines, at one or two lines per bullet (sources E4, E8).
 - Write the current role in the present tense and every past role in the past tense (source E4). Start each bullet with an action verb and drop the subject "I".
-- Keep the file ATS-readable: one column, no tables, text boxes, images or skill bars, name and contact details in the body rather than a header or footer, the standard headings below, a standard 10 to 12 point font, and a text-based PDF or .docx (sources E2, E11, E12, E15). Name the skill groups after terms the job posting itself uses, so the standard "Skills" heading still carries the keywords.
+- Keep the file ATS-readable (sources E2, E11, E12, E15). Use one column with no tables, text boxes, images or skill bars. Put the name and contact details in the body, outside the header and footer. Use the standard headings below, a standard 10 to 12 point font, and a text-based PDF or .docx. Name the skill groups after terms the job posting itself uses, so the standard "Skills" heading still carries the keywords.
 - Never include a photo, age, date of birth, gender or marital status (sources E1, E4, E15).
 - `{profile.…}` marks a field of profile.json, `{…}` marks input from elsewhere (the job posting, company research, the date of writing). `<!-- -->` lines are notes to the writer and never appear in the finished resume.
 
@@ -17,7 +17,7 @@
 <!-- Required. Only the location comes from profile.json; ask the user for the name and contact details. Keep them in the body, never in a header or footer (sources E11, E12). Drop any line the user does not supply. -->
 
 ## Summary
-<!-- Required (sources E10, E13, E15). Three or four lines built from {profile.summary}, {profile.basic.years_of_experience} and {profile.basic.current_role}. Because the target function differs from the current one, open with what carries across rather than with the current job title. Close with a single line on work authorisation in Japan (source E15); ask the user for it and leave the line out if the user does not supply it. Never drop this section. -->
+<!-- Required (sources E10, E13, E15). Three or four lines built from {profile.summary}, {profile.basic.years_of_experience} and {profile.basic.current_role}. Because the target function differs from the current one, open with what carries across, ahead of any mention of the current job title. Close with a single line on work authorisation in Japan (source E15); ask the user for it and leave the line out if the user does not supply it. Never drop this section. -->
 
 ## Objective
 <!-- Optional. Include only when the user asks for it: a mid-career applicant is served by the Summary alone, and E15 treats "Objective" as the wrong label for an experienced candidate. Drop the whole section when it is not used. -->
@@ -34,7 +34,7 @@
 
 ### {profile.career_history[].role} - {profile.career_history[].company}
 {profile.career_history[].period} | {location}
-<!-- Ask the user for the company's own English name rather than translating it yourself. Write the period as month and year. Drop the location when the user does not supply it. -->
+<!-- Ask the user for the company's own English name and use it as given; the writer never translates the name. Write the period as month and year. Drop the location when the user does not supply it. -->
 
 - {one line from profile.career_history[].responsibilities[]}
 

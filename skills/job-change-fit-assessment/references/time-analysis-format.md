@@ -1,10 +1,10 @@
 # Canonical specification of time_analysis.json (time-analysis-format)
 
-This is the canonical definition of `time_analysis.json`'s specification and of the computation `scripts/calculate_time_analysis.py` performs. From the candidate company's job posting, company research, and user input, it mechanically computes the daily and annual committed time, the working hours, and the effective hourly wage, and uses these as grounds for the time_fit (time match) evaluation.
+This is the canonical definition of `time_analysis.json`'s specification and of the computation `scripts/calculate_time_analysis.py` performs. It mechanically computes the daily and annual committed time, the working hours, and the effective hourly wage from the candidate company's job posting, company research, and user input. These values are the grounds for the time_fit (time match) evaluation.
 
 ## Placement and handling
 
-The generated artifact is placed at `career-private/fit/{company slug}/time_analysis.json`. The current job's computation result, which serves as the comparison baseline, does not correspond to any target company, so it is placed at `career-private/fit/current/time_analysis.json` and reused across every company. Since committed time and effective hourly wage are values derived from personal information such as annual salary and commute time, they are isolated under `career-private/`, and are never handed to an agent holding a web transmission means (WebSearch, WebFetch).
+The generated artifact is placed at `career-private/fit/{company slug}/time_analysis.json`. The current job's computation result, which is the comparison baseline, does not correspond to any target company, so it is placed at `career-private/fit/current/time_analysis.json` and reused across every company. Since committed time and effective hourly wage are values derived from personal information such as annual salary and commute time, they are isolated under `career-private/`, and are never handed to an agent holding a web transmission means (WebSearch, WebFetch).
 
 ## Formulas
 
@@ -26,12 +26,12 @@ The internal computation does not round. Rounding happens only at output time: h
 
 ## Sensitivity analysis
 
-`sensitivity` holds the increase or decrease (in hours) of the annual committed time when a single item is moved, with the other inputs held fixed.
+`sensitivity` holds the increase or decrease (in hours) of the annual committed time when one item is moved, with the other inputs held fixed.
 
 - `overtime_plus10h` / `overtime_minus10h`: the change from moving average monthly overtime by ±10 hours
 - `commute_plus15min` / `commute_minus15min`: the change from moving one-way commute by ±15 minutes
 
-The annual number of actual working days is unaffected by overtime and commute. The increase and decrease therefore come out as symmetric values with the sign reversed between the plus side and the minus side, unchanged by the baseline level.
+The annual number of actual working days is unaffected by overtime and commute. So the increase and decrease come out as symmetric values with the sign reversed between the plus side and the minus side, unchanged by the baseline level.
 
 ## Comparison with the current job
 
@@ -50,20 +50,20 @@ The salary, working hours, and commute time used for the current job's computati
 
 ## Input priority
 
-Each input's value is decided in the following priority order. The value fixed at the higher level is used; confidence falls as the level drops. Record the decided source in each input's `source` (`posting` / `research` / `user` / `fallback`).
+Each input's value is decided in the following priority order. The value fixed at the higher level is used. Confidence falls as the level drops. Record the decided source in each input's `source` (`posting` / `research` / `user` / `fallback`).
 
 | Priority | Source | Content |
 |---|---|---|
-| 1 | Job posting (`posting`) | A value in `job_posting.json`'s `working_hours` / `metrics`, carrying a quote. Given top priority. |
-| 2 | Company-research indicators (`research`) | `company_research.json`'s `company_metrics` (average monthly overtime is `monthly_overtime`, annual holidays is `annual_holidays`, paid-leave-taken rate is `paid_leave_rate`, paid-leave days taken is `avg_paid_leave_days_taken`). When multiple candidates exist for the same item, adopt the one with the highest evidence level (A → B → C → D). The canonical definition of evidence levels lives in `job-change-company-research`'s `references/evidence-grading.md`. Avoid asserting from level C or D alone, and treat an adopted value at lower confidence even then. |
+| 1 | Job posting (`posting`) | A value in `job_posting.json`'s `working_hours` / `metrics`, carrying a quote. |
+| 2 | Company-research indicators (`research`) | `company_research.json`'s `company_metrics` (average monthly overtime is `monthly_overtime`, annual holidays is `annual_holidays`, paid-leave-taken rate is `paid_leave_rate`, paid-leave days taken is `avg_paid_leave_days_taken`). When multiple candidates exist for the same item, adopt the one with the highest evidence level (A → B → C → D). The canonical definition of evidence levels is in `job-change-company-research`'s `references/evidence-grading.md`. Avoid asserting from level C or D alone, and treat an adopted value at lower confidence even then. |
 | 3 | User input (`user`) | A value the user reports directly, such as commute time. |
 | 4 | Statistical fallback (`fallback`) | A default value based on a primary government statistic, applied to an item left unfilled at the levels above. |
 
-The caller (the fit-assessment skill body) decides the value in priority order, passing the fixed value as a CLI argument and each value's source metadata to `--sources-json`. The script itself does not read `job_posting.json` or `company_research.json`; it only computes from the values passed to it and applies the fallback to unspecified items.
+The caller (the fit-assessment skill body) decides the value in priority order, passing the fixed value as a CLI argument and each value's source metadata to `--sources-json`. The script itself does not read `job_posting.json` or `company_research.json`. It only computes from the values passed to it and applies the fallback to unspecified items.
 
 ## Handling when commute time is not entered
 
-The one-way commute time is handled through this single lane only.
+The one-way commute time is handled through this lane only.
 
 1. If `career-private/commute.json`'s `one_way_minutes` for the slug exists, use it.
 2. If not, ask once through AskUserQuestion.
@@ -92,9 +92,9 @@ Each item of `FALLBACKS` is set after checking the latest published value of a p
 }
 ```
 
-`inputs` holds only the values used in the computation. When the actual paid-leave-days-taken value (`paid_leave_taken`) is given, that value is loaded into `inputs`, and the days granted and taken rate are not loaded, since they are not used in the computation. When the actual value is not given, the days granted (`paid_leave_granted`) and taken rate (`paid_leave_rate`; in %, on the same scale as company research's `company_metrics.paid_leave_rate`) are loaded, and days taken is estimated as days granted × taken rate ÷ 100.
+`inputs` contains only the values used in the computation. When the actual paid-leave-days-taken value (`paid_leave_taken`) is given, that value is loaded into `inputs`, and the days granted and taken rate are not loaded, since they are not used in the computation. When the actual value is not given, the days granted (`paid_leave_granted`) and taken rate (`paid_leave_rate`; in %, on the same scale as company research's `company_metrics.paid_leave_rate`) are loaded, and days taken is estimated as days granted × taken rate ÷ 100.
 
-The example lives in `assets/time_analysis_example.json` (fictional data).
+The example is in `assets/time_analysis_example.json` (fictional data).
 
 ## CLI
 
@@ -106,4 +106,4 @@ python scripts/calculate_time_analysis.py \
     [--sources-json PATH] [--baseline-json PATH] [--out PATH] [--json]
 ```
 
-`--baseline-json` takes the current job's `time_analysis.json` path. Any item not specified receives the fallback. `--out` writes to the given path (creating the parent directory if it does not exist), and `--json` writes the result to standard output. When the input is contradictory — annual holidays of 365 or more, a paid-leave-taken rate outside 0–100 (%), and the like — it returns exit code 2 with a clear message.
+`--baseline-json` takes the current job's `time_analysis.json` path. Any item not specified receives the fallback. `--out` writes to the path passed with it (creating the parent directory if it does not exist), and `--json` writes the result to standard output. When the input is contradictory (such as annual holidays of 365 or more, or a paid-leave-taken rate outside the range of 0 to 100 percent), it returns exit code 2 with a clear message.

@@ -19,11 +19,11 @@ When researching a listed company, include the human-capital disclosures above a
 
 ### The obligation to publish the mid-career hiring ratio
 
-Under the Act on Comprehensive Promotion of Labor Measures, a company that regularly employs 301 or more workers has an obligation to publish its mid-career hiring ratio (the share of mid-career hires among the hires of regular employees) for the most recent 3 fiscal years, roughly once a year (effective April 2021. Ministry of Health, Labour and Welfare https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/koyou/jakunen/index_00003.html ). The publication location may be either the company's own site or Shokuba Labo.
+Under the Act on Comprehensive Promotion of Labor Measures, a company that regularly employs 301 or more workers must publish its mid-career hiring ratio roughly once a year, covering the most recent 3 fiscal years. The obligation took effect in April 2021 (Ministry of Health, Labour and Welfare https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/koyou/jakunen/index_00003.html ). The ratio is the share of mid-career hires among the hires of regular employees. The publication location may be either the company's own site or Shokuba Labo.
 
-When you find a published figure, make it a level-A factual claim (topic=workstyle). When the company has 301 or more employees but you could not find a published figure, record that fact itself in `open_questions`. **Do not assert that it is unpublished.** The law does not fix a single publication location, and this means the search's completeness cannot be guaranteed.
+When you find a published figure, make it a level-A factual claim (topic=workstyle). When the company has 301 or more employees but you could not find a published figure, record that fact itself in `open_questions`. **Do not assert that it is unpublished.** The law does not fix one publication location, and this means the search's completeness cannot be guaranteed.
 
-The securities report's "Part I: Company Information / 1. Company Overview / 1. Trends in Major Management Indicators" lists revenue and the equity ratio across the most recent 5 fiscal years side by side. The quantitative candidate axis `revenue_growth` is calculated from this revenue trend, and `equity_ratio` uses the value in this table directly. `operating_margin` is calculated from the consolidated income statement's operating profit and revenue in "Status of Accounting." For a calculated value, write the fiscal period and figures used in the calculation into the statement, and set the source to the relevant part of the securities report.
+The securities report's "Part I: Company Information / 1. Company Overview / 1. Trends in Major Management Indicators" lists revenue and the equity ratio for the most recent 5 fiscal years. The quantitative candidate axis `revenue_growth` is calculated from this revenue trend, and `equity_ratio` uses the value in this table directly. `operating_margin` is calculated from the consolidated income statement's operating profit and revenue in "Status of Accounting." For a calculated value, write the fiscal period and figures used in the calculation into the statement, and set the source to the relevant part of the securities report.
 
 ### Earnings briefing materials, integrated reports, medium-term management plans, corporate governance reports
 
@@ -34,7 +34,7 @@ A company's disclosure falls into three categories: statutory disclosure, timely
 | Earnings briefing materials, integrated reports, medium-term management plans, annual reports | Voluntary disclosure (IR information). Grounds for the business description, results, strategy, and philosophy (topic=business/financials/philosophy). Note that, because the speaker is the party itself, the description can be biased toward presenting the company favorably. |
 | Corporate governance report | A listed company submits this to the Tokyo Stock Exchange on a comply-or-explain basis (Japan Exchange Group, level B https://www.jpx.co.jp/equities/listing/cg/index.html ). Grounds for board composition and the governance structure. |
 
-These are primary information from the company itself, and a fact (a number, a structure, whether a program exists) is treated as level A. On the other hand, how far a philosophy or purpose has been "realized," and self-praise about company culture, are evaluative claims, and confidence is not set to high on them (see `references/evidence-grading.md`).
+These are primary information from the company itself, and a fact (a number, a structure, whether a program exists) is treated as level A. However, how far a philosophy or purpose has been "realized," and self-praise about company culture, are evaluative claims, and confidence is not set to high on them (see `references/evidence-grading.md`).
 
 ### Ministry of Health, Labour and Welfare's "Shokuba Labo"
 
@@ -47,7 +47,7 @@ These are primary information from the company itself, and a fact (a number, a s
 
 ### Certification schemes (primary information with a clear basis in law and a clear supervising authority)
 
-Every one has a clear basis in law and a clear supervising authority, and whether a certification exists is itself a level-A fact (topic=benefits/workstyle).
+Each certification below has a clear basis in law and a clear supervising authority, and whether a certification exists is itself a level-A fact (topic=benefits/workstyle).
 
 <!-- textlint-disable ja-technical-writing/max-kanji-continuous-len -->
 <!-- This table carries law names in their original Japanese; the long kanji run in "次世代育成支援対策推進法" (Act on Advancement of Measures to Support Raising Next-Generation Children) is allowed only in this table. -->
@@ -75,9 +75,9 @@ The Eruboshi certification status page is an ordinary Ministry of Health, Labour
 
 ### Why negative information is sought
 
-Collecting only a company's self-disclosure and recruiting communications produces a picture skewed toward the favorable. A study of Japanese job changers, too, confirms that a gap between pre-hire expectations and post-hire reality undermines retention. 片山と藤 (2023), in a survey of 412 job changers, showed that a reality shock at the time of a job change lowers work engagement and raises turnover intention (DOI:10.4992/jjpsy.93.20062). On the company-side measure of a realistic job preview, there is a meta-analysis by Phillips (1998), but this addresses the scene where a company gives information to an applicant, and does not directly transfer to the applicant's own side of information-gathering. The original text's effect size could not be obtained, and this catalog relies on a secondary source for it.
+Collecting only a company's self-disclosure and recruiting communications produces a picture skewed toward the favorable. A study of Japanese job changers, too, confirms that a gap between pre-hire expectations and post-hire reality undermines retention. 片山と藤 (2023), in a survey of 412 job changers, showed that a reality shock at the time of a job change lowers work engagement and raises turnover intention (DOI:10.4992/jjpsy.93.20062). On the company-side measure of a realistic job preview, there is a meta-analysis by Phillips (1998). It addresses the scene where a company gives information to an applicant, and does not directly transfer to the applicant's own side of information-gathering. The original text's effect size could not be obtained, and this catalog relies on a secondary source for it.
 
-Negative information is therefore sought through the same procedure as positive information. The following sources serve that purpose.
+So negative information is sought through the same procedure as positive information. The following sources serve that purpose.
 
 ### Ministry of Health, Labour and Welfare's "Published cases of violations of labor-standards laws"
 
@@ -116,7 +116,7 @@ Treat these as sources the user consults personally and hands to the agent, and 
 |---|---|
 | Location | Toyo Keizai Inc. https://str.toyokeizai.net/magazine/shushoku_all/ . |
 | Character | Covers roughly 1,300 companies through its own survey, charging no listing fee (3-year retention rate, average annual salary, overtime hours, paid-leave-taking, and so on). Its editorial policy of a free listing fee and its own independent survey lead to treating it as secondary information independent of the company's own public relations (topic=reputation/workstyle/financials). |
-| Limits | A company may decline to answer a survey item, leaving it blank. The number of companies listed is limited, and an unlisted company cannot be supplemented. |
+| Limits | A company may decline to answer a survey item, and the item is then left blank. The number of companies listed is limited, and an unlisted company cannot be supplemented. |
 
 Total annual holidays (the quantitative candidate axis `annual_holidays`) is mainly sourced from the job posting, and can also be confirmed in Shushoku Shikiho's holidays-and-leave column. State in the statement that the job posting's value is the condition for the recruited job type alone.
 
@@ -129,13 +129,13 @@ An article from a major news outlet, and a report from an industry association o
 | Perspective | Content |
 |---|---|
 | Representative examples | OpenWork, Glassdoor, and sites aggregating selection-process accounts. |
-| Character and limits | Because whether to post is the poster's own decision, an extreme opinion is more likely to be posted (selection bias). An individual post, a metric with a small response count, or a facet-level metric is not used to assert a fact. An overall score aggregated across many respondents can be used as supporting evidence for a trend, on the condition that it rests on a sufficient number of responses and can be cross-checked against another source (see "The conditional validity of an aggregated overall score" in `references/evidence-grading.md`; the r=.516 figure comes from the single study by Landers 2019). |
+| Character and limits | Because whether to post is the poster's own decision, an extreme opinion is more likely to be posted (selection bias). An individual post, a metric with a small response count, or a facet-level metric is not used to assert a fact. An overall score aggregated across many respondents can be used as supporting evidence for a trend, on the condition that it rests on a sufficient number of responses and can be cross-checked against another source (see "The conditional validity of an aggregated overall score" in `references/evidence-grading.md`; the r=.516 figure comes from one study, Landers 2019). |
 | Quality differences among sites | OpenWork requires submission of proof of employment and manual screening, so a poster's authenticity is comparatively higher, though a leaver bias remains. Treat every aggregation site as level C, and keep the principle of using the overall score as supporting evidence (Job-Hunting Handbook 2024 https://jo-katsu.com/campus/10412/ ). |
 | How to write it | Write a statement based on C with a hedge. 「口コミでは〜という声がある（回答 N 件）。選択バイアスがあり傍証にとどめる。」 |
 
 ## Personal blog, hearsay, unconfirmed (level D)
 
-A personal blog, hearsay on social media, a repost of unknown origin, and a single anonymous post are level D. Do not assert a fact on D alone. Mention it only as a supplement, limited to cases where another level-A or level-B source corroborates it.
+A personal blog, hearsay on social media, a repost of unknown origin, and one anonymous post are level D. Do not assert a fact on D alone. Mention it only as a supplement, limited to cases where another level-A or level-B source corroborates it.
 
 ## Correspondence between topic and source
 
@@ -146,8 +146,8 @@ A personal blog, hearsay on social media, a repost of unknown origin, and a sing
 | `financials` | The securities report's "Status of Employees," earnings materials |
 | `compensation` | The recruiting site's compensation system, the securities report's average annual salary, review-site aggregates (supporting evidence) |
 | `benefits` | Certification-scheme databases, Shokuba Labo, the benefits page |
-| `workstyle` | The securities report's human-capital disclosures, the published mid-career hiring ratio, Shokuba Labo, Shushoku Shikiho, the Database of Companies Promoting Women's Active Participation, the corporate governance report, published cases of labour-standards violations |
-| `reputation` | Shushoku Shikiho, major reporting, published cases of labour-standards violations, review-site aggregates (supporting evidence) |
+| `workstyle` | The securities report's human-capital disclosures, the published mid-career hiring ratio, Shokuba Labo, Shushoku Shikiho, the Database of Companies Promoting Women's Active Participation, the corporate governance report, published cases of labor-standards violations |
+| `reputation` | Shushoku Shikiho, major reporting, published cases of labor-standards violations, review-site aggregates (supporting evidence) |
 | `selection_process` | The recruiting site's selection flow, aggregated selection-process accounts, reviews (whether each site can be fetched is in the next section) |
 
 ## Sources for the selection process (selection_process)
@@ -156,9 +156,9 @@ Among sites that collect the questions asked at interview and the selection form
 
 | Site | Whether interview questions exist | Range readable without login | robots.txt (as of 2026-09-04) | Level | Fetching |
 |---|---|---|---|---|---|
-| Tenshoku Kaigi (`jobtalk.jp`) | Yes. `/companies/{ID}/answers?question_codes=examination` is the interview/exam category | Fragments of question text can be read. The body on interview atmosphere, preparation, and outcome requires registration | `User-agent: *` has `Allow: /`. Disallow covers only `/company_archives/`, `/jobs/p*`, and the image proxy paths. No mention of naming an AI crawler | C | Allowed |
+| Tenshoku Kaigi (`jobtalk.jp`) | Yes. `/companies/{ID}/answers?question_codes=examination` is the interview/exam category | Fragments of question text can be read. The body on interview atmosphere, preparation, and outcome requires registration | `User-agent: *` has `Allow: /`. Disallow covers only `/company_archives/`, `/jobs/p*`, and the image proxy paths. No AI crawler is named | C | Allowed |
 | Careerconnection (`careerconnection.jp`) | Yes. `/review/{ID}/interview/` | About 1 item per company is readable; the rest requires registration. Many posts are old (2010s) | `User-agent: ClaudeBot` has only `Crawl-delay: 3`; no Disallow. `User-agent: *`'s Disallow covers paths such as voting, reporting, and job details | C | Allowed (space fetches at least 3 seconds apart) |
-| OpenWork (`openwork.jp`) | **None**. Of its 9 categories (組織体制・企業文化／年収・給与／入社理由と入社後ギャップ／働きがい・成長／女性の働きやすさ／ワーク・ライフ・バランス／退職検討理由／企業分析／経営者への提言), none is an interview category | Category names and the count per category. The body requires registration | Company pages are not among the disallowed. Some paths with a query string and `/landing/` are disallowed. No mention of naming an AI crawler | C (the Institute for Job Satisfaction's aggregated reports are B) | Allowed. Limited to the grounds for `themes` (trends) and the counts for post-join gap and reasons considered for leaving |
+| OpenWork (`openwork.jp`) | **None**. Of its 9 categories (組織体制・企業文化／年収・給与／入社理由と入社後ギャップ／働きがい・成長／女性の働きやすさ／ワーク・ライフ・バランス／退職検討理由／企業分析／経営者への提言), none is an interview category | Category names and the count per category. The body requires registration | Company pages are not among the disallowed. Some paths with a query string and `/landing/` are disallowed. No AI crawler is named | C (the Institute for Job Satisfaction's aggregated reports are B) | Allowed. Limited to the grounds for `themes` (trends) and the counts for post-join gap and reasons considered for leaving |
 | en Lighthouse (`en-hyouban.com`) | Yes (inferred from search-result fragments; the body is unconfirmed) | Unconfirmed | **`User-agent: ClaudeBot` / `Disallow: /`**. Names the crawler and refuses the entire site | C | **Not allowed**. Do not fetch it even via a `site:` search |
 | Glassdoor Japan (`glassdoor.co.jp`) | Yes, though the count for domestic companies is small | Unconfirmed | `/robots.txt` returns HTTP 530 and cannot be read | C | Not allowed (do not treat a site whose policy cannot be read as permitted) |
 | Indeed Company Reviews (`jp.indeed.com/cmp/`) | Yes, though the count is small | Unconfirmed | The file is large, and the tool could not confirm its content. `ClaudeBot` is on the list of crawlers used for training | C | Not allowed (until the content can be confirmed) |
@@ -166,6 +166,6 @@ Among sites that collect the questions asked at interview and the selection form
 | JobQ Town, selection-process accounts on note and Hatena Blog, posts on X | Single, anonymous | Readable | Various | D | Not included in the procedure. Limited to a supplement when corroborated by another source |
 | YouTube interview-preparation videos | Mostly a general explanation of how to answer; almost no company-specific questions | Readable | — | C (a recruitment agency's (転職エージェント) official channel is B) | Not used as a company-specific source. Kept as a candidate source for the canonical general question-type reference (`job-change-interview-prep`'s `question-bank.md`) |
 
-The canonical rule that decides whether fetching is allowed (the crawler's name, the terms of service, the difference between a 404 and a 403, the check date and re-reading, and being refused at fetch time) is in `job-change-job-search`'s `references/query-catalog.md`, "The rule for deciding whether retrieval is permitted." The table above is the result of applying that rule to sources for the selection process, and when a site not in the table is found during an investigation, judge it by the same rule. Do not transcribe a review's body wholly into the deliverable; keep a quote to the minimum needed to identify a question or a fact. When redirected to a login screen, do not read that page again within that session. Do not interpret an inability to read as "no information exists."
+The canonical rule that decides whether fetching is allowed is the section "The rule for deciding whether retrieval is permitted" in `job-change-job-search`'s `references/query-catalog.md`. It covers the crawler's name, the terms of service, the difference between a 404 and a 403, the check date and re-reading, and being refused at fetch time. The table above is the result of applying that rule to sources for the selection process. When a site not in the table is found during an investigation, judge it by the same rule. Do not transcribe a review's body wholly into the deliverable; keep a quote to the minimum needed to identify a question or a fact. When redirected to a login screen, do not read that page again within that session. Do not interpret an inability to read as "no information exists."
 
 Some users receive a list of questions for their target company through a recruitment agency (転職エージェント). That is information from outside the web, so do not pass it to a role holding a web-transmission tool; `job-change-interview-prep` receives it directly from the user.

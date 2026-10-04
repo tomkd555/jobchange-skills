@@ -5,7 +5,8 @@
 """
 from __future__ import annotations
 
-import copy
+import contextlib
+import io
 import json
 import os
 import re
@@ -51,13 +52,11 @@ class CatalogSyncTest(unittest.TestCase):
 
 
 class StateTest(unittest.TestCase):
-    def test_example_profile_is_deep_everywhere(self) -> None:
+    def test_example_is_deep_and_empty_is_missing(self) -> None:
         states = _states(_example())
         self.assertEqual(set(states.values()), {"deep"}, states)
         self.assertTrue(ps.report(_example())["initial_complete"])
-
-    def test_empty_profile_is_missing_everywhere(self) -> None:
-        states = _states({"schema_version": "2.0"})
+        states = _states({"schema_version": "3.0"})
         self.assertEqual(set(states.values()), {"missing"}, states)
         self.assertFalse(ps.report({})["initial_complete"])
 
@@ -69,21 +68,20 @@ class StateTest(unittest.TestCase):
             e.pop("responsibilities", None)
             e.pop("achievements", None)
         p["skills"] = {}
-        p["targets"] = {}
-        p["salary"] = {}
-        p.pop("company_score_axes")
-        for c in p["job_change_axis"]["conditions"]:
-            c.pop("priority", None)
         states = _states(p)
         self.assertEqual(states["basic"], "skeleton")
         self.assertEqual(states["career"], "deep")
-        self.assertEqual(states["conditions"], "skeleton")
-        # work_character と reasons は deep の条件が skeleton と同じである。
-        self.assertEqual(states["work_character"], "deep")
-        self.assertEqual(states["reasons"], "deep")
-        for sid in ("achievements", "skills", "score_axes", "targets", "salary"):
+        for sid in ("achievements", "skills"):
             self.assertEqual(states[sid], "missing", sid)
         self.assertTrue(ps.report(p)["initial_complete"])
+
+    def test_v2_profile_reports_the_career_sections(self) -> None:
+        """軸を内包する 2.0 の profile.json を渡しても、職歴の節だけを報告する。"""
+        p = _example()
+        p["schema_version"] = "2.0"
+        p["job_change_axis"] = {"reasons": ["裁量の拡大"]}
+        self.assertEqual(list(_states(p)), ps.SECTION_IDS)
+        self.assertEqual(set(_states(p).values()), {"deep"})
 
     def test_career_unparseable_period_is_skeleton(self) -> None:
         p = _example()
@@ -97,38 +95,19 @@ class StateTest(unittest.TestCase):
                 a["metric"] = None
         self.assertEqual(_states(p)["achievements"], "skeleton")
 
-    def test_v1_conditions_never_deep(self) -> None:
-        p = {
-            "schema_version": "1.0",
-            "job_change_axis": {"must_conditions": ["リモート可"], "want_conditions": []},
-        }
-        self.assertEqual(_states(p)["conditions"], "skeleton")
-
-    def test_salary_desired_only_is_skeleton(self) -> None:
-        p = copy.deepcopy(_example())
-        p["salary"]["current"] = None
-        self.assertEqual(_states(p)["salary"], "skeleton")
-
 
 class MainTest(unittest.TestCase):
-    def test_main_json(self) -> None:
-        import contextlib
-        import io
-
+    def _run(self, *argv: str) -> tuple[int, str]:
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
-            code = ps.main([_EXAMPLE, "--json"])
+            code = ps.main(list(argv))
+        return code, buf.getvalue()
+
+    def test_exit_codes_and_json_keys(self) -> None:
+        code, out = self._run(_EXAMPLE, "--json")
         self.assertEqual(code, 0)
-        out = json.loads(buf.getvalue())
-        self.assertEqual([s["id"] for s in out["sections"]], ps.SECTION_IDS)
-
-    def test_main_unreadable_returns_1(self) -> None:
-        import contextlib
-        import io
-
-        buf = io.StringIO()
-        with contextlib.redirect_stdout(buf):
-            code = ps.main([os.path.join(_SKILL_DIR, "no_such_file.json")])
+        self.assertEqual([s["id"] for s in json.loads(out)["sections"]], ps.SECTION_IDS)
+        code, _ = self._run(os.path.join(_SKILL_DIR, "no_such_file.json"))
         self.assertEqual(code, 1)
 
 

@@ -7,7 +7,7 @@
       "category": "転職理由",
       "question": "現職を離れようと考えた理由を聞かせてください。",
       "interviewer_intent": "定着性と、転職で解こうとしている課題の一貫性を確認する。",
-      "basis": "profile.job_change_axis.reasons[0]",
+      "basis": "axis.job_change_axis.reasons[0]",
       "provenance": "general",
       "stage": "一次面接"
     },

@@ -1,8 +1,8 @@
 # Canonical investigation procedure for compensation, benefits, and work style (compensation-benefits)
 
-This is the canonical procedure defining the investigation perspectives and source catalog for investigating compensation (topic=compensation), benefits (topic=benefits), and work style (topic=workstyle). Follow `references/evidence-grading.md` for the definition, assignment criteria, and operating rules of evidence levels (A through D); this file does not duplicate that definition. Each source below carries a rough indication of its level.
+This is the canonical procedure defining the investigation perspectives and source catalog for investigating compensation (topic=compensation), benefits (topic=benefits), and work style (topic=workstyle). Follow `references/evidence-grading.md` for the definition, assignment criteria, and operating rules of evidence levels (A through D); this file does not duplicate that definition. Each source below is marked with a rough indication of its level.
 
-Collected figures (annual holidays, average monthly overtime, paid-leave-taking rate, average number of paid-leave days taken, average annual salary) must be structured into `company_metrics` in `company_research.json`, in addition to being embedded in a prose claim. The format is in `references/company-research-format.md`, noting the unit, source URL, and level together. Set value to null when it cannot be confirmed.
+Collected figures (annual holidays, average monthly overtime, paid-leave-taking rate, average number of paid-leave days taken, average annual salary) must be embedded in a prose claim and also structured into `company_metrics` in `company_research.json`. The format is in `references/company-research-format.md`, noting the unit, source URL, and level together. Set value to null when it cannot be confirmed.
 
 ## Investigation perspectives
 
@@ -10,7 +10,7 @@ Collected figures (annual holidays, average monthly overtime, paid-leave-taking 
 
 | Perspective | Content |
 |---|---|
-| Compensation structure | Whether a grade system exists, salary ranges, the frequency and basis of bonuses (performance-linked or fixed), the raise mechanism, and various allowances. The recruiting site's compensation-system page and the job posting are primary sources (level A, though an evaluative expression does not guarantee its truth). |
+| Compensation structure | Whether a grade system exists, salary ranges, the frequency and basis of bonuses (performance-linked or fixed), the raise mechanism, and allowances. The recruiting site's compensation-system page and the job posting are primary sources (level A, though an evaluative expression does not guarantee its truth). |
 | Average annual salary level | The average annual salary in the securities report's "Status of Employees" section (level A). State in the statement or open_questions that it is a company-wide average lacking a breakdown by job type or employment type (the limits are in `references/source-catalog.md` and `references/evidence-grading.md`). |
 | Cross-checking against the job posting's range | Cross-check the range the job posting (job_posting.json) states against the securities report's average annual salary and public statistics' job-type-level figures. Leave a discrepancy in open_questions. |
 | Aggregated annual-salary figures from review sites | Use an aggregated annual-salary figure from a review-aggregation site (level C) as supporting evidence, limited to an aggregate resting on a sufficient number of responses. Do not use an individual post or a small-sample aggregate to assert a fact. |
@@ -62,11 +62,11 @@ A major news outlet's reporting and an industry association's report are also tr
 |---|---|---|---|
 | OpenWork | Aggregated annual-salary figures, actual overtime, paid-leave-taking, and an overall evaluation of treatment (submission of proof of employment and manual screening required) | compensation/workstyle/reputation | https://www.openwork.jp/ |
 
-Use a review-site post as supporting evidence on three conditions: it is an aggregated overall score across many respondents, it rests on a sufficient number of responses, and it can be corroborated across multiple sources. Do not use an individual post, a small-sample aggregate, or a per-facet score to assert a fact (the grounds and limits are in "The conditional validity of an aggregated overall score" and "The selection bias of review-site posts" in `references/evidence-grading.md`).
+Use a review-site post as supporting evidence on three conditions: it is an aggregated overall score, it rests on a sufficient number of responses, and it can be corroborated across multiple sources. Do not use an individual post, a small-sample aggregate, or a per-facet score to assert a fact (the grounds and limits are in "The conditional validity of an aggregated overall score" and "The selection bias of review-site posts" in `references/evidence-grading.md`).
 
 ## Public statistics for comparing salary levels (a reference point)
 
-Public statistics serve as a reference point for placing a single company's average annual salary (from its securities report) against industry, occupation, and age-group levels. Both are public statistics and are treated as fact at level A.
+Public statistics serve as a reference point for placing one company's average annual salary (from its securities report) against industry, occupation, and age-group levels. Both are public statistics and are treated as fact at level A.
 
 | Statistic | Supervising authority | Mainly reveals | Source URL |
 |---|---|---|---|
@@ -77,6 +77,6 @@ Limits of the comparison: a securities report's average annual salary is a compa
 
 ## Reflecting this in claims and company_metrics
 
-- Once you collect a figure (annual holidays, overtime, paid-leave-taking rate, average number of paid-leave days taken, average annual salary), build the corresponding claim, and in addition structure it into `company_metrics` (value, unit, source_url, grade, as_of).
+- Once you collect a figure (annual holidays, overtime, paid-leave-taking rate, average number of paid-leave days taken, average annual salary), build the corresponding claim, and also structure it into `company_metrics` (value, unit, source_url, grade, as_of).
 - Make a program's "existence" a factual claim (example: 「健康経営優良法人2026に認定されている」 grade=A; a certification scheme's published data is primary information from the certifying body). A program's "merit" is an evaluation; do not assert it.
 - Leave a discrepancy between the job posting's range and the securities report's average annual salary or public statistics in open_questions.

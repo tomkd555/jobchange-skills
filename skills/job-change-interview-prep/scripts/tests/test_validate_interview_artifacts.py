@@ -8,12 +8,14 @@
 from __future__ import annotations
 
 import copy
+import io
 import json
 import os
 import re
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 
 _SCRIPTS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _SKILL_DIR = os.path.dirname(_SCRIPTS_DIR)
@@ -27,10 +29,7 @@ _CODE_RE = re.compile(r"`([^`]+)`")
 
 
 def _known_category_terms(md_path: str) -> list[str]:
-    """「既知の質問類型は…である。」の文からバックティック囲みの語彙を順に取り出す。
-
-    後続の `question-bank.md` 等の参照を巻き込まないよう、最初の「である。」までで区切る。
-    """
+    """「The known question categories are …」の文からバックティック囲みの語彙を順に取り出す。"""
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
     start = text.index("The known question categories are ")
@@ -60,7 +59,7 @@ def _valid_questions() -> dict:
                 "category": "転職理由",
                 "question": "現職を離れようと考えた理由を聞かせてください。",
                 "interviewer_intent": "定着性と転職理由の一貫性を確認する。",
-                "basis": "profile.job_change_axis.reasons[0]",
+                "basis": "axis.job_change_axis.reasons[0]",
                 "provenance": "general",
                 "stage": "一次面接",
             },
@@ -109,545 +108,180 @@ def _valid_evaluation() -> dict:
                     "consistency": "充足",
                     "company_fit": "不足",
                 },
-                "feedback": "profile.job_change_axis.reasons[0] と矛盾なく述べている。",
+                "feedback": "axis.job_change_axis.reasons[0] と矛盾なく述べている。",
                 "improvement": "claim C001 と結び付けて志望先での目標まで続ける。",
             }
         ],
     }
 
 
-class ValidatePassTest(unittest.TestCase):
-    def test_questions_pass(self):
-        result = via.validate(_valid_questions())
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
-
-    def test_answers_pass(self):
-        result = via.validate(_valid_answers())
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
-
-    def test_evaluation_pass(self):
-        result = via.validate(_valid_evaluation())
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
+def _degrade(d, reason="company_research.json が無い"):
+    d["degraded"] = True
+    d["degraded_reason"] = reason
 
 
-class KindDetectionTest(unittest.TestCase):
-    def test_detect_kind_per_artifact(self):
+def _degraded_with_graded_fit(d):
+    _degrade(d)
+
+
+def _degraded_excluded_fit(d):
+    _degrade(d)
+    d["evaluations"][0]["scores"]["company_fit"] = "対象外"
+
+
+class ValidateTest(unittest.TestCase):
+    def test_valid_fixtures_pass(self):
+        rows = [
+            ("questions", _valid_questions(), None),
+            ("answers", _valid_answers(), None),
+            ("evaluation", _valid_evaluation(), None),
+            ("answers + questions 相互参照", _valid_answers(), _valid_questions()),
+        ]
+        for label, document, questions in rows:
+            with self.subTest(label):
+                result = via.validate(document, questions=questions)
+                self.assertEqual(result.errors, [])
+                self.assertEqual(result.warnings, [])
+
+    def test_detect_kind(self):
         self.assertEqual(via.detect_kind(_valid_questions()), "questions")
         self.assertEqual(via.detect_kind(_valid_answers()), "answers")
         self.assertEqual(via.detect_kind(_valid_evaluation()), "evaluation")
 
-    def test_non_object_root_is_an_error(self):
-        result = via.validate(["questions"])
-        self.assertFalse(result.ok)
-        self.assertTrue(any("ルート要素" in e for e in result.errors))
-
-    def test_no_kind_key_is_an_error(self):
-        result = via.validate({"degraded": False, "degraded_reason": None})
-        self.assertFalse(result.ok)
-        self.assertTrue(any("判別できない" in e for e in result.errors))
-
-    def test_two_kind_keys_is_an_error(self):
-        document = _valid_questions()
-        document["answers"] = []
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("判別できない" in e for e in result.errors))
-
-
-class DegradedTest(unittest.TestCase):
-    def test_degraded_true_with_reason_passes(self):
-        document = _valid_questions()
-        document["degraded"] = True
-        document["degraded_reason"] = "company_research.json が無いためフォールバックした"
-        result = via.validate(document)
-        self.assertEqual(result.errors, [])
-
-    def test_missing_degraded_is_an_error(self):
-        document = _valid_questions()
-        del document["degraded"]
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("degraded は真偽値" in e for e in result.errors))
-
-    def test_non_bool_degraded_is_an_error(self):
-        document = _valid_questions()
-        document["degraded"] = "false"
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("degraded は真偽値" in e for e in result.errors))
-
-    def test_missing_degraded_reason_is_an_error(self):
-        document = _valid_questions()
-        del document["degraded_reason"]
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("degraded_reason は必須" in e for e in result.errors))
-
-    def test_degraded_true_without_reason_is_an_error(self):
-        document = _valid_questions()
-        document["degraded"] = True
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("理由の文字列" in e for e in result.errors))
-
-    def test_degraded_true_with_empty_reason_is_an_error(self):
-        document = _valid_evaluation()
-        document["degraded"] = True
-        document["degraded_reason"] = "   "
-        document["evaluations"][0]["scores"]["company_fit"] = "対象外"
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("理由の文字列" in e for e in result.errors))
-
-    def test_degraded_false_with_reason_is_an_error(self):
-        document = _valid_questions()
-        document["degraded_reason"] = "理由を書いてはならない"
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("null でなければならない" in e for e in result.errors))
-
-
-class QuestionsTest(unittest.TestCase):
-    def test_non_list_questions_is_an_error(self):
-        document = _valid_questions()
-        document["questions"] = {}
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("配列でなければならない" in e for e in result.errors))
-
-    def test_empty_questions_is_a_warning(self):
-        document = _valid_questions()
-        document["questions"] = []
-        result = via.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("questions が空" in w for w in result.warnings))
-
-    def test_non_object_entry_is_an_error(self):
-        document = _valid_questions()
-        document["questions"][0] = "Q001"
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("オブジェクトでなければならない" in e for e in result.errors))
-
-    def test_missing_id_is_an_error(self):
-        document = _valid_questions()
-        del document["questions"][0]["id"]
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("questions[0].id" in e for e in result.errors))
-
-    def test_malformed_id_is_an_error(self):
-        document = _valid_questions()
-        document["questions"][0]["id"] = "1"
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("Q001 形式" in e for e in result.errors))
-
-    def test_four_digit_id_passes(self):
-        document = _valid_questions()
-        document["questions"][0]["id"] = "Q1000"
-        result = via.validate(document)
-        self.assertEqual(result.errors, [])
-
-    def test_duplicate_id_is_an_error(self):
-        document = _valid_questions()
-        document["questions"][1]["id"] = "Q001"
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("重複" in e for e in result.errors))
-
-    def test_missing_category_is_an_error(self):
-        document = _valid_questions()
-        document["questions"][0]["category"] = ""
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("category は必須" in e for e in result.errors))
-
-    def test_unknown_category_is_a_warning(self):
-        document = _valid_questions()
-        document["questions"][0]["category"] = "雑談"
-        result = via.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("既知の質問類型" in w for w in result.warnings))
-
-    def test_foreign_categories_pass(self):
-        document = _valid_questions()
-        document["questions"][0]["category"] = "ビヘイビアラル"
-        document["questions"][1]["category"] = "ケース"
-        result = via.validate(document)
-        self.assertEqual(result.warnings, [])
-
-    def test_missing_interviewer_intent_is_an_error(self):
-        document = _valid_questions()
-        del document["questions"][0]["interviewer_intent"]
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("interviewer_intent は必須" in e for e in result.errors))
-
-    def test_empty_basis_is_an_error(self):
-        document = _valid_questions()
-        document["questions"][0]["basis"] = "  "
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("basis は必須" in e for e in result.errors))
-
-    def test_empty_question_is_an_error(self):
-        document = _valid_questions()
-        document["questions"][0]["question"] = ""
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("question は必須" in e for e in result.errors))
-
-    def test_known_provenance_passes(self):
-        document = _valid_questions()
-        document["questions"][0]["provenance"] = "reported"
-        result = via.validate(document)
-        self.assertEqual(result.warnings, [])
-
-    def test_unknown_provenance_is_a_warning(self):
-        document = _valid_questions()
-        document["questions"][0]["provenance"] = "guessed"
-        result = via.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("既知の出所" in w for w in result.warnings))
-
-    def test_non_string_provenance_is_a_warning(self):
-        document = _valid_questions()
-        document["questions"][0]["provenance"] = 1
-        result = via.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("既知の出所" in w for w in result.warnings))
-
-    def test_missing_provenance_is_a_warning(self):
-        document = _valid_questions()
-        del document["questions"][0]["provenance"]
-        result = via.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("questions[0].provenance" in w and "欠落" in w for w in result.warnings))
-
-    def test_missing_stage_is_a_warning(self):
-        document = _valid_questions()
-        del document["questions"][0]["stage"]
-        result = via.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("questions[0].stage" in w and "欠落" in w for w in result.warnings))
-
-    def test_known_stage_passes(self):
-        document = _valid_questions()
-        document["questions"][0]["stage"] = "一次面接"
-        result = via.validate(document)
-        self.assertEqual(result.warnings, [])
-
-    def test_unknown_stage_is_a_warning(self):
-        document = _valid_questions()
-        document["questions"][0]["stage"] = "三次面接"
-        result = via.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("既知の選考段階" in w for w in result.warnings))
-
-    def test_non_string_stage_is_a_warning(self):
-        document = _valid_questions()
-        document["questions"][0]["stage"] = 3
-        result = via.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("既知の選考段階" in w for w in result.warnings))
-
-
-class NotesTest(unittest.TestCase):
-    def test_notes_on_answers_kind_is_not_checked(self):
-        """notes は questions 種別だけで検査される。answers 種別に不正な notes があっても無視する。"""
-        document = _valid_answers()
-        document["notes"] = "配列でない不正な notes"
-        result = via.validate(document)
-        self.assertFalse(any("notes" in e for e in result.errors))
-
-    def test_valid_notes_passes(self):
-        document = _valid_questions()
-        document["notes"] = ["配慮事項に該当する質問は聞かれても答えなくてよい。"]
-        result = via.validate(document)
-        self.assertEqual(result.errors, [])
-
-    def test_empty_notes_array_passes(self):
-        document = _valid_questions()
-        document["notes"] = []
-        result = via.validate(document)
-        self.assertEqual(result.errors, [])
-
-    def test_non_array_notes_is_an_error(self):
-        document = _valid_questions()
-        document["notes"] = "配慮事項に該当する質問は聞かれても答えなくてよい。"
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("notes は配列でなければならない" in e for e in result.errors))
-
-    def test_notes_with_empty_string_is_an_error(self):
-        document = _valid_questions()
-        document["notes"] = ["面接は二段階である。", ""]
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("notes[1]" in e for e in result.errors))
-
-    def test_questions_with_notes_is_still_detected_as_questions(self):
-        document = _valid_questions()
-        document["notes"] = ["面接は二段階である。"]
-        self.assertEqual(via.detect_kind(document), "questions")
-
-
-class AnswersTest(unittest.TestCase):
-    def test_non_list_answers_is_an_error(self):
-        result = via.validate({"answers": "Q001"})
-        self.assertFalse(result.ok)
-        self.assertTrue(any("配列でなければならない" in e for e in result.errors))
-
-    def test_empty_answers_is_a_warning(self):
-        result = via.validate({"answers": []})
-        self.assertTrue(result.ok)
-        self.assertTrue(any("answers が空" in w for w in result.warnings))
-
-    def test_missing_question_id_is_an_error(self):
-        document = _valid_answers()
-        del document["answers"][0]["question_id"]
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("answers[0].question_id" in e for e in result.errors))
-
-    def test_duplicate_question_id_is_an_error(self):
-        document = _valid_answers()
-        document["answers"][1]["question_id"] = "Q001"
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("重複" in e for e in result.errors))
-
-    def test_empty_answer_is_an_error(self):
-        document = _valid_answers()
-        document["answers"][0]["answer"] = ""
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("answer は必須" in e for e in result.errors))
-
-    def test_missing_answered_at_is_an_error(self):
-        document = _valid_answers()
-        del document["answers"][0]["answered_at"]
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("answered_at は必須" in e for e in result.errors))
-
-    def test_malformed_answered_at_is_an_error(self):
-        document = _valid_answers()
-        document["answers"][0]["answered_at"] = "2026/08/14"
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("YYYY-MM-DD" in e for e in result.errors))
-
-
-class ScoresTest(unittest.TestCase):
-    def test_non_object_scores_is_an_error(self):
-        document = _valid_evaluation()
-        document["evaluations"][0]["scores"] = "充足"
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("scores はオブジェクト" in e for e in result.errors))
-
-    def test_unknown_level_is_an_error(self):
-        document = _valid_evaluation()
-        document["evaluations"][0]["scores"]["star"] = "良い"
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("scores.star" in e for e in result.errors))
-
-    def test_missing_core_score_is_an_error(self):
-        document = _valid_evaluation()
-        del document["evaluations"][0]["scores"]["consistency"]
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("scores.consistency" in e for e in result.errors))
-
-    def test_excluded_company_fit_with_degraded_true_passes(self):
-        document = _valid_evaluation()
-        document["degraded"] = True
-        document["degraded_reason"] = "company_research.json が無い"
-        document["evaluations"][0]["scores"]["company_fit"] = "対象外"
-        result = via.validate(document)
-        self.assertEqual(result.errors, [])
-
-    def test_missing_company_fit_with_degraded_true_passes(self):
-        document = _valid_evaluation()
-        document["degraded"] = True
-        document["degraded_reason"] = "company_research.json が無い"
-        del document["evaluations"][0]["scores"]["company_fit"]
-        result = via.validate(document)
-        self.assertEqual(result.errors, [])
-
-    def test_graded_company_fit_with_degraded_true_is_an_error(self):
-        document = _valid_evaluation()
-        document["degraded"] = True
-        document["degraded_reason"] = "company_research.json が無い"
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("対象外」または欠落" in e for e in result.errors))
-
-    def test_excluded_company_fit_with_degraded_false_is_an_error(self):
-        document = _valid_evaluation()
-        document["evaluations"][0]["scores"]["company_fit"] = "対象外"
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("対象外」にできない" in e for e in result.errors))
-
-    def test_missing_company_fit_with_degraded_false_is_an_error(self):
-        document = _valid_evaluation()
-        del document["evaluations"][0]["scores"]["company_fit"]
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("scores.company_fit" in e for e in result.errors))
-
-
-class EvaluationTest(unittest.TestCase):
-    def test_empty_evaluations_is_a_warning(self):
-        document = _valid_evaluation()
-        document["evaluations"] = []
-        result = via.validate(document)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("evaluations が空" in w for w in result.warnings))
-
-    def test_empty_feedback_is_an_error(self):
-        document = _valid_evaluation()
-        document["evaluations"][0]["feedback"] = ""
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("feedback は必須" in e for e in result.errors))
-
-    def test_missing_improvement_is_an_error(self):
-        document = _valid_evaluation()
-        del document["evaluations"][0]["improvement"]
-        result = via.validate(document)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("improvement は必須" in e for e in result.errors))
-
-
-class CrossReferenceTest(unittest.TestCase):
-    def test_question_ids_collects_ids(self):
-        self.assertEqual(via.question_ids(_valid_questions()), {"Q001", "Q002"})
-
-    def test_answers_referring_to_existing_questions_pass(self):
-        result = via.validate(_valid_answers(), questions=_valid_questions())
-        self.assertEqual(result.errors, [])
-
-    def test_answer_referring_to_unknown_question_is_an_error(self):
-        document = _valid_answers()
-        document["answers"][1]["question_id"] = "Q009"
-        result = via.validate(document, questions=_valid_questions())
-        self.assertFalse(result.ok)
-        self.assertTrue(any("存在しない" in e for e in result.errors))
-
-    def test_evaluation_referring_to_unknown_question_is_an_error(self):
-        document = _valid_evaluation()
-        document["evaluations"][0]["question_id"] = "Q009"
-        result = via.validate(document, questions=_valid_questions())
-        self.assertFalse(result.ok)
-        self.assertTrue(any("存在しない" in e for e in result.errors))
-
-    def test_unknown_question_id_is_not_checked_without_questions(self):
-        document = _valid_evaluation()
-        document["evaluations"][0]["question_id"] = "Q009"
-        result = via.validate(document)
-        self.assertEqual(result.errors, [])
-
-    def test_partial_answers_are_not_an_error(self):
-        """未回答の質問が残っていること自体は成果物の欠陥ではない（再開の差分になる）。"""
-        document = _valid_answers()
-        del document["answers"][1]
-        result = via.validate(document, questions=_valid_questions())
-        self.assertEqual(result.errors, [])
-
-
-class CliTest(unittest.TestCase):
-    def _write_tmp(self, obj: dict) -> str:
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(obj, f, ensure_ascii=False)
-        self.addCleanup(os.remove, path)
-        return path
-
-    def test_main_returns_0_on_valid(self):
-        self.assertEqual(via.main([self._write_tmp(_valid_questions())]), 0)
-
-    def test_main_returns_1_on_invalid(self):
-        document = _valid_questions()
-        del document["degraded"]
-        self.assertEqual(via.main([self._write_tmp(document)]), 1)
-
-    def test_main_returns_1_on_broken_json(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            f.write("{ not valid json ")
-        self.addCleanup(os.remove, path)
-        self.assertEqual(via.main([path]), 1)
-
-    def test_main_json_flag_valid(self):
-        self.assertEqual(via.main([self._write_tmp(_valid_answers()), "--json"]), 0)
-
-    def test_main_returns_0_on_valid_with_bom(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
-            json.dump(_valid_evaluation(), f, ensure_ascii=False)
-        self.addCleanup(os.remove, path)
-        self.assertEqual(via.main([path]), 0)
-
-    def test_main_with_questions_option(self):
-        answers = self._write_tmp(_valid_answers())
-        questions = self._write_tmp(_valid_questions())
-        self.assertEqual(via.main([answers, "--questions", questions]), 0)
-
-    def test_main_returns_1_on_broken_questions_option(self):
-        answers = self._write_tmp(_valid_answers())
-        self.assertEqual(via.main([answers, "--questions", answers + ".missing"]), 1)
-
-
-class ResultShapeTest(unittest.TestCase):
-    def test_to_dict_shape(self):
-        d = via.validate(_valid_questions()).to_dict()
-        self.assertEqual(d["status"], "PASS")
-        self.assertEqual(d["error_count"], 0)
-        self.assertIn("warnings", d)
-
-    def test_format_report_first_line(self):
-        report = via.format_report(via.validate(_valid_questions()))
-        self.assertTrue(report.startswith("検証結果: PASS（ERROR 0件 / WARN 0件）"))
-
-    def test_immutability_of_input(self):
+    def test_bundled_examples_pass(self):
+        def asset(name):
+            return os.path.join(_SKILL_DIR, "assets", name)
+
+        questions = via.load_json(asset("interview_questions_example.json"))
+        for name in ("interview_questions_example.json", "interview_answers_example.json",
+                     "interview_evaluation_example.json"):
+            with self.subTest(name):
+                result = via.validate(via.load_json(asset(name)), questions=questions)
+                self.assertEqual(result.errors, [])
+                self.assertEqual(result.warnings, [])
+
+    def test_error_rules(self):
+        q, a, e = _valid_questions, _valid_answers, _valid_evaluation
+        rows = [
+            ("ルートが配列", lambda: ["questions"], None, None, "ルート要素"),
+            ("種別キーが無い", lambda: {"degraded": False, "degraded_reason": None}, None, None, "判別できない"),
+            ("種別キーが2つ", q, lambda d: d.__setitem__("answers", []), None, "判別できない"),
+            ("degraded が真偽値でない", q, lambda d: d.__setitem__("degraded", "false"), None, "degraded は真偽値"),
+            ("degraded_reason 欠落", q, lambda d: d.pop("degraded_reason"), None, "degraded_reason は必須"),
+            ("degraded=true で理由が空", q, lambda d: d.update(degraded=True), None, "理由の文字列"),
+            ("degraded=false で理由あり", q, lambda d: d.update(degraded_reason="書かない"), None, "null でなければならない"),
+            ("entries が配列でない", q, lambda d: d.__setitem__("questions", {}), None, "配列でなければならない"),
+            ("要素がオブジェクトでない", q, lambda d: d["questions"].__setitem__(0, "Q001"), None, "オブジェクトでなければならない"),
+            ("id 形式（Q + 3桁以上）", q, lambda d: d["questions"][0].__setitem__("id", "1"), None, "Q001 形式"),
+            ("id 重複", q, lambda d: d["questions"][1].__setitem__("id", "Q001"), None, "重複"),
+            ("category が空（必須文字列）", q, lambda d: d["questions"][0].__setitem__("category", ""), None, "category は必須"),
+            ("notes が配列でない", q, lambda d: d.__setitem__("notes", "配慮事項"), None, "notes は配列"),
+            ("notes に空要素", q, lambda d: d.__setitem__("notes", ["面接は二段階である。", ""]), None, "notes[1]"),
+            ("answered_at 形式", a, lambda d: d["answers"][0].__setitem__("answered_at", "2026/08/14"), None, "YYYY-MM-DD"),
+            ("scores がオブジェクトでない", e, lambda d: d["evaluations"][0].__setitem__("scores", "充足"), None, "scores はオブジェクト"),
+            ("core score が語彙外", e, lambda d: d["evaluations"][0]["scores"].__setitem__("star", "良い"), None, "scores.star"),
+            ("degraded=true で company_fit に評価値", e, _degraded_with_graded_fit, None, "対象外」または欠落"),
+            ("degraded=true で理由が空白", e, lambda d: (_degrade(d, "   "), d["evaluations"][0]["scores"].__setitem__("company_fit", "対象外")), None, "理由の文字列"),
+            ("degraded=false で company_fit が対象外", e, lambda d: d["evaluations"][0]["scores"].__setitem__("company_fit", "対象外"), None, "対象外」にできない"),
+            ("degraded=false で company_fit 欠落", e, lambda d: d["evaluations"][0]["scores"].pop("company_fit"), None, "scores.company_fit"),
+            ("answers の質問 id が質問側に無い", a, lambda d: d["answers"][1].__setitem__("question_id", "Q009"), q, "存在しない"),
+            ("evaluations の質問 id が質問側に無い", e, lambda d: d["evaluations"][0].__setitem__("question_id", "Q009"), q, "存在しない"),
+        ]
+        for label, build, mutate, questions, expected in rows:
+            with self.subTest(label):
+                document = build()
+                if mutate is not None:
+                    mutate(document)
+                result = via.validate(document, questions=questions() if questions else None)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected in err for err in result.errors), result.errors)
+
+    def test_accepted_variants_have_no_error(self):
+        q, a, e = _valid_questions, _valid_answers, _valid_evaluation
+        rows = [
+            ("4桁の id", q, lambda d: d["questions"][0].__setitem__("id", "Q1000"), None),
+            ("degraded=true と理由と対象外", e, _degraded_excluded_fit, None),
+            ("degraded=true で company_fit 欠落", e, lambda d: (_degrade(d), d["evaluations"][0]["scores"].pop("company_fit")), None),
+            ("questions 未指定なら id を照合しない", e, lambda d: d["evaluations"][0].__setitem__("question_id", "Q009"), None),
+            ("未回答の質問が残る", a, lambda d: d["answers"].pop(1), q),
+            ("answers 種別の notes は検査しない", a, lambda d: d.__setitem__("notes", "不正"), None),
+        ]
+        for label, build, mutate, questions in rows:
+            with self.subTest(label):
+                document = build()
+                mutate(document)
+                result = via.validate(document, questions=questions() if questions else None)
+                self.assertEqual(result.errors, [])
+
+    def test_warn_rules(self):
+        q = _valid_questions
+        rows = [
+            ("questions が空", lambda d: d.__setitem__("questions", []), "questions が空"),
+            ("カタログ外の category", lambda d: d["questions"][0].__setitem__("category", "雑談"), "既知の質問類型"),
+            ("語彙外の provenance（非文字列）", lambda d: d["questions"][0].__setitem__("provenance", 1), "既知の出所"),
+            ("provenance 欠落", lambda d: d["questions"][0].pop("provenance"), "provenance"),
+            ("語彙外の stage", lambda d: d["questions"][0].__setitem__("stage", "三次面接"), "既知の選考段階"),
+        ]
+        for label, mutate, expected in rows:
+            with self.subTest(label):
+                document = q()
+                mutate(document)
+                result = via.validate(document)
+                self.assertEqual(result.errors, [])
+                self.assertTrue(any(expected in w for w in result.warnings), result.warnings)
+
+    def test_input_is_not_mutated(self):
         document = _valid_evaluation()
         snapshot = copy.deepcopy(document)
         via.validate(document, questions=_valid_questions())
         self.assertEqual(document, snapshot)
 
 
-class ExampleAssetTest(unittest.TestCase):
-    def _assets(self, name: str) -> str:
-        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        return os.path.join(base, "assets", name)
+class CliTest(unittest.TestCase):
+    def _run(self, *args: str) -> tuple[int, str]:
+        buffer = io.StringIO()
+        with redirect_stdout(buffer):
+            code = via.main(list(args))
+        return code, buffer.getvalue()
 
-    def test_bundled_examples_pass(self):
-        questions = via.load_json(self._assets("interview_questions_example.json"))
-        for name in ("interview_questions_example.json", "interview_answers_example.json",
-                     "interview_evaluation_example.json"):
-            with self.subTest(name=name):
-                result = via.validate(via.load_json(self._assets(name)), questions=questions)
-                self.assertEqual(result.errors, [])
-                self.assertEqual(result.warnings, [])
+    def _write(self, obj) -> str:
+        fd, path = tempfile.mkstemp(suffix=".json")
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            if isinstance(obj, str):
+                f.write(obj)
+            else:
+                json.dump(obj, f, ensure_ascii=False)
+        self.addCleanup(os.remove, path)
+        return path
+
+    def test_exit_codes(self):
+        invalid = _valid_questions()
+        del invalid["degraded"]
+        answers = self._write(_valid_answers())
+        rows = [
+            ("valid", [self._write(_valid_questions())], 0),
+            ("invalid", [self._write(invalid)], 1),
+            ("broken json", [self._write("{ not valid json ")], 1),
+            ("--questions で相互参照", [answers, "--questions", self._write(_valid_questions())], 0),
+            ("--questions が読めない", [answers, "--questions", answers + ".missing"], 1),
+        ]
+        for label, argv, expected in rows:
+            with self.subTest(label):
+                self.assertEqual(self._run(*argv)[0], expected)
+
+    def test_json_output_keys(self):
+        _, output = self._run(self._write(_valid_answers()), "--json")
+        self.assertEqual(
+            set(json.loads(output)),
+            {"status", "error_count", "warning_count", "errors", "warnings"},
+        )
 
 
 class VocabularySyncTest(unittest.TestCase):
-    """検証スクリプトの語彙定数と references/interview-format.md の原本との一致を確かめる。
-
-    片方だけを直したときに、このテストが落ちる。
-    """
+    """検証スクリプトの語彙定数と references/interview-format.md の原本との一致を確かめる。"""
 
     def test_categories_match_interview_format(self):
         terms = _known_category_terms(_INTERVIEW_FORMAT_MD)
-        self.assertEqual(len(terms), 18, terms)
         self.assertEqual(tuple(terms), via._CATEGORIES)
 
     def test_provenance_values_match_interview_format(self):

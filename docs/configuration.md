@@ -44,15 +44,18 @@ If the file pointed to by `JOB_CHANGE_CONFIG` does not exist, that setting is ig
 {data_root}/
 ├─ career-private/          ← Personal information. Not passed to any agent with web tools
 │   ├─ profile.json
+│   ├─ axis.json
 │   ├─ self_analysis.json
 │   ├─ company_index.json
 │   ├─ commute.json
-│   └─ fit/{company slug}/{fit_assessment,time_analysis}.json
+│   ├─ documents/           ← Generic application documents (no target company yet)
+│   ├─ fit/{company slug}/{fit_assessment,time_analysis,sources,qualitative_judgment}.json
+│   └─ fit/current/time_analysis.json
 ├─ companies/{company slug}/  ← Per-company deliverables (non-personal information)
 └─ job-search/{YYYYMMDD}-{slug}/job_search_results.json
 ```
 
-`career-private/` is placed outside `companies/` in order to isolate personal information from the tree that an agent with web-sending capability works in. Renaming `private_dir` preserves this isolation.
+`career-private/` is placed outside `companies/` to isolate personal information from the tree that an agent with web-sending capability works in. Renaming `private_dir` preserves this isolation.
 
 ## Creating the configuration
 
@@ -72,13 +75,13 @@ python <installation location of the skills>/job-change-support/scripts/jc_confi
 
 This outputs, as JSON, the configuration settled by the search order and the absolute path for each data item. The exit code is 0 on success, 1 if a configuration was found but its content is invalid, and 2 if unconfigured.
 
-When only an individual path is needed, use `--path`. The keys are `data_root`, `private`, `companies`, `job_search`, `profile`, `company_index`, `self_analysis`, and `commute`.
+When only an individual path is needed, use `--path`. The keys are `data_root`, `private`, `companies`, `job_search`, `profile`, `axis`, `company_index`, `self_analysis`, and `commute`.
 
 ```bash
 python .../jc_config.py --path profile
 ```
 
-None of these options create a directory. Each directory is created by the individual skill at the point it writes a deliverable.
+These options do not create a directory. Each directory is created by the individual skill at the point it writes a deliverable.
 
 ## How paths are written in skill text
 

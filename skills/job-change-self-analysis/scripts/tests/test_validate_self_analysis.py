@@ -7,7 +7,9 @@
 """
 from __future__ import annotations
 
+import contextlib
 import copy
+import io
 import json
 import os
 import sys
@@ -106,604 +108,179 @@ def _valid_self_analysis_v11() -> dict:
     return d
 
 
-class ValidatePassTest(unittest.TestCase):
-    def test_full_self_analysis_passes_without_warnings(self):
-        result = vsa.validate(_valid_self_analysis())
-        self.assertTrue(result.ok)
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
+_DEL = object()
 
-    def test_full_v11_self_analysis_passes_without_warnings(self):
-        result = vsa.validate(_valid_self_analysis_v11())
-        self.assertTrue(result.ok)
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
 
-    def test_personality_null_is_treated_as_absent(self):
-        d = _valid_self_analysis_v11()
-        d["personality"] = None
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
+def _set(path: list, value=_DEL):
+    """path 末端に value を代入する変異を返す（value 省略で削除）。"""
 
-    def test_markers_empty_list_passes(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["markers"] = []
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
+    def mutate(d: dict) -> None:
+        node = d
+        for key in path[:-1]:
+            node = node[key]
+        if value is _DEL:
+            del node[path[-1]]
+        else:
+            node[path[-1]] = value
 
-    def test_marker_without_options_passes(self):
-        d = _valid_self_analysis_v11()
-        del d["personality"]["markers"][0]["options"]
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
+    return mutate
 
 
-class ErrorCaseTest(unittest.TestCase):
-    def test_root_not_object(self):
-        result = vsa.validate(["not", "an", "object"])
-        self.assertFalse(result.ok)
+def _both(*mutations):
+    def mutate(d: dict) -> None:
+        for m in mutations:
+            m(d)
 
-    def test_missing_schema_version(self):
-        d = _valid_self_analysis()
-        del d["schema_version"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("schema_version" in e for e in result.errors))
+    return mutate
 
-    def test_empty_schema_version(self):
-        d = _valid_self_analysis()
-        d["schema_version"] = "  "
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("schema_version" in e for e in result.errors))
 
-    def test_empty_behavioral_episodes(self):
-        d = _valid_self_analysis()
-        d["behavioral_episodes"] = []
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("behavioral_episodes" in e for e in result.errors))
+def _dup_episode(d: dict) -> None:
+    d["behavioral_episodes"].append(copy.deepcopy(d["behavioral_episodes"][0]))
 
-    def test_episode_not_object(self):
-        d = _valid_self_analysis()
-        d["behavioral_episodes"] = ["not an object"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("behavioral_episodes[0]" in e for e in result.errors))
 
-    def test_episode_missing_situation(self):
-        d = _valid_self_analysis()
-        del d["behavioral_episodes"][0]["situation"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("situation" in e for e in result.errors))
+_MARKERS = ["personality", "markers"]
+_UNLINK_PM2 = _both(
+    _set(_MARKERS + [1, "linked_episode_ids"], []), _set(_MARKERS + [1, "feedback_ids"], [])
+)
 
-    def test_episode_missing_action(self):
-        d = _valid_self_analysis()
-        d["behavioral_episodes"][0]["action"] = "  "
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("action" in e for e in result.errors))
 
-    def test_episode_missing_result(self):
-        d = _valid_self_analysis()
-        del d["behavioral_episodes"][0]["result"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("result" in e for e in result.errors))
+def _presentation(text: str):
+    return _set(["personality", "presentation"], text)
 
-    def test_episode_missing_id(self):
-        d = _valid_self_analysis()
-        del d["behavioral_episodes"][0]["id"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("behavioral_episodes[0].id" in e for e in result.errors))
 
-    def test_episode_empty_id(self):
-        d = _valid_self_analysis()
-        d["behavioral_episodes"][0]["id"] = "  "
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("behavioral_episodes[0].id" in e for e in result.errors))
-
-    def test_episode_non_str_id(self):
-        d = _valid_self_analysis()
-        d["behavioral_episodes"][0]["id"] = 1
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("behavioral_episodes[0].id" in e for e in result.errors))
-
-    def test_episode_missing_id_keeps_reference_check_working(self):
-        """id が欠落しても、その id を指す参照は参照整合エラーとして検出される。"""
-        d = _valid_self_analysis()
-        del d["behavioral_episodes"][0]["id"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("strengths[0].episode_ids" in e and "参照整合" in e for e in result.errors)
-        )
-        self.assertTrue(
-            any("values[0].evidence_episode_ids" in e and "参照整合" in e for e in result.errors)
-        )
-
-    def test_feedback_missing_id(self):
-        d = _valid_self_analysis()
-        del d["others_feedback"][0]["id"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("others_feedback[0].id" in e for e in result.errors))
-
-    def test_feedback_missing_id_keeps_reference_check_working(self):
-        d = _valid_self_analysis()
-        del d["others_feedback"][0]["id"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("strengths[0].feedback_ids" in e and "参照整合" in e for e in result.errors)
-        )
-
-    def test_feedback_not_object(self):
-        d = _valid_self_analysis()
-        d["others_feedback"] = ["文字列"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("others_feedback[0]" in e for e in result.errors))
-
-    def test_strengths_missing_statement(self):
-        d = _valid_self_analysis()
-        del d["strengths"][0]["statement"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("statement" in e for e in result.errors))
-
-    def test_strengths_both_episode_and_feedback_ids_empty(self):
-        d = _valid_self_analysis()
-        d["strengths"][0]["episode_ids"] = []
-        d["strengths"][0]["feedback_ids"] = []
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("strengths[0]" in e for e in result.errors))
-
-    def test_strengths_episode_id_reference_not_found(self):
-        d = _valid_self_analysis()
-        d["strengths"][0]["episode_ids"] = ["ep-999"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("参照整合" in e for e in result.errors))
-
-    def test_strengths_feedback_id_reference_not_found(self):
-        d = _valid_self_analysis()
-        d["strengths"][0]["feedback_ids"] = ["fb-999"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("参照整合" in e for e in result.errors))
-
-    def test_values_evidence_episode_id_reference_not_found(self):
-        d = _valid_self_analysis()
-        d["values"][0]["evidence_episode_ids"] = ["ep-999"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("values[0]" in e for e in result.errors))
-
-    def test_career_adaptability_evidence_episode_id_reference_not_found(self):
-        d = _valid_self_analysis()
-        d["career_adaptability"]["concern"]["evidence_episode_ids"] = ["ep-999"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("career_adaptability.concern" in e for e in result.errors)
-        )
-
-    def test_career_narrative_not_object(self):
-        d = _valid_self_analysis()
-        d["career_narrative"] = "文字列"
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("career_narrative" in e for e in result.errors))
-
-    def test_career_narrative_missing_life_theme(self):
-        d = _valid_self_analysis()
-        del d["career_narrative"]["life_theme"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("life_theme" in e for e in result.errors))
-
-    def test_career_narrative_missing_consistent_motivation(self):
-        d = _valid_self_analysis()
-        d["career_narrative"]["consistent_motivation"] = ""
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("consistent_motivation" in e for e in result.errors))
-
-    def test_reason_for_change_not_object(self):
-        d = _valid_self_analysis()
-        d["reason_for_change"] = "文字列"
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("reason_for_change" in e for e in result.errors))
-
-    def test_reason_for_change_empty_raw_reasons(self):
-        d = _valid_self_analysis()
-        d["reason_for_change"]["raw_reasons"] = []
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("raw_reasons" in e for e in result.errors))
-
-    def test_reason_for_change_missing_constructive_version(self):
-        d = _valid_self_analysis()
-        del d["reason_for_change"]["constructive_version"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("constructive_version" in e for e in result.errors))
-
-
-class WarnCaseTest(unittest.TestCase):
-    def test_no_others_feedback_warns_but_passes(self):
-        d = _valid_self_analysis()
-        d["others_feedback"] = []
-        d["strengths"][0]["feedback_ids"] = []
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("others_feedback" in w for w in result.warnings))
-
-    def test_no_metric_warns_but_passes(self):
-        d = _valid_self_analysis()
-        d["behavioral_episodes"][0]["metric"] = None
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("metric" in w for w in result.warnings))
-
-    def test_missing_updated_at_warns(self):
-        d = _valid_self_analysis()
-        del d["updated_at"]
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("updated_at" in w for w in result.warnings))
-
-    def test_empty_interests_warns(self):
-        d = _valid_self_analysis()
-        d["interests"] = {"domains": [], "concrete_topics": []}
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("interests" in w for w in result.warnings))
-
-    def test_empty_values_warns(self):
-        d = _valid_self_analysis()
-        d["values"] = []
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("values" in w for w in result.warnings))
-
-    def test_duplicate_episode_id_warns_but_passes(self):
-        d = _valid_self_analysis()
-        d["behavioral_episodes"].append(copy.deepcopy(d["behavioral_episodes"][0]))
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("behavioral_episodes[1].id" in w for w in result.warnings))
-
-    def test_duplicate_feedback_id_warns_but_passes(self):
-        d = _valid_self_analysis()
-        d["others_feedback"].append(copy.deepcopy(d["others_feedback"][0]))
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("others_feedback[1].id" in w for w in result.warnings))
-
-    def test_unknown_source_type_warns_but_passes(self):
-        d = _valid_self_analysis()
-        d["others_feedback"][0]["source_type"] = "取引先"
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("source_type" in w for w in result.warnings))
-
-    def test_absent_source_type_does_not_warn(self):
-        d = _valid_self_analysis()
-        d["others_feedback"][0]["source_type"] = None
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.warnings, [])
-
-    def test_constructive_version_same_as_raw_reasons_warns(self):
-        d = _valid_self_analysis()
-        d["reason_for_change"]["constructive_version"] = "裁量が小さい"
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(
-            any("constructive_version" in w for w in result.warnings)
-        )
-
-
-class PersonalityErrorCaseTest(unittest.TestCase):
-    def test_personality_not_object(self):
-        d = _valid_self_analysis_v11()
-        d["personality"] = "文字列"
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("personality" in e for e in result.errors))
-
-    def test_markers_not_list(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["markers"] = "文字列"
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("personality.markers" in e for e in result.errors))
-
-    def test_markers_key_missing(self):
-        d = _valid_self_analysis_v11()
-        del d["personality"]["markers"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("personality.markers" in e for e in result.errors))
-
-    def test_marker_not_object(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["markers"] = ["文字列"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("personality.markers[0]" in e for e in result.errors))
-
-    def test_marker_missing_id(self):
-        d = _valid_self_analysis_v11()
-        del d["personality"]["markers"][0]["id"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("personality.markers[0].id" in e for e in result.errors))
-
-    def test_marker_duplicate_id_warns_but_passes(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["markers"][1]["id"] = d["personality"]["markers"][0]["id"]
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("personality.markers[1].id" in w for w in result.warnings))
-
-    def test_marker_unknown_construct(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["markers"][0]["construct"] = "unknown_construct"
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("personality.markers[0].construct" in e for e in result.errors))
-
-    def test_marker_missing_construct(self):
-        d = _valid_self_analysis_v11()
-        del d["personality"]["markers"][0]["construct"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any(
-                "personality.markers[0].construct" in e and "必須" in e
-                for e in result.errors
-            )
-        )
-
-    def test_marker_empty_response(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["markers"][0]["response"] = ""
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("personality.markers[0].response" in e for e in result.errors))
-
-    def test_marker_options_wrong_length(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["markers"][0]["options"] = ["1件だけ"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("personality.markers[0].options" in e for e in result.errors))
-
-    def test_marker_options_element_empty(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["markers"][0]["options"] = ["段取りを先に固めてから動く", "  "]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("personality.markers[0].options" in e for e in result.errors))
-
-    def test_marker_response_not_in_options(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["markers"][0]["response"] = "選択肢にない回答"
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("personality.markers[0].response" in e for e in result.errors))
-
-    def test_marker_unknown_episode_ref(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["markers"][0]["linked_episode_ids"] = ["ep-999"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("personality.markers[0].linked_episode_ids" in e and "参照整合" in e for e in result.errors)
-        )
-
-    def test_marker_unknown_feedback_ref(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["markers"][0]["feedback_ids"] = ["fb-999"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("personality.markers[0].feedback_ids" in e and "参照整合" in e for e in result.errors)
-        )
-
-    def test_presentation_not_string(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["presentation"] = 123
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("personality.presentation" in e for e in result.errors))
-
-
-class PersonalityWarnCaseTest(unittest.TestCase):
-    def test_marker_without_evidence_warns_but_passes(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["markers"][0]["linked_episode_ids"] = []
-        d["personality"]["markers"][0]["feedback_ids"] = []
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(
-            any(
-                "personality.markers[0]" in w and "自己申告だけの記録" in w
-                for w in result.warnings
-            )
-        )
-
-    def test_presentation_with_desu_type_label_warns(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["presentation"] = "計測してから動く慎重型です。"
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("personality.presentation" in w for w in result.warnings))
-
-    def test_presentation_with_dearu_type_label_warns(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["presentation"] = "計測してから動く慎重タイプである。"
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("personality.presentation" in w for w in result.warnings))
-
-    def test_presentation_with_possessive_type_does_not_warn(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["presentation"] = (
-            "判断の型である decision_style の申告と、ep-1 の計測を先に置く行動が一致している。"
-        )
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.warnings, [])
-
-    def test_presentation_with_non_possessive_type_still_warns(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["presentation"] = "本人は慎重型である。"
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("personality.presentation" in w for w in result.warnings))
-
-    def test_presentation_with_possessive_before_taipu_still_warns(self):
-        """「〜のタイプです」は「の」の直後でも分類ラベルとして WARN する（「型」だけを除外対象にする）。"""
-        d = _valid_self_analysis_v11()
-        d["personality"]["presentation"] = "計画重視のタイプです。"
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("personality.presentation" in w for w in result.warnings))
-
-
-class StrengthsConstructsTest(unittest.TestCase):
-    def test_constructs_not_list(self):
-        d = _valid_self_analysis_v11()
-        d["strengths"][0]["constructs"] = "planning_style"
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("strengths[0].constructs" in e for e in result.errors))
-
-    def test_unknown_construct_in_strengths(self):
-        d = _valid_self_analysis_v11()
-        d["strengths"][0]["constructs"] = ["unknown_construct"]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("strengths[0].constructs" in e for e in result.errors))
-
-    def test_constructs_with_non_string_element_errors(self):
-        d = _valid_self_analysis_v11()
-        d["strengths"][0]["constructs"] = ["planning_style", 123]
-        result = vsa.validate(d)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("strengths[0].constructs" in e for e in result.errors))
-
-    def test_construct_with_unlinked_marker_warns(self):
-        d = _valid_self_analysis_v11()
-        d["personality"]["markers"][1]["linked_episode_ids"] = []
-        d["personality"]["markers"][1]["feedback_ids"] = []
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(
-            any("strengths[0].constructs" in w and "decision_style" in w for w in result.warnings)
-        )
-
-    def test_construct_with_no_marker_does_not_warn(self):
-        d = _valid_self_analysis_v11()
-        d["strengths"][0]["constructs"] = ["planning_style", "collaboration_style"]
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.warnings, [])
-
-
-class SchemaVersionCompatibilityTest(unittest.TestCase):
-    def test_v10_document_without_personality_still_passes_without_new_warnings(self):
-        result = vsa.validate(_valid_self_analysis())
-        self.assertTrue(result.ok)
-        self.assertEqual(result.warnings, [])
-
-    def test_unknown_schema_version_warns_but_passes(self):
-        d = _valid_self_analysis()
-        d["schema_version"] = "9.9"
-        result = vsa.validate(d)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("schema_version" in w for w in result.warnings))
-
-
-class CliTest(unittest.TestCase):
-    def _write_tmp(self, obj) -> str:
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(obj, f, ensure_ascii=False)
-        self.addCleanup(os.remove, path)
-        return path
-
-    def test_main_returns_0_on_valid(self):
-        path = self._write_tmp(_valid_self_analysis())
-        self.assertEqual(vsa.main([path]), 0)
-
-    def test_main_returns_1_on_invalid(self):
-        d = _valid_self_analysis()
-        del d["schema_version"]
-        path = self._write_tmp(d)
-        self.assertEqual(vsa.main([path]), 1)
-
-    def test_main_returns_1_on_broken_json(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            f.write("{ not valid json ")
-        self.addCleanup(os.remove, path)
-        self.assertEqual(vsa.main([path]), 1)
-
-    def test_main_json_flag_valid(self):
-        path = self._write_tmp(_valid_self_analysis())
-        self.assertEqual(vsa.main([path, "--json"]), 0)
-
-    def test_main_returns_0_on_valid_with_bom(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
-            json.dump(_valid_self_analysis(), f, ensure_ascii=False)
-        self.addCleanup(os.remove, path)
-        self.assertEqual(vsa.main([path]), 0)
-
-
-class ResultShapeTest(unittest.TestCase):
-    def test_to_dict_shape(self):
-        result = vsa.validate(_valid_self_analysis())
-        d = result.to_dict()
-        self.assertEqual(d["status"], "PASS")
-        self.assertEqual(d["error_count"], 0)
-        self.assertIn("warnings", d)
-
-    def test_immutability_of_input(self):
-        for label, factory in (("1.0", _valid_self_analysis), ("1.1", _valid_self_analysis_v11)):
-            with self.subTest(schema_version=label):
-                d = factory()
+class ValidateTest(unittest.TestCase):
+    def test_valid_documents_have_no_errors_or_warnings(self):
+        """1.0 / 1.1 と personality の省略形ごとの正常形。"""
+        rows = [
+            ("1.0（personality なし）", _valid_self_analysis, None),
+            ("1.1 完全形", _valid_self_analysis_v11, None),
+            ("personality が null", _valid_self_analysis_v11, _set(["personality"], None)),
+            ("markers が空配列", _valid_self_analysis_v11, _set(_MARKERS, [])),
+            ("marker に options なし", _valid_self_analysis_v11, _set(_MARKERS + [0, "options"])),
+        ]
+        for label, build, mutate in rows:
+            with self.subTest(label):
+                d = build()
+                if mutate:
+                    mutate(d)
                 snapshot = copy.deepcopy(d)
-                vsa.validate(d)
+                result = vsa.validate(d)
+                self.assertEqual(result.errors, [])
+                self.assertEqual(result.warnings, [])
                 self.assertEqual(d, snapshot)
 
-
-class ExampleAssetTest(unittest.TestCase):
     def test_bundled_example_passes(self):
         base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        document = vsa.load_self_analysis(
-            os.path.join(base, "assets", "self_analysis_example.json")
-        )
+        document = vsa.load_self_analysis(os.path.join(base, "assets", "self_analysis_example.json"))
         result = vsa.validate(document)
         self.assertEqual(result.errors, [])
         self.assertEqual(result.warnings, [])
+
+    def test_error_rules(self):
+        ep = ["behavioral_episodes", 0]
+        rows = [
+            ("ルートがオブジェクトでない", None, "(root)"),
+            ("schema_version が空白", _set(["schema_version"], "  "), "schema_version"),
+            ("behavioral_episodes が空", _set(["behavioral_episodes"], []), "behavioral_episodes"),
+            ("エピソードがオブジェクトでない", _set(["behavioral_episodes"], ["文字列"]), "behavioral_episodes[0]"),
+            ("エピソードの action が空白", _set(ep + ["action"], "  "), "behavioral_episodes[0].action"),
+            ("エピソードの id が無い", _set(ep + ["id"]), "behavioral_episodes[0].id"),
+            ("エピソードの id が無くても参照整合を検出する", _set(ep + ["id"]), "strengths[0].episode_ids"),
+            ("フィードバックの id が無いと参照整合を検出する", _set(["others_feedback", 0, "id"]), "strengths[0].feedback_ids"),
+            ("strengths の根拠が両方空", _both(_set(["strengths", 0, "episode_ids"], []), _set(["strengths", 0, "feedback_ids"], [])), "strengths[0]"),
+            ("strengths が実在しない episode を指す", _set(["strengths", 0, "episode_ids"], ["ep-999"]), "参照整合"),
+            ("values が実在しない episode を指す", _set(["values", 0, "evidence_episode_ids"], ["ep-999"]), "values[0]"),
+            ("career_adaptability が実在しない episode を指す", _set(["career_adaptability", "concern", "evidence_episode_ids"], ["ep-999"]), "career_adaptability.concern"),
+            ("career_narrative の life_theme が無い", _set(["career_narrative", "life_theme"]), "life_theme"),
+            ("reason_for_change の raw_reasons が空", _set(["reason_for_change", "raw_reasons"], []), "raw_reasons"),
+            ("personality がオブジェクトでない", _set(["personality"], "文字列"), "personality"),
+            ("markers が配列でない", _set(_MARKERS, "文字列"), "personality.markers"),
+            ("marker の construct が語彙にない", _set(_MARKERS + [0, "construct"], "unknown_construct"), "personality.markers[0].construct"),
+            ("marker の options が1件", _set(_MARKERS + [0, "options"], ["1件だけ"]), "personality.markers[0].options"),
+            ("marker の response が options にない", _set(_MARKERS + [0, "response"], "選択肢にない回答"), "personality.markers[0].response"),
+            ("marker が実在しない feedback を指す", _set(_MARKERS + [0, "feedback_ids"], ["fb-999"]), "personality.markers[0].feedback_ids"),
+            ("presentation が文字列でない", _presentation(123), "personality.presentation"),
+            ("strengths.constructs が語彙にない", _set(["strengths", 0, "constructs"], ["unknown_construct"]), "strengths[0].constructs"),
+        ]
+        for label, mutate, expected in rows:
+            with self.subTest(label):
+                d = _valid_self_analysis_v11()
+                if mutate is None:
+                    d = ["not", "object"]
+                else:
+                    mutate(d)
+                result = vsa.validate(d)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected in e for e in result.errors), result.errors)
+
+    def test_warn_rules(self):
+        rows = [
+            ("others_feedback が0件", _both(_set(["others_feedback"], []), _set(["strengths", 0, "feedback_ids"], []), _set(_MARKERS + [0, "feedback_ids"], [])), "others_feedback"),
+            ("metric が1件も無い", _set(["behavioral_episodes", 0, "metric"], None), "metric"),
+            ("updated_at が無い", _set(["updated_at"]), "updated_at"),
+            ("interests が空", _set(["interests"], {"domains": [], "concrete_topics": []}), "interests"),
+            ("values が空", _set(["values"], []), "values"),
+            ("episode の id が重複", _dup_episode, "behavioral_episodes[1].id"),
+            ("source_type が値域外", _set(["others_feedback", 0, "source_type"], "取引先"), "source_type"),
+            ("constructive_version が raw_reasons と同一", _set(["reason_for_change", "constructive_version"], "裁量が小さい"), "constructive_version"),
+            ("未知の schema_version", _set(["schema_version"], "9.9"), "schema_version"),
+            ("marker が自己申告だけ", _UNLINK_PM2, "自己申告だけの記録"),
+            ("根拠のない marker の construct を強みが使う", _UNLINK_PM2, "strengths[0].constructs"),
+            ("presentation が「〜型です」", _presentation("計測してから動く慎重型です。"), "personality.presentation"),
+            ("presentation が「〜のタイプです」（「の」直後でも「タイプ」は対象）", _presentation("計画重視のタイプです。"), "personality.presentation"),
+        ]
+        for label, mutate, expected in rows:
+            with self.subTest(label):
+                d = _valid_self_analysis_v11()
+                mutate(d)
+                result = vsa.validate(d)
+                self.assertTrue(result.ok, result.errors)
+                self.assertTrue(any(expected in w for w in result.warnings), result.warnings)
+
+    def test_accepted_variants_stay_clean(self):
+        """ERROR にも WARN にもならない許容形。"""
+        rows = [
+            ("source_type が null", _set(["others_feedback", 0, "source_type"], None)),
+            ("「判断の型である」は分類ラベルとみなさない", _presentation("判断の型である decision_style の申告と、ep-1 の計測を先に置く行動が一致している。")),
+            ("marker の無い construct は強みに書いてよい", _set(["strengths", 0, "constructs"], ["planning_style", "collaboration_style"])),
+        ]
+        for label, mutate in rows:
+            with self.subTest(label):
+                d = _valid_self_analysis_v11()
+                mutate(d)
+                result = vsa.validate(d)
+                self.assertEqual(result.errors, [])
+                self.assertEqual(result.warnings, [])
+
+
+class CliTest(unittest.TestCase):
+    def _write(self, text: str, encoding: str = "utf-8") -> str:
+        fd, path = tempfile.mkstemp(suffix=".json")
+        with os.fdopen(fd, "w", encoding=encoding) as f:
+            f.write(text)
+        self.addCleanup(os.remove, path)
+        return path
+
+    def test_exit_codes_and_json_keys(self):
+        invalid = _valid_self_analysis()
+        del invalid["schema_version"]
+        rows = [
+            ("正常", json.dumps(_valid_self_analysis(), ensure_ascii=False), "utf-8", 0),
+            ("BOM 付きの正常", json.dumps(_valid_self_analysis(), ensure_ascii=False), "utf-8-sig", 0),
+            ("ERROR あり", json.dumps(invalid, ensure_ascii=False), "utf-8", 1),
+            ("壊れた JSON", "{ not valid json ", "utf-8", 1),
+        ]
+        for label, text, encoding, code in rows:
+            with self.subTest(label):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(vsa.main([self._write(text, encoding)]), code)
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            vsa.main([self._write(json.dumps(_valid_self_analysis())), "--json"])
+        self.assertEqual(
+            set(json.loads(buf.getvalue())),
+            {"status", "error_count", "warning_count", "errors", "warnings"},
+        )
 
 
 if __name__ == "__main__":

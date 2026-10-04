@@ -1,6 +1,6 @@
 # Section: Work-character preferences (work_character)
 
-Records how strongly the user prefers each of 8 work characteristics. The schema does not allow this section to be omitted; the first pass fills it through two rounds of multiple choice. The definitions of the characteristics live in the hub's `references/screening-axes.md`. The section catalogue and the definition of reach stages live in `../sections.md`.
+Records how strongly the user prefers each of 8 work characteristics. The schema requires this section, and the first pass fills it through two rounds of multiple choice. The definitions of the characteristics are in the hub's `references/screening-axes.md`. The section catalogue and the definition of reach stages are in `../sections.md`.
 
 ## Fields to fill
 
@@ -20,22 +20,22 @@ Records how strongly the user prefers each of 8 work characteristics. The schema
 
 For each of the 8 work characteristics, confirm the strength of preference (`must` / `important` / `neutral` / `not_required`). Two rounds of AskUserQuestion (4 characteristics per round) fill the section.
 
-Make the user choose 「どちらでもよい」 or 「不要である」 explicitly as well, in order to distinguish between something left unanswered and genuine indifference. For any characteristic where the user chooses `desire=must`, ask for a one-sentence condition statement (`statement`) in the user's own words.
+Make the user choose 「どちらでもよい」 or 「不要である」 explicitly as well, to distinguish between something left unanswered and actual indifference. For any characteristic where the user chooses `desire=must`, ask for a one-sentence condition statement (`statement`) in the user's own words.
 
 The three characteristics `clear_completion`, `solo_completable`, and `short_feedback` cannot be judged from a job posting. When the user chooses `must` or `important` for one of these, state immediately that it becomes a matter to confirm at the job interview.
 
 A characteristic with `desire=must` is treated as a must-have condition, on the same footing as `conditions[level=must]`. Do not register the same condition twice, once here and once in the `conditions` section. When the total number of must-have conditions reaches 4 or more, the narrowing described in "Number of must-have conditions and their priority" in `conditions.md` applies.
 
-### Fixed wording — preference strength for the 8 work characteristics
+### Settled wording: preference strength for the 8 work characteristics
 
 Ask about the 8 characteristics, 4 per question, in two rounds of AskUserQuestion. The 4 choices are the same across every question.
 
 | Choice | Wording |
 |---|---|
-| Choice 1 | **必須** — 満たさないなら見送ります。 (Must-have — I will pass on an offer that does not meet this.) |
-| Choice 2 | **重視する** — 評価に影響しますが、単独では見送りません。 (Important — it affects the evaluation, but does not by itself cause a pass.) |
-| Choice 3 | **どちらでもよい** — 判定に使いません。 (Either is fine — not used in the judgment.) |
-| Choice 4 | **不要である** — 判定に使いません。 (Not required — not used in the judgment.) |
+| Choice 1 | **必須**：満たさないなら見送ります。 (Must-have: I will pass on an offer that does not meet this.) |
+| Choice 2 | **重視する**：評価に影響しますが、単独では見送りません。 (Important: it affects the evaluation, but does not by itself cause a pass.) |
+| Choice 3 | **どちらでもよい**：判定に使いません。 (Either is fine: not used in the judgment.) |
+| Choice 4 | **不要である**：判定に使いません。 (Not required: not used in the judgment.) |
 
 | Round | `header` | `question` | `trait` |
 |---|---|---|---|

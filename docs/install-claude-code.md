@@ -2,7 +2,7 @@
 
 ## Installing as a plugin (recommended)
 
-The repository root is itself a plugin, and also a marketplace. The following two lines deploy 9 skills and 14 agents.
+The repository root is itself a plugin, and also a marketplace. The following two lines deploy 10 skills and 16 agents.
 
 ```
 /plugin marketplace add <this repository's URL or local path>
@@ -30,10 +30,10 @@ Without using the plugin mechanism, place the files as follows.
 
 | What to place | Where to place it |
 |---|---|
-| The 9 `skills/job-change-*` directories | `~/.claude/skills/` |
-| The 14 `agents/job-change-*.md` files | `~/.claude/agents/` |
+| The 10 `skills/job-change-*` directories | `~/.claude/skills/` |
+| The 16 `agents/job-change-*.md` files | `~/.claude/agents/` |
 
-Because the 9 skills reference each other, place them all together. To scope this per project, place them under `<project>/.claude/`, which takes `~/.claude/`'s place for that project.
+Because the 10 skills reference each other, place them all together. To scope this per project, place them under `<project>/.claude/`, which takes `~/.claude/`'s place for that project.
 
 A symbolic link works in place of copying. Claude Code follows a symbolic link placed at `~/.claude/skills/<name>`.
 
@@ -51,7 +51,7 @@ ln -s /path/to/jobchange_Skills/skills/job-change-support ~/.claude/skills/job-c
 
 Where the user's data is stored is decided solely by the configuration file. There is no default location.
 
-After installation, saying 「転職の準備をしたい」 ("I want to prepare for a job change") or running `/job-change-support` has the hub check whether a configuration exists. If not, the hub asks where to place the data; choose from the offered options or answer with any absolute path. Because this location will store personal information including current salary, place of residence, and current employer's name, choose a directory that stays local and outside any sync or sharing scope.
+After installation, saying 「転職の準備をしたい」 ("I want to prepare for a job change") or running `/job-change-support` has the hub check whether a configuration exists. If not, the hub asks where to place the data; choose from the offered options or answer with any absolute path. Because this location will store personal information including current salary, place of residence, and current employer's name, choose a local directory outside any sync or sharing scope.
 
 To create the configuration without waiting for the dialogue, run the following.
 
@@ -74,6 +74,7 @@ If exit code 0 is returned along with output showing `data_root` and the absolut
 1. Run `/job-change-support` and confirm that the hub passes the configuration gate (if unconfigured, that the dialogue starts).
 2. Say 「プロファイルを作りたい」 ("I want to build a profile") and confirm that this routes to `job-change-profile`.
 3. After finishing the interview, confirm that `{data_root}/career-private/profile.json` is created and that `validate_profile.py` PASSes.
+4. Say 「転職の軸を決めたい」 ("I want to settle my job-change axis") and confirm that this routes to `job-change-axis`. After the interview, confirm that `{data_root}/career-private/axis.json` is created and that `validate_axis.py` PASSes.
 
 ## Common pitfalls
 

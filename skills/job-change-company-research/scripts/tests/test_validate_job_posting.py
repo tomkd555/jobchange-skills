@@ -7,7 +7,9 @@
 """
 from __future__ import annotations
 
+import contextlib
 import copy
+import io
 import json
 import os
 import sys
@@ -111,385 +113,155 @@ def _v11_posting() -> dict:
     return p
 
 
-class ValidatePassTest(unittest.TestCase):
-    def test_full_posting_passes_without_warnings(self):
-        result = vjp.validate(_valid_posting())
-        self.assertTrue(result.ok)
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
-
-    def test_minimal_posting_passes(self):
-        result = vjp.validate(_minimal_posting())
-        self.assertTrue(result.ok)
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
+_DEL = object()
 
 
-class RootErrorTest(unittest.TestCase):
-    def test_root_not_object(self):
-        result = vjp.validate(["not", "an", "object"])
-        self.assertFalse(result.ok)
+def _set(path: list, value=_DEL):
+    """path 末端に value を代入する変異を返す（value 省略で削除）。"""
+
+    def mutate(p: dict) -> None:
+        node = p
+        for key in path[:-1]:
+            node = node[key]
+        if value is _DEL:
+            del node[path[-1]]
+        else:
+            node[path[-1]] = value
+
+    return mutate
 
 
-class SourceTypeTest(unittest.TestCase):
-    """取込の入口を表す source_type と、それに応じた source_url の検査。"""
-
-    def test_dialogue_posting_passes(self):
-        result = vjp.validate(_dialogue_posting())
-        self.assertTrue(result.ok, result.errors)
-        self.assertEqual(result.warnings, [])
-
-    def test_missing_source_type(self):
-        p = _valid_posting()
-        del p["source_type"]
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("source_type" in e for e in result.errors))
-
-    def test_unknown_source_type(self):
-        p = _valid_posting()
-        p["source_type"] = "scraped"
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("source_type" in e for e in result.errors))
-
-    def test_text_source_allows_null_source_url(self):
-        p = _valid_posting()
-        p["source_type"] = "text"
-        p["source_url"] = None
-        result = vjp.validate(p)
-        self.assertTrue(result.ok, result.errors)
-
-    def test_file_source_allows_absent_source_url(self):
-        p = _valid_posting()
-        p["source_type"] = "file"
-        del p["source_url"]
-        result = vjp.validate(p)
-        self.assertTrue(result.ok, result.errors)
-
-    def test_dialogue_source_allows_absent_source_url(self):
-        p = _valid_posting()
-        p["source_type"] = "dialogue"
-        del p["source_url"]
-        result = vjp.validate(p)
-        self.assertTrue(result.ok, result.errors)
-
-    def test_non_url_source_keeps_reference_url(self):
-        """URL 以外の入口でも、参考の URL を持つこと自体は妨げない。"""
-        p = _valid_posting()
-        p["source_type"] = "text"
-        p["source_url"] = "https://recruit.example.co.jp/jobs/1234"
-        result = vjp.validate(p)
-        self.assertTrue(result.ok, result.errors)
+def _all_scope_null(p: dict) -> None:
+    for key in vjp.SCOPE_KEYS:
+        p["scope_of_change"][key] = None
 
 
-class RequiredFieldErrorTest(unittest.TestCase):
-    def test_missing_schema_version(self):
-        p = _valid_posting()
-        del p["schema_version"]
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("schema_version" in e for e in result.errors))
+class ValidateTest(unittest.TestCase):
+    def test_valid_postings_have_no_errors_or_warnings(self):
+        """各スキーマ版と取込の入口ごとの正常形。"""
+        text = _valid_posting()
+        text.update(source_type="text", source_url=None)
+        rows = [
+            ("1.0 完全形", _valid_posting()),
+            ("1.1 scope_of_change 3項目あり", _v11_posting()),
+            ("最小形", _minimal_posting()),
+            ("dialogue は source_url なし", _dialogue_posting()),
+            ("text は source_url が null", text),
+        ]
+        for label, p in rows:
+            with self.subTest(label):
+                snapshot = copy.deepcopy(p)
+                result = vjp.validate(p)
+                self.assertEqual(result.errors, [])
+                self.assertEqual(result.warnings, [])
+                self.assertEqual(p, snapshot)
 
-    def test_missing_source_url(self):
-        p = _valid_posting()
-        del p["source_url"]
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("source_url" in e for e in result.errors))
-
-    def test_source_url_not_http(self):
-        p = _valid_posting()
-        p["source_url"] = "recruit.example.co.jp/jobs/1"
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("source_url" in e for e in result.errors))
-
-    def test_missing_fetched_at(self):
-        p = _valid_posting()
-        del p["fetched_at"]
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("fetched_at" in e for e in result.errors))
-
-    def test_malformed_fetched_at(self):
-        p = _valid_posting()
-        p["fetched_at"] = "2026/07/17"
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("fetched_at" in e for e in result.errors))
-
-    def test_invalid_date_fetched_at(self):
-        p = _valid_posting()
-        p["fetched_at"] = "2026-13-40"
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("fetched_at" in e for e in result.errors))
-
-    def test_missing_company_name(self):
-        p = _valid_posting()
-        p["company_name"] = "  "
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("company_name" in e for e in result.errors))
-
-    def test_missing_title(self):
-        p = _valid_posting()
-        del p["title"]
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("title" in e for e in result.errors))
-
-
-class SchemaVersionWarnTest(unittest.TestCase):
-    def test_unknown_schema_version_warns(self):
-        p = _valid_posting()
-        p["schema_version"] = "2.0"
-        result = vjp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("schema_version" in w for w in result.warnings))
-
-
-class ScopeOfChangeTest(unittest.TestCase):
-    def test_v11_full_scope_passes(self):
-        result = vjp.validate(_v11_posting())
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
-
-    def test_v10_without_scope_is_not_checked(self):
-        result = vjp.validate(_valid_posting())
-        self.assertTrue(result.ok)
-        self.assertFalse(any("scope_of_change" in w for w in result.warnings))
-
-    def test_v10_ignores_broken_scope(self):
-        p = _valid_posting()
-        p["scope_of_change"] = "会社の定める場所"
-        result = vjp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.warnings, [])
-
-    def test_future_version_is_still_checked(self):
-        """1.0 だけを検査対象から外すため、未知の後続バージョンでも検査が働く。"""
-        p = _valid_posting()
-        p["schema_version"] = "1.2"
-        result = vjp.validate(p)
-        self.assertTrue(any("scope_of_change" in w for w in result.warnings))
-
-    def test_v11_without_scope_warns(self):
-        p = _valid_posting()
-        p["schema_version"] = "1.1"
-        result = vjp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("scope_of_change" in w for w in result.warnings))
-
-    def test_v11_all_null_warns(self):
-        p = _v11_posting()
-        for key in vjp.SCOPE_KEYS:
-            p["scope_of_change"][key] = None
-        result = vjp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("scope_of_change" in w for w in result.warnings))
-
-    def test_v11_one_filled_does_not_warn(self):
-        p = _v11_posting()
-        p["scope_of_change"]["work_location"] = None
-        p["scope_of_change"]["contract_renewal_cap"] = None
-        result = vjp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.warnings, [])
-
-    def test_stated_true_requires_quote(self):
-        p = _v11_posting()
-        p["scope_of_change"]["duties"]["quote"] = ""
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("scope_of_change.duties.quote" in e for e in result.errors))
-
-    def test_stated_false_allows_empty_quote(self):
-        p = _v11_posting()
-        p["scope_of_change"]["contract_renewal_cap"]["quote"] = ""
-        result = vjp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.warnings, [])
-
-    def test_scope_not_object_errors(self):
-        p = _v11_posting()
-        p["scope_of_change"] = ["会社の定める場所"]
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("scope_of_change" in e for e in result.errors))
-
-    def test_entry_scalar_instead_of_object_errors(self):
-        p = _v11_posting()
-        p["scope_of_change"]["duties"] = "会社の定める業務"
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("scope_of_change.duties" in e for e in result.errors))
-
-    def test_stated_not_bool_errors(self):
-        p = _v11_posting()
-        p["scope_of_change"]["duties"]["stated"] = "true"
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("scope_of_change.duties.stated" in e for e in result.errors))
-
-    def test_unlimited_not_bool_errors(self):
-        p = _v11_posting()
-        p["scope_of_change"]["work_location"]["unlimited"] = 1
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("scope_of_change.work_location.unlimited" in e for e in result.errors))
-
-    def test_quote_not_string_errors(self):
-        p = _v11_posting()
-        p["scope_of_change"]["contract_renewal_cap"]["quote"] = 3
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(
-            any("scope_of_change.contract_renewal_cap.quote" in e for e in result.errors)
-        )
-
-
-class MetricsTest(unittest.TestCase):
-    def test_metrics_absent_is_normal(self):
-        p = _minimal_posting()
-        result = vjp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("metrics" in w for w in result.warnings))
-        self.assertFalse(any("metrics" in e for e in result.errors))
-
-    def test_metric_null_is_normal(self):
-        p = _valid_posting()
-        p["metrics"]["annual_holidays"] = None
-        result = vjp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.warnings, [])
-
-    def test_metrics_not_object_errors(self):
-        p = _valid_posting()
-        p["metrics"] = "125日"
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("metrics" in e for e in result.errors))
-
-    def test_metric_value_not_number_errors(self):
-        p = _valid_posting()
-        p["metrics"]["annual_holidays"] = {"value": "125", "quote": "年間休日125日"}
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("metrics.annual_holidays.value" in e for e in result.errors))
-
-    def test_metric_value_bool_errors(self):
-        p = _valid_posting()
-        p["metrics"]["monthly_overtime_h"] = {"value": True, "quote": "残業あり"}
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("metrics.monthly_overtime_h.value" in e for e in result.errors))
-
-    def test_metric_missing_quote_errors(self):
-        p = _valid_posting()
-        p["metrics"]["paid_leave_rate"] = {"value": 71.0, "quote": ""}
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("metrics.paid_leave_rate.quote" in e for e in result.errors))
-
-    def test_metric_scalar_instead_of_object_errors(self):
-        p = _valid_posting()
-        p["metrics"]["annual_holidays"] = 125
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("metrics.annual_holidays" in e for e in result.errors))
-
-
-class OptionalShapeTest(unittest.TestCase):
-    def test_salary_not_object_errors(self):
-        p = _valid_posting()
-        p["salary"] = "年収600万円"
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("salary" in e for e in result.errors))
-
-    def test_selection_process_not_list_errors(self):
-        p = _valid_posting()
-        p["selection_process"] = "書類選考のみ"
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("selection_process" in e for e in result.errors))
-
-    def test_benefit_missing_name_errors(self):
-        p = _valid_posting()
-        p["benefits"] = [{"quote": "各種手当あり"}]
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("benefits[0].name" in e for e in result.errors))
-
-    def test_benefit_not_object_errors(self):
-        p = _valid_posting()
-        p["benefits"] = ["健康保険"]
-        result = vjp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("benefits[0]" in e for e in result.errors))
-
-
-class CliTest(unittest.TestCase):
-    def _write_tmp(self, obj) -> str:
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(obj, f, ensure_ascii=False)
-        self.addCleanup(os.remove, path)
-        return path
-
-    def test_main_returns_0_on_valid(self):
-        path = self._write_tmp(_valid_posting())
-        self.assertEqual(vjp.main([path]), 0)
-
-    def test_main_returns_1_on_invalid(self):
-        p = _valid_posting()
-        del p["company_name"]
-        path = self._write_tmp(p)
-        self.assertEqual(vjp.main([path]), 1)
-
-    def test_main_returns_1_on_broken_json(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            f.write("{ not valid json ")
-        self.addCleanup(os.remove, path)
-        self.assertEqual(vjp.main([path]), 1)
-
-    def test_main_json_flag_valid(self):
-        path = self._write_tmp(_valid_posting())
-        self.assertEqual(vjp.main([path, "--json"]), 0)
-
-    def test_main_returns_0_on_valid_with_bom(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
-            json.dump(_valid_posting(), f, ensure_ascii=False)
-        self.addCleanup(os.remove, path)
-        self.assertEqual(vjp.main([path]), 0)
-
-
-class ResultShapeTest(unittest.TestCase):
-    def test_to_dict_shape(self):
-        result = vjp.validate(_valid_posting())
-        d = result.to_dict()
-        self.assertEqual(d["status"], "PASS")
-        self.assertEqual(d["error_count"], 0)
-        self.assertIn("warnings", d)
-
-    def test_immutability_of_input(self):
-        p = _valid_posting()
-        snapshot = copy.deepcopy(p)
-        vjp.validate(p)
-        self.assertEqual(p, snapshot)
-
-
-class ExampleAssetTest(unittest.TestCase):
     def test_bundled_example_passes(self):
         base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         document = vjp.load_posting(os.path.join(base, "assets", "job_posting_example.json"))
         result = vjp.validate(document)
         self.assertEqual(result.errors, [])
         self.assertEqual(result.warnings, [])
+
+    def test_error_rules(self):
+        scope = ["scope_of_change"]
+        rows = [
+            ("ルートがオブジェクトでない", None, None, "(root)"),
+            ("必須項目 title が無い", _valid_posting, _set(["title"]), "title"),
+            ("source_type が列挙外", _valid_posting, _set(["source_type"], "scraped"), "source_type"),
+            ("source_type=url で source_url が http でない", _valid_posting, _set(["source_url"], "recruit.example.co.jp/jobs/1"), "source_url"),
+            ("fetched_at の形式違い", _valid_posting, _set(["fetched_at"], "2026/07/17"), "fetched_at"),
+            ("fetched_at が実在しない日付", _valid_posting, _set(["fetched_at"], "2026-13-40"), "fetched_at"),
+            ("metrics がオブジェクトでない", _valid_posting, _set(["metrics"], "125日"), "metrics"),
+            ("metric の value が bool", _valid_posting, _set(["metrics", "monthly_overtime_h", "value"], True), "metrics.monthly_overtime_h.value"),
+            ("metric の quote が空", _valid_posting, _set(["metrics", "paid_leave_rate", "quote"], ""), "metrics.paid_leave_rate.quote"),
+            ("metric がオブジェクトでも null でもない", _valid_posting, _set(["metrics", "annual_holidays"], 125), "metrics.annual_holidays"),
+            ("scope_of_change がオブジェクトでない", _v11_posting, _set(scope, ["会社の定める場所"]), "scope_of_change"),
+            ("scope の項目がオブジェクトでも null でもない", _v11_posting, _set(scope + ["duties"], "会社の定める業務"), "scope_of_change.duties"),
+            ("scope の stated が真偽値でない", _v11_posting, _set(scope + ["duties", "stated"], "true"), "scope_of_change.duties.stated"),
+            ("stated が真で quote が空", _v11_posting, _set(scope + ["duties", "quote"], ""), "scope_of_change.duties.quote"),
+            ("stated が偽で quote が文字列でない", _v11_posting, _set(scope + ["contract_renewal_cap", "quote"], 3), "scope_of_change.contract_renewal_cap.quote"),
+            ("salary がオブジェクトでない", _valid_posting, _set(["salary"], "年収600万円"), "salary"),
+            ("selection_process が配列でない", _valid_posting, _set(["selection_process"], "書類選考のみ"), "selection_process"),
+            ("benefits の name が無い", _valid_posting, _set(["benefits"], [{"quote": "各種手当あり"}]), "benefits[0].name"),
+        ]
+        for label, build, mutate, expected in rows:
+            with self.subTest(label):
+                if build is None:
+                    result = vjp.validate(["not", "object"])
+                else:
+                    p = build()
+                    mutate(p)
+                    result = vjp.validate(p)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected in e for e in result.errors), result.errors)
+
+    def test_warn_rules(self):
+        rows = [
+            ("未知の schema_version", _valid_posting, _set(["schema_version"], "2.0"), "schema_version"),
+            ("1.1 で scope_of_change が無い", _valid_posting, _set(["schema_version"], "1.1"), "scope_of_change"),
+            ("1.0 以外の後続版でも scope を検査する", _valid_posting, _set(["schema_version"], "1.2"), "scope_of_change"),
+            ("scope_of_change が3項目とも null", _v11_posting, _all_scope_null, "scope_of_change"),
+        ]
+        for label, build, mutate, expected in rows:
+            with self.subTest(label):
+                p = build()
+                mutate(p)
+                result = vjp.validate(p)
+                self.assertTrue(result.ok, result.errors)
+                self.assertTrue(any(expected in w for w in result.warnings), result.warnings)
+
+    def test_accepted_variants_stay_clean(self):
+        """ERROR にも WARN にもならない許容形。"""
+        scope = ["scope_of_change"]
+
+        def one_filled(p: dict) -> None:
+            _all_scope_null(p)
+            p["scope_of_change"]["duties"] = _v11_posting()["scope_of_change"]["duties"]
+
+        rows = [
+            ("1.0 は壊れた scope_of_change を検査しない", _valid_posting, _set(scope, "会社の定める場所")),
+            ("scope は1項目だけ埋まっていれば足りる", _v11_posting, one_filled),
+            ("stated が偽なら quote は空でよい", _v11_posting, _set(scope + ["contract_renewal_cap", "quote"], "")),
+            ("metric が null", _valid_posting, _set(["metrics", "annual_holidays"], None)),
+        ]
+        for label, build, mutate in rows:
+            with self.subTest(label):
+                p = build()
+                mutate(p)
+                result = vjp.validate(p)
+                self.assertEqual(result.errors, [])
+                self.assertEqual(result.warnings, [])
+
+
+class CliTest(unittest.TestCase):
+    def _write(self, text: str, encoding: str = "utf-8") -> str:
+        fd, path = tempfile.mkstemp(suffix=".json")
+        with os.fdopen(fd, "w", encoding=encoding) as f:
+            f.write(text)
+        self.addCleanup(os.remove, path)
+        return path
+
+    def test_exit_codes_and_json_keys(self):
+        invalid = _valid_posting()
+        del invalid["company_name"]
+        rows = [
+            ("正常", json.dumps(_valid_posting(), ensure_ascii=False), "utf-8", 0),
+            ("BOM 付きの正常", json.dumps(_valid_posting(), ensure_ascii=False), "utf-8-sig", 0),
+            ("ERROR あり", json.dumps(invalid, ensure_ascii=False), "utf-8", 1),
+            ("壊れた JSON", "{ not valid json ", "utf-8", 1),
+        ]
+        for label, text, encoding, code in rows:
+            with self.subTest(label):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(vjp.main([self._write(text, encoding)]), code)
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            vjp.main([self._write(json.dumps(_valid_posting())), "--json"])
+        self.assertEqual(
+            set(json.loads(buf.getvalue())),
+            {"status", "error_count", "warning_count", "errors", "warnings"},
+        )
 
 
 if __name__ == "__main__":

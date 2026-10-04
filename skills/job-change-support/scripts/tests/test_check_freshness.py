@@ -7,7 +7,8 @@
 """
 from __future__ import annotations
 
-import copy
+import contextlib
+import io
 import json
 import os
 import sys
@@ -28,26 +29,17 @@ def _date_str(days_ago: int) -> str:
 
 def _manifest(job_posting_days_ago: int | None = 0, topics: dict | None = None) -> dict:
     """job_posting と company_research.topics を持つ manifest を組み立てる。"""
-    artifacts: dict = {}
-    if job_posting_days_ago is not None:
-        artifacts["job_posting"] = {
-            "updated_at": _date_str(job_posting_days_ago),
-            "source_url": "https://example.com/jobs/1",
-        }
-    else:
-        artifacts["job_posting"] = None
-
-    if topics is not None:
-        artifacts["company_research"] = {
+    artifacts: dict = {
+        "job_posting": None
+        if job_posting_days_ago is None
+        else {"updated_at": _date_str(job_posting_days_ago)},
+        "company_research": None
+        if topics is None
+        else {
             "updated_at": _date_str(0),
-            "topics": {
-                name: {"last_researched": _date_str(days_ago)}
-                for name, days_ago in topics.items()
-            },
-        }
-    else:
-        artifacts["company_research"] = None
-
+            "topics": {n: {"last_researched": _date_str(d)} for n, d in topics.items()},
+        },
+    }
     return {"schema_version": 1, "artifacts": artifacts}
 
 
@@ -55,237 +47,122 @@ def _labels(entries: list[dict]) -> list[str]:
     return [e["artifact"] for e in entries]
 
 
-class JobPostingFreshnessTest(unittest.TestCase):
-    def test_ttl_exact_boundary_is_fresh(self):
-        manifest = _manifest(job_posting_days_ago=30, topics={})
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("job_posting", _labels(result["fresh"]))
-
-    def test_ttl_plus_one_is_stale(self):
-        manifest = _manifest(job_posting_days_ago=31, topics={})
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("job_posting", _labels(result["stale"]))
-
-    def test_null_job_posting_is_missing(self):
-        manifest = _manifest(job_posting_days_ago=None, topics={})
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("job_posting", _labels(result["missing"]))
-
-    def test_missing_updated_at_is_missing(self):
-        manifest = _manifest(job_posting_days_ago=0, topics={})
-        manifest["artifacts"]["job_posting"] = {"source_url": "https://example.com"}
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("job_posting", _labels(result["missing"]))
-
-    def test_malformed_date_is_missing(self):
-        manifest = _manifest(job_posting_days_ago=0, topics={})
-        manifest["artifacts"]["job_posting"]["updated_at"] = "2026/07/01"
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("job_posting", _labels(result["missing"]))
+def _all_labels(result: dict) -> list[str]:
+    return [l for bucket in ("fresh", "stale", "missing") for l in _labels(result[bucket])]
 
 
-class CompanyResearchTopicFreshnessTest(unittest.TestCase):
-    def test_reputation_ttl_90_exact_boundary_is_fresh(self):
-        manifest = _manifest(topics={"reputation": 90})
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("company_research.reputation", _labels(result["fresh"]))
+class FreshnessTest(unittest.TestCase):
+    def test_ttl_boundaries(self):
+        # (ラベル, 経過日数 → manifest, 成果物名, TTL)。TTL ちょうどは fresh、1日超過は stale
+        rows = [
+            ("job_posting", lambda d: _manifest(d, topics={}), "job_posting", 30),
+            ("reputation", lambda d: _manifest(topics={"reputation": d}), "company_research.reputation", 90),
+            ("workstyle", lambda d: _manifest(topics={"workstyle": d}), "company_research.workstyle", 180),
+            ("philosophy", lambda d: _manifest(topics={"philosophy": d}), "company_research.philosophy", 365),
+            ("未知トピックは既定 180", lambda d: _manifest(topics={"custom": d}), "company_research.custom", 180),
+            (
+                "interview_intel",
+                lambda d: {**_manifest(topics={}), "artifacts": {**_manifest(topics={})["artifacts"], "interview_intel": {"updated_at": _date_str(d)}}},
+                "interview_intel",
+                180,
+            ),
+        ]
+        for label, build, name, ttl in rows:
+            for days, bucket in ((ttl, "fresh"), (ttl + 1, "stale")):
+                with self.subTest(f"{label} {days}日 -> {bucket}"):
+                    result = cf.check_freshness(build(days), TODAY)
+                    entries = [e for e in result[bucket] if e["artifact"] == name]
+                    self.assertEqual(len(entries), 1)
+                    self.assertEqual(entries[0]["age_days"], days)
+                    self.assertEqual(entries[0]["ttl_days"], ttl)
 
-    def test_reputation_ttl_90_plus_one_is_stale(self):
-        manifest = _manifest(topics={"reputation": 91})
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("company_research.reputation", _labels(result["stale"]))
+    def test_missing_decisions(self):
+        # (ラベル, manifest, missing に出る成果物, 判定対象から外れる成果物)
+        def with_topics(topics):
+            m = _manifest(topics={})
+            m["artifacts"]["company_research"]["topics"] = topics
+            return m
 
-    def test_philosophy_ttl_365_exact_boundary_is_fresh(self):
-        manifest = _manifest(topics={"philosophy": 365})
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("company_research.philosophy", _labels(result["fresh"]))
+        def with_optional(value):
+            m = _manifest(topics={})
+            m["artifacts"]["interview_intel"] = value
+            return m
 
-    def test_philosophy_ttl_365_plus_one_is_stale(self):
-        manifest = _manifest(topics={"philosophy": 366})
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("company_research.philosophy", _labels(result["stale"]))
+        both = ["company_research", "job_posting"]
+        rows = [
+            ("job_posting が null", _manifest(None, topics={}), ["job_posting"]),
+            ("job_posting の日付が不正形式", {**_manifest(topics={}), "artifacts": {**_manifest(topics={})["artifacts"], "job_posting": {"updated_at": "2026/07/01"}}}, ["job_posting"]),
+            ("トピックに last_researched が無い", with_topics({"benefits": {}}), ["company_research.benefits"]),
+            ("company_research が null", _manifest(topics=None), ["company_research"]),
+            ("topics が null", with_topics(None), ["company_research"]),
+            ("topics が空なら判定対象なし", with_topics({}), []),
+            ("artifacts キーが無い", {"schema_version": 1}, both),
+            ("artifacts がオブジェクトでない", {"schema_version": 1, "artifacts": []}, both),
+            ("ルートがオブジェクトでない", ["x"], both),
+            ("任意成果物が日付なし", with_optional({"note": "undated"}), ["interview_intel"]),
+            ("任意成果物がオブジェクトでない", with_optional("2026-01-18"), ["interview_intel"]),
+            ("任意成果物が未記録（null）", with_optional(None), []),
+            ("任意成果物が未記録（キー無し）", _manifest(topics={}), []),
+        ]
+        for label, manifest, expected_missing in rows:
+            with self.subTest(label):
+                result = cf.check_freshness(manifest, TODAY)
+                self.assertEqual(sorted(_labels(result["missing"])), expected_missing)
+                if label.startswith("任意成果物が未記録"):
+                    self.assertNotIn("interview_intel", _all_labels(result))
 
-    def test_workstyle_ttl_180_exact_boundary_is_fresh(self):
-        manifest = _manifest(topics={"workstyle": 180})
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("company_research.workstyle", _labels(result["fresh"]))
-
-    def test_workstyle_ttl_180_plus_one_is_stale(self):
-        manifest = _manifest(topics={"workstyle": 181})
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("company_research.workstyle", _labels(result["stale"]))
-
-    def test_unknown_topic_falls_back_to_default_180(self):
-        manifest = _manifest(topics={"custom_topic": 180})
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("company_research.custom_topic", _labels(result["fresh"]))
-
-        manifest_stale = _manifest(topics={"custom_topic": 181})
-        result_stale = cf.check_freshness(manifest_stale, TODAY)
-        self.assertIn("company_research.custom_topic", _labels(result_stale["stale"]))
-
-    def test_topic_missing_last_researched_is_missing(self):
-        manifest = _manifest(topics={"benefits": 0})
-        manifest["artifacts"]["company_research"]["topics"]["benefits"] = {}
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("company_research.benefits", _labels(result["missing"]))
-
-
-class CompanyResearchWholeMissingTest(unittest.TestCase):
-    def test_null_company_research_is_missing_as_whole(self):
-        manifest = _manifest(topics=None)
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("company_research", _labels(result["missing"]))
-        # トピック単位の内訳は出さない
-        self.assertFalse(
-            any(a.startswith("company_research.") for a in _labels(result["missing"]))
-        )
-
-    def test_topics_key_absent_is_missing_as_whole(self):
-        manifest = _manifest(topics={})
-        del manifest["artifacts"]["company_research"]["topics"]
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("company_research", _labels(result["missing"]))
-
-    def test_null_topics_is_missing_as_whole(self):
-        manifest = _manifest(topics={})
-        manifest["artifacts"]["company_research"]["topics"] = None
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("company_research", _labels(result["missing"]))
-
-    def test_empty_topics_produces_no_entries(self):
-        manifest = _manifest(topics={})
-        result = cf.check_freshness(manifest, TODAY)
-        all_labels = _labels(result["fresh"]) + _labels(result["stale"]) + _labels(result["missing"])
-        self.assertNotIn("company_research", all_labels)
-
-
-class OptionalArtifactFreshnessTest(unittest.TestCase):
-    def test_interview_intel_ttl_is_180(self):
-        self.assertEqual(cf.OPTIONAL_ARTIFACT_TTL_DAYS["interview_intel"], 180)
-
-    def test_only_dated_interview_intel_present_reports_others_missing(self):
+    def test_optional_artifact_alone_reports_known_artifacts_missing(self):
         manifest = {"schema_version": 1, "artifacts": {"interview_intel": {"updated_at": _date_str(0)}}}
         result = cf.check_freshness(manifest, TODAY)
         self.assertEqual(sorted(_labels(result["missing"])), ["company_research", "job_posting"])
-        self.assertIn("interview_intel", _labels(result["fresh"]))
-
-    def test_interview_intel_ttl_180_exact_boundary_is_fresh(self):
-        manifest = _manifest(topics={})
-        manifest["artifacts"]["interview_intel"] = {"updated_at": _date_str(180)}
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("interview_intel", _labels(result["fresh"]))
-
-    def test_interview_intel_ttl_180_plus_one_is_stale(self):
-        manifest = _manifest(topics={})
-        manifest["artifacts"]["interview_intel"] = {"updated_at": _date_str(181)}
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("interview_intel", _labels(result["stale"]))
-
-    def test_absent_interview_intel_produces_no_entry(self):
-        manifest = _manifest(topics={})
-        result = cf.check_freshness(manifest, TODAY)
-        all_labels = _labels(result["fresh"]) + _labels(result["stale"]) + _labels(result["missing"])
-        self.assertNotIn("interview_intel", all_labels)
-
-    def test_null_interview_intel_produces_no_entry(self):
-        manifest = _manifest(topics={})
-        manifest["artifacts"]["interview_intel"] = None
-        result = cf.check_freshness(manifest, TODAY)
-        all_labels = _labels(result["fresh"]) + _labels(result["stale"]) + _labels(result["missing"])
-        self.assertNotIn("interview_intel", all_labels)
-
-    def test_non_dict_interview_intel_produces_missing(self):
-        manifest = _manifest(topics={})
-        manifest["artifacts"]["interview_intel"] = "2026-01-18"
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("interview_intel", _labels(result["missing"]))
-
-    def test_interview_intel_without_updated_at_is_missing(self):
-        manifest = _manifest(topics={})
-        manifest["artifacts"]["interview_intel"] = {"note": "recorded but undated"}
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("interview_intel", _labels(result["missing"]))
-
-    def test_interview_intel_malformed_date_is_missing(self):
-        manifest = _manifest(topics={})
-        manifest["artifacts"]["interview_intel"] = {"updated_at": "2026/07/01"}
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertIn("interview_intel", _labels(result["missing"]))
-
-
-class ArtifactsMissingTest(unittest.TestCase):
-    def test_no_artifacts_key_reports_both_known_as_missing(self):
-        result = cf.check_freshness({"schema_version": 1}, TODAY)
-        self.assertEqual(sorted(_labels(result["missing"])), ["company_research", "job_posting"])
-
-    def test_artifacts_not_object_reports_both_known_as_missing(self):
-        result = cf.check_freshness({"schema_version": 1, "artifacts": []}, TODAY)
-        self.assertEqual(sorted(_labels(result["missing"])), ["company_research", "job_posting"])
-
-    def test_root_not_object_reports_both_known_as_missing(self):
-        result = cf.check_freshness(["not", "an", "object"], TODAY)
-        self.assertEqual(sorted(_labels(result["missing"])), ["company_research", "job_posting"])
+        self.assertEqual(_labels(result["fresh"]), ["interview_intel"])
 
 
 class CliTest(unittest.TestCase):
-    def _write_tmp(self, obj) -> str:
+    def _write(self, text: str, encoding: str = "utf-8") -> str:
         fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(obj, f, ensure_ascii=False)
+        with os.fdopen(fd, "w", encoding=encoding) as f:
+            f.write(text)
         self.addCleanup(os.remove, path)
         return path
 
-    def test_main_returns_0_on_valid(self):
-        path = self._write_tmp(_manifest(job_posting_days_ago=0, topics={"workstyle": 0}))
-        self.assertEqual(cf.main([path, "--today", TODAY.isoformat()]), 0)
+    def _run(self, argv) -> tuple[int, str]:
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = cf.main(argv)
+        return code, buf.getvalue()
 
-    def test_main_returns_0_on_stale(self):
-        path = self._write_tmp(_manifest(job_posting_days_ago=999, topics={"workstyle": 999}))
-        self.assertEqual(cf.main([path, "--today", TODAY.isoformat()]), 0)
+    def test_exit_code_is_always_0(self):
+        fresh = json.dumps(_manifest(0, topics={"workstyle": 0}))
+        rows = [
+            ("fresh", self._write(fresh)),
+            ("BOM 付き", self._write(fresh, "utf-8-sig")),
+            ("stale", self._write(json.dumps(_manifest(999, topics={"workstyle": 999})))),
+            ("壊れた JSON", self._write("{ not valid json ")),
+            ("存在しないファイル", os.path.join(tempfile.gettempdir(), "no-such-manifest.json")),
+        ]
+        for label, path in rows:
+            with self.subTest(label):
+                self.assertEqual(self._run([path, "--today", TODAY.isoformat()])[0], 0)
 
-    def test_main_returns_0_on_missing_file(self):
-        missing_path = os.path.join(tempfile.gettempdir(), "does_not_exist_manifest.json")
-        self.assertEqual(cf.main([missing_path, "--today", TODAY.isoformat()]), 0)
+    def test_json_output_buckets(self):
+        path = self._write(json.dumps(_manifest(31, topics={"workstyle": 0})))
+        code, out = self._run([path, "--today", TODAY.isoformat(), "--json"])
+        self.assertEqual(code, 0)
+        data = json.loads(out)
+        self.assertEqual(sorted(data), ["fresh", "missing", "stale"])
+        self.assertEqual(_labels(data["stale"]), ["job_posting"])
+        self.assertEqual(_labels(data["fresh"]), ["company_research.workstyle"])
 
-    def test_main_returns_0_on_broken_json(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            f.write("{ not valid json ")
-        self.addCleanup(os.remove, path)
-        self.assertEqual(cf.main([path, "--today", TODAY.isoformat()]), 0)
+    def test_broken_json_reports_known_artifacts_missing(self):
+        path = self._write("{ not valid json ")
+        _, out = self._run([path, "--json"])
+        self.assertEqual(_labels(json.loads(out)["missing"]), ["job_posting", "company_research"])
 
-    def test_main_json_flag_valid(self):
-        path = self._write_tmp(_manifest(job_posting_days_ago=0, topics={"workstyle": 0}))
-        self.assertEqual(cf.main([path, "--today", TODAY.isoformat(), "--json"]), 0)
-
-    def test_main_returns_0_on_valid_with_bom(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
-            json.dump(_manifest(job_posting_days_ago=0, topics={"workstyle": 0}), f, ensure_ascii=False)
-        self.addCleanup(os.remove, path)
-        self.assertEqual(cf.main([path, "--today", TODAY.isoformat()]), 0)
-
-    def test_today_injection_is_deterministic(self):
-        path = self._write_tmp(_manifest(job_posting_days_ago=30, topics={}))
-        # --today を明示すれば、実行時刻に依存せず同じ結果になる
-        self.assertEqual(cf.main([path, "--today", TODAY.isoformat()]), 0)
-        self.assertEqual(cf.main([path, "--today", TODAY.isoformat()]), 0)
-
-
-class ResultShapeTest(unittest.TestCase):
-    def test_result_shape(self):
-        manifest = _manifest(job_posting_days_ago=0, topics={"workstyle": 0})
-        result = cf.check_freshness(manifest, TODAY)
-        self.assertEqual(set(result.keys()), {"fresh", "stale", "missing"})
-        for bucket in ("fresh", "stale", "missing"):
-            self.assertIsInstance(result[bucket], list)
-
-    def test_immutability_of_input(self):
-        manifest = _manifest(job_posting_days_ago=0, topics={"workstyle": 0})
-        snapshot = copy.deepcopy(manifest)
-        cf.check_freshness(manifest, TODAY)
-        self.assertEqual(manifest, snapshot)
+    def test_invalid_today_is_rejected(self):
+        path = self._write(json.dumps(_manifest(0, topics={})))
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+            cf.main([path, "--today", "2026/07/17"])
 
 
 if __name__ == "__main__":

@@ -362,7 +362,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         document = load_json(args.artifact_path)
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError) as exc:
         result = ValidationResult()
         result.add_error(args.artifact_path, f"JSON として読み込めない（{exc}）")
         if args.json:

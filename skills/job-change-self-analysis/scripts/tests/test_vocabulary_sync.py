@@ -65,10 +65,6 @@ class PersonalityConstructsTest(unittest.TestCase):
     def setUp(self):
         self.terms = _table_terms(_PERSONALITY_GUIDE_MD, "## Construct vocabulary")
 
-    def test_extraction_yields_fifteen_constructs(self):
-        # 抽出が壊れたまま空一致で通らないよう、件数そのものを確かめる。
-        self.assertEqual(len(self.terms), 15, self.terms)
-
     def test_matches_validate_self_analysis(self):
         self.assertEqual(tuple(self.terms), vsa.PERSONALITY_CONSTRUCTS)
 

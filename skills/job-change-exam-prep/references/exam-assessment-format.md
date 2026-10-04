@@ -51,7 +51,7 @@ The stage in the selection process at which the assessment is administered (e.g.
 
 ### assessments[].evidence (array, required)
 
-The evidence used to identify this type. Not being an array is an ERROR. An empty array is an ERROR (this prohibits asserting a claim with no source URL). Each element carries the following.
+The evidence used to identify this type. Not being an array is an ERROR. An empty array is an ERROR (this prohibits asserting a claim with no source URL). Each element has the following fields.
 
 | Field | Required | Entry criteria |
 |---|---|---|
@@ -70,9 +70,9 @@ The confidence for this type. Must be one of the following two values. Missing, 
 | `確定` (confirmed) | The type is explicitly stated by a level-A source, such as a careers page or an official company selection notice |
 | `推定` (estimate) | Inferred from a source below level A, such as a candidate write-up |
 
-`確定` (confirmed) requires that `evidence` contain at least one element with `grade` equal to `A`. If it does not, this is an ERROR (this mechanically prevents setting `確定` (confirmed) on the basis of a single piece of hearsay alone).
+`確定` (confirmed) requires that `evidence` contain at least one element with `grade` equal to `A`. If it does not, this is an ERROR (this mechanically prevents setting `確定` (confirmed) on the basis of one piece of hearsay alone).
 
-When `confidence` is `推定` (estimate) and `evidence` has only one element, this is a WARN, because the type is backed by only a single write-up, and this limitation needs to be made explicit in the preparation plan.
+When `confidence` is `推定` (estimate) and `evidence` has only one element, this is a WARN, because the type is backed by only one write-up, and this limitation needs to be made explicit in the preparation plan.
 
 ### assessments[].format_notes (string, required)
 
@@ -80,11 +80,11 @@ A summary of the question format (subject composition, time, administration-meth
 
 ### assessments[].prep_recommendations (array, required)
 
-The general direction of recommended preparation. Must be an array of non-empty strings. Not being an array, or containing an element that is not a non-empty string, is an ERROR. An empty array is a WARN.
+The general direction of recommended preparation. Must be an array of non-empty strings. Not being an array, or containing an empty string or a non-string element, is an ERROR. An empty array is a WARN.
 
 ### open_questions (array, required)
 
-Records points that could not be verified, points to confirm once the exam invitation arrives, and so on. When the claims passed in the instructions conflict with the investigation results, both claims and the reason for the choice are also recorded here. Not being an array, or containing an element that is not a non-empty string, is an ERROR.
+Records open points, such as points that could not be verified and points to confirm once the exam invitation arrives. When the claims passed in the instructions conflict with the investigation results, both claims and the reason for the choice are also recorded here. Not being an array, or containing an empty string or a non-string element, is an ERROR.
 
 ## Mechanical validation rules (validate_exam_assessment.py)
 
@@ -96,23 +96,23 @@ python validate_exam_assessment.py <exam_assessment.json> [--json]
 
 **ERROR (the deliverable does not stand, or a rule is violated)**
 
-- Cannot be parsed as JSON, or the root element is not an object
+- Cannot be parsed as JSON, or the root element is of a type other than object
 - `company` is missing or empty
-- `assessments` is not an array
+- `assessments` is of a type other than array
 - `assessments` is empty and `open_questions` is also empty
 - `type` is missing or empty
-- `evidence` is not an array, or is an empty array
+- `evidence` is of a type other than array, or is an empty array
 - `source_url` is missing, or does not start with `http`
 - `grade` is not one of `A` / `B` / `C` / `D`
 - `quote` is missing or empty
 - `confidence` is not one of `確定` / `推定`
 - `confidence` is `確定` but `evidence` has no level-A element
-- `prep_recommendations` or `open_questions` is not an array, or contains a non-empty-string element
+- `prep_recommendations` or `open_questions` is of a type other than array, or contains an empty string or a non-string element
 
 **WARN (the deliverable stands, but there is a shortfall or a confidence-related note)**
 
 - `assessments` is an empty array
-- `type` is not a name covered by `assessment-catalog.md`
+- `type` is a name outside `assessment-catalog.md`
 - `stage` is missing or empty
 - `confidence` is `推定` and `evidence` has only one element
 - `format_notes` is missing or empty
@@ -122,7 +122,7 @@ python validate_exam_assessment.py <exam_assessment.json> [--json]
 
 The following cannot be judged mechanically and require human judgment.
 
-- Whether the source's content genuinely describes that assessment type (the correspondence between `quote` and `type`).
+- Whether the source's content describes that assessment type (the correspondence between `quote` and `type`).
 - Whether the assignment of the evidence level itself is appropriate (whether a review has been upgraded to A, or a careers page downgraded to C).
 - Which side to adopt when multiple sources conflict.
-- Where to draw the line on how far a `推定` (estimate) type may be relied on in the preparation plan.
+- How far a `推定` (estimate) type may be relied on in the preparation plan.

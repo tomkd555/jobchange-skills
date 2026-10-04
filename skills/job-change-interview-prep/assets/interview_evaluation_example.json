@@ -10,7 +10,7 @@
         "consistency": "充足",
         "company_fit": "不足"
       },
-      "feedback": "profile.job_change_axis.reasons[0]（設計から運用まで一貫して担いたい）と矛盾なく述べている。一方で、運用に割いている時間の割合が数値で示されていない。",
+      "feedback": "axis.job_change_axis.reasons[0]（設計から運用まで一貫して担いたい）と矛盾なく述べている。一方で、運用に割いている時間の割合が数値で示されていない。",
       "improvement": "運用に割いている時間の割合を profile.career_history[0] の記述から1つ添える。claim C001 のパーパスと結び付けて、転職先で何をしたいかまで続ける。"
     },
     {
@@ -21,7 +21,7 @@
         "consistency": "充足",
         "company_fit": "一部"
       },
-      "feedback": "申請フローの自動化という固有の経験で裏付けており、profile.job_change_axis.reasons[0] とも整合する。claim C001 のパーパスには触れているが、行動指針の4項目までは結び付いていない。",
+      "feedback": "申請フローの自動化という固有の経験で裏付けており、axis.job_change_axis.reasons[0] とも整合する。claim C001 のパーパスには触れているが、行動指針の4項目までは結び付いていない。",
       "improvement": "claim C001 の行動指針のうち、自動化の提案で発揮した項目を1つ挙げて結び付ける。自動化の前後の作業時間を数値で添え、STAR の結果（Result）を明示する。"
     },
     {

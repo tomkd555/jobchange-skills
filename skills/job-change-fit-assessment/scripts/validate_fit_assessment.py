@@ -491,29 +491,50 @@ def _validate_v2_must_conditions(document: dict, profile: Any, result: Validatio
     if profile is None:
         result.add_warning(
             "must_condition_results",
-            "--profile が指定されていない。profile の必須条件との1対1は未検証である",
+            "--axis が指定されていない。必須条件との1対1は未検証である",
         )
         return
 
     expected = _profile_must_refs(profile)
     if expected is None:
+        if _axis_source_usable(profile):
+            result.add_warning(
+                "must_condition_results",
+                "必須条件との1対1は未検証である（--axis の転職の軸が schema_version 2.0 のときに検証する）",
+            )
         return
     missing = sorted(expected - set(refs))
     extra = sorted(set(refs) - expected)
     if missing:
         result.add_error(
             "must_condition_results",
-            f"profile の必須条件に対応する判定が無い: {', '.join(missing)}",
+            f"転職の軸の必須条件に対応する判定が無い: {', '.join(missing)}",
         )
     if extra:
         result.add_error(
             "must_condition_results",
-            f"profile に存在しない必須条件を判定している: {', '.join(extra)}",
+            f"転職の軸に存在しない必須条件を判定している: {', '.join(extra)}",
+        )
+
+
+def _axis_source_usable(profile: Any) -> bool:
+    """--axis の文書が転職の軸を持ちうる形か（オブジェクトで、職歴だけの 3.0 以外）を返す。"""
+    return isinstance(profile, dict) and profile.get("schema_version") != "3.0"
+
+
+def _validate_axis_source(profile: Any, result: ValidationResult) -> None:
+    """--axis に渡された文書を検査する。fit_assessment の版に関わらず行う。"""
+    if not isinstance(profile, dict):
+        result.add_error("--axis", "--axis の文書のルート要素はオブジェクトでなければならない")
+    elif profile.get("schema_version") == "3.0":
+        result.add_error(
+            "--axis",
+            "schema_version 3.0 の profile.json は職歴だけを持つ。--axis には axis.json を指定する",
         )
 
 
 def _profile_must_refs(profile: Any) -> set[str] | None:
-    """profile.json から必須条件の id 集合を取り出す。2.0 でなければ None を返す。"""
+    """--axis の文書から必須条件の id 集合を取り出す。2.0 でなければ None を返す。"""
     if not isinstance(profile, dict) or profile.get("schema_version") != "2.0":
         return None
     axis = profile.get("job_change_axis")
@@ -622,6 +643,9 @@ def validate(document: Any, profile: Any = None, screening: Any = None) -> Valid
         result.add_error("(root)", "ルート要素はオブジェクトでなければならない")
         return result
 
+    if profile is not None:
+        _validate_axis_source(profile, result)
+
     _validate_top_level(document, result)
     _validate_inputs(document, result)
     _validate_dimensions(document, result)
@@ -703,8 +727,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("fit_assessment_path", help="検証対象の fit_assessment.json ファイルパス")
     parser.add_argument("--json", action="store_true", help="結果をJSON形式で出力する")
     parser.add_argument(
+        "--axis",
         "--profile",
-        help="profile.json のパス。必須条件との1対1を検査する（ローカル読み取りのみ）",
+        dest="axis",
+        help="axis.json のパス（軸を内包する 1.x/2.0 の profile.json も受け付ける）。"
+        "必須条件との1対1を検査する（ローカル読み取りのみ）",
     )
     parser.add_argument(
         "--screening",
@@ -715,15 +742,15 @@ def main(argv: list[str] | None = None) -> int:
     def _load(path: str, label: str) -> tuple[Any, ValidationResult | None]:
         try:
             return load_fit_assessment(path), None
-        except (OSError, json.JSONDecodeError) as exc:
+        except (OSError, ValueError) as exc:
             failure = ValidationResult()
             failure.add_error(path, f"{label}を読み込めない（{exc}）")
             return None, failure
 
     document, failure = _load(args.fit_assessment_path, "fit_assessment.json")
     profile = screening = None
-    if failure is None and args.profile:
-        profile, failure = _load(args.profile, "profile.json")
+    if failure is None and args.axis:
+        profile, failure = _load(args.axis, "axis.json")
     if failure is None and args.screening:
         screening, failure = _load(args.screening, "job_search_results.json")
     if failure is not None:

@@ -3,7 +3,7 @@
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
 <!-- The [E1] form in the body is the notation for a source ID. This file disables that rule to preserve the half-width square brackets. -->
 
-This is the canonical definition of the criteria the job-change-self-analysis skill uses when integrating self-analysis material into a "consistent career narrative" and a "constructive reframing of the reason for leaving." The material refers to episodes, testimony from others, interests, values, and career adaptability. The writer agent references this file when creating career_narrative and reason_for_change. Job interview preparation and the deepening of statements of motivation (interview-prep / documents) likewise read it as the grounds for consistency. The evidence-level and DOI notation follow the same convention as self-analysis-methods.md.
+This is the canonical definition of the criteria the job-change-self-analysis skill uses when integrating self-analysis material into a "consistent career narrative" and a "constructive reframing of the reason for leaving." The material refers to episodes, testimony from others, interests, values, and career adaptability. The writer agent references this file when creating career_narrative and reason_for_change. Job interview preparation and the deepening of statements of motivation (interview-prep / documents) also read it as the grounds for consistency. The evidence-level and DOI notation follow the same convention as self-analysis-methods.md.
 
 ## Why connect to a narrative
 
@@ -36,10 +36,10 @@ In reason_for_change, convert a list of complaints (raw_reasons) into an explana
 
 The conversion procedure:
 
-1. Record raw_reasons without processing them. List, without dressing them up, the present complaints and the original reasons behind considering leaving. This is the starting point of the conversion and stays internal.
+1. Record raw_reasons without processing them. List, without dressing them up, the present complaints and the original reasons behind considering leaving. This is the starting point of the conversion and is kept internal.
 2. Identify the "value the person wants to bring to bear" behind each complaint. For each complaint, ask "then what do I want to achieve," and map it to values and to career_narrative's consistent_motivation. Reframe the complaint (what to avoid) into what the person wants to achieve (what to move toward).
 3. Write constructive_version with what the person wants to achieve as its subject, built around the value the person wants to bring to bear. constructive_version must be a different sentence from raw_reasons (the validation script issues a WARN when it remains the identical string).
-4. Check the alignment with profile.json in consistency_note. Check whether the axis of constructive_version agrees with profile.json's `job_change_axis.reasons` (the reason for changing jobs, written as what the person wants to achieve next). Explain any divergence.
+4. Check the alignment with the axis in consistency_note. Check whether the axis of constructive_version agrees with `job_change_axis.reasons` in `{AXIS}` (the reason for changing jobs, written as what the person wants to achieve next). Explain any divergence. When no `{AXIS}` exists, leave consistency_note out; the constructive_version waits as the proposed answer for `reasons` until the user starts the `job-change-axis` track.
 
 The example below shows the conversion's structure only; the actual data comes from the user's own material.
 
@@ -51,15 +51,15 @@ Rule: never hide a complaint. Even so, never let it end as a list of complaints.
 
 ## Connecting to how a company evaluates
 
-Connect the result of self-analysis to the perspective a company evaluates from. This carries the reservation that the weight given to the statement of motivation varies by company.
+Connect the result of self-analysis to the perspective a company evaluates from. This connection comes with the reservation that the weight given to the statement of motivation varies by company.
 
-- In interviews for experienced-hire recruitment aimed at people in their twenties, the point HR staff look at most often is character and fit with the company culture (86.2%). Experience and achievements (60.8%), the reason for changing jobs (55.3%), and the statement of motivation (49.4%) follow [E40]. **This figure comes from a single survey whose population was limited to people in their twenties.** The reason for changing jobs and the statement of motivation rank high, and yet character and achievements outrank them — a fact that shows, at once, both the value and the limit of connecting self-analysis to the selection process.
-- The weight given to the statement of motivation varies by company. At a company that emphasises skill and experience, the statement of motivation carries lower priority, and the interview may not even ask about it [E41].
+- In interviews for experienced-hire recruitment aimed at people in their twenties, the point HR staff look at most often is character and fit with the company culture (86.2%). Experience and achievements (60.8%), the reason for changing jobs (55.3%), and the statement of motivation (49.4%) follow [E40]. **This figure comes from one survey whose population was limited to people in their twenties.** The reason for changing jobs and the statement of motivation rank high, yet character and achievements rank above them. That fact shows both the value and the limit of connecting self-analysis to the selection process.
+- The weight given to the statement of motivation varies by company. At a company that emphasises skill and experience, the statement of motivation has lower priority, and the interview may not even ask about it [E41].
 - A mid-career hiring interview pays attention to the behavioural process leading to a result (in which situation the candidate thought and acted, and how), and judges the reproducibility that keeps functioning when the environment changes [E42]. behavioral_episodes's reproducibility corresponds directly to this perspective on reproducibility.
 
 Operating this connection:
 
-1. STAR material (behavioral_episodes), once it carries a metric (a quantitative value) and reproducibility, becomes a point of contact for the employer's challenge of "lacking an objective standard for evaluating ability" [E25].
+1. STAR material (behavioral_episodes), once it includes a metric (a quantitative value) and reproducibility, becomes a point of contact for the employer's challenge of "lacking an objective standard for evaluating ability" [E25].
 2. Pass career_narrative and reason_for_change.constructive_version on as grounds for the interview's "consistency" perspective (which interview-prep evaluates), and as grounds for the statement of motivation (which documents writes).
 3. Never treat the statement of motivation as the top deciding factor. Because its weight varies by company, prepare corroboration for character, fit, and achievements (episodes, testimony from others) alongside it.
 

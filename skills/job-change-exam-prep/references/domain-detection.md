@@ -18,7 +18,7 @@ Multiple preparation outlets consistently mention this correspondence as a way t
 
 ## How to use it
 
-- Detection is done by matching the URL string only. It involves no external access to the URL and no external transmission of the profile.
+- Detection is done by matching the URL string only. It does not access the URL externally or transmit the profile externally.
 - The detection result is provisional, and its confidence is set to `推定` (estimate). Confirmation happens through the Step 1 investigation by `job-change-exam-scout` (checking the careers page and candidate write-ups).
 
 ## Limitations
@@ -26,5 +26,5 @@ Multiple preparation outlets consistently mention this correspondence as a way t
 The following limitations apply to this detection. When conveying the provisional detection at Step 0, present these together with it.
 
 - **Paper-format tests cannot be detected.** A test administered on paper, such as 内田クレペリン検査 (Uchida-Kraepelin), has no exam URL, so it cannot be detected from a URL (source: the Levtech Rookie article cited above, level C).
-- **The Japan SHL family cannot be narrowed to a single test.** `e-exam`, `nsvs`, and `tsvs` are Japan SHL's assessment platforms, so from these alone the type can only be narrowed to one of 玉手箱 (Tamatebako), GAB, or CAB. The final type is confirmed through the Step 1 investigation.
-- **An assessment vendor may change its domain.** The domain of an assessment vendor's platform can change over time. The detection table reflects the current correspondence at the time of writing; the URL may not match the table, or the actual assessment may differ even when it does match. Do not rely on URL-based detection alone; prioritize the Step 1 investigation results.
+- **The Japan SHL family cannot be narrowed to one test.** `e-exam`, `nsvs`, and `tsvs` are Japan SHL's assessment platforms, so from these alone the type can only be narrowed to one of 玉手箱 (Tamatebako), GAB, or CAB. The final type is confirmed through the Step 1 investigation.
+- **An assessment vendor may change its domain.** The domain of an assessment vendor's platform can change over time. The detection table reflects the current correspondence at the time of writing; the URL may not match the table, or the actual assessment may differ even when it does match. Do not rely on URL-based detection alone. The Step 1 investigation results take precedence.

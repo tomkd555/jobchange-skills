@@ -163,7 +163,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         manifest = load_manifest(args.manifest_path)
-    except (OSError, json.JSONDecodeError):
+    except (OSError, ValueError):
         result = _missing_all()
         if args.json:
             print(json.dumps(result, ensure_ascii=False, indent=2))

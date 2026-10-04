@@ -1,0 +1,191 @@
+{
+  "schema_version": "2.0",
+  "updated_at": "2026-07-25",
+  "job_change_axis": {
+    "reasons": [
+      "技術選定の裁量が大きい環境で、より上流の意思決定に関わりたい",
+      "英語を使う機会を増やし、グローバル製品の開発に携わりたい"
+    ],
+    "conditions": [
+      {
+        "id": "cond-modern-stack",
+        "level": "must",
+        "statement": "モダンな技術スタックと CI/CD が整備されていること",
+        "axis": null,
+        "operator": "qualitative",
+        "value": null,
+        "unit": "none",
+        "verification": "research",
+        "priority": 1,
+        "note": "求人票の文言では判定できない。企業研究の technology トピックと面接で確認する"
+      },
+      {
+        "id": "cond-remote",
+        "level": "must",
+        "statement": "リモートワークが可能であること（週2日以上の在宅）",
+        "axis": "remote_certainty",
+        "operator": "in",
+        "value": [
+          "guaranteed",
+          "full_remote_possible",
+          "hybrid"
+        ],
+        "unit": "none",
+        "verification": "posting",
+        "priority": 2
+      },
+      {
+        "id": "cond-overtime",
+        "level": "must",
+        "statement": "月平均残業が10時間以下であること",
+        "axis": "overtime_hours",
+        "operator": "<=",
+        "value": 10,
+        "unit": "h_month",
+        "verification": "posting",
+        "priority": 3
+      },
+      {
+        "id": "cond-holidays",
+        "level": "want",
+        "statement": "年間休日125日以上",
+        "axis": "annual_holidays",
+        "operator": ">=",
+        "value": 125,
+        "unit": "days_year",
+        "verification": "posting"
+      },
+      {
+        "id": "cond-salary",
+        "level": "want",
+        "statement": "年収700万円以上",
+        "axis": "salary_condition",
+        "operator": ">=",
+        "value": 7000000,
+        "unit": "yen",
+        "verification": "posting"
+      },
+      {
+        "id": "cond-career-path",
+        "level": "want",
+        "statement": "テックリードまたは EM へのキャリアパスがあること",
+        "axis": null,
+        "operator": "qualitative",
+        "value": null,
+        "unit": "none",
+        "verification": "interview"
+      },
+      {
+        "id": "cond-english",
+        "level": "want",
+        "statement": "外資系、または英語を使う開発チームであること",
+        "axis": null,
+        "operator": "qualitative",
+        "value": null,
+        "unit": "none",
+        "verification": "research"
+      }
+    ],
+    "work_character_preferences": [
+      {
+        "trait": "hands_on",
+        "desire": "important",
+        "statement": "設計と実装に自分で手を動かして関わりたい"
+      },
+      {
+        "trait": "build_ops_ratio",
+        "desire": "important"
+      },
+      {
+        "trait": "low_coordination",
+        "desire": "neutral",
+        "note": "調整業務も一定量は許容する"
+      },
+      {
+        "trait": "full_remote_guaranteed",
+        "desire": "important"
+      },
+      {
+        "trait": "no_oncall",
+        "desire": "important"
+      },
+      {
+        "trait": "clear_completion",
+        "desire": "neutral"
+      },
+      {
+        "trait": "solo_completable",
+        "desire": "not_required",
+        "note": "チームでの開発を望む"
+      },
+      {
+        "trait": "short_feedback",
+        "desire": "important"
+      }
+    ],
+    "priority_note": "優先順位は「モダンな技術スタックと CI/CD」＞「リモートワーク可」。次回の再評価は2027-01を予定。"
+  },
+  "company_score_axes": [
+    {
+      "axis": "monthly_overtime",
+      "kind": "quantitative",
+      "weight": 30,
+      "note": "残業の少なさは他の条件と引き換えにしない"
+    },
+    {
+      "axis": "compensation_level",
+      "kind": "quantitative",
+      "weight": 30,
+      "thresholds": {
+        "zero": 6800000,
+        "full": 9000000
+      },
+      "note": "現年収を0点、希望年収より上を100点とする自分の基準を使う"
+    },
+    {
+      "axis": "annual_holidays",
+      "kind": "quantitative",
+      "weight": 15
+    },
+    {
+      "axis": "tech_discretion",
+      "kind": "qualitative",
+      "weight": 25,
+      "label": "技術選定の裁量",
+      "definition": "使う言語・フレームワーク・クラウド構成を開発チームが決められること",
+      "judgment": [
+        {
+          "score": 100,
+          "condition": "技術ブログか求人票に、開発チームが技術選定を担う旨の記載があり、面接でも確認できた"
+        },
+        {
+          "score": 50,
+          "condition": "記載はあるが、決定の範囲が読み取れず未確認である"
+        },
+        {
+          "score": 0,
+          "condition": "全社の標準スタックに従う旨が明記されている"
+        }
+      ]
+    }
+  ],
+  "targets": {
+    "industries": [
+      "SaaS",
+      "フィンテック"
+    ],
+    "roles": [
+      "テックリード",
+      "エンジニアリングマネージャー",
+      "シニアバックエンドエンジニア"
+    ],
+    "companies": [
+      "架空クラウドワークス社",
+      "架空ペイメンツ社"
+    ]
+  },
+  "salary": {
+    "current": 6800000,
+    "desired": 8500000
+  }
+}

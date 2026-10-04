@@ -7,7 +7,9 @@
 """
 from __future__ import annotations
 
+import contextlib
 import copy
+import io
 import json
 import os
 import sys
@@ -75,6 +77,31 @@ def _work_character_preferences(**desires: str) -> list[dict]:
     return preferences
 
 
+def _company_score_axes() -> list[dict]:
+    """ERROR 0件・WARN 0件になる company_score_axes を返す。"""
+    return [
+        {
+            "axis": "compensation_level",
+            "kind": "quantitative",
+            "weight": 40,
+            "thresholds": {"zero": 4500000, "full": 7000000},
+        },
+        {"axis": "annual_holidays", "kind": "quantitative", "weight": 25},
+        {
+            "axis": "discretion",
+            "kind": "qualitative",
+            "weight": 35,
+            "label": "裁量の大きさ",
+            "definition": "設計方針を自分で決められること",
+            "judgment": [
+                {"score": 100, "condition": "求人票に設計裁量の記載があり、面接でも確認できた"},
+                {"score": 50, "condition": "求人票に記載があるが未確認"},
+                {"score": 0, "condition": "上位者の承認が必要と明記されている"},
+            ],
+        },
+    ]
+
+
 def _valid_v2_profile() -> dict:
     """ERROR 0件・WARN 0件になる schema_version 2.0 のプロファイルを返す。"""
     profile = _valid_profile()
@@ -106,179 +133,17 @@ def _valid_v2_profile() -> dict:
         ],
         "work_character_preferences": _work_character_preferences(hands_on="important"),
     }
+    profile["company_score_axes"] = _company_score_axes()
     return profile
 
 
-class ValidatePassTest(unittest.TestCase):
-    def test_full_v1_profile_has_only_the_migration_warning(self):
-        result = vp.validate(_valid_profile())
-        self.assertTrue(result.ok)
-        self.assertEqual(result.errors, [])
-        self.assertEqual(len(result.warnings), 1)
-        self.assertIn("2.0 への移行", result.warnings[0])
-
-    def test_full_v2_profile_passes_without_warnings(self):
-        result = vp.validate(_valid_v2_profile())
-        self.assertTrue(result.ok)
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
-
-
-class ErrorCaseTest(unittest.TestCase):
-    def test_root_not_object(self):
-        result = vp.validate(["not", "an", "object"])
-        self.assertFalse(result.ok)
-
-    def test_missing_schema_version(self):
-        p = _valid_profile()
-        del p["schema_version"]
-        result = vp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("schema_version" in e for e in result.errors))
-
-    def test_empty_schema_version(self):
-        p = _valid_profile()
-        p["schema_version"] = "  "
-        result = vp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("schema_version" in e for e in result.errors))
-
-    def test_missing_current_role(self):
-        p = _valid_profile()
-        del p["basic"]["current_role"]
-        result = vp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("current_role" in e for e in result.errors))
-
-    def test_basic_not_object(self):
-        p = _valid_profile()
-        p["basic"] = "文字列"
-        result = vp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("basic" in e for e in result.errors))
-
-    def test_empty_career_history(self):
-        p = _valid_profile()
-        p["career_history"] = []
-        result = vp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("career_history" in e for e in result.errors))
-
-    def test_career_history_missing_company(self):
-        p = _valid_profile()
-        del p["career_history"][0]["company"]
-        result = vp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("company" in e for e in result.errors))
-
-    def test_career_history_missing_period(self):
-        p = _valid_profile()
-        p["career_history"][0]["period"] = ""
-        result = vp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("period" in e for e in result.errors))
-
-    def test_career_history_missing_role(self):
-        p = _valid_profile()
-        del p["career_history"][0]["role"]
-        result = vp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("role" in e for e in result.errors))
-
-    def test_empty_job_change_axis_reasons(self):
-        p = _valid_profile()
-        p["job_change_axis"]["reasons"] = []
-        result = vp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("reasons" in e for e in result.errors))
-
-    def test_job_change_axis_reasons_all_blank(self):
-        p = _valid_profile()
-        p["job_change_axis"]["reasons"] = ["", "   "]
-        result = vp.validate(p)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("reasons" in e for e in result.errors))
-
-
-class WarnCaseTest(unittest.TestCase):
-    def test_no_metric_warns_but_passes(self):
-        p = _valid_profile()
-        p["career_history"][0]["achievements"] = [
-            {"description": "改善に貢献", "metric": None}
-        ]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)  # WARN のみは PASS
-        self.assertTrue(any("metric" in w for w in result.warnings))
-
-    def test_no_achievements_warns(self):
-        p = _valid_profile()
-        p["career_history"][0]["achievements"] = []
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("achievements" in w for w in result.warnings))
-
-    def test_all_skills_empty_warns(self):
-        p = _valid_profile()
-        p["skills"] = {
-            "technical": [],
-            "business": [],
-            "languages": [],
-            "certifications": [],
-        }
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("skills" in w for w in result.warnings))
-
-    def test_all_targets_empty_warns(self):
-        p = _valid_profile()
-        p["targets"] = {"industries": [], "roles": [], "companies": []}
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("targets" in w for w in result.warnings))
-
-    def test_missing_updated_at_warns(self):
-        p = _valid_profile()
-        del p["updated_at"]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("updated_at" in w for w in result.warnings))
-
-
-class CliTest(unittest.TestCase):
-    def _write_tmp(self, obj) -> str:
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(obj, f, ensure_ascii=False)
-        self.addCleanup(os.remove, path)
-        return path
-
-    def test_main_returns_0_on_valid(self):
-        path = self._write_tmp(_valid_profile())
-        self.assertEqual(vp.main([path]), 0)
-
-    def test_main_returns_1_on_invalid(self):
-        p = _valid_profile()
-        del p["schema_version"]
-        path = self._write_tmp(p)
-        self.assertEqual(vp.main([path]), 1)
-
-    def test_main_returns_1_on_broken_json(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            f.write("{ not valid json ")
-        self.addCleanup(os.remove, path)
-        self.assertEqual(vp.main([path]), 1)
-
-    def test_main_json_flag_valid(self):
-        path = self._write_tmp(_valid_profile())
-        self.assertEqual(vp.main([path, "--json"]), 0)
-
-    def test_main_returns_0_on_valid_with_bom(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
-            json.dump(_valid_profile(), f, ensure_ascii=False)
-        self.addCleanup(os.remove, path)
-        self.assertEqual(vp.main([path]), 0)
+def _valid_v3_profile() -> dict:
+    """schema_version 3.0 の、職歴の事実だけを持つプロファイルを返す。"""
+    profile = _valid_v2_profile()
+    for key in vp._AXIS_KEYS:
+        profile.pop(key, None)
+    profile["schema_version"] = "3.0"
+    return profile
 
 
 def _minimal_v1_0_profile() -> dict:
@@ -293,811 +158,66 @@ def _minimal_v1_0_profile() -> dict:
     }
 
 
-class BackwardCompatTest(unittest.TestCase):
-    def test_minimal_v1_0_profile_still_passes(self):
-        result = vp.validate(_minimal_v1_0_profile())
-        self.assertTrue(result.ok)
-        self.assertEqual(result.errors, [])
+def _career(period: str, company: str = "架空職場") -> dict:
+    return {
+        "company": company,
+        "period": period,
+        "role": "エンジニア",
+        "achievements": [{"description": "実績", "metric": "10%改善"}],
+    }
 
 
-class W1SchemaVersionTest(unittest.TestCase):
-    def test_unknown_schema_version_warns(self):
-        p = _valid_profile()
-        p["schema_version"] = "9.9"
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("既知のバージョン" in w for w in result.warnings))
-
-    def test_schema_version_1_1_is_known(self):
-        p = _valid_profile()
-        p["schema_version"] = "1.1"
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("既知のバージョン" in w for w in result.warnings))
-
-    def test_schema_version_2_0_is_known(self):
-        result = vp.validate(_valid_v2_profile())
-        self.assertFalse(any("既知のバージョン" in w for w in result.warnings))
-
-    def test_v1_gets_migration_warning(self):
-        for version in ("1.0", "1.1"):
-            with self.subTest(version=version):
-                p = _valid_profile()
-                p["schema_version"] = version
-                result = vp.validate(p)
-                self.assertTrue(any("2.0 への移行" in w for w in result.warnings))
-
-    def test_v2_does_not_get_migration_warning(self):
-        result = vp.validate(_valid_v2_profile())
-        self.assertFalse(any("2.0 への移行" in w for w in result.warnings))
+def _cond(p: dict, i: int = 0) -> dict:
+    return p["job_change_axis"]["conditions"][i]
 
 
-class W2PeriodFormatTest(unittest.TestCase):
-    def test_malformed_period_warns(self):
-        p = _valid_profile()
-        p["career_history"][0]["period"] = "2020/04-2026/06"
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(
-            any("period" in w and "career_history" in w for w in result.warnings)
-        )
-
-    def test_ongoing_period_does_not_warn(self):
-        p = _valid_profile()
-        p["career_history"][0]["period"] = "2020-04〜現在"
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertFalse(
-            any("career_history[0].period" in w for w in result.warnings)
-        )
+def _prefs(p: dict) -> list:
+    return p["job_change_axis"]["work_character_preferences"]
 
 
-class W3CareerGapTest(unittest.TestCase):
-    def test_uncovered_gap_warns(self):
-        p = _valid_profile()
-        p["career_history"] = [
-            {
-                "company": "旧職",
-                "period": "2018-04〜2019-03",
-                "role": "エンジニア",
-                "achievements": [{"description": "実績", "metric": "10%改善"}],
-            },
-            {
-                "company": "現職",
-                "period": "2020-01〜現在",
-                "role": "エンジニア",
-                "achievements": [{"description": "実績", "metric": "10%改善"}],
-            },
+def _set(target: dict, key: str, value):
+    target[key] = value
+
+
+def _make_must_salary(p: dict, value: int) -> None:
+    c = _cond(p, 1)
+    c.update(level="must", priority=2, value=value)
+
+
+def _make_four_musts(p: dict) -> None:
+    c = _cond(p, 1)
+    c.update(level="must", priority=2)
+    for pref in _prefs(p)[:2]:
+        pref.update(desire="must", statement="満たすこと")
+
+
+def _duplicate_must_axis(p: dict) -> None:
+    extra = dict(_cond(p))
+    extra["id"] = "cond-remote-2"
+    p["job_change_axis"]["conditions"].append(extra)
+
+
+class ValidateTest(unittest.TestCase):
+    def test_valid_documents_pass(self):
+        # (ラベル, 文書, 期待する WARN の部分文字列。None は WARN 0件)
+        rows = [
+            ("v1 完全版は移行推奨の WARN だけ", _valid_profile(), "2.0 への移行"),
+            ("v1.1 も移行推奨の WARN だけ", {**_valid_profile(), "schema_version": "1.1"}, "2.0 への移行"),
+            ("v1.0 最小形（後方互換）", _minimal_v1_0_profile(), "2.0 への移行"),
+            ("v2 完全版", _valid_v2_profile(), None),
+            ("v3 完全版", _valid_v3_profile(), None),
         ]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("career_gaps" in w for w in result.warnings))
+        for label, doc, warn in rows:
+            with self.subTest(label):
+                result = vp.validate(doc)
+                self.assertEqual(result.errors, [])
+                if warn is None:
+                    self.assertEqual(result.warnings, [])
+                else:
+                    self.assertTrue(
+                        any(warn in w for w in result.warnings), result.warnings
+                    )
 
-    def test_gap_covered_by_career_gaps_does_not_warn(self):
-        p = _valid_profile()
-        p["career_history"] = [
-            {
-                "company": "旧職",
-                "period": "2018-04〜2019-03",
-                "role": "エンジニア",
-                "achievements": [{"description": "実績", "metric": "10%改善"}],
-            },
-            {
-                "company": "現職",
-                "period": "2020-01〜現在",
-                "role": "エンジニア",
-                "achievements": [{"description": "実績", "metric": "10%改善"}],
-            },
-        ]
-        p["career_gaps"] = [
-            {
-                "period": "2019-04〜2019-12",
-                "explanation": "資格取得のための学習期間",
-            }
-        ]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("career_gaps" in w for w in result.warnings))
-
-    def test_short_gap_does_not_warn(self):
-        p = _valid_profile()
-        p["career_history"] = [
-            {
-                "company": "旧職",
-                "period": "2018-04〜2019-03",
-                "role": "エンジニア",
-                "achievements": [{"description": "実績", "metric": "10%改善"}],
-            },
-            {
-                "company": "現職",
-                "period": "2019-06〜現在",
-                "role": "エンジニア",
-                "achievements": [{"description": "実績", "metric": "10%改善"}],
-            },
-        ]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("career_gaps" in w for w in result.warnings))
-
-    def test_unparseable_period_skips_gap_detection(self):
-        p = _valid_profile()
-        p["career_history"] = [
-            {
-                "company": "旧職",
-                "period": "不明",
-                "role": "エンジニア",
-                "achievements": [{"description": "実績", "metric": "10%改善"}],
-            },
-            {
-                "company": "現職",
-                "period": "2020-01〜現在",
-                "role": "エンジニア",
-                "achievements": [{"description": "実績", "metric": "10%改善"}],
-            },
-        ]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("career_gaps" in w for w in result.warnings))
-
-
-    def test_concurrent_side_jobs_inside_a_main_job_do_not_warn(self):
-        """本業が全期間を覆う場合、離れた副業2件の間を空白と見なさない。"""
-        p = _valid_profile()
-        p["career_history"] = [
-            {
-                "company": "本業株式会社",
-                "period": "2015-04〜現在",
-                "role": "バックエンドエンジニア",
-                "achievements": [{"description": "実績", "metric": "10%改善"}],
-            },
-            {
-                "company": "副業クライアントA",
-                "period": "2020-04〜2021-03",
-                "role": "業務委託（副業）",
-            },
-            {
-                "company": "副業クライアントB",
-                "period": "2023-04〜現在",
-                "role": "業務委託（副業）",
-            },
-        ]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("career_gaps" in w for w in result.warnings))
-
-    def test_real_gap_after_concurrent_jobs_still_warns(self):
-        """並行職歴があっても、どの職歴にも覆われない6ヶ月以上の空白は検出する。"""
-        p = _valid_profile()
-        p["career_history"] = [
-            {
-                "company": "本業株式会社",
-                "period": "2015-04〜2018-03",
-                "role": "エンジニア",
-                "achievements": [{"description": "実績", "metric": "10%改善"}],
-            },
-            {
-                "company": "副業クライアント",
-                "period": "2016-04〜2017-03",
-                "role": "業務委託（副業）",
-            },
-            {
-                "company": "現職",
-                "period": "2019-06〜現在",
-                "role": "エンジニア",
-            },
-        ]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("career_gaps" in w for w in result.warnings))
-
-    def test_identical_periods_do_not_break_merge(self):
-        """在籍期間が完全に一致する2件でも空白判定が壊れない。"""
-        p = _valid_profile()
-        p["career_history"] = [
-            {
-                "company": "出向元",
-                "period": "2020-04〜2022-03",
-                "role": "エンジニア",
-                "achievements": [{"description": "実績", "metric": "10%改善"}],
-            },
-            {
-                "company": "出向先",
-                "period": "2020-04〜2022-03",
-                "role": "出向者",
-            },
-        ]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("career_gaps" in w for w in result.warnings))
-
-
-class W4LanguagesShapeTest(unittest.TestCase):
-    def test_language_missing_level_warns(self):
-        p = _valid_profile()
-        p["skills"]["languages"] = [{"language": "英語"}]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("skills.languages" in w for w in result.warnings))
-
-    def test_valid_language_shape_does_not_warn(self):
-        p = _valid_profile()
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("skills.languages[" in w for w in result.warnings))
-
-
-class W5SalaryTypeTest(unittest.TestCase):
-    def test_non_numeric_salary_warns(self):
-        p = _valid_profile()
-        p["salary"]["current"] = "五百万円"
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("salary.current" in w for w in result.warnings))
-
-    def test_null_salary_does_not_warn(self):
-        p = _valid_profile()
-        p["salary"]["current"] = None
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("salary." in w for w in result.warnings))
-
-
-class W6MustConditionsCountTest(unittest.TestCase):
-    def test_four_or_more_must_conditions_warns(self):
-        p = _valid_profile()
-        p["job_change_axis"]["must_conditions"] = ["A", "B", "C", "D"]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("must_conditions" in w for w in result.warnings))
-
-    def test_three_must_conditions_does_not_warn(self):
-        p = _valid_profile()
-        p["job_change_axis"]["must_conditions"] = ["A", "B", "C"]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("must_conditions" in w for w in result.warnings))
-
-
-class W7CareerGapsShapeTest(unittest.TestCase):
-    def test_malformed_gap_period_warns(self):
-        p = _valid_profile()
-        p["career_gaps"] = [{"period": "2019年4月", "explanation": "休養"}]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("career_gaps[0].period" in w for w in result.warnings))
-
-    def test_missing_explanation_warns(self):
-        p = _valid_profile()
-        p["career_gaps"] = [{"period": "2019-04〜2019-09", "explanation": ""}]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(
-            any("career_gaps[0].explanation" in w for w in result.warnings)
-        )
-
-    def test_valid_career_gap_does_not_warn(self):
-        p = _valid_profile()
-        p["career_gaps"] = [
-            {"period": "2019-04〜2019-09", "explanation": "資格取得のための学習期間"}
-        ]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertFalse(
-            any(
-                w.startswith("[WARN] career_gaps[0]")
-                for w in result.warnings
-            )
-        )
-
-
-class W8SkillsPortableCategoryTest(unittest.TestCase):
-    def test_invalid_category_warns(self):
-        p = _valid_profile()
-        p["skills"]["portable"] = [{"skill": "傾聴力", "category": "その他"}]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(
-            any("skills.portable[0].category" in w for w in result.warnings)
-        )
-
-    def test_valid_categories_do_not_warn(self):
-        p = _valid_profile()
-        p["skills"]["portable"] = [
-            {"skill": "課題解決力", "category": "対課題"},
-            {"skill": "傾聴力", "category": "対人"},
-        ]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertFalse(
-            any("skills.portable" in w for w in result.warnings)
-        )
-
-
-class ResultShapeTest(unittest.TestCase):
-    def test_to_dict_shape(self):
-        result = vp.validate(_valid_profile())
-        d = result.to_dict()
-        self.assertEqual(d["status"], "PASS")
-        self.assertEqual(d["error_count"], 0)
-        self.assertIn("warnings", d)
-
-    def test_immutability_of_input(self):
-        p = _valid_profile()
-        snapshot = copy.deepcopy(p)
-        vp.validate(p)
-        self.assertEqual(p, snapshot)
-
-
-class V2ConditionsTest(unittest.TestCase):
-    def _validate(self, mutate) -> vp.ValidationResult:
-        p = _valid_v2_profile()
-        mutate(p["job_change_axis"])
-        return vp.validate(p)
-
-    def test_conditions_must_be_a_list(self):
-        result = self._validate(lambda axis: axis.__setitem__("conditions", {}))
-        self.assertFalse(result.ok)
-        self.assertTrue(any("conditions" in e for e in result.errors))
-
-    def test_missing_conditions_is_an_error(self):
-        result = self._validate(lambda axis: axis.pop("conditions"))
-        self.assertFalse(result.ok)
-
-    def test_duplicate_id_is_an_error(self):
-        result = self._validate(
-            lambda axis: axis["conditions"][1].__setitem__("id", axis["conditions"][0]["id"])
-        )
-        self.assertFalse(result.ok)
-        self.assertTrue(any("重複" in e for e in result.errors))
-
-    def test_malformed_id_is_an_error(self):
-        result = self._validate(lambda axis: axis["conditions"][0].__setitem__("id", "Cond Remote"))
-        self.assertFalse(result.ok)
-
-    def test_unknown_level_is_an_error(self):
-        result = self._validate(lambda axis: axis["conditions"][0].__setitem__("level", "nice"))
-        self.assertFalse(result.ok)
-
-    def test_empty_statement_is_an_error(self):
-        result = self._validate(lambda axis: axis["conditions"][0].__setitem__("statement", " "))
-        self.assertFalse(result.ok)
-
-    def test_unknown_axis_is_an_error(self):
-        result = self._validate(lambda axis: axis["conditions"][0].__setitem__("axis", "vibes"))
-        self.assertFalse(result.ok)
-
-    def test_null_axis_is_allowed(self):
-        def mutate(axis):
-            axis["conditions"][0]["axis"] = None
-            axis["conditions"][0]["operator"] = "qualitative"
-            axis["conditions"][0]["value"] = None
-            axis["conditions"][0]["verification"] = "interview"
-
-        self.assertTrue(self._validate(mutate).ok)
-
-    def test_unknown_operator_is_an_error(self):
-        result = self._validate(lambda axis: axis["conditions"][0].__setitem__("operator", "~="))
-        self.assertFalse(result.ok)
-
-    def test_comparative_operator_without_value_is_an_error(self):
-        result = self._validate(lambda axis: axis["conditions"][0].__setitem__("value", None))
-        self.assertFalse(result.ok)
-        self.assertTrue(any("value" in e for e in result.errors))
-
-    def test_qualitative_operator_allows_null_value(self):
-        def mutate(axis):
-            axis["conditions"][0]["operator"] = "qualitative"
-            axis["conditions"][0]["value"] = None
-
-        self.assertTrue(self._validate(mutate).ok)
-
-    def test_unknown_verification_is_an_error(self):
-        result = self._validate(lambda axis: axis["conditions"][0].__setitem__("verification", "guess"))
-        self.assertFalse(result.ok)
-
-    def test_no_must_condition_warns(self):
-        result = self._validate(lambda axis: axis["conditions"][0].__setitem__("level", "want"))
-        self.assertTrue(result.ok)
-        self.assertTrue(any("must の条件が1件も無い" in w for w in result.warnings))
-
-    def test_duplicate_must_axis_warns(self):
-        def mutate(axis):
-            extra = dict(axis["conditions"][0])
-            extra["id"] = "cond-remote-2"
-            axis["conditions"].append(extra)
-
-        result = self._validate(mutate)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("同じ軸に必須条件" in w for w in result.warnings))
-
-    def test_missing_priority_on_must_warns(self):
-        result = self._validate(lambda axis: axis["conditions"][0].pop("priority"))
-        self.assertTrue(result.ok)
-        self.assertTrue(any("priority" in w for w in result.warnings))
-
-
-class V2WorkCharacterTest(unittest.TestCase):
-    def _validate(self, mutate) -> vp.ValidationResult:
-        p = _valid_v2_profile()
-        mutate(p["job_change_axis"])
-        return vp.validate(p)
-
-    def test_missing_preferences_is_an_error(self):
-        result = self._validate(lambda axis: axis.pop("work_character_preferences"))
-        self.assertFalse(result.ok)
-
-    def test_seven_traits_is_an_error(self):
-        result = self._validate(lambda axis: axis["work_character_preferences"].pop())
-        self.assertFalse(result.ok)
-        self.assertTrue(any("欠落" in e for e in result.errors))
-
-    def test_duplicated_trait_is_an_error(self):
-        def mutate(axis):
-            axis["work_character_preferences"][1]["trait"] = axis["work_character_preferences"][0]["trait"]
-
-        result = self._validate(mutate)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("重複" in e for e in result.errors))
-
-    def test_unknown_trait_is_an_error(self):
-        result = self._validate(
-            lambda axis: axis["work_character_preferences"][0].__setitem__("trait", "fun")
-        )
-        self.assertFalse(result.ok)
-
-    def test_unknown_desire_is_an_error(self):
-        result = self._validate(
-            lambda axis: axis["work_character_preferences"][0].__setitem__("desire", "maybe")
-        )
-        self.assertFalse(result.ok)
-
-    def test_must_desire_requires_statement(self):
-        def mutate(axis):
-            axis["work_character_preferences"][0]["desire"] = "must"
-            axis["work_character_preferences"][0].pop("statement", None)
-
-        result = self._validate(mutate)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("statement" in e for e in result.errors))
-
-    def test_must_desire_with_statement_passes(self):
-        def mutate(axis):
-            axis["work_character_preferences"][0]["desire"] = "must"
-            axis["work_character_preferences"][0]["statement"] = "自分で手を動かせること"
-
-        self.assertTrue(self._validate(mutate).ok)
-
-
-class V2MustCountTest(unittest.TestCase):
-    def test_total_must_count_of_four_warns(self):
-        p = _valid_v2_profile()
-        axis = p["job_change_axis"]
-        axis["conditions"][1]["level"] = "must"
-        axis["conditions"][1]["priority"] = 2
-        for preference in axis["work_character_preferences"][:2]:
-            preference["desire"] = "must"
-            preference["statement"] = "満たすこと"
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("合計が4件" in w for w in result.warnings))
-
-    def test_legacy_arrays_left_in_v2_warn(self):
-        p = _valid_v2_profile()
-        p["job_change_axis"]["must_conditions"] = ["リモート可"]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("must_conditions" in w for w in result.warnings))
-
-    def test_salary_floor_above_desired_warns(self):
-        p = _valid_v2_profile()
-        p["job_change_axis"]["conditions"][1]["level"] = "must"
-        p["job_change_axis"]["conditions"][1]["priority"] = 2
-        p["job_change_axis"]["conditions"][1]["value"] = 9000000
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("希望年収" in w for w in result.warnings))
-
-    def test_v1_profile_is_not_checked_against_v2_rules(self):
-        p = _valid_profile()
-        p["job_change_axis"]["conditions"] = "これは v1 なので検査されない"
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-
-
-def _company_score_axes() -> list[dict]:
-    """ERROR 0件・WARN 0件になる company_score_axes を返す。"""
-    return [
-        {
-            "axis": "compensation_level",
-            "kind": "quantitative",
-            "weight": 40,
-            "thresholds": {"zero": 4500000, "full": 7000000},
-        },
-        {"axis": "annual_holidays", "kind": "quantitative", "weight": 25},
-        {
-            "axis": "discretion",
-            "kind": "qualitative",
-            "weight": 35,
-            "label": "裁量の大きさ",
-            "definition": "設計方針を自分で決められること",
-            "judgment": [
-                {"score": 100, "condition": "求人票に設計裁量の記載があり、面接でも確認できた"},
-                {"score": 50, "condition": "求人票に記載があるが未確認"},
-                {"score": 0, "condition": "上位者の承認が必要と明記されている"},
-            ],
-        },
-    ]
-
-
-class V2CompanyScoreAxesTest(unittest.TestCase):
-    def _validate(self, axes) -> vp.ValidationResult:
-        p = _valid_v2_profile()
-        p["company_score_axes"] = axes
-        return vp.validate(p)
-
-    def test_absent_field_passes_without_warnings(self):
-        result = vp.validate(_valid_v2_profile())
-        self.assertTrue(result.ok)
-        self.assertFalse(any("company_score_axes" in w for w in result.warnings))
-
-    def test_valid_axes_pass_without_warnings(self):
-        result = self._validate(_company_score_axes())
-        self.assertTrue(result.ok)
-        self.assertEqual(result.warnings, [])
-
-    def test_non_list_is_an_error(self):
-        result = self._validate({"axis": "compensation_level"})
-        self.assertFalse(result.ok)
-        self.assertTrue(any("company_score_axes" in e for e in result.errors))
-
-    def test_non_object_element_is_an_error(self):
-        result = self._validate(["compensation_level"])
-        self.assertFalse(result.ok)
-        self.assertTrue(any("company_score_axes[0]" in e for e in result.errors))
-
-    def test_missing_axis_is_an_error(self):
-        axes = _company_score_axes()
-        del axes[1]["axis"]
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("axis" in e for e in result.errors))
-
-    def test_duplicate_axis_is_an_error(self):
-        axes = _company_score_axes()
-        axes[1]["axis"] = axes[0]["axis"]
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("重複" in e for e in result.errors))
-
-    def test_unknown_kind_is_an_error(self):
-        axes = _company_score_axes()
-        axes[0]["kind"] = "mixed"
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("kind" in e for e in result.errors))
-
-    def test_missing_kind_is_an_error(self):
-        axes = _company_score_axes()
-        del axes[1]["kind"]
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("kind" in e for e in result.errors))
-
-    def test_quantitative_axis_outside_the_candidates_is_an_error(self):
-        axes = _company_score_axes()
-        axes[1]["axis"] = "vibes"
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("定量候補軸" in e for e in result.errors))
-
-    def test_qualitative_axis_key_accepts_a_user_identifier(self):
-        axes = _company_score_axes()
-        axes[2]["axis"] = "onboarding_support2"
-        result = self._validate(axes)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.warnings, [])
-
-    def test_qualitative_axis_key_with_uppercase_is_an_error(self):
-        axes = _company_score_axes()
-        axes[2]["axis"] = "Onboarding_Support"
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("定性軸の axis" in e for e in result.errors))
-
-    def test_qualitative_axis_key_with_hyphen_is_an_error(self):
-        axes = _company_score_axes()
-        axes[2]["axis"] = "onboarding-support"
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("定性軸の axis" in e for e in result.errors))
-
-    def test_qualitative_axis_key_in_japanese_is_an_error(self):
-        axes = _company_score_axes()
-        axes[2]["axis"] = "裁量"
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("定性軸の axis" in e for e in result.errors))
-
-    def test_non_integer_weight_is_an_error(self):
-        axes = _company_score_axes()
-        axes[0]["weight"] = 40.5
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("weight" in e for e in result.errors))
-
-    def test_zero_weight_is_an_error(self):
-        axes = _company_score_axes()
-        axes[0]["weight"] = 0
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("weight" in e for e in result.errors))
-
-    def test_weight_sum_other_than_100_is_an_error(self):
-        axes = _company_score_axes()
-        axes[1]["weight"] = 20
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("合計" in e for e in result.errors))
-
-    def test_thresholds_on_a_qualitative_axis_is_an_error(self):
-        axes = _company_score_axes()
-        axes[2]["thresholds"] = {"zero": 0, "full": 100}
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("thresholds" in e for e in result.errors))
-
-    def test_non_numeric_thresholds_is_an_error(self):
-        axes = _company_score_axes()
-        axes[0]["thresholds"] = {"zero": "450万円", "full": 7000000}
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("thresholds" in e for e in result.errors))
-
-    def test_missing_threshold_key_is_an_error(self):
-        axes = _company_score_axes()
-        del axes[0]["thresholds"]["full"]
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("thresholds" in e for e in result.errors))
-
-    def test_equal_thresholds_is_an_error(self):
-        axes = _company_score_axes()
-        axes[0]["thresholds"] = {"zero": 6000000, "full": 6000000}
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("thresholds" in e for e in result.errors))
-
-    def test_qualitative_axis_without_label_is_an_error(self):
-        axes = _company_score_axes()
-        del axes[2]["label"]
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("label" in e for e in result.errors))
-
-    def test_qualitative_axis_without_definition_is_an_error(self):
-        axes = _company_score_axes()
-        axes[2]["definition"] = "  "
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("definition" in e for e in result.errors))
-
-    def test_empty_judgment_is_an_error(self):
-        axes = _company_score_axes()
-        axes[2]["judgment"] = []
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("judgment" in e for e in result.errors))
-
-    def test_judgment_score_out_of_range_is_an_error(self):
-        axes = _company_score_axes()
-        axes[2]["judgment"][0]["score"] = 120
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("score" in e for e in result.errors))
-
-    def test_judgment_without_condition_is_an_error(self):
-        axes = _company_score_axes()
-        del axes[2]["judgment"][1]["condition"]
-        result = self._validate(axes)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("condition" in e for e in result.errors))
-
-    def test_judgment_not_in_descending_order_warns(self):
-        axes = _company_score_axes()
-        axes[2]["judgment"].reverse()
-        result = self._validate(axes)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("降順" in w for w in result.warnings))
-
-    def test_empty_list_warns(self):
-        result = self._validate([])
-        self.assertTrue(result.ok)
-        self.assertTrue(any("company_score_axes" in w for w in result.warnings))
-
-    def test_missing_compensation_level_warns(self):
-        axes = [
-            {"axis": "annual_holidays", "kind": "quantitative", "weight": 60},
-            {"axis": "monthly_overtime", "kind": "quantitative", "weight": 40},
-        ]
-        result = self._validate(axes)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("compensation_level" in w for w in result.warnings))
-
-    def test_v1_profile_is_not_checked_against_the_axes_rules(self):
-        p = _valid_profile()
-        p["company_score_axes"] = "これは v1 なので検査されない"
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("company_score_axes" in w for w in result.warnings))
-
-
-class V2ConditionUnitTest(unittest.TestCase):
-    def _validate(self, unit) -> vp.ValidationResult:
-        p = _valid_v2_profile()
-        p["job_change_axis"]["conditions"][0]["unit"] = unit
-        return vp.validate(p)
-
-    def test_every_defined_unit_passes(self):
-        for unit in vp._CONDITION_UNITS:
-            with self.subTest(unit=unit):
-                result = self._validate(unit)
-                self.assertTrue(result.ok)
-                self.assertEqual(result.warnings, [])
-
-    def test_unknown_unit_is_an_error(self):
-        result = self._validate("万円")
-        self.assertFalse(result.ok)
-        self.assertTrue(any("conditions[0].unit" in e for e in result.errors))
-
-    def test_non_string_unit_is_an_error(self):
-        result = self._validate(1)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("conditions[0].unit" in e for e in result.errors))
-
-    def test_absent_unit_is_allowed(self):
-        p = _valid_v2_profile()
-        del p["job_change_axis"]["conditions"][0]["unit"]
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.warnings, [])
-
-    def test_null_unit_is_allowed(self):
-        result = self._validate(None)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.warnings, [])
-
-
-class SkillsPortableCategoryCountTest(unittest.TestCase):
-    """portable だけが埋まっている skills を「全カテゴリが空」と扱わない。"""
-
-    def test_only_portable_filled_does_not_warn(self):
-        p = _valid_profile()
-        p["skills"] = {
-            "technical": [],
-            "business": [],
-            "languages": [],
-            "certifications": [],
-            "portable": [{"skill": "課題の構造化", "category": "対課題"}],
-        }
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("skills" in w for w in result.warnings))
-
-    def test_all_categories_including_portable_empty_warns(self):
-        p = _valid_profile()
-        p["skills"] = {
-            "technical": [],
-            "business": [],
-            "languages": [],
-            "certifications": [],
-            "portable": [],
-        }
-        result = vp.validate(p)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("全カテゴリが空" in w for w in result.warnings))
-
-
-class ExampleAssetTest(unittest.TestCase):
     def test_bundled_example_passes_without_warnings(self):
         path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
@@ -1107,6 +227,207 @@ class ExampleAssetTest(unittest.TestCase):
         result = vp.validate(vp.load_profile(path))
         self.assertEqual(result.errors, [])
         self.assertEqual(result.warnings, [])
+
+    def test_error_rules(self):
+        # (ラベル, 基準文書, 変更, 期待する ERROR の部分文字列)
+        v2, v3 = _valid_v2_profile, _valid_v3_profile
+        rows = [
+            ("ルートがオブジェクトでない", v2, lambda p: ["x"], "(root)"),
+            ("必須項目の欠落（代表: schema_version）", v2, lambda p: p.pop("schema_version"), "schema_version"),
+            ("basic.current_role が空", v2, lambda p: p["basic"].__setitem__("current_role", " "), "current_role"),
+            ("career_history が空", v2, lambda p: _set(p, "career_history", []), "career_history"),
+            ("職歴の company が欠落", v2, lambda p: p["career_history"][0].pop("company"), "company"),
+            ("v3 でも職歴の誤りを検出", v3, lambda p: _set(p, "career_history", []), "career_history"),
+            ("reasons が空白だけ", v2, lambda p: p["job_change_axis"].__setitem__("reasons", ["", " "]), "reasons"),
+            ("conditions が配列でない", v2, lambda p: p["job_change_axis"].__setitem__("conditions", {}), "conditions"),
+            ("conditions の id 重複", v2, lambda p: _cond(p, 1).__setitem__("id", "cond-remote"), "重複"),
+            ("conditions の id が正規表現に不一致", v2, lambda p: _cond(p).__setitem__("id", "Cond Remote"), ".id"),
+            ("conditions の level が列挙外", v2, lambda p: _cond(p).__setitem__("level", "nice"), ".level"),
+            ("conditions の axis が8軸外", v2, lambda p: _cond(p).__setitem__("axis", "vibes"), ".axis"),
+            ("qualitative 以外で value が無い", v2, lambda p: _cond(p).__setitem__("value", None), ".value"),
+            ("unit が列挙外", v2, lambda p: _cond(p).__setitem__("unit", "万円"), ".unit"),
+            ("work_character の特性が欠落", v2, lambda p: _prefs(p).pop(), "欠落"),
+            ("work_character の trait 重複", v2, lambda p: _prefs(p)[1].__setitem__("trait", _prefs(p)[0]["trait"]), "重複"),
+            (
+                "desire=must で statement が無い",
+                v2,
+                lambda p: _prefs(p)[0].update(desire="must"),
+                "statement",
+            ),
+            ("company_score_axes が配列でない", v2, lambda p: _set(p, "company_score_axes", {"a": 1}), "company_score_axes"),
+            ("score 軸の axis 重複", v2, lambda p: p["company_score_axes"][1].__setitem__("axis", "compensation_level"), "重複"),
+            ("kind が列挙外", v2, lambda p: p["company_score_axes"][0].__setitem__("kind", "mixed"), ".kind"),
+            ("定量軸が候補9個の外", v2, lambda p: p["company_score_axes"][1].__setitem__("axis", "vibes"), "定量候補軸"),
+            ("定性軸の識別子に大文字", v2, lambda p: p["company_score_axes"][2].__setitem__("axis", "Onboarding"), "定性軸の axis"),
+            ("weight が範囲外（代表: 0）", v2, lambda p: p["company_score_axes"][0].__setitem__("weight", 0), ".weight"),
+            ("weight の合計が100でない", v2, lambda p: p["company_score_axes"][1].__setitem__("weight", 20), "合計"),
+            ("定性軸に thresholds", v2, lambda p: p["company_score_axes"][2].__setitem__("thresholds", {"zero": 0, "full": 1}), "thresholds"),
+            ("thresholds の zero と full が同値", v2, lambda p: p["company_score_axes"][0].__setitem__("thresholds", {"zero": 1, "full": 1}), "異なる値"),
+            ("thresholds が数値でない", v2, lambda p: p["company_score_axes"][0].__setitem__("thresholds", {"zero": "a", "full": 1}), "数値"),
+            ("定性軸の label が欠落", v2, lambda p: p["company_score_axes"][2].pop("label"), "label"),
+            ("定性軸の judgment が空", v2, lambda p: p["company_score_axes"][2].__setitem__("judgment", []), "judgment"),
+            ("judgment の score が範囲外", v2, lambda p: p["company_score_axes"][2]["judgment"][0].__setitem__("score", 120), ".score"),
+        ]
+        for label, base, mutate, expected in rows:
+            with self.subTest(label):
+                doc = base()
+                replaced = mutate(doc)
+                if isinstance(replaced, list):
+                    doc = replaced
+                result = vp.validate(doc)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected in e for e in result.errors), result.errors)
+
+    def test_warn_rules(self):
+        # (ラベル, 基準文書, 変更, 期待する WARN の部分文字列)。いずれも ERROR は 0件のまま
+        v1, v2, v3 = _valid_profile, _valid_v2_profile, _valid_v3_profile
+        gap = [_career("2018-04〜2019-03"), _career("2020-01〜現在")]
+        rows = [
+            ("metric が1件も無い", v2, lambda p: p["career_history"][0].__setitem__("achievements", [{"metric": None}]), "metric"),
+            ("skills の全カテゴリが空", v2, lambda p: _set(p, "skills", {"technical": [], "portable": []}), "全カテゴリが空"),
+            ("targets の全カテゴリが空", v2, lambda p: _set(p, "targets", {"industries": []}), "targets"),
+            ("updated_at が未設定", v2, lambda p: p.pop("updated_at"), "updated_at"),
+            ("schema_version が未知", v2, lambda p: _set(p, "schema_version", "9.9"), "既知のバージョン"),
+            ("period の形式不一致", v2, lambda p: p["career_history"][0].__setitem__("period", "2020/04-2026/06"), "career_history[0].period"),
+            ("6ヶ月以上の空白で career_gaps が無い", v2, lambda p: _set(p, "career_history", gap), "career_gaps"),
+            (
+                "並行職歴の後の実際の空白",
+                v2,
+                lambda p: _set(
+                    p,
+                    "career_history",
+                    [_career("2015-04〜2018-03"), _career("2016-04〜2017-03"), _career("2019-06〜現在")],
+                ),
+                "career_gaps",
+            ),
+            ("languages の形式不一致", v2, lambda p: p["skills"].__setitem__("languages", [{"language": "英語"}]), "skills.languages[0]"),
+            ("salary が数値でも null でもない", v2, lambda p: p["salary"].__setitem__("current", "五百万円"), "salary.current"),
+            ("career_gaps の period 不一致", v2, lambda p: _set(p, "career_gaps", [{"period": "2019年4月", "explanation": "休養"}]), "career_gaps[0].period"),
+            ("career_gaps の explanation が空", v2, lambda p: _set(p, "career_gaps", [{"period": "2019-04〜2019-09", "explanation": ""}]), "career_gaps[0].explanation"),
+            ("portable の category が列挙外", v2, lambda p: p["skills"].__setitem__("portable", [{"skill": "傾聴力", "category": "その他"}]), "skills.portable[0].category"),
+            ("v1 の must_conditions が4件", v1, lambda p: p["job_change_axis"].__setitem__("must_conditions", list("ABCD")), "must_conditions"),
+            ("v2 の必須条件の合計が4件", v2, _make_four_musts, "合計が4件"),
+            ("v2 に旧配列が残っている", v2, lambda p: p["job_change_axis"].__setitem__("must_conditions", ["リモート可"]), "must_conditions"),
+            ("必須の年収下限が希望年収超え", v2, lambda p: _make_must_salary(p, 9000000), "希望年収"),
+            ("level=must の条件が無い", v2, lambda p: _cond(p).__setitem__("level", "want"), "must の条件が1件も無い"),
+            ("同じ軸に必須条件が複数", v2, _duplicate_must_axis, "同じ軸に必須条件"),
+            ("must の priority が無い", v2, lambda p: _cond(p).pop("priority"), "priority"),
+            ("judgment が降順でない", v2, lambda p: p["company_score_axes"][2]["judgment"].reverse(), "降順"),
+            ("company_score_axes が空配列", v2, lambda p: _set(p, "company_score_axes", []), "company_score_axes"),
+            (
+                "compensation_level が軸に無い",
+                v2,
+                lambda p: _set(
+                    p,
+                    "company_score_axes",
+                    [
+                        {"axis": "annual_holidays", "kind": "quantitative", "weight": 60},
+                        {"axis": "monthly_overtime", "kind": "quantitative", "weight": 40},
+                    ],
+                ),
+                "compensation_level",
+            ),
+            ("v3 に軸のキーが残っている", v3, lambda p: _set(p, "salary", {"desired": 7000000}), "axis.json"),
+        ]
+        for label, base, mutate, expected in rows:
+            with self.subTest(label):
+                doc = base()
+                mutate(doc)
+                result = vp.validate(doc)
+                self.assertEqual(result.errors, [])
+                self.assertTrue(any(expected in w for w in result.warnings), result.warnings)
+
+    def test_inputs_that_must_not_warn(self):
+        # (ラベル, 基準文書, 変更, 出てはならない WARN の部分文字列)
+        v1, v2 = _valid_profile, _valid_v2_profile
+        rows = [
+            ("v1.1 は既知のバージョン", v1, lambda p: _set(p, "schema_version", "1.1"), "既知のバージョン"),
+            ("現在までの period", v2, lambda p: p["career_history"][0].__setitem__("period", "2020-04〜現在"), "period"),
+            ("5ヶ月の空白", v2, lambda p: _set(p, "career_history", [_career("2018-04〜2019-03"), _career("2019-09〜現在")]), "career_gaps"),
+            (
+                "空白が career_gaps で覆われている",
+                v2,
+                lambda p: p.update(
+                    career_history=[_career("2018-04〜2019-03"), _career("2020-01〜現在")],
+                    career_gaps=[{"period": "2019-04〜2019-12", "explanation": "学習期間"}],
+                ),
+                "career_gaps",
+            ),
+            ("解析不能な period があると空白判定を省く", v2, lambda p: _set(p, "career_history", [_career("不明"), _career("2020-01〜現在")]), "career_gaps"),
+            (
+                "本業が覆う範囲の副業2件",
+                v2,
+                lambda p: _set(
+                    p,
+                    "career_history",
+                    [_career("2015-04〜現在"), _career("2020-04〜2021-03"), _career("2023-04〜現在")],
+                ),
+                "career_gaps",
+            ),
+            ("期間が完全に一致する2件", v2, lambda p: _set(p, "career_history", [_career("2020-04〜2022-03"), _career("2020-04〜2022-03")]), "career_gaps"),
+            ("salary の null", v2, lambda p: p["salary"].__setitem__("current", None), "salary."),
+            ("portable だけが埋まった skills", v2, lambda p: _set(p, "skills", {"technical": [], "portable": [{"skill": "x", "category": "対課題"}]}), "skills"),
+            ("v1 の must_conditions が3件", v1, lambda p: p["job_change_axis"].__setitem__("must_conditions", list("ABC")), "must_conditions"),
+            ("v1 は v2 の conditions 規則を適用しない", v1, lambda p: p["job_change_axis"].__setitem__("conditions", "x"), "conditions"),
+            ("v1 は company_score_axes 規則を適用しない", v1, lambda p: _set(p, "company_score_axes", "x"), "company_score_axes"),
+            ("unit の省略と null", v2, lambda p: _cond(p).__setitem__("unit", None), "unit"),
+            ("qualitative 条件は value が null でよい", v2, lambda p: _cond(p).update(operator="qualitative", value=None, axis=None), "value"),
+        ]
+        for label, base, mutate, forbidden in rows:
+            with self.subTest(label):
+                doc = base()
+                mutate(doc)
+                result = vp.validate(doc)
+                self.assertEqual(result.errors, [])
+                self.assertFalse(any(forbidden in w for w in result.warnings), result.warnings)
+
+    def test_every_defined_unit_passes(self):
+        for unit in vp._CONDITION_UNITS:
+            with self.subTest(unit=unit):
+                p = _valid_v2_profile()
+                _cond(p)["unit"] = unit
+                result = vp.validate(p)
+                self.assertEqual((result.errors, result.warnings), ([], []))
+
+
+class CliTest(unittest.TestCase):
+    def _write(self, text: str, encoding: str = "utf-8") -> str:
+        fd, path = tempfile.mkstemp(suffix=".json")
+        with os.fdopen(fd, "w", encoding=encoding) as f:
+            f.write(text)
+        self.addCleanup(os.remove, path)
+        return path
+
+    def _run(self, argv) -> tuple[int, str]:
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = vp.main(argv)
+        return code, buf.getvalue()
+
+    def test_exit_codes(self):
+        invalid = _valid_profile()
+        del invalid["schema_version"]
+        rows = [
+            ("正常", self._write(json.dumps(_valid_profile(), ensure_ascii=False)), 0),
+            ("BOM 付きの正常", self._write(json.dumps(_valid_profile(), ensure_ascii=False), "utf-8-sig"), 0),
+            ("検証エラー", self._write(json.dumps(invalid)), 1),
+            ("壊れた JSON", self._write("{ not valid json "), 1),
+            ("存在しないファイル", os.path.join(tempfile.gettempdir(), "no-such-profile.json"), 1),
+        ]
+        for label, path, expected in rows:
+            with self.subTest(label):
+                self.assertEqual(self._run([path])[0], expected)
+
+    def test_json_output_keys(self):
+        path = self._write(json.dumps(_valid_profile(), ensure_ascii=False))
+        code, out = self._run([path, "--json"])
+        self.assertEqual(code, 0)
+        data = json.loads(out)
+        self.assertEqual(
+            sorted(data),
+            ["error_count", "errors", "status", "warning_count", "warnings"],
+        )
+        self.assertEqual(data["status"], "PASS")
 
 
 if __name__ == "__main__":

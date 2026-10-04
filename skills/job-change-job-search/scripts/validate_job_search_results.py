@@ -3,10 +3,13 @@
 標準ライブラリのみで、求人検索の成果物である job_search_results.json を機械的に検査する。
 スキーマ（必須フィールド・型・列挙値・引用の存在）に加え、--profile を渡した場合は
 PII リントを行い、利用者の現勤務先名・氏名らしき値・現年収（salary.current）が成果物へ
-混入していないかを検出する。profile の読み取りはローカルに閉じ、外部へ送信しない。
+混入していないかを検出する。現年収としきい値は転職の軸（axis.json）にあるので、--axis で
+併せて渡す（1.x/2.0 の profile.json は軸を内包するので --profile だけで足りる）。
+profile と axis の読み取りはローカルに閉じ、外部へ送信しない。
 
 CLI:
-    python validate_job_search_results.py <job_search_results.json> [--json] [--profile <profile.json>]
+    python validate_job_search_results.py <job_search_results.json> [--json] \
+        [--profile <profile.json>] [--axis <axis.json>]
 
 終了コード: 0 = PASS（ERROR 0件。WARN があっても PASS）、1 = FAIL（ERROR 1件以上）
 """
@@ -2073,7 +2076,9 @@ def validate(
     if pii_terms is None:
         result.add_warning(
             "(root)",
-            "--profile が指定されていない。PII リントとしきい値の突き合わせは未実施である",
+            "--profile が指定されていない。PII リントとしきい値の突き合わせは未実施である"
+            if profile is None
+            else "--profile が指定されていない。PII リントは未実施である",
         )
     else:
         _run_pii_lint(document, pii_terms, result)
@@ -2175,11 +2180,16 @@ def main(argv: list[str] | None = None) -> int:
         "--profile",
         help="PII リント用の profile.json パス（ローカルでのみ読み取り、外部送信しない）",
     )
+    parser.add_argument(
+        "--axis",
+        help="しきい値の突き合わせと現年収のリントに用いる axis.json パス"
+        "（1.x/2.0 の profile.json は --profile だけで足りる）",
+    )
     args = parser.parse_args(argv)
 
     try:
         document = load_json(args.results_path)
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError) as exc:
         result = ValidationResult()
         result.add_error(args.results_path, f"JSON として読み込めない（{exc}）")
         if args.json:
@@ -2190,20 +2200,38 @@ def main(argv: list[str] | None = None) -> int:
 
     pii_terms: list[tuple[str, str]] | None = None
     profile: Any = None
-    if args.profile:
+    loaded: dict[str, Any] = {}
+    for label, path in (("profile.json", args.profile), ("axis.json", args.axis)):
+        if not path:
+            continue
         try:
-            profile = load_json(args.profile)
-        except (OSError, json.JSONDecodeError) as exc:
+            loaded[label] = load_json(path)
+            if not isinstance(loaded[label], dict):
+                raise ValueError("ルート要素はオブジェクトでなければならない")
+        except (OSError, ValueError) as exc:
             result = ValidationResult()
-            result.add_error(args.profile, f"profile.json を読み込めない（{exc}）")
+            result.add_error(path, f"{label} を読み込めない（{exc}）")
             if args.json:
                 print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
             else:
                 print(format_report(result))
             return 1
+    if loaded:
+        # 職歴（profile.json）と転職の軸（axis.json）を1つに重ねる。同じキーは axis.json を採る。
+        profile = {}
+        for label in ("profile.json", "axis.json"):
+            profile.update(loaded.get(label, {}))
+    if args.profile:
         pii_terms = collect_pii_terms(profile)
 
     result = validate(document, pii_terms=pii_terms, profile=profile)
+
+    if loaded and not isinstance(profile.get("job_change_axis"), dict):
+        result.add_warning(
+            "(root)",
+            "転職の軸（job_change_axis）が見つからない。--axis に axis.json を指定する。"
+            "しきい値の突き合わせと現年収のリントは未実施である",
+        )
 
     if args.json:
         print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))

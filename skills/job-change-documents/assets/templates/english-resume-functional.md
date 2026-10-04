@@ -2,12 +2,12 @@
 
 ## How to use
 
-- Choose this style when the work history has large gaps or breaks in continuity and the reader has to be led by ability rather than by chronology (sources E7, E5).
-- Weigh the cost first: the section headings become functional area names, which sits badly with the standard-heading rule that applicant tracking systems rely on (source E12). Where the employer screens through an ATS, prefer `english-resume-combination.md`, which puts skills first while keeping the standard headings.
-- Keep the resume to one page; go to two only past ten years of experience (source E8). Give each functional area 3 to 5 bullets where the profile supports it; never pad with invented bullets. Keep each bullet to one or two lines (sources E4, E8). The employment history below carries dates and titles only, with no bullets.
+- Choose this style when the work history has large gaps or breaks in continuity and the reader has to be led by ability first and chronology second (sources E7, E5).
+- Weigh the cost first: the section headings become functional area names, which fits poorly with the standard-heading rule that applicant tracking systems rely on (source E12). Where the employer screens through an ATS, prefer `english-resume-combination.md`, which puts skills first while keeping the standard headings.
+- Keep the resume to one page; go to two only past ten years of experience (source E8). Give each functional area 3 to 5 bullets where the profile supports it; never pad with invented bullets. Keep each bullet to one or two lines (sources E4, E8). The employment history below lists dates and titles only, with no bullets.
 - Write the current role in the present tense and every past role in the past tense (source E4). Start each bullet with an action verb and drop the subject "I".
-- Keep the file ATS-readable: one column, no tables, text boxes, images or skill bars, name and contact details in the body rather than a header or footer, a standard 10 to 12 point font, and a text-based PDF or .docx (sources E2, E11, E12, E15). The standard-heading part of that rule is the one this style gives up, for the reason given above.
-- Never include a photo, age, date of birth, gender or marital status (sources E1, E4, E15). Never adjust dates to close a gap; the employment history states the real months.
+- Keep the file ATS-readable (sources E2, E11, E12, E15). Use one column with no tables, text boxes, images or skill bars. Put the name and contact details in the body, outside the header and footer. Use a standard 10 to 12 point font and a text-based PDF or .docx. The standard-heading part of that rule is the one this style gives up, for the reason given above.
+- Never include a photo, age, date of birth, gender or marital status (sources E1, E4, E15). Never adjust dates to shorten or hide a gap; the employment history states the real months.
 - `{profile.…}` marks a field of profile.json, `{…}` marks input from elsewhere (the job posting, company research, the date of writing). `<!-- -->` lines are notes to the writer and never appear in the finished resume.
 
 ## Structure
@@ -31,10 +31,10 @@
 <!-- Carry every figure across from metric exactly as written; do not round it and do not invent one. This style does not name the employer in the bullet, so keep every claim inside what profile.json supports. An area whose achievements all have a null metric gets bullets that state scope and role with no number. -->
 
 ## Work Experience
-<!-- Required. One line per entry in {profile.career_history[]}, newest first by the start month in period: title, employer, and the months. No bullets here - the evidence sits under Skills. Concurrent roles each get their own line. -->
+<!-- Required. One line per entry in {profile.career_history[]}, newest first by the start month in period: title, employer, and the months. No bullets here: the evidence sits under Skills. Concurrent roles each get their own line. -->
 
 - {profile.career_history[].role}, {profile.career_history[].company}, {profile.career_history[].period}
-<!-- Show the real months. A gap recorded in {profile.career_gaps[]} is left as a gap: do not write it into this list, do not stretch a period to cover it, and do not fill it with an entry profile.json does not record. If the employer asks about it, the explanation in career_gaps[].explanation is the answer to give, not a line on the resume. -->
+<!-- Show the real months. A gap recorded in {profile.career_gaps[]} is left as a gap: do not write it into this list, do not stretch a period to cover it, and do not fill it with an entry profile.json does not record. If the employer asks about it, the explanation in career_gaps[].explanation is the answer to give in conversation, kept off the resume. -->
 
 ## Education
 <!-- Required, and placed after Work Experience for a mid-career applicant (sources E8, E14, E15). One line per entry in {profile.basic.education[]}, newest first. Name the institution and the field of study, and give the graduation month and year. Do not state a degree title that profile.json does not record. -->

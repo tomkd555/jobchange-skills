@@ -104,7 +104,7 @@ Each of the following is an ERROR: `source_url` not starting with `http`, `grade
 | Value | Guideline |
 |---|---|
 | `high` | A fact backed by primary/official (A) or reliable secondary (B) evidence, that agrees across multiple sources |
-| `medium` | Backed by A or B, but from a single source, or with some limit remaining |
+| `medium` | Backed by A or B, but from one source, or with some limit remaining |
 | `low` | Centered on C or D, staying a supporting signal for a trend |
 
 **Rule**: do not give `high` to a claim based on level C or D alone (ERROR). Do not give `high` to a company's own evaluative claim about itself, even when the source is level A (treat it as B-equivalent; mechanical validation cannot judge this, and it is the audit agent's territory).
@@ -117,7 +117,7 @@ Record a point that could not be corroborated, a discrepancy between sources, an
 
 `company_metrics` is a required top-level field that structures the measured figures for the quantitative candidate axes into machine-readable numbers. It is kept independent of the prose `claims`, and downstream processing (calculating the company score, estimating effective hourly pay) uses the numbers directly. The canonical definition of the axes, units, and directions is in `references/company-score-rubric.md`.
 
-Company research only collects measured figures; it neither scores nor rates. Prioritize collecting the metrics for the instructed axes, and set `value` to `null` for an item that could not be confirmed. Do not enter an estimate.
+Company research only collects measured figures; it neither scores nor rates. Give priority to collecting the metrics for the instructed axes, and set `value` to `null` for an item that could not be confirmed. Do not enter an estimate.
 
 Use the same keys as the quantitative candidate axes' axis keys. The only key allowed besides an axis key is the auxiliary metric `avg_paid_leave_days_taken` (the average number of paid-leave days taken, used to calculate binding hours; unit: 日).
 
@@ -143,17 +143,17 @@ Each item has the following fields.
 | `grade` | Required when `value` is non-null | `A` through `D`. Defined in `references/evidence-grading.md` |
 | `as_of` | Recommended | The point in time the value refers to (`YYYY-MM` or `YYYY`). Missing is a WARN |
 
-**Rule**: when you collect a figure such as annual holidays, overtime, paid-leave-taking rate, or average annual salary, do not stop at embedding it in a prose claim — always structure it into this company_metrics as well (noting the unit, source URL, and level together). Leave `value` as `null` when it cannot be confirmed.
+**Rule**: when you collect a figure such as annual holidays, overtime, paid-leave-taking rate, or average annual salary, do not stop at embedding it in a prose claim. Always structure it into this company_metrics as well, noting the unit, source URL, and level together. Leave `value` as `null` when it cannot be confirmed.
 
 ## Mechanical validation rules (validate_company_research.py)
 
-`scripts/validate_company_research.py` performs the mechanical check. Even a single ERROR is a FAIL (exit code 1); zero ERRORs is a PASS (exit code 0, even with WARNs present).
+`scripts/validate_company_research.py` performs the mechanical check. Even one ERROR is a FAIL (exit code 1); zero ERRORs is a PASS (exit code 0, even with WARNs present).
 
 **ERROR (the deliverable does not hold together, or a rule is violated)**
 
 - It cannot be parsed as JSON
-- `company` is not an object, or `company.name` is empty
-- `claims` is not an array, or is empty
+- `company` has a type other than object, or `company.name` is empty
+- `claims` has a type other than array, or is empty
 - A claim is missing a required field (`id`, `topic`, `statement`, `evidence`, or `confidence`)
 - `topic` is outside the 8 kinds
 - `confidence` is outside `high`/`medium`/`low`
@@ -163,12 +163,12 @@ Each item has the following fields.
 - `quote` is empty
 - Any of the 7 required topics (`philosophy`, `business`, `financials`, `compensation`, `benefits`, `workstyle`, `reputation`) has zero claims
 - A claim based on level C or D alone has `confidence=high`
-- `company_metrics` is missing, or `company_metrics` is not an object
+- `company_metrics` is missing, or `company_metrics` has a type other than object
 - A `company_metrics` key is neither one of the 9 quantitative candidate axes' axis keys nor `avg_paid_leave_days_taken`
-- A `company_metrics` item is not an object
+- A `company_metrics` item has a type other than object
 - `value` is neither a number nor `null`
 - `unit` differs from the unit defined for the axis
-- For an item whose `value` is non-null, `source_url` is not a string starting with `http`
+- For an item whose `value` is non-null, `source_url` is anything other than a string starting with `http`
 - For an item whose `value` is non-null, `grade` is outside A through D
 
 **WARN (it holds together, but the grounds are weak)**

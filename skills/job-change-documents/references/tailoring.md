@@ -52,13 +52,14 @@ https://www.r-agent.com/guide/resume/article4402/, reliable secondary).
   grounded in evidence (a strength mapped to an `episode_id` or a `feedback_id`) to support the
   「結論」 (conclusion) and 「入社後の貢献」 (contribution after joining) parts. Base any passage touching the reason for changing jobs on
   `reason_for_change.constructive_version` (a reframing centered on the value the applicant wants to
-  bring). Confirm it does not conflict with profile.json's `job_change_axis.reasons`. When
-  self_analysis.json does not exist, use only profile.json's `strengths` and `job_change_axis` as
-  material.
+  bring). Confirm it does not conflict with the `job_change_axis.reasons` of `{AXIS}` (the axis
+  source resolved by "Location" in the hub's `references/axis-format.md`). When self_analysis.json
+  does not exist, use only profile.json's `strengths` and the `job_change_axis` of `{AXIS}` as
+  material. When `{AXIS}` resolves to no file, draw no wording from the axis.
 
 ## The anti-exaggeration standard
 
-While adjusting the wording for a company, the writer strictly holds the description within what
+While adjusting the wording for a company, the writer keeps the description strictly within what
 `profile.json` supports, following the standard below. The auditor detects exaggeration and
 fabrication against this same standard.
 
@@ -69,19 +70,19 @@ fabrication against this same standard.
 - Limit a word for scale, scope, or ownership to what the evidence supports. Do not use a word such as
   「大規模」「全社」「主導」「立ち上げ」「責任者」 (large-scale, company-wide, led, launched, responsible for) beyond
   what `profile.json`'s description supports. The canonical definition of where a role-describing word
-  (担当・主担当・リード・統括・責任者) falls on the scale of the applicant's actual involvement lives in
+  (担当・主担当・リード・統括・責任者) falls on the scale of the applicant's actual involvement is in
   `job-change-profile`'s `references/answer-handling.md` ("The scale of role phrasing"). Do not
   rewrite a role on the document's side into stronger wording than profile.json supports.
   - Use a word for scale (大規模 large-scale, 多数 numerous, and the like) only when profile.json has a
     description that shows that scale.
   - Use a word for scope (全社 company-wide, 全部門 across all departments, グローバル global, and the like)
-    only when profile.json shows that scope. Do not write a single department's initiative as
+    only when profile.json shows that scope. Do not write one department's initiative as
     「全社の」.
   - Use a word for ownership (主導 led, 統括 oversaw, 立ち上げ launched, and the like) only when
     profile.json shows the applicant's own leading involvement. Do not write an involvement limited to
     participation or support as 「主導」.
 - Do not invent a career history entry or an achievement absent from the record. Do not add a career
-  history entry, an achievement, or a skill absent from `profile.json` for the purpose of matching a
+  history entry, an achievement, or a skill absent from `profile.json` to match a
   posting requirement (fabrication is prohibited).
 
 ## The scope and limits of this standard
@@ -90,6 +91,6 @@ fabrication against this same standard.
   major recruiting agency's practical guide (reliable secondary). The wording's detail varies by
   company and occupation.
 - The anti-exaggeration standard rests on this skill family's design, which treats `profile.json` as
-  the sole canonical source of grounding. When profile.json's description is inaccurate or incomplete,
-  the document's precision is constrained accordingly. Strengthening an achievement runs through
+  the one canonical source of grounding. When profile.json's description is inaccurate or incomplete,
+  the document's precision is limited to the same degree. Strengthening an achievement runs through
   updating profile.json via `job-change-profile`'s section update (`achievements`).

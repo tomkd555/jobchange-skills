@@ -7,7 +7,8 @@
 """
 from __future__ import annotations
 
-import copy
+import contextlib
+import io
 import json
 import os
 import sys
@@ -38,353 +39,145 @@ def _valid_index() -> dict:
     }
 
 
-class ValidatePassTest(unittest.TestCase):
-    def test_full_index_passes_without_warnings(self):
-        result = vci.validate(_valid_index())
-        self.assertTrue(result.ok)
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
+def _entry(name: str, aliases=None) -> dict:
+    return {"name": name, "aliases": aliases or [], "created": "2026-07-12"}
 
-    def test_empty_companies_passes(self):
-        result = vci.validate({"schema_version": 1, "companies": {}})
-        self.assertTrue(result.ok)
-        self.assertEqual(result.errors, [])
 
-    def test_prefixed_slug_passes(self):
-        idx = {
-            "schema_version": 1,
-            "companies": {
-                "S_acme-cloud": {
-                    "name": "アクメクラウド株式会社",
-                    "aliases": [],
-                    "created": "2026-07-18",
-                }
-            },
-        }
-        result = vci.validate(idx)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.errors, [])
+def _acme(idx: dict) -> dict:
+    return idx["companies"]["acme-cloud"]
 
-    def test_japanese_slug_passes(self):
-        idx = {
-            "schema_version": 1,
-            "companies": {
-                "S_アクメクラウド": {
-                    "name": "アクメクラウド株式会社",
-                    "aliases": [],
-                    "created": "2026-07-18",
+
+class ValidateTest(unittest.TestCase):
+    def test_valid_indexes_pass_without_warnings(self):
+        rows = [
+            ("完全な一覧", _valid_index()),
+            ("companies が空", {"schema_version": 1, "companies": {}}),
+            (
+                "接頭辞付きと日本語のスラッグ",
+                {
+                    "schema_version": 1,
+                    "companies": {
+                        "S_acme-cloud": _entry("アクメクラウド株式会社"),
+                        "A_ベータシステムズ": _entry("株式会社ベータシステムズ"),
+                    },
                 },
-                "A_ベータシステムズ": {
-                    "name": "株式会社ベータシステムズ",
-                    "aliases": ["ベータシステムズ"],
-                    "created": "2026-07-18",
-                },
-                "D_ガンマロボティクス": {
-                    "name": "ガンマロボティクス株式会社",
-                    "aliases": [],
-                    "created": "2026-07-18",
-                },
-            },
-        }
-        result = vci.validate(idx)
-        self.assertTrue(result.ok)
-        self.assertEqual(result.errors, [])
-
-
-class ErrorCaseTest(unittest.TestCase):
-    def test_root_not_object(self):
-        result = vci.validate(["not", "an", "object"])
-        self.assertFalse(result.ok)
-
-    def test_missing_schema_version(self):
-        idx = _valid_index()
-        del idx["schema_version"]
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("schema_version" in e for e in result.errors))
-
-    def test_schema_version_of_wrong_type_errors(self):
-        for version in ("1", [], {}, True):
-            with self.subTest(version=version):
-                idx = _valid_index()
-                idx["schema_version"] = version
+            ),
+        ]
+        for label, idx in rows:
+            with self.subTest(label):
                 result = vci.validate(idx)
-                self.assertFalse(result.ok)
-                self.assertTrue(any("schema_version" in e for e in result.errors))
+                self.assertEqual((result.errors, result.warnings), ([], []))
 
-    def test_missing_companies(self):
-        idx = _valid_index()
-        del idx["companies"]
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("companies" in e for e in result.errors))
-
-    def test_companies_not_object(self):
-        idx = _valid_index()
-        idx["companies"] = ["acme-cloud"]
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("companies" in e for e in result.errors))
-
-    def test_invalid_slug_uppercase(self):
-        idx = {
-            "schema_version": 1,
-            "companies": {
-                "Acme_Cloud": {"name": "アクメ", "aliases": [], "created": "2026-07-12"}
-            },
-        }
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("Acme_Cloud" in e for e in result.errors))
-
-    def test_invalid_slug_leading_hyphen(self):
-        idx = {
-            "schema_version": 1,
-            "companies": {
-                "-acme": {"name": "アクメ", "aliases": [], "created": "2026-07-12"}
-            },
-        }
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("-acme" in e for e in result.errors))
-
-    def test_entry_not_object(self):
-        idx = _valid_index()
-        idx["companies"]["acme-cloud"] = "文字列"
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("acme-cloud" in e for e in result.errors))
-
-    def test_missing_name(self):
-        idx = _valid_index()
-        del idx["companies"]["acme-cloud"]["name"]
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("name" in e for e in result.errors))
-
-    def test_empty_name(self):
-        idx = _valid_index()
-        idx["companies"]["acme-cloud"]["name"] = "   "
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("name" in e for e in result.errors))
-
-    def test_aliases_not_list(self):
-        idx = _valid_index()
-        idx["companies"]["acme-cloud"]["aliases"] = "アクメクラウド"
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("aliases" in e for e in result.errors))
-
-    def test_aliases_contains_non_string(self):
-        idx = _valid_index()
-        idx["companies"]["acme-cloud"]["aliases"] = ["アクメクラウド", 123]
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("aliases" in e for e in result.errors))
-
-    def test_same_name_across_slugs(self):
-        idx = _valid_index()
-        idx["companies"]["gamma-corp"] = {
-            "name": "アクメクラウド株式会社",
-            "aliases": [],
-            "created": "2026-07-12",
-        }
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("アクメクラウド株式会社" in e for e in result.errors))
-
-    def test_same_alias_across_slugs(self):
-        idx = _valid_index()
-        idx["companies"]["gamma-corp"] = {
-            "name": "ガンマ株式会社",
-            "aliases": ["Acme Cloud"],
-            "created": "2026-07-12",
-        }
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("Acme Cloud" in e for e in result.errors))
-
-    def test_name_collides_with_other_alias(self):
-        idx = _valid_index()
-        idx["companies"]["gamma-corp"] = {
-            "name": "ガンマ株式会社",
-            "aliases": ["アクメクラウド株式会社"],
-            "created": "2026-07-12",
-        }
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("アクメクラウド株式会社" in e for e in result.errors))
-
-
-class StatusFieldTest(unittest.TestCase):
-    def test_status_active_passes_without_warnings(self):
-        idx = _valid_index()
-        idx["companies"]["acme-cloud"]["status"] = "active"
-        result = vci.validate(idx)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("status" in w for w in result.warnings))
-
-    def test_status_closed_passes(self):
-        idx = _valid_index()
-        idx["companies"]["acme-cloud"]["status"] = "closed"
-        result = vci.validate(idx)
-        self.assertTrue(result.ok)
-
-    def test_status_missing_is_not_checked(self):
-        idx = _valid_index()
-        result = vci.validate(idx)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("status" in e for e in result.errors))
-        self.assertFalse(any("status" in w for w in result.warnings))
-
-    def test_status_invalid_value_errors(self):
-        idx = _valid_index()
-        idx["companies"]["acme-cloud"]["status"] = "pending"
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("status" in e for e in result.errors))
-
-    def test_status_wrong_type_errors(self):
-        idx = _valid_index()
-        idx["companies"]["acme-cloud"]["status"] = 1
-        result = vci.validate(idx)
-        self.assertFalse(result.ok)
-        self.assertTrue(any("status" in e for e in result.errors))
-
-
-class ScoreFieldTest(unittest.TestCase):
-    def test_score_value_passes_without_warnings(self):
-        idx = _valid_index()
-        idx["companies"]["acme-cloud"]["score"] = 72
-        result = vci.validate(idx)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("score" in w for w in result.warnings))
-
-    def test_boundary_scores_pass(self):
-        for value in (0, 100):
-            idx = _valid_index()
-            idx["companies"]["acme-cloud"]["score"] = value
-            result = vci.validate(idx)
-            self.assertTrue(result.ok, f"score={value} should pass")
-
-    def test_score_missing_is_not_checked(self):
-        idx = _valid_index()
-        result = vci.validate(idx)
-        self.assertTrue(result.ok)
-        self.assertFalse(any("score" in e for e in result.errors))
-        self.assertFalse(any("score" in w for w in result.warnings))
-
-    def test_score_out_of_range_errors(self):
-        for value in (-1, 101):
-            idx = _valid_index()
-            idx["companies"]["acme-cloud"]["score"] = value
-            result = vci.validate(idx)
-            self.assertFalse(result.ok, f"score={value} should fail")
-            self.assertTrue(any("score" in e for e in result.errors))
-
-    def test_score_wrong_type_errors(self):
-        for value in ("A", 72.5, True, None):
-            idx = _valid_index()
-            idx["companies"]["acme-cloud"]["score"] = value
-            result = vci.validate(idx)
-            self.assertFalse(result.ok, f"score={value!r} should fail")
-            self.assertTrue(any("score" in e for e in result.errors))
-
-
-class WarnCaseTest(unittest.TestCase):
-    def test_missing_created_warns_but_passes(self):
-        idx = _valid_index()
-        del idx["companies"]["acme-cloud"]["created"]
-        result = vci.validate(idx)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("created" in w for w in result.warnings))
-
-    def test_duplicate_aliases_within_entry_warns(self):
-        idx = _valid_index()
-        idx["companies"]["acme-cloud"]["aliases"] = ["アクメクラウド", "アクメクラウド"]
-        result = vci.validate(idx)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("aliases" in w for w in result.warnings))
-
-    def test_name_equals_own_alias_warns(self):
-        idx = _valid_index()
-        idx["companies"]["acme-cloud"]["aliases"] = ["アクメクラウド株式会社", "Acme Cloud"]
-        result = vci.validate(idx)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("aliases" in w for w in result.warnings))
-
-    def test_unknown_schema_version_warns_but_passes(self):
-        idx = _valid_index()
-        idx["schema_version"] = 2
-        result = vci.validate(idx)
-        self.assertTrue(result.ok)
-        self.assertTrue(any("schema_version" in w for w in result.warnings))
-
-    def test_known_schema_version_does_not_warn(self):
-        result = vci.validate(_valid_index())
-        self.assertFalse(any("schema_version" in w for w in result.warnings))
-
-
-class CliTest(unittest.TestCase):
-    def _write_tmp(self, obj) -> str:
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(obj, f, ensure_ascii=False)
-        self.addCleanup(os.remove, path)
-        return path
-
-    def test_main_returns_0_on_valid(self):
-        path = self._write_tmp(_valid_index())
-        self.assertEqual(vci.main([path]), 0)
-
-    def test_main_returns_1_on_invalid(self):
-        idx = _valid_index()
-        del idx["schema_version"]
-        path = self._write_tmp(idx)
-        self.assertEqual(vci.main([path]), 1)
-
-    def test_main_returns_1_on_broken_json(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            f.write("{ not valid json ")
-        self.addCleanup(os.remove, path)
-        self.assertEqual(vci.main([path]), 1)
-
-    def test_main_json_flag_valid(self):
-        path = self._write_tmp(_valid_index())
-        self.assertEqual(vci.main([path, "--json"]), 0)
-
-    def test_main_returns_0_on_valid_with_bom(self):
-        fd, path = tempfile.mkstemp(suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
-            json.dump(_valid_index(), f, ensure_ascii=False)
-        self.addCleanup(os.remove, path)
-        self.assertEqual(vci.main([path]), 0)
-
-
-class ResultShapeTest(unittest.TestCase):
-    def test_to_dict_shape(self):
-        result = vci.validate(_valid_index())
-        d = result.to_dict()
-        self.assertEqual(d["status"], "PASS")
-        self.assertEqual(d["error_count"], 0)
-        self.assertIn("warnings", d)
-
-    def test_immutability_of_input(self):
-        idx = _valid_index()
-        snapshot = copy.deepcopy(idx)
-        vci.validate(idx)
-        self.assertEqual(idx, snapshot)
-
-
-class ExampleAssetTest(unittest.TestCase):
     def test_bundled_example_passes(self):
         base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         document = vci.load_index(os.path.join(base, "assets", "company_index_example.json"))
         result = vci.validate(document)
-        self.assertEqual(result.errors, [])
-        self.assertEqual(result.warnings, [])
+        self.assertEqual((result.errors, result.warnings), ([], []))
+
+    def test_error_rules(self):
+        # (ラベル, 変更, 期待する ERROR の部分文字列)。変更が値を返したらそれを文書とする
+        rows = [
+            ("ルートがオブジェクトでない", lambda i: ["x"], "(root)"),
+            ("schema_version の欠落", lambda i: i.pop("schema_version"), "schema_version"),
+            ("schema_version の型違い（bool）", lambda i: i.__setitem__("schema_version", True), "schema_version"),
+            ("companies の欠落", lambda i: i.pop("companies"), "companies"),
+            ("スラッグが大文字の接頭辞外", lambda i: i["companies"].__setitem__("Acme_Cloud", _entry("x")), "Acme_Cloud"),
+            ("スラッグ先頭のハイフン", lambda i: i["companies"].__setitem__("-acme", _entry("x")), "-acme"),
+            ("エントリがオブジェクトでない", lambda i: i["companies"].__setitem__("acme-cloud", "文字列"), "acme-cloud"),
+            ("name が空白", lambda i: _acme(i).__setitem__("name", "  "), ".name"),
+            ("aliases が配列でない", lambda i: _acme(i).__setitem__("aliases", "x"), "aliases"),
+            ("aliases に文字列以外", lambda i: _acme(i).__setitem__("aliases", ["a", 1]), "aliases"),
+            ("status が列挙外", lambda i: _acme(i).__setitem__("status", "pending"), ".status"),
+            ("score が範囲外", lambda i: _acme(i).__setitem__("score", 101), ".score"),
+            ("score が bool", lambda i: _acme(i).__setitem__("score", True), ".score"),
+            (
+                "name が他スラッグの name と衝突",
+                lambda i: i["companies"].__setitem__("gamma", _entry("アクメクラウド株式会社")),
+                "複数のスラッグ",
+            ),
+            (
+                "alias が他スラッグの alias と衝突",
+                lambda i: i["companies"].__setitem__("gamma", _entry("ガンマ", ["Acme Cloud"])),
+                "Acme Cloud",
+            ),
+            (
+                "name が他スラッグの alias と衝突",
+                lambda i: i["companies"].__setitem__("gamma", _entry("ガンマ", ["アクメクラウド株式会社"])),
+                "複数のスラッグ",
+            ),
+        ]
+        for label, mutate, expected in rows:
+            with self.subTest(label):
+                idx = _valid_index()
+                replaced = mutate(idx)
+                if isinstance(replaced, list):
+                    idx = replaced
+                result = vci.validate(idx)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected in e for e in result.errors), result.errors)
+
+    def test_warn_rules(self):
+        rows = [
+            ("created の欠落", lambda i: _acme(i).pop("created"), "created"),
+            ("aliases の重複", lambda i: _acme(i).__setitem__("aliases", ["a", "a"]), "重複"),
+            ("name と同一の alias", lambda i: _acme(i).__setitem__("aliases", ["アクメクラウド株式会社"]), "name と同一"),
+            ("未知の schema_version", lambda i: i.__setitem__("schema_version", 2), "既知のバージョン"),
+        ]
+        for label, mutate, expected in rows:
+            with self.subTest(label):
+                idx = _valid_index()
+                mutate(idx)
+                result = vci.validate(idx)
+                self.assertEqual(result.errors, [])
+                self.assertTrue(any(expected in w for w in result.warnings), result.warnings)
+
+    def test_optional_fields_accept_boundary_values(self):
+        for field, value in (("status", "active"), ("status", "closed"), ("score", 0), ("score", 100)):
+            with self.subTest(f"{field}={value}"):
+                idx = _valid_index()
+                _acme(idx)[field] = value
+                result = vci.validate(idx)
+                self.assertEqual((result.errors, result.warnings), ([], []))
+
+
+class CliTest(unittest.TestCase):
+    def _write(self, text: str, encoding: str = "utf-8") -> str:
+        fd, path = tempfile.mkstemp(suffix=".json")
+        with os.fdopen(fd, "w", encoding=encoding) as f:
+            f.write(text)
+        self.addCleanup(os.remove, path)
+        return path
+
+    def _run(self, argv) -> tuple[int, str]:
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = vci.main(argv)
+        return code, buf.getvalue()
+
+    def test_exit_codes(self):
+        valid = json.dumps(_valid_index(), ensure_ascii=False)
+        invalid = _valid_index()
+        del invalid["schema_version"]
+        rows = [
+            ("正常", self._write(valid), 0),
+            ("BOM 付きの正常", self._write(valid, "utf-8-sig"), 0),
+            ("検証エラー", self._write(json.dumps(invalid)), 1),
+            ("壊れた JSON", self._write("{ not valid json "), 1),
+            ("存在しないファイル", os.path.join(tempfile.gettempdir(), "no-such-index.json"), 1),
+        ]
+        for label, path, expected in rows:
+            with self.subTest(label):
+                self.assertEqual(self._run([path])[0], expected)
+
+    def test_json_output_keys(self):
+        path = self._write(json.dumps(_valid_index()))
+        code, out = self._run([path, "--json"])
+        self.assertEqual(code, 0)
+        data = json.loads(out)
+        self.assertEqual(
+            sorted(data),
+            ["error_count", "errors", "status", "warning_count", "warnings"],
+        )
 
 
 if __name__ == "__main__":

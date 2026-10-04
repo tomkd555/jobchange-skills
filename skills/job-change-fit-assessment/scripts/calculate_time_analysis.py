@@ -481,7 +481,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         sources = _load_sources(args.sources_json)
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError) as exc:
         print(f"[ERROR] --sources-json を読み込めない（{exc}）", file=sys.stderr)
         return 2
 
@@ -494,7 +494,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.baseline_json:
         try:
             baseline = _load_sources(args.baseline_json)
-        except (OSError, json.JSONDecodeError) as exc:
+        except (OSError, ValueError) as exc:
             print(f"[ERROR] --baseline-json を読み込めない（{exc}）", file=sys.stderr)
             return 2
         analysis["comparison"] = build_comparison(analysis, baseline)
