@@ -1,6 +1,6 @@
 # posting-check.json specification (posting-check-format)
 
-The canonical specification of `posting-check.json`, the record of one job posting and the public figures of the company behind it. The posting researcher agent (`job-change-posting-researcher`) writes the `job` and `company` sections from the posting and from official sources; the main session adds the しょくばらぼ (shokuba labo) values it reads through Chrome. `scripts/validate_posting_check.py` checks a file against this specification. Field ids, the value shape, enumerations and the common rules come from the hub's `references/field-catalog.md`.
+The canonical specification of `posting-check.json`, the record of one job posting and the public figures of the company behind it. The posting researcher agent (`job-change-posting-researcher`) writes the `job` and `company` sections from the posting and from official sources; the main session adds the しょくばらぼ (shokuba labo) values it reads through Chrome. `scripts/validate_posting_check.py` checks a file against this specification. Field ids, the value shape, enumerations and the common rules come from `references/field-catalog.md`.
 
 Location: `{DATA_ROOT}/companies/{company slug}/postings/{posting id}/posting-check.json`. The posting id is `{company slug}-{YYYYMMDD}-{NN}`: the slug, the fetch date, and a two-digit sequence number within that company and day, so a second posting or a scout mail from the same company gets its own file. The file holds no personal information: the user's conditions, the match against them and the unknowns go to `career-private/matches/{posting id}.json` (`matches-format.md`).
 
@@ -39,7 +39,7 @@ Location: `{DATA_ROOT}/companies/{company slug}/postings/{posting id}/posting-ch
 | Field | Required | Rule |
 |---|---|---|
 | `schema_version` | Required | `"1.0"`. Another value is WARN |
-| `posting_id` | Required | `{company slug}-{YYYYMMDD}-{NN}`. The slug part must match the slug form in the hub's `company-index-format.md`, and the date part must equal `fetched_at` with the hyphens removed |
+| `posting_id` | Required | `{company slug}-{YYYYMMDD}-{NN}`. The slug part must match the slug form in `company-index-format.md`, and the date part must equal `fetched_at` with the hyphens removed |
 | `company_slug` | Required | Equal to the slug part of `posting_id` |
 | `source_type` | Required | `url` (a posting page), `text` (pasted text), `scout` (a scout mail) or `search` (picked from a job search result) |
 | `source_url` | Conditional | Required and starting with `http` when `source_type` is `url` or `search`; `null` allowed otherwise |

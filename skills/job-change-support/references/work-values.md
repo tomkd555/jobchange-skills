@@ -1,6 +1,6 @@
 # Work values list (work-values)
 
-The twelve work values shown in Part 1 of `job-change-decision`. The ids are the `source` of a condition in `wishes.json`; the Japanese labels are what the user sees. The list is the scale set of Super's Work Values Inventory, revised (WVI-R, Zytowski 2006). The six values of O*NET's Work Importance Profiler are mapped onto it and add no item.
+The twelve work values shown in Part 1 of `procedure-decision.md`. The ids are the `source` of a condition in `wishes.json`; the Japanese labels are what the user sees. The list is the scale set of Super's Work Values Inventory, revised (WVI-R, Zytowski 2006). The six values of O*NET's Work Importance Profiler are mapped onto it and add no item.
 
 ## The twelve values
 

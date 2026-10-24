@@ -1,6 +1,6 @@
 # Derivation lanes (derivation-lanes)
 
-This is the canonical definition of the lanes that derive the search, in a track separate from the primary set (the user's specified conditions), toward improving conditions and toward widening scope. It is referenced by SKILL.md's Step 1 (choosing lanes), Step 2 (executing the search), Step 5 (delivery), and the searcher agent's (job-change-job-searcher's) role prompt. The specification for the deliverable-side records (`derivations`, `results[].lane`, `search_log[].lane`) is in `job-search-format.md`. The canonical list of biases and their checking questions is in `bias-checklist.md`.
+This is the canonical definition of the lanes that derive the search, in a track separate from the primary set (the user's specified conditions), toward improving conditions and toward widening scope. It is referenced by `procedure-job-search.md`'s Step 1 (choosing lanes), Step 2 (executing the search), Step 5 (delivery), and the searcher agent's (job-change-job-searcher's) role prompt. The specification for the deliverable-side records (`derivations`, `results[].lane`, `search_log[].lane`) is in `job-search-format.md`. The canonical list of biases and their checking questions is in `bias-checklist.md`.
 
 ## Position
 

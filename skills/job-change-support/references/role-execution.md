@@ -1,12 +1,12 @@
 # Canonical role execution reference (role-execution)
 
-The canonical reference defining the per-harness execution procedure for delegating work to a dedicated role, and the judgment on how many agents to launch. Every sub-skill's "Role execution (by harness)" section refers to this file.
+The canonical reference defining the per-harness execution procedure for delegating work to a dedicated role, and the judgment on how many agents to launch. Each procedure's "Role execution and model" section refers to this file.
 
-The content of a role itself (the role prompt) is in each sub-skill's own `references/roles/`, and which task is delegated to which role is in each sub-skill's SKILL.md. This file covers only how a role is run, and is not duplicated into the files that refer to it.
+The content of a role itself (the role prompt) is in `references/roles/`, and which task is delegated to which role is in each `procedure-*.md`. This file covers only how a role is run, and is not duplicated into the files that refer to it.
 
 ## A harness that can launch sub-agents (Claude Code)
 
-As each Step describes, launch the agent named in SKILL.md's table with the Agent tool and hand it the instruction. The agent definitions are in the repository's `agents/`, as copies of each sub-skill's `references/roles/`.
+As each Step describes, launch the agent named in the procedure's table with the Agent tool and hand it the instruction. The agent definitions are in the repository's `agents/`, as copies of `references/roles/`.
 
 ## A harness that cannot launch sub-agents (Codex and others)
 

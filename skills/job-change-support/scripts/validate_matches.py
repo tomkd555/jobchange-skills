@@ -1,7 +1,7 @@
 """job-change-posting-check: 条件との照合記録（matches/{求人 ID}.json）の機械的な（非LLM）検証ツール。
 
 標準ライブラリのみで、1 件の求人確認と利用者の条件（wishes.json）の照合記録を検査する。
-項目の id と照合結果の列挙値は hub の field_catalog.py が読む辞書から取る。
+項目の id と照合結果の列挙値は field_catalog.py が読む辞書から取る。
 仕様の原本は references/matches-format.md である。
 
 CLI:
@@ -18,19 +18,11 @@ import re
 import sys
 from typing import Any
 
-_HUB_SCRIPTS = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "job-change-support",
-    "scripts",
-)
-if _HUB_SCRIPTS not in sys.path:
-    sys.path.insert(0, _HUB_SCRIPTS)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from field_catalog import Catalog, is_date, load_catalog  # noqa: E402
 from validate_company_index import ValidationResult  # noqa: E402
 
-# 同じ階層の validate_posting_check を読む。
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from validate_posting_check import parse_posting_id  # noqa: E402
 
 KNOWN_SCHEMA_VERSIONS = ("1.0",)

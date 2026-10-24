@@ -3,9 +3,9 @@
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
 <!-- The [E1] form in the body text is the notation for a source id. This file disables that rule to keep the half-width square brackets. -->
 
-The grounds behind the design decisions of `job-change-job-search`: how far to widen a search, what the reply states first, and why the searcher writes observations while the main session writes everything about the user. SKILL.md's Steps 2 and 5 and the searcher's role prompt refer to this file.
+The grounds behind the design decisions of the job search: how far to widen a search, what the reply states first, and why the searcher writes observations while the main session writes everything about the user. `procedure-job-search.md`'s Steps 2 and 5 and the searcher's role prompt refer to this file.
 
-Grades follow the hub's `references/evidence-grading.md` (A = primary or peer-reviewed, B = reliable secondary). Every academic study cited here rests on a US or European sample; no replication on a Japanese sample was found. The findings set how the search is run and reported. They never decide a posting's pass or fail.
+Grades follow `references/evidence-grading.md` (A = primary or peer-reviewed, B = reliable secondary). Every academic study cited here rests on a US or European sample; no replication on a Japanese sample was found. The findings set how the search is run and reported. They never decide a posting's pass or fail.
 
 ## Search volume does not predict employment quality
 
@@ -24,7 +24,7 @@ A stance of always searching for the best posting lowers satisfaction even when 
 - Job seekers who kept searching for the best obtained a starting salary 20% higher, reported lower satisfaction with that job and more negative emotion during the search [E2].
 - Across seven samples (1,747 people) the maximising-tendency scale correlated negatively with happiness, optimism, self-esteem and life satisfaction, and positively with depression, perfectionism and regret [E3].
 
-Implication: the search result is a list with the match against the required conditions, never a ranking. Ranking belongs to `job-change-decision`, where the user sets the weights. In `similar_better` the items to beat are confirmed before the search, which confines the search to postings that beat the baseline on those items.
+Implication: the search result is a list with the match against the required conditions, never a ranking. Ranking belongs to the decision procedure, where the user sets the weights. In `similar_better` the items to beat are confirmed before the search, which confines the search to postings that beat the baseline on those items.
 
 Limitation: [E2] is one longitudinal study of US new graduates (11 universities, 548 respondents); [E3] is cross-sectional. Neither applies directly to Japan's mid-career market.
 
@@ -40,7 +40,7 @@ Limitation: [E4] covers consumer choice in general; no effect size for job searc
 
 ## The searcher observes; the main session judges
 
-The searcher agent holds WebSearch and WebFetch, so it never receives `wishes.json`. It receives the anonymised sheet (condition id, kind, text, level) and writes what the page states and the match against the required conditions on that basis. Everything else about the user (the sheet itself, the `considering` marks, the decision) stays in the main session (confidence: an operational rule derived from the personal-information boundary in the hub's `pii-boundary.md`).
+The searcher agent holds WebSearch and WebFetch, so it never receives `wishes.json`. It receives the anonymised sheet (condition id, kind, text, level) and writes what the page states and the match against the required conditions on that basis. Everything else about the user (the sheet itself, the `considering` marks, the decision) stays in the main session (confidence: an operational rule derived from the personal-information boundary in `pii-boundary.md`).
 
 Implication: `must_match` may carry `unknown`. The absence of a statement is never read as `meets` and never as `not_meets`. A posting is a selective document: a missing item can mean the condition does not exist or that it was left unwritten, and the page does not say which.
 

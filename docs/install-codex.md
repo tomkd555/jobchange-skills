@@ -17,11 +17,11 @@ Codex reads skills from the following locations. Choose whichever fits the inten
 | `$HOME/.agents/skills/` | All working directories |
 | `<working directory>/.agents/skills/` | That repository only (Codex also walks up through parent directories) |
 
-Copy the 4 `job-change-*` directories under `<REPO>/skills/` as-is into the chosen location. Because the 4 skills reference each other, place them all together; do not select and place them individually.
+Copy the `job-change-support` directory under `<REPO>/skills/` as-is into the chosen location.
 
 ```bash
 mkdir -p "$HOME/.agents/skills"
-cp -r <REPO>/skills/job-change-* "$HOME/.agents/skills/"
+cp -r <REPO>/skills/job-change-support "$HOME/.agents/skills/"
 ```
 
 On Windows PowerShell, it is as follows.
@@ -74,9 +74,9 @@ The configuration specification is in [configuration.md](configuration.md). In a
 ## Step 4: Verify it works
 
 1. Tell Codex 「転職の準備をしたい」 ("I want to prepare for a job change") and confirm that `job-change-support` launches.
-2. Confirm that the hub passes the configuration gate (it should pass, since Step 3 already created the configuration) and presents the sub-skill matching the request.
+2. Confirm that the skill passes the configuration gate (it should pass, since Step 3 already created the configuration) and presents the procedure matching the request.
 
-**Completion condition.** The hub does not ask to recreate the configuration, and presents the sub-skill it is routing to.
+**Completion condition.** The skill does not ask to recreate the configuration, and presents the procedure it runs.
 
 ## Differences from Claude Code
 

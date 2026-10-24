@@ -1,6 +1,6 @@
 # matches/{posting id}.json specification (matches-format)
 
-The canonical specification of the match record that pairs one posting check with the user's conditions. The main session of `job-change-posting-check` writes it after the researcher returns, and `job-change-decision` reads it. `scripts/validate_matches.py` checks a file against this specification.
+The canonical specification of the match record that pairs one posting check with the user's conditions. The main session writes it in the posting check after the researcher returns, and the decision procedure reads it. `scripts/validate_matches.py` checks a file against this specification.
 
 Location: `{DATA_ROOT}/career-private/matches/{posting id}.json`. The record names the user's conditions, so it is personal information and lives under `career-private/`. An agent with web tools never receives its path or its content.
 

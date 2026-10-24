@@ -1,6 +1,6 @@
 # Decision record specification (decision-format)
 
-The canonical specification of a decision record, the file `job-change-decision` writes while the user compares two to five postings or offers. `scripts/validate_decision.py` checks a file against this specification and, with `--fill`, computes the derived parts (scaled values, the ROC and equal weights, the four rankings and the sensitivity check) from the user's inputs, so that no arithmetic is done by hand.
+The canonical specification of a decision record, the file the decision procedure writes while the user compares two to five postings or offers. `scripts/validate_decision.py` checks a file against this specification and, with `--fill`, computes the derived parts (scaled values, the ROC and equal weights, the four rankings and the sensitivity check) from the user's inputs, so that no arithmetic is done by hand.
 
 Location: `{DATA_ROOT}/career-private/decisions/{decision id}.json`. The decision id is `{YYYYMMDD}-{subject slug}`; the slug is lowercase letters, digits and hyphens. The record names the user's conditions and choices, so it is personal information and lives under `career-private/`.
 

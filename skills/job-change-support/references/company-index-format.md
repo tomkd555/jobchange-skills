@@ -1,8 +1,8 @@
 # company_index.json specification
 
-The canonical reference for company_index.json, the mapping between company names and company slugs, in the job-change-support skill group. The code of `scripts/validate_company_index.py` follows this specification exactly.
+The canonical reference for company_index.json, the mapping between company names and company slugs, in the job-change-support skill. The code of `scripts/validate_company_index.py` follows this specification exactly.
 
-company_index.json is "the one canonical source for resolving a company name to a slug." Each sub-skill (the posting check, the decision record) resolves the same company to the same slug every time, and uses that slug as the per-company directory name and as the prefix of every posting id. Even when the user refers to the same company by a different name, each sub-skill converges on one slug through this list.
+company_index.json is "the one canonical source for resolving a company name to a slug." Each procedure (the posting check, the decision record) resolves the same company to the same slug every time, and uses that slug as the per-company directory name and as the prefix of every posting id. Even when the user refers to the same company by a different name, each procedure converges on one slug through this list.
 
 ## Location
 
@@ -56,9 +56,9 @@ The body is decided for readability and may be the company's Japanese name (exam
 
 ## The company-slug resolution procedure (each skill's Step 0)
 
-Each sub-skill fixes the slug with the following procedure before handling a company.
+Each procedure fixes the slug with the following procedure before handling a company.
 
-1. When the list exists, first validate it with `validate_company_index.py`. On FAIL (one or more ERROR), fix it following the next section, "Repairing a broken list," before proceeding to resolution. Never resolve against a broken list. When routed from the hub (job-change-support), the hub has already finished validating it before routing. When a sub-skill is launched on its own, that sub-skill runs `validate_company_index.py` itself.
+1. When the list exists, first validate it with `validate_company_index.py`. On FAIL (one or more ERROR), fix it following the next section, "Repairing a broken list," before proceeding to resolution. Never resolve against a broken list.
 2. Read `company_index.json`. When the list does not exist, create `{"schema_version":1,"companies":{}}` before proceeding.
 3. When the company name in the request matches an entry's `name` or `aliases`, use that slug.
 4. When there is no match, derive a slug once, register it in the list, and create `companies/{slug}/`.
@@ -67,15 +67,15 @@ Each sub-skill fixes the slug with the following procedure before handling a com
 
 ## Repairing a broken list
 
-The hub (job-change-support) is the one who repairs the list. The posting check and the job search register companies, but only the hub fixes a broken list. When a sub-skill launched on its own detects a FAIL, it returns to the hub without fixing the list itself. After the repair, rerun `validate_company_index.py` and confirm PASS (zero ERROR) before proceeding to resolution.
+The main session repairs the list with the user before any procedure continues. After the repair, rerun `validate_company_index.py` and confirm PASS (zero ERROR) before proceeding to resolution.
 
 The action for each kind of ERROR is as follows.
 
 | ERROR | Action |
 |---|---|
-| Cannot be loaded as JSON | Show the user the content of the file that could not be loaded and the exception message, and let them choose between fixing it by hand or rebuilding it. The hub never rewrites it automatically (guessing at the structure and fixing it loses the existing registrations) |
-| The same `name` or alias is assigned to more than one slug | Show the conflicting identifier and the slugs involved, and let the user choose the merge target with `AskUserQuestion`. The hub merges the entries, moving the merged-away entry's `name` and `aliases` into the target's `aliases`. When both slugs have deliverables under `companies/{company slug}/`, also ask in the same step whether to move them into the target or leave them |
-| A malformed slug, a missing or mistyped `schema_version` / `companies` / `name` / `aliases`, an invalid `status` or `score` value, or a non-object entry | The hub shows the location and a proposed fix, and fixes it after the user approves. When the slug changes, also rename the `companies/{company slug}/` directory in the same step |
+| Cannot be loaded as JSON | Show the user the content of the file that could not be loaded and the exception message, and let them choose between fixing it by hand or rebuilding it. The main session never rewrites it automatically (guessing at the structure and fixing it loses the existing registrations) |
+| The same `name` or alias is assigned to more than one slug | Show the conflicting identifier and the slugs involved, and let the user choose the merge target with `AskUserQuestion`. The main session merges the entries, moving the merged-away entry's `name` and `aliases` into the target's `aliases`. When both slugs have deliverables under `companies/{company slug}/`, also ask in the same step whether to move them into the target or leave them |
+| A malformed slug, a missing or mistyped `schema_version` / `companies` / `name` / `aliases`, an invalid `status` or `score` value, or a non-object entry | The main session shows the location and a proposed fix, and fixes it after the user approves. When the slug changes, also rename the `companies/{company slug}/` directory in the same step |
 
 A WARN alone (such as a missing `created`) does not FAIL, so it is fine to proceed to resolution without fixing it.
 

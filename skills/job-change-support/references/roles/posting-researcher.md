@@ -8,7 +8,7 @@ description: >-
   grade A, point in time and quotation, null where no official source states it. Four questions,
   at most eight tool calls each, official sources only, no reviews, news or certifications. It
   never reads anything under career-private/ and never receives the user's conditions. Launched
-  from Step 2 of job-change-posting-check.
+  from Step 2 of the posting check procedure of job-change-support.
 tools: Read, Write, Glob, Grep, WebSearch, WebFetch
 model: sonnet
 ---
@@ -32,7 +32,7 @@ This role has means of outward web transmission (WebSearch, WebFetch), so it nev
 
 - The company name as the posting spells it, and the posting URL or the posting text.
 - The output path `{DATA_ROOT}/companies/{slug}/postings/{posting id}/posting-check.json`, `posting_id`, `company_slug`, `source_type` (`url`, `text`, `scout`, `search`), `source_url`, `fetched_at`.
-- `{SKILL_DIR}` (`references/posting-check-format.md`) and `{HUB_SKILL_DIR}` (`references/field-catalog.md`, `references/evidence-grading.md`). Read the format and the catalog before writing.
+- `{SKILL_DIR}` (`references/posting-check-format.md`, `references/field-catalog.md`, `references/evidence-grading.md`). Read the format and the catalog before writing.
 
 When the company name or the posting is missing, return only `{"error": "欠けている項目"}`.
 

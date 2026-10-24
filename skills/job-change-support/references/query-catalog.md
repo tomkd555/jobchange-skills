@@ -179,7 +179,7 @@ This catalog's "excluded" and "unconfirmed" entries are decided by the following
 
 The queries run in one search are built from a combination of occupation-name rephrasing, region, and conditions, and increasing the number of rephrasings does not necessarily make results better.
 
-**The occupation-name variants are, as a base, the three of the user's original wording plus 2 rephrasings.** In a study verifying LLM-based query expansion, growing from 1 variant to 3 variants showed the most consistent improvement. Going to 5 variants increased noise (https://arxiv.org/abs/2510.10009, grade B). This is a preprint that has not been peer-reviewed, and is a primary report by its authors. It has also been reported that, for an ambiguous query, expansion itself can lower recall (https://arxiv.org/abs/2505.12694, grade B, also a non-peer-reviewed preprint and a primary report by its authors). The canonical definition of the evidence-grade scale is in `{HUB_SKILL_DIR}/references/evidence-grading.md`.
+**The occupation-name variants are, as a base, the three of the user's original wording plus 2 rephrasings.** In a study verifying LLM-based query expansion, growing from 1 variant to 3 variants showed the most consistent improvement. Going to 5 variants increased noise (https://arxiv.org/abs/2510.10009, grade B). This is a preprint that has not been peer-reviewed, and is a primary report by its authors. It has also been reported that, for an ambiguous query, expansion itself can lower recall (https://arxiv.org/abs/2505.12694, grade B, also a non-peer-reviewed preprint and a primary report by its authors). The canonical definition of the evidence-grade scale is in `references/evidence-grading.md`.
 
 Searching by rephrasing alone misses postings for the occupation the user explicitly named. **The occupation name the user explicitly stated is run as is, unexpanded, as one query.**
 
@@ -270,7 +270,7 @@ A job posting's salary is written in one of 4 forms: 年収 (annual salary), 想
 
 ### Rail lines and commuting range
 
-求人ボックス (Kyujin Box) is said to have a screen for narrowing by rail line, but this has not been confirmed as URL syntax. A rail line or station name is used as a search term only when the user has written a line or station name themselves into the condition sheet's `location`. A station name must never be derived from `career-private/commute.json` for use as a search term. The nearest station is residential information more specific than a municipality, and cannot be passed to a role holding a means of sending data to the web (the canonical definition of the boundary is `{HUB_SKILL_DIR}/references/pii-boundary.md`).
+求人ボックス (Kyujin Box) is said to have a screen for narrowing by rail line, but this has not been confirmed as URL syntax. A rail line or station name is used as a search term only when the user has written a line or station name themselves into the condition sheet's `location`. A station name must never be derived from `career-private/commute.json` for use as a search term. The nearest station is residential information more specific than a municipality, and cannot be passed to a role holding a means of sending data to the web (the canonical definition of the boundary is `references/pii-boundary.md`).
 
 ## Re-judging the salary floor
 
@@ -278,7 +278,7 @@ A site's salary filter can sometimes judge against the **upper bound** of the of
 
 **When the salary floor (`salary_min`) was used to narrow the search, do not trust the filter's result. Always re-judge using the floor value written in the posting's own body**. A posting whose floor value is under `salary_min` is not placed in the results. A posting whose range cannot be read (「応相談」 (negotiable) or similar) is kept in the results with `salary_range` set to `null`, and `match_notes` states that the floor could not be confirmed.
 
-This re-judging is observation-layer work that corrects for what the search route missed and over-collected. Matching against the user's own conditions stays in the judgement layer. This is possible because `salary_min` is the one condition of the user's own that may be passed to the job searcher (the canonical definition of the boundary is `{HUB_SKILL_DIR}/references/pii-boundary.md`). Since no threshold is passed for the overtime ceiling, the annual-holidays floor, or work-characteristic preferences, the same narrowing is not done for them. Only the observation is recorded.
+This re-judging is observation-layer work that corrects for what the search route missed and over-collected. Matching against the user's own conditions stays in the judgement layer. This is possible because `salary_min` is the one condition of the user's own that may be passed to the job searcher (the canonical definition of the boundary is `references/pii-boundary.md`). Since no threshold is passed for the overtime ceiling, the annual-holidays floor, or work-characteristic preferences, the same narrowing is not done for them. Only the observation is recorded.
 
 ## Deduplication
 

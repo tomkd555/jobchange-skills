@@ -1,6 +1,6 @@
 # wishes.json specification (wishes-format)
 
-The canonical specification of `wishes.json`, the user's condition sheet. `job-change-job-search` creates it from the user's one-line wish, `job-change-decision` adds work values to it, and both read it. `scripts/validate_wishes.py` checks a file against this specification. Field ids, enumerations and the common rules come from `field-catalog.md`.
+The canonical specification of `wishes.json`, the user's condition sheet. The job search creates it from the user's one-line wish, the decision procedure adds work values to it, and both read it. `scripts/validate_wishes.py` checks a file against this specification. Field ids, enumerations and the common rules come from `field-catalog.md`.
 
 Location: `{DATA_ROOT}/career-private/wishes.json`. The file holds the user's own conditions, so it stays inside the personal-information boundary (`pii-boundary.md`). An agent with web tools never receives its path or its content; the job search passes an anonymised copy of the active conditions (id, kind, text, level) instead.
 
@@ -88,7 +88,7 @@ The file never records the name of the user's current employer or the current sa
 | `value` | Optional | The threshold or the allowed set, typed as the catalog field: a number for a numeric field, a string or an array of strings for a string or enum field, `null` for a `custom` condition |
 | `unit` | Conditional | The catalog unit of `field_id`; `null` when the field has none |
 | `level` | Required | `must` or `want` |
-| `source` | Required | `user` when the user wrote the condition, or the id of a work value from `job-change-decision/references/work-values.md` |
+| `source` | Required | `user` when the user wrote the condition, or the id of a work value from `work-values.md` |
 | `how_to_judge` | Conditional | One sentence saying what to look at in a candidate when rating. Required and non-empty when `field_id` is `custom` |
 | `created` | Required | `YYYY-MM-DD` |
 | `updated` | Required | `YYYY-MM-DD`, on or after `created` |

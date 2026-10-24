@@ -1,30 +1,32 @@
 ---
 name: job-change-support
 description: >-
-  The hub skill and entry point for a mid-career job change in Japan. It settles where the user's
-  data lives (the configuration gate), resolves company slugs, and routes a request to one of three
-  sub-skills: job-change-job-search (find postings from a one-line wish), job-change-posting-check
-  (record one posting and the official figures of its company) and job-change-decision (compare two
-  to five postings or offers and record the decision). It asks for neither a career record nor the
-  user's current employer or salary. Use when the user works on a job change in Japan and the
-  request spans the process (where to start, what to do next, several steps at once) or names no
-  sub-skill. trigger words: 転職, 転職支援, 転職活動, キャリアチェンジ, 転職の進め方, 何から始めればいい,
-  次に何をすればいい。
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, Skill
+  Support for a mid-career job change in Japan, in three procedures that share one configuration,
+  one field catalog and one set of validators: the job search (find postings from a one-line wish
+  with one searcher agent and the user's Chrome), the posting check (record one posting and the
+  official figures of its company, then match it against the user's conditions) and the decision
+  (compare two to five postings or offers with swing weighting and record the decision). It asks
+  for neither a career record nor the user's current employer or salary, and never ranks for the
+  user. Use when the user works on a job change in Japan: finding postings, checking a posting, a
+  company or a scout mail, or choosing between offers. trigger words: 転職, 転職支援, 転職活動,
+  何から始めればいい, 求人を探して, 求人検索, もっと良い条件, リモートの求人, この求人を調べて,
+  求人票を読んで, この会社を調べて, スカウトメール, 残業と年収の実態, 有価証券報告書, 2 社で迷っている,
+  内定をどちらにする, 比較したい, 何を重視するか, 価値観, 条件の重み.
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, Agent, ToolSearch, mcp__claude-in-chrome__tabs_context_mcp, mcp__claude-in-chrome__tabs_create_mcp, mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__get_page_text, mcp__claude-in-chrome__read_page, mcp__claude-in-chrome__find, mcp__claude-in-chrome__computer, mcp__claude-in-chrome__form_input, mcp__claude-in-chrome__tabs_close_mcp
 ---
 
 # job-change-support
 
-The entry point of the job-change skill group. It does three things and nothing else: it settles the configuration, it resolves company slugs, and it routes the request to a sub-skill through the Skill tool.
+Settles the configuration, resolves company slugs, and runs one of three procedures: the job search, the posting check or the decision. Each procedure is a file under `references/` and uses only this skill's own files.
 
 ## Principles
 
-1. **The first reply carries a deliverable.** No registration comes before the first search result or the first posting check. The only thing the hub settles first is where the data lives.
-2. **The user decides.** The skills list options, state the facts with their sources and ask about trade-offs. Ranking and choosing stay with the user (`job-change-decision`).
+1. **The first reply carries a deliverable.** No registration comes before the first search result or the first posting check. The only thing the skill settles first is where the data lives.
+2. **The user decides.** The skills list options, state the facts with their sources and ask about trade-offs. Ranking and choosing stay with the user (the decision procedure).
 3. **Every fact carries a source URL and a grade.** The grade is A (official), B (reliable secondary), C (review sites), D (hearsay); the canonical definition is `references/evidence-grading.md`. The posting check uses grade A sources only.
 4. **Personal information never leaves the main session.** The two agents with web tools (`job-change-job-searcher`, `job-change-posting-researcher`) receive the anonymised condition sheet or the company name and posting text, and nothing under `career-private/`. The canonical definition is `references/pii-boundary.md`.
 5. **The user's data is JSON with one field catalog.** Four files share the field ids, value shape and enumerations of `references/field-catalog.md`: `wishes.json`, `posting-check.json`, `matches/{posting id}.json` and the decision records. `scripts/export_flat.py` writes them to one CSV.
-6. **The hub never asks for the current employer's name or the current salary.** No file records either.
+6. **The skill never asks for the current employer's name or the current salary.** No file records either.
 
 ## Out of scope
 
@@ -49,11 +51,11 @@ python {SKILL_DIR}/scripts/jc_config.py --show
 | 1 | Invalid configuration | Show the `errors` and stop until the file is fixed |
 | 2 | Not configured | Build the configuration (next section) |
 
-`{SKILL_DIR}` is this skill's absolute path and `{HUB_SKILL_DIR}` is the same path seen from a sub-skill. The configuration file is specified in `docs/configuration.md`.
+`{SKILL_DIR}` is this skill's absolute path. The configuration file is specified in `docs/configuration.md`.
 
 ## Configuration gate
 
-Before any routing, run `jc_config.py --show`. On exit code 2, ask one AskUserQuestion: where the data should live. Say in the question that the location will hold the user's conditions, the postings they consider and their decisions, and that a folder outside any sync or sharing scope is safer. Offer `~/job-change-data`, `~/Documents/job-change-data` and `./job-change-data`, with any absolute path as the other option. Then:
+Before any procedure, run `jc_config.py --show`. On exit code 2, ask one AskUserQuestion: where the data should live. Say in the question that the location will hold the user's conditions, the postings they consider and their decisions, and that a folder outside any sync or sharing scope is safer. Offer `~/job-change-data`, `~/Documents/job-change-data` and `./job-change-data`, with any absolute path as the other option. Then:
 
 ```bash
 python {SKILL_DIR}/scripts/jc_config.py --init --data-root <absolute path>
@@ -66,12 +68,12 @@ Tell the user the path of the configuration file that was created, and continue.
 | Path | Contents | Written by |
 |---|---|---|
 | `career-private/wishes.json` | The condition sheet: conditions with `must`/`want`, their history, the decisions that used them. Specification `references/wishes-format.md` | job search, decision |
-| `career-private/company_index.json` | Company name to slug mapping. Specification `references/company-index-format.md` | hub, posting check |
-| `career-private/matches/{posting id}.json` | The match of one posting against the conditions, and its unknown fields. Specification `job-change-posting-check/references/matches-format.md` | posting check (main session) |
-| `career-private/decisions/{decision id}.json` | One comparison and its outcome. Specification `job-change-decision/references/decision-format.md` | decision |
-| `companies/{company slug}/postings/{posting id}/posting-check.json` | One posting and the company's official figures. Specification `job-change-posting-check/references/posting-check-format.md` | posting researcher, main session |
-| `job-search/{search id}/job_search_results.json` | One search run. Specification `job-change-job-search/references/job-search-format.md` | job searcher, main session |
-| `export/flat.csv` | Every value of the four JSON types as one row per candidate and field. `scripts/export_flat.py` | hub on request |
+| `career-private/company_index.json` | Company name to slug mapping. Specification `references/company-index-format.md` | main session, posting check |
+| `career-private/matches/{posting id}.json` | The match of one posting against the conditions, and its unknown fields. Specification `references/matches-format.md` | posting check (main session) |
+| `career-private/decisions/{decision id}.json` | One comparison and its outcome. Specification `references/decision-format.md` | decision |
+| `companies/{company slug}/postings/{posting id}/posting-check.json` | One posting and the company's official figures. Specification `references/posting-check-format.md` | posting researcher, main session |
+| `job-search/{search id}/job_search_results.json` | One search run. Specification `references/job-search-format.md` | job searcher, main session |
+| `export/flat.csv` | Every value of the four JSON types as one row per candidate and field. `scripts/export_flat.py` | main session on request |
 
 Everything under `career-private/` is personal information. `companies/` and `job-search/` hold no personal information; the agents with web tools write only there. Older files from version 1.x (`profile.json`, `axis.json`, `profile_interview_notes.md`, `documents/`) are left where they are and are neither read nor deleted by this version.
 
@@ -85,19 +87,19 @@ python {SKILL_DIR}/scripts/validate_company_index.py {DATA_ROOT}/career-private/
 
 On FAIL, repair the list with the user following "Repairing a broken list" in `references/company-index-format.md`. When the list does not exist, create `{"schema_version": 1, "companies": {}}`. Resolve the name in the request against `name` and `aliases`; when there is no match, derive a slug once, register it, and create `companies/{slug}/`. Pass an agent with web tools only the slug, never the list.
 
-## Routing
+## Procedures
 
-| Request | Sub-skill | Examples |
+| Request | Procedure | Examples |
 |---|---|---|
-| Find postings | `job-change-job-search` | 「求人を探したい」「リモート中心で年収 600 万円以上の求人」「もっと良い条件を探したい」 |
-| Check one posting or company | `job-change-posting-check` | 「この求人を調べて」「この URL の求人を読んで」「スカウトメールが来た」「この会社の残業と年収の実態は」 |
-| Compare and decide | `job-change-decision` | 「2 社で迷っている」「内定をどちらにするか」「何を重視するか整理したい」「価値観を記録したい」 |
+| Find postings | `references/procedure-job-search.md` | 「求人を探したい」「リモート中心で年収 600 万円以上の求人」「もっと良い条件を探したい」 |
+| Check one posting or company | `references/procedure-posting-check.md` | 「この求人を調べて」「この URL の求人を読んで」「スカウトメールが来た」「この会社の残業と年収の実態は」 |
+| Compare and decide | `references/procedure-decision.md` | 「2 社で迷っている」「内定をどちらにするか」「何を重視するか整理したい」「価値観を記録したい」 |
 
-A request that names none of these gets the recommended order in one line: search, then check the postings the user wants to consider, then compare. Hand off through the Skill tool with `{DATA_ROOT}` resolved. State the reply from the conclusion; no empty section, no preamble.
+A request that names none of these gets the recommended order in one line: search, then check the postings the user wants to consider, then compare. Read the procedure file and follow it with `{DATA_ROOT}` resolved. State the reply from the conclusion; no empty section, no preamble.
 
 ## Harness without sub-agents
 
-On a harness that cannot launch sub-agents (Codex), the sub-skill reads the role prompt under its `references/roles/` and performs the role itself. The procedure is `references/role-execution.md`.
+On a harness that cannot launch sub-agents (Codex), the procedure reads the role prompt under `references/roles/` and performs the role itself. The procedure is `references/role-execution.md`.
 
 ## Scripts
 
@@ -108,8 +110,13 @@ On a harness that cannot launch sub-agents (Codex), the sub-skill reads the role
 | `scripts/validate_wishes.py` | Validates `wishes.json`. Exit 0 PASS, 1 FAIL |
 | `scripts/field_catalog.py` | Loads `references/field-catalog.md`; imported by every validator |
 | `scripts/export_flat.py` | `--data-root {DATA_ROOT} [--out <csv>]`. Writes the four JSON types as one CSV |
+| `scripts/merge_search_results.py` | Job search. `{dir} [--json]` merges the partial files; `{dir} --cleanup` deletes them. Exit 0 success, 1 failure |
+| `scripts/validate_job_search_results.py` | Job search. Exit 0 PASS, 1 FAIL |
+| `scripts/validate_posting_check.py` | Posting check. Exit 0 PASS, 1 FAIL |
+| `scripts/validate_matches.py` | Posting check. Exit 0 PASS, 1 FAIL |
+| `scripts/validate_decision.py` | Decision. `--fill` computes the derived values. Exit 0 PASS, 1 FAIL |
 
-Unit tests: `cd {SKILL_DIR} && python -m unittest discover -s scripts/tests`.
+Unit tests: `cd {SKILL_DIR} && python -m unittest discover -s scripts/tests`. Fictitious examples are under `assets/`.
 
 ## References
 
@@ -121,3 +128,4 @@ Unit tests: `cd {SKILL_DIR} && python -m unittest discover -s scripts/tests`.
 | `references/pii-boundary.md` | The personal-information boundary and each agent's permission |
 | `references/evidence-grading.md` | Grades A to D and how to word a claim on each |
 | `references/role-execution.md` | Running a role without sub-agents |
+| `references/procedure-job-search.md`, `references/procedure-posting-check.md`, `references/procedure-decision.md` | The three procedures. Each lists the references it reads |

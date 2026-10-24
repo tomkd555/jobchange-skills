@@ -2,7 +2,7 @@
 
 ## Installing as a plugin (recommended)
 
-The repository root is itself a plugin, and also a marketplace. The following two lines deploy 4 skills and 2 agents.
+The repository root is itself a plugin, and also a marketplace. The following two lines deploy 1 skill and 2 agents.
 
 ```
 /plugin marketplace add <this repository's URL or local path>
@@ -16,7 +16,7 @@ If you have cloned it locally, pass that path in place of the URL.
 /plugin install job-change@job-change-skills
 ```
 
-After installation, confirm with `/plugin` that `job-change` is enabled. The list of skills can be checked with `/help` or by slash-command completion (type `/job-change-`).
+After installation, confirm with `/plugin` that `job-change` is enabled. The skill can be checked with `/help` or by slash-command completion (type `/job-change-`).
 
 Update with the following command.
 
@@ -30,10 +30,10 @@ Without using the plugin mechanism, place the files as follows.
 
 | What to place | Where to place it |
 |---|---|
-| The 4 `skills/job-change-*` directories | `~/.claude/skills/` |
+| The `skills/job-change-support` directory | `~/.claude/skills/` |
 | The 2 `agents/job-change-*.md` files | `~/.claude/agents/` |
 
-Because the 4 skills reference each other, place them all together. To scope this per project, place them under `<project>/.claude/`, which takes `~/.claude/`'s place for that project.
+To scope this per project, place them under `<project>/.claude/`, which takes `~/.claude/`'s place for that project.
 
 A symbolic link works in place of copying. Claude Code follows a symbolic link placed at `~/.claude/skills/<name>`.
 
@@ -51,7 +51,7 @@ ln -s /path/to/jobchange_Skills/skills/job-change-support ~/.claude/skills/job-c
 
 Where the user's data is stored is decided solely by the configuration file. There is no default location.
 
-After installation, saying 「転職の準備をしたい」 ("I want to prepare for a job change") or running `/job-change-support` has the hub check whether a configuration exists. If not, the hub asks where to place the data; choose from the offered options or answer with any absolute path. Because this location will store personal information (the conditions the user wants, the postings they consider, their decisions), choose a local directory outside any sync or sharing scope.
+After installation, saying 「転職の準備をしたい」 ("I want to prepare for a job change") or running `/job-change-support` has the skill check whether a configuration exists. If not, the skill asks where to place the data; choose from the offered options or answer with any absolute path. Because this location will store personal information (the conditions the user wants, the postings they consider, their decisions), choose a local directory outside any sync or sharing scope.
 
 To create the configuration without waiting for the dialogue, run the following.
 
@@ -71,10 +71,10 @@ If exit code 0 is returned along with output showing `data_root` and the absolut
 
 ## Verifying it works
 
-1. Run `/job-change-support` and confirm that the hub passes the configuration gate (if unconfigured, that the dialogue starts).
-2. Say 「リモート中心、年収 600 万円以上の求人を探したい」 and confirm that this routes to `job-change-job-search`, that at most two questions follow, and that `{data_root}/career-private/wishes.json` is created and `validate_wishes.py` PASSes.
-3. Pick one posting from the result and say 「この求人を調べて」; confirm that `job-change-posting-check` writes `companies/{slug}/postings/{posting id}/posting-check.json` and `career-private/matches/{posting id}.json`.
-4. With two posting checks, say 「2 社で迷っている」 and confirm that `job-change-decision` writes `career-private/decisions/{decision id}.json`.
+1. Run `/job-change-support` and confirm that the skill passes the configuration gate (if unconfigured, that the dialogue starts).
+2. Say 「リモート中心、年収 600 万円以上の求人を探したい」 and confirm that the job search procedure runs, that at most two questions follow, and that `{data_root}/career-private/wishes.json` is created and `validate_wishes.py` PASSes.
+3. Pick one posting from the result and say 「この求人を調べて」; confirm that the posting check writes `companies/{slug}/postings/{posting id}/posting-check.json` and `career-private/matches/{posting id}.json`.
+4. With two posting checks, say 「2 社で迷っている」 and confirm that the decision procedure writes `career-private/decisions/{decision id}.json`.
 
 ## Common pitfalls
 

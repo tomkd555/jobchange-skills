@@ -1,4 +1,4 @@
-"""語彙の二重管理を守るテスト。references の表や hub の定数と validator の定数が食い違ったら失敗する。
+"""語彙の二重管理を守るテスト。references の表や他の検証スクリプトの定数と validator の定数が食い違ったら失敗する。
 
 実行:
     python -m unittest discover -s scripts/tests
@@ -12,9 +12,7 @@ import unittest
 
 _TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 _SKILL_DIR = os.path.dirname(os.path.dirname(_TESTS_DIR))
-_SKILLS_DIR = os.path.dirname(_SKILL_DIR)
 sys.path.insert(0, os.path.join(_SKILL_DIR, "scripts"))
-sys.path.insert(0, os.path.join(_SKILLS_DIR, "job-change-support", "scripts"))
 
 import field_catalog  # noqa: E402
 import validate_company_index as vci  # noqa: E402
@@ -63,7 +61,7 @@ class VocabularySyncTest(unittest.TestCase):
         self.assertEqual(len(terms), 10, terms)
         self.assertEqual(tuple(terms), vjs.DERIVATION_LANES)
 
-    def test_slug_pattern_matches_hub(self):
+    def test_slug_pattern_matches_company_index(self):
         self.assertEqual(vjs._SLUG_RE.pattern, vci.SLUG_PATTERN.pattern)
 
     def test_enums_match_catalog(self):

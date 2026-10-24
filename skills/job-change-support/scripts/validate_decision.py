@@ -2,7 +2,7 @@
 
 標準ライブラリのみで、比較表の数値計算（0〜1 への換算、スイング・ROC・均等の重み、候補ごとの
 スコア、順位、重みの感度検査）を手計算せずに行い、記録が仕様どおりかを検査する。仕様の原本は
-references/decision-format.md である。項目の型と向きは、hub の field-catalog.md を
+references/decision-format.md である。項目の型と向きは、field-catalog.md を
 field_catalog.py 経由で参照する。
 
 CLI:
@@ -24,13 +24,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
-_HUB_SCRIPTS = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "job-change-support",
-    "scripts",
-)
-if _HUB_SCRIPTS not in sys.path:
-    sys.path.insert(0, _HUB_SCRIPTS)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from field_catalog import is_date, load_catalog  # noqa: E402
 from validate_company_index import SLUG_PATTERN  # noqa: E402

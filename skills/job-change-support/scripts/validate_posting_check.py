@@ -1,7 +1,7 @@
 """job-change-posting-check: 求人票の確認記録（posting-check.json）の機械的な（非LLM）検証ツール。
 
 標準ライブラリのみで、1 件の求人票と企業の公開数値を記録した posting-check.json を検査する。
-項目の id・型・単位・列挙値は hub の field_catalog.py が読む辞書（field-catalog.md）から取り、
+項目の id・型・単位・列挙値は field_catalog.py が読む辞書（field-catalog.md）から取り、
 このファイルに定数のコピーを持たない。仕様の原本は references/posting-check-format.md である。
 
 CLI:
@@ -18,13 +18,7 @@ import re
 import sys
 from typing import Any
 
-_HUB_SCRIPTS = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "job-change-support",
-    "scripts",
-)
-if _HUB_SCRIPTS not in sys.path:
-    sys.path.insert(0, _HUB_SCRIPTS)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from field_catalog import Catalog, check_value_object, is_date, load_catalog  # noqa: E402
 from validate_company_index import SLUG_PATTERN, ValidationResult  # noqa: E402

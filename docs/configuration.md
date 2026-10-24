@@ -1,6 +1,6 @@
 # Configuration file
 
-In the job-change support skill family, where the user's data is stored is decided solely by the configuration file. There is no default location. Until the configuration is settled, the hub (`job-change-support`) does not route to any sub-skill.
+In the job-change-support skill, where the user's data is stored is decided solely by the configuration file. There is no default location. Until the configuration is settled, the skill runs none of its procedures.
 
 There are two reasons for not deciding the location implicitly. First, the user's data includes personal information such as the conditions they want, the postings they consider and the decisions they make, and where it is stored should be the user's own decision. Second, if the skill body's own directory were used as a default write location, the location of personal information would shift every time the skill is updated or reinstalled.
 
@@ -56,7 +56,7 @@ If the file pointed to by `JOB_CHANGE_CONFIG` does not exist, that setting is ig
 
 ## Creating the configuration
 
-If no configuration exists the first time the user launches it, the hub asks where to place the data. To create it by hand, run the following.
+If no configuration exists the first time the user launches it, the skill asks where to place the data. To create it by hand, run the following.
 
 ```bash
 python <installation location of the skills>/job-change-support/scripts/jc_config.py --init --data-root /absolute/path/to/job-change-data
@@ -84,4 +84,4 @@ These options do not create a directory. Each directory is created by the indivi
 
 Each SKILL.md and reference document writes data paths in the form `{DATA_ROOT}/career-private/wishes.json`. `{DATA_ROOT}` is read as the `data_root` returned by `jc_config.py --show`. When the directory names have been changed from their defaults, use the `paths` returned by `--show`.
 
-There are two placeholders that refer to a skill body itself. `{SKILL_DIR}` refers to that skill's own directory, and `{HUB_SKILL_DIR}` refers to the `job-change-support` directory.
+The placeholder `{SKILL_DIR}` refers to the `job-change-support` directory itself.

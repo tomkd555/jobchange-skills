@@ -1,6 +1,6 @@
 # Canonical definition of evidence levels (evidence-grading)
 
-This is the canonical definition of the definition, assignment criteria, and operating rules for evidence levels (A through D) on company information. The hub (job-change-support), the posting check (job-change-posting-check) and the posting researcher agent (job-change-posting-researcher) reference this file; the field catalog's `grade` enumeration takes its values from here.
+This is the canonical definition of the definition, assignment criteria, and operating rules for evidence levels (A through D) on company information. The skill's procedures and the posting researcher agent (job-change-posting-researcher) reference this file; the field catalog's `grade` enumeration takes its values from here.
 
 ## Definition of the levels
 
@@ -74,4 +74,4 @@ Primary information (level A) has limits too. A securities report's average annu
 
 - The posting researcher (job-change-posting-researcher) uses grade A sources only: the posting page, the company's own site, EDINET and IR pages, the MHLW violation list. The main session adds しょくばらぼ, also grade A. Every value in `posting-check.json` carries its grade in the common value shape (`field-catalog.md`).
 - The validators check that a grade is one of A to D and that a non-null value has a grade; `validate_posting_check.py` warns on a grade other than A. Whether a grade was assigned rightly cannot be judged mechanically; the main session reads the source URL when a value looks doubtful.
-- The limits of a grade A figure (the whole legal entity's average salary, the one-year window of the violation list) are stated in the reply next to the figure, as `job-change-posting-check` Step 5 requires.
+- The limits of a grade A figure (the whole legal entity's average salary, the one-year window of the violation list) are stated in the reply next to the figure, as Step 5 of `procedure-posting-check.md` requires.

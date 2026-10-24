@@ -1,20 +1,4 @@
----
-name: job-change-decision
-description: >-
-  Decision support for a job change in Japan: the user compares two to five postings or offers that
-  have a posting check, and the skill writes out the options so the user can decide. It records the
-  user's work values as conditions in wishes.json (a twelve-item list plus free input, each marked
-  must or want with a one-line judging guide), filters by the required conditions, builds the
-  comparison items from the active conditions and the posting-check fields that differ, elicits
-  weights by swing weighting, shows five rankings side by side (swing, rank-order centroid, equal
-  weights, want count, and a ±20% sensitivity check), checks the user's preferred option on three
-  tables, and records the decision with the deciding and compromised items and empty follow-up
-  slots for three months and one year. The skill never ranks for the user. trigger words: 2 社で迷っ
-  ている, 内定をどちらにする, 比較したい, 何を重視するか, 価値観, 意思決定, 条件の重み.
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
----
-
-# job-change-decision
+# Decision procedure
 
 Runs in the main session only, with no agent, so nothing personal reaches a web tool. It writes options out, asks about trade-offs and shows the arithmetic; the user decides.
 
@@ -27,15 +11,12 @@ Runs in the main session only, with no agent, so nothing personal reaches a web 
 5. **Record the reasons and the compromises.** A decision made on written grounds leaves less regret, and the follow-up slots show later which compromise mattered.
 6. **No lecture on method, no verdict.** A bias note is one sentence, only where it applies: salary anchoring, the focusing illusion on one condition, deadline pressure.
 
-## Path resolution
-
-When dispatched from the hub, `{DATA_ROOT}` is already resolved. Otherwise run `python {HUB_SKILL_DIR}/scripts/jc_config.py --show`; on exit code 2 start `job-change-support` first.
 
 ## Data layout
 
 | Path | Contents |
 |---|---|
-| `career-private/wishes.json` | The conditions, including work values. `{HUB_SKILL_DIR}/references/wishes-format.md` |
+| `career-private/wishes.json` | The conditions, including work values. `{SKILL_DIR}/references/wishes-format.md` |
 | `career-private/matches/{posting id}.json` | Match per condition for each candidate |
 | `companies/{slug}/postings/{posting id}/posting-check.json` | The candidates' values |
 | `career-private/decisions/{decision id}.json` | The record of one comparison. `references/decision-format.md` |
@@ -47,7 +28,7 @@ When dispatched from the hub, `{DATA_ROOT}` is already resolved. Otherwise run `
 3. **Free input.** Ask once, in one sentence, for anything the user values that the list lacks.
 4. **Must or want.** For each chosen and written item, one question: 必須か希望か.
 5. **How to judge.** For each item, propose one sentence saying what to look at in a posting check (`how_to_judge`); the user corrects it.
-6. **Record.** Append each item to `wishes.json` as a condition with `kind: "value"` (or `"other"` for free input), `field_id: "custom"`, `source` the work-value id or `user`, `level`, `how_to_judge`, and one `history` entry. Validate with `python {HUB_SKILL_DIR}/scripts/validate_wishes.py`.
+6. **Record.** Append each item to `wishes.json` as a condition with `kind: "value"` (or `"other"` for free input), `field_id: "custom"`, `source` the work-value id or `user`, `level`, `how_to_judge`, and one `history` entry. Validate with `python {SKILL_DIR}/scripts/validate_wishes.py`.
 
 Every question text is a complete Japanese sentence with a concrete example, one decision per question, run through the reply lint before asking.
 
@@ -103,7 +84,7 @@ Write `chosen`, `decisive_fields` (the items the user names as deciding) and `co
 |---|---|
 | `scripts/validate_decision.py` | `{file} [--wishes {wishes.json}] [--json]` validates; `--fill` computes scaled values, weights, scores, rankings and sensitivity in place. Exit 0 PASS, 1 FAIL |
 
-Unit tests: `cd {SKILL_DIR} && python -m unittest discover -s scripts/tests`. A fictitious example is `assets/decision_example.json`.
+A fictitious example is `assets/decision_example.json`.
 
 ## References
 
@@ -111,5 +92,5 @@ Unit tests: `cd {SKILL_DIR} && python -m unittest discover -s scripts/tests`. A 
 |---|---|---|
 | `references/decision-format.md` | The record, the derived values and the validator | Steps 4 to 8 |
 | `references/work-values.md` | The twelve work values with ids, Japanese labels and the O*NET mapping | Part 1 |
-| `{HUB_SKILL_DIR}/references/wishes-format.md` | `wishes.json` | Part 1, Step 1 |
-| `{HUB_SKILL_DIR}/references/field-catalog.md` | Field ids, directions, labels | Steps 3 and 4 |
+| `{SKILL_DIR}/references/wishes-format.md` | `wishes.json` | Part 1, Step 1 |
+| `{SKILL_DIR}/references/field-catalog.md` | Field ids, directions, labels | Steps 3 and 4 |

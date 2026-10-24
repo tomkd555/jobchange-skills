@@ -2,7 +2,7 @@
 
 The canonical list of the fields that `wishes.json`, `posting-check.json`, `matches/{posting id}.json` and the decision records share. Every `field_id` written in any of the four files must appear in the tables below. `scripts/field_catalog.py` reads this file at run time, so the tables are the only copy; the validators of all four files import that module.
 
-The common value shape, the common rules and the enumerations also live here. Each file's own structure is in its format reference (`wishes-format.md`, `job-change-posting-check/references/posting-check-format.md`, `job-change-posting-check/references/matches-format.md`, `job-change-decision/references/decision-format.md`).
+The common value shape, the common rules and the enumerations also live here. Each file's own structure is in its format reference (`wishes-format.md`, `posting-check-format.md`, `matches-format.md`, `decision-format.md`).
 
 ## Fields
 
@@ -57,7 +57,7 @@ The columns are the field id, the Japanese label shown to the user, the type, th
 |---|---|---|---|---|---|
 | `custom` | 利用者が書いた条件 | string | | none | user |
 
-`custom` is the field id of a condition the user wrote in their own words, including every work value chosen from `job-change-decision/references/work-values.md`. Such a condition has no posting field to compare against; `how_to_judge` in `wishes.json` says what to look at, and the user rates each candidate 1 to 5 in the decision record.
+`custom` is the field id of a condition the user wrote in their own words, including every work value chosen from `work-values.md`. Such a condition has no posting field to compare against; `how_to_judge` in `wishes.json` says what to look at, and the user rates each candidate 1 to 5 in the decision record.
 
 ## Value shape
 
