@@ -2,7 +2,7 @@
 
 The canonical reference for company_index.json, the mapping between company names and company slugs, in the job-change-support skill group. The code of `scripts/validate_company_index.py` follows this specification exactly.
 
-company_index.json is "the one canonical source for resolving a company name to a slug." Each sub-skill (company research, application document writing, job interview preparation, exam preparation) resolves the same company to the same slug every time, and uses that slug as the per-company directory name. Even when the user refers to the same company by a different name, each sub-skill converges on one slug through this list.
+company_index.json is "the one canonical source for resolving a company name to a slug." Each sub-skill (the posting check, the decision record) resolves the same company to the same slug every time, and uses that slug as the per-company directory name and as the prefix of every posting id. Even when the user refers to the same company by a different name, each sub-skill converges on one slug through this list.
 
 ## Location
 
@@ -42,7 +42,7 @@ The key is a company slug, and the value is a company entry. A slug must match t
 
 The body is decided for readability and may be the company's Japanese name (example: `S_アクメクラウド`). A romanized spelling also works (example: `S_acme-cloud`). Because the per-company directory name is identical to the slug, a prefix or Japanese text attached to the slug appears unchanged in the directory name.
 
-`_general` is a reserved name. It is used to place general exam-preparation deliverables that are not specific to a company under `{DATA_ROOT}/companies/_general/` (its canonical use is described in `job-change-exam-prep`'s SKILL.md). The form above disallows a leading underscore. Registering `_general` as a company slug under `companies` is an ERROR from `validate_company_index.py`. A reserved name is never assigned to a company.
+`_general` is a reserved name, kept for deliverables that belong to no company under `{DATA_ROOT}/companies/_general/`. The form above disallows a leading underscore. Registering `_general` as a company slug under `companies` is an ERROR from `validate_company_index.py`. A reserved name is never assigned to a company.
 
 | Field | Type | Required/optional | Meaning and entry criteria |
 |---|---|---|---|
@@ -50,7 +50,7 @@ The body is decided for readability and may be the company's Japanese name (exam
 | `aliases` | array | Required | An array of alternate-name strings. When there is no alternate name, use an empty array `[]`. Not an array, or containing a non-string, is an ERROR |
 | `created` | string | Optional | The registration date, in `YYYY-MM-DD` form. Missing is a WARN |
 | `status` | string | Optional | The selection-process status. Either `"active"` (in progress) or `"closed"` (ended, or passed over). Treated as `active` when missing. Deliverables are kept even after it becomes `closed`; they are never deleted or moved to an archive. An invalid type, or a value outside the allowed set, is an ERROR |
-| `score` | integer | Optional | The company score. An integer from 0 through 100. A machine-readable value copied from `fit_assessment.json`'s `company_score.total`, whose canonical source is the `fit_assessment.json` side (this is a copy for listing and sorting). The fit-assessment skill (job-change-fit-assessment) copies and updates it. Not copied when `company_score.total` is `null` (no axis has been declared for scoring, or no axis could be judged). Missing is allowed (a company not yet investigated or scored). An invalid type or a value out of range is an ERROR. It is independent of the slug prefix (such as `A_`); when the score changes, the slug (the directory name) is unchanged. |
+| `score` | integer | Optional | The company score. An integer from 0 through 100. A field from version 1.x that no current skill writes; an existing value is kept and validated. Missing is allowed. An invalid type or a value out of range is an ERROR. It is independent of the slug prefix (such as `A_`); when the score changes, the slug (the directory name) is unchanged. |
 
 `name` and every entry's `aliases`, taken together, work as the identifier that uniquely points to a company across the whole list. The same string appearing under more than one slug is an ERROR, because each skill would then resolve different slugs from the same name.
 
@@ -67,7 +67,7 @@ Each sub-skill fixes the slug with the following procedure before handling a com
 
 ## Repairing a broken list
 
-The hub (job-change-support) is the one who repairs the list. Writing to it is spread across company research, exam preparation, fit assessment, and job search, but only the hub fixes a broken list. When a sub-skill launched on its own detects a FAIL, it returns to the hub without fixing the list itself. After the repair, rerun `validate_company_index.py` and confirm PASS (zero ERROR) before proceeding to resolution.
+The hub (job-change-support) is the one who repairs the list. The posting check and the job search register companies, but only the hub fixes a broken list. When a sub-skill launched on its own detects a FAIL, it returns to the hub without fixing the list itself. After the repair, rerun `validate_company_index.py` and confirm PASS (zero ERROR) before proceeding to resolution.
 
 The action for each kind of ERROR is as follows.
 

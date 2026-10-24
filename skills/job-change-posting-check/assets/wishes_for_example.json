@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "updated": "2026-10-25",
+  "conditions": [
+    {
+      "id": "c001",
+      "kind": "salary_min",
+      "field_id": "salary_min",
+      "operator": ">=",
+      "text": "年収 600 万円以上",
+      "value": 6000000,
+      "unit": "円",
+      "level": "must",
+      "source": "user",
+      "how_to_judge": null,
+      "created": "2026-10-25",
+      "updated": "2026-10-25",
+      "active": true
+    },
+    {
+      "id": "c002",
+      "kind": "remote",
+      "field_id": "remote_policy",
+      "operator": "in",
+      "text": "リモート中心",
+      "value": [
+        "full_remote",
+        "hybrid"
+      ],
+      "unit": null,
+      "level": "must",
+      "source": "user",
+      "how_to_judge": null,
+      "created": "2026-10-25",
+      "updated": "2026-10-25",
+      "active": true
+    },
+    {
+      "id": "c003",
+      "kind": "value",
+      "field_id": "custom",
+      "operator": null,
+      "text": "知的な挑戦",
+      "value": null,
+      "unit": null,
+      "level": "want",
+      "source": "intellectual_challenge",
+      "how_to_judge": "業務内容に新しい技術の導入や設計の判断が含まれるか",
+      "created": "2026-10-25",
+      "updated": "2026-10-25",
+      "active": true
+    }
+  ],
+  "history": [],
+  "used_in": []
+}

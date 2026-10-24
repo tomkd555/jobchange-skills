@@ -17,7 +17,7 @@ Codex reads skills from the following locations. Choose whichever fits the inten
 | `$HOME/.agents/skills/` | All working directories |
 | `<working directory>/.agents/skills/` | That repository only (Codex also walks up through parent directories) |
 
-Copy the 10 `job-change-*` directories under `<REPO>/skills/` as-is into the chosen location. Because the 10 skills reference each other, place them all together; do not select and place them individually.
+Copy the 4 `job-change-*` directories under `<REPO>/skills/` as-is into the chosen location. Because the 4 skills reference each other, place them all together; do not select and place them individually.
 
 ```bash
 mkdir -p "$HOME/.agents/skills"
@@ -31,7 +31,7 @@ New-Item -ItemType Directory -Force "$HOME\.agents\skills"
 Copy-Item -Recurse "<REPO>\skills\job-change-*" "$HOME\.agents\skills\"
 ```
 
-**Completion condition.** The following command outputs `10`.
+**Completion condition.** The following command outputs `4`.
 
 ```bash
 ls -d "$HOME"/.agents/skills/job-change-* | wc -l
@@ -39,11 +39,11 @@ ls -d "$HOME"/.agents/skills/job-change-* | wc -l
 
 ## Step 2: Do not place agents/
 
-The 16 files under `<REPO>/agents/` are agent definitions specific to Claude Code, and are not used on Codex. Do not copy them.
+The 2 files under `<REPO>/agents/` are agent definitions specific to Claude Code, and are not used on Codex. Do not copy them.
 
 On Codex, each skill's own body reads `references/roles/*.md` and carries out the work by taking on that role itself. The procedure for this substitution is written in `job-change-support/references/role-execution.md`.
 
-**Completion condition.** The following command outputs `16` (confirming the role prompts are present on the skill side).
+**Completion condition.** The following command outputs `2` (confirming the role prompts are present on the skill side).
 
 ```bash
 ls "$HOME"/.agents/skills/job-change-*/references/roles/*.md | wc -l
@@ -53,7 +53,7 @@ ls "$HOME"/.agents/skills/job-change-*/references/roles/*.md | wc -l
 
 Where the user's data is stored is decided solely by the configuration file. There is no default location.
 
-**This location will store personal information, including current salary, place of residence, current employer's name, and achievements.** Always confirm the location with the user. The agent never decides this on its own. Tell the user to avoid a directory that is the target of sync or sharing.
+**This location will store personal information: the conditions the user wants, the postings they consider and their decisions.** Always confirm the location with the user. The agent never decides this on its own. Tell the user to avoid a directory that is the target of sync or sharing.
 
 Take the location the user answered, make it an absolute path, and run the following.
 
@@ -84,17 +84,19 @@ Codex has no subagent mechanism. This skill family changes behavior as follows.
 
 | Item | Claude Code | Codex |
 |---|---|---|
-| Role execution | Delegated to the 16 subagents | The skill body itself reads `references/roles/*.md` and executes as that role |
-| Independence of creation and audit | Preserved, because it runs in a separate context | Reduced, because it runs in the same context |
+| Role execution | Delegated to the 2 subagents | The skill body itself reads `references/roles/*.md` and executes as that role |
 | Tool restriction | The role's `tools` frontmatter takes mechanical effect | Has no effect |
 
-The last two items need to be compensated for with rules. The agent observes the following.
+The last item needs to be compensated for with rules. The agent observes the following.
 
-- **During the audit stage, do not consult the reasoning, points of hesitation, or history of revisions from the creation stage.** Judge using only the deliverable and the specification in `references/`. Do not read the creating side's intent into it.
-- **While working as a role without web-sending capability, do not use web search or page retrieval.** When moving from reading `profile.json` to job search or company research, do not put the personal information just read into a search query.
+- **While working as a role without web-sending capability, do not use web search or page retrieval.** When moving from reading `wishes.json` to the job search or the posting check, do not put the user's conditions into a search query beyond the anonymised sheet.
 - **While working as a role with web-sending capability, do not open files under `{data_root}/career-private/`.** Do not open them even if given a path to one.
 
 Each role prompt's opening section, "Inputs this role may handle," states the rules to observe for that role. Always read it before starting work as that role.
+
+## Chrome-only steps
+
+Steps that read a page in the user's Chrome (しょくばらぼ, Indeed, Green, a posting WebFetch cannot open) need the Claude in Chrome extension and run only on Claude Code. On Codex those values stay `null`, and the skill writes the omission into `coverage_notes` or `open_questions`.
 
 ## Common pitfalls
 

@@ -3,17 +3,17 @@
 <!-- textlint-disable jtf-style/4.3.2.大かっこ［］ -->
 <!-- The [E1] form in the body text is the notation for a source id. This file disables that rule to keep the half-width square brackets. -->
 
-This is the canonical procedure for checking, before the search, the biases the user brings into the conditions, and compensating for them with derivation lanes (`derivation-lanes.md`). It is referenced by SKILL.md's Step 1 (building conditions), Step 2 (executing the search), Step 5 (delivery), and the searcher agent's (job-change-job-searcher's) role prompt. The specification for the deliverable-side records (`search_sets`, `results[].search_set`, `results[].lane`, `screening.derivations`) is in `job-search-format.md`.
+This is the canonical procedure for checking, before the search, the biases the user brings into the conditions, and compensating for them with derivation lanes (`derivation-lanes.md`). It is referenced by SKILL.md's Step 1 (building conditions), Step 2 (executing the search), Step 5 (delivery), and the searcher agent's (job-change-job-searcher's) role prompt. The specification for the deliverable-side records (`derivations`, `results[].lane`, `search_log[].lane`) is in `job-search-format.md`.
 
-The evidence level is expressed on a four-step scale, A through D. The canonical definition is in `job-change-company-research/references/evidence-grading.md`. This file's list of biases lays out, as an operational convention, the ones that tend to appear in a user's conditions in Japan's mid-career market. No Japanese study demonstrating each bias's effect on job-search outcomes could be identified. Only a matter with supporting evidence cites a source.
+The evidence level is expressed on a four-step scale, A through D. The canonical definition is in `{HUB_SKILL_DIR}/references/evidence-grading.md`. This file's list of biases lays out, as an operational convention, the ones that tend to appear in a user's conditions in Japan's mid-career market. No Japanese study demonstrating each bias's effect on job-search outcomes could be identified. Only a matter with supporting evidence cites a source.
 
 ## Position
 
-The user's wishes are searched as they stand, as the condition sheet (`search_sets.primary`). This file establishes one visibility check: surfacing, once, a narrowing concealed in how a wish is worded that the user did not choose, and creating a chance for the user to choose again.
+The user's wishes are searched as they stand, as the condition sheet (`conditions`). This file establishes one visibility check: surfacing, once, a narrowing concealed in how a wish is worded that the user did not choose, and creating a chance for the user to choose again.
 
-- The primary set (`primary`) is the user's specified conditions, and a derivation lane never replaces it. Even when a derived posting becomes an application candidate, it never substitutes for the primary set's application candidates.
+- The primary set (`primary`) is the user's specified conditions, and a derivation lane never replaces it. A derived posting is shown below the primary set's postings and never in their place.
 - A derivation lane is built from additional queries in a track separate from the primary set's twelve. The primary set's query count is never cut down to feed a lane (the grounds are in "Derivation lanes are never traded against the primary set" in `search-methods.md`).
-- When the user chooses no lane at all, none is built. That none was built stays on record in the deliverable (`search_sets.derivations` is an empty array; this is a WARN in fuzzy).
+- When the user chooses no lane at all, none is built. That none was built stays on record in the deliverable (`derivations` is an empty array).
 
 ## List of user-side biases
 
@@ -43,34 +43,21 @@ The line "men apply once they meet 60% of the requirements, and women wait until
 
 The primary source that can be confirmed is an online experiment the UK's Behavioural Insights Team published in 2022 (10,468 respondents, three conditions using fictitious job postings) [E1]. It reports that men apply once they meet 52.1% of the requirements, and women once they meet 55.7%, and states that in every one of the three conditions, men were more inclined to apply than equally qualified women. The team's own blog explains, citing a journalist's investigation, the course of events behind the 60%-versus-100% figure [E2].
 
-The implication for this skill is reading a posting's required qualifications separately from its preferred qualifications. In the eight-axis judgment, only an unmet `must` grounds exclusion, and an unmet `want` never excludes a posting (the decision table is in `job-search-format.md`). When a user tries to exclude an application candidate themselves on the reasoning that "I do not meet every requirement," confirm from the posting's own wording which requirements are required and which are preferred. An analysis of about 77,000 UK job postings found that postings for senior roles used more words coded masculine (such as "lead"), and postings for support roles used more words coded feminine (such as "support") [E3]. That a posting's choice of words can influence an applicant's self-selection is a reason to read requirements as required and preferred separately. Both are UK samples, and no replication in Japan's mid-career market could be identified.
+The implication for this skill is reading a posting's required qualifications separately from its preferred qualifications. In `must_match`, only a `must` condition is judged, and a `want` condition never removes a posting from the list (`job-search-format.md`). When a user tries to drop a posting themselves on the reasoning that "I do not meet every requirement," confirm from the posting's own wording which requirements are required and which are preferred. An analysis of about 77,000 UK job postings found that postings for senior roles used more words coded masculine (such as "lead"), and postings for support roles used more words coded feminine (such as "support") [E3]. That a posting's choice of words can influence an applicant's self-selection is a reason to read requirements as required and preferred separately. Both are UK samples, and no replication in Japan's mid-career market could be identified.
 
 ## Correspondence with derivation lanes
 
-In 2.3, the search widened by the bias check is built as derivation lanes (`derivation-lanes.md`). A lane is a query added on top of the primary set (the user's specified conditions, twelve or fewer queries), up to three per lane. It is used in both fuzzy and similar_better. In similar_better, each lane's `salary_min` is kept at or above the reference posting's floor, and `baseline_comparison.axes` is written for derived postings too.
+The search widened by the bias check is built as derivation lanes (`derivation-lanes.md`). A lane is a query added on top of the primary set (the user's specified conditions, twelve or fewer queries), up to three per lane. It is used in both fuzzy and similar_better. In similar_better, each lane's `salary_min` is kept at or above the baseline posting's floor.
 
 The primary set's query count is never cut down to feed a lane. The reason and the limitations are in "Derivation lanes are never traded against the primary set" in `search-methods.md`.
 
-2.2's exploration set (up to six queries, fuzzy only) corresponds to the following four lanes. Read 2.2's deliverable through this correspondence.
-
-| 2.2's query count | How it is built | Corresponding lane |
-|---|---|---|
-| 2 | Two adjacent occupations × the first-choice region × no condition | `adjacent_role` |
-| 1 | Main occupation × the first-choice region × dropping `industries` | `industry_widen` |
-| 2 | Main occupation × the first-choice region × one level up and one level down in seniority | `seniority_shift` |
-| 1 | Main occupation × the first-choice region × widening remote-work phrasing | `remote_widen` |
-
 `salary_min` is never lowered in any lane. The salary floor is the minimum amount the user decides on, and it is a condition.
 
-List the condition a lane moves in `search_sets.derivations[].changed_conditions`, and write the reason it was moved in `rationale`. The only condition ever dropped is one the user answered as not required. A condition answered as required in Step 1 is never dropped by any lane.
+List the condition a lane moves in `derivations[].changed_conditions`, and write the reason it was moved in `rationale`. The only condition ever dropped is one the user answered as not required. A condition answered as required in Step 1 is never dropped by any lane.
 
 ## How a derived posting is handled
 
 The recording and reporting rules for a derived posting are in "How results are handled" in `derivation-lanes.md`.
-
-## The unmet count attached to the report
-
-Classification takes three values, and does not rank postings within `apply_candidate` ("The cost of always searching for the best" in `search-methods.md`). The count of unmet `want` conditions can only be known by reading `axis_judgements`, though, so attach one column to Step 5's per-posting table counting the axes whose `level` is `want` and whose `judgement` is `not_meets`. This column belongs only to the report; the deliverable schema omits it. Never sort by this count to make a ranking table.
 
 ## Source list
 
