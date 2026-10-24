@@ -21,3 +21,7 @@ graphify-out/
 # OS
 .DS_Store
 Thumbs.db
+
+# 調査の作業材料（取得した Web ページの写しを含む。配布物には含めない）
+research/
+job-change-skills-improvement-report.html

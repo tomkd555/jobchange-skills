@@ -130,8 +130,8 @@ class ResolveTest(TempTreeTestCase):
         self.assertEqual(Path(paths["private"]), private)
         self.assertEqual(Path(paths["companies"]), self.data_root / "corp")
         self.assertEqual(Path(paths["job_search"]), self.data_root / "job-search")
-        for key, filename in jc.PRIVATE_FILES.items():
-            self.assertEqual(Path(paths[key]), private / filename)
+        for key, name in {**jc.PRIVATE_FILES, **jc.PRIVATE_DIRS}.items():
+            self.assertEqual(Path(paths[key]), private / name)
         self.assertFalse(private.exists())
 
 
@@ -192,12 +192,13 @@ class MainTest(TempTreeTestCase):
         self.assertEqual((code, json.loads(output)["status"]), (1, "exists"))
 
     def test_path_prints_one_path_or_reports_unconfigured(self) -> None:
-        code, _ = self._run(["--path", "profile"])
+        code, _ = self._run(["--path", "wishes"])
         self.assertEqual(code, 2)
         self.write_config(self.home / jc.CONFIG_DIRNAME)
-        code, output = self._run(["--path", "profile"])
-        self.assertEqual(code, 0)
-        self.assertEqual(output.strip(), str(self.data_root / "career-private" / "profile.json"))
+        for key, name in (("wishes", "wishes.json"), ("matches", "matches")):
+            code, output = self._run(["--path", key])
+            self.assertEqual(code, 0)
+            self.assertEqual(output.strip(), str(self.data_root / "career-private" / name))
 
 
 if __name__ == "__main__":

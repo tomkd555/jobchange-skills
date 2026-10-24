@@ -2,7 +2,7 @@
 
 In the job-change support skill family, where the user's data is stored is decided solely by the configuration file. There is no default location. Until the configuration is settled, the hub (`job-change-support`) does not route to any sub-skill.
 
-There are two reasons for not deciding the location implicitly. First, the user's data includes personal information such as current salary, place of residence, and current employer's name, and where it is stored should be the user's own decision. Second, if the skill body's own directory were used as a default write location, the location of personal information would shift every time the skill is updated or reinstalled.
+There are two reasons for not deciding the location implicitly. First, the user's data includes personal information such as the conditions they want, the postings they consider and the decisions they make, and where it is stored should be the user's own decision. Second, if the skill body's own directory were used as a default write location, the location of personal information would shift every time the skill is updated or reinstalled.
 
 ## Search order
 
@@ -43,16 +43,13 @@ If the file pointed to by `JOB_CHANGE_CONFIG` does not exist, that setting is ig
 ```
 {data_root}/
 ├─ career-private/          ← Personal information. Not passed to any agent with web tools
-│   ├─ profile.json
-│   ├─ axis.json
-│   ├─ self_analysis.json
+│   ├─ wishes.json           ← The condition sheet and work values
 │   ├─ company_index.json
-│   ├─ commute.json
-│   ├─ documents/           ← Generic application documents (no target company yet)
-│   ├─ fit/{company slug}/{fit_assessment,time_analysis,sources,qualitative_judgment}.json
-│   └─ fit/current/time_analysis.json
-├─ companies/{company slug}/  ← Per-company deliverables (non-personal information)
-└─ job-search/{YYYYMMDD}-{slug}/job_search_results.json
+│   ├─ matches/{posting id}.json
+│   └─ decisions/{decision id}.json
+├─ companies/{company slug}/postings/{posting id}/posting-check.json  ← Per-posting deliverables (non-personal information)
+├─ job-search/{YYYYMMDD}-{slug}/job_search_results.json
+└─ export/flat.csv           ← export_flat.py writes every value here on request
 ```
 
 `career-private/` is placed outside `companies/` to isolate personal information from the tree that an agent with web-sending capability works in. Renaming `private_dir` preserves this isolation.
@@ -75,16 +72,16 @@ python <installation location of the skills>/job-change-support/scripts/jc_confi
 
 This outputs, as JSON, the configuration settled by the search order and the absolute path for each data item. The exit code is 0 on success, 1 if a configuration was found but its content is invalid, and 2 if unconfigured.
 
-When only an individual path is needed, use `--path`. The keys are `data_root`, `private`, `companies`, `job_search`, `profile`, `axis`, `company_index`, `self_analysis`, and `commute`.
+When only an individual path is needed, use `--path`. The keys are `data_root`, `private`, `companies`, `job_search`, `wishes`, `company_index`, `matches`, and `decisions`.
 
 ```bash
-python .../jc_config.py --path profile
+python .../jc_config.py --path wishes
 ```
 
 These options do not create a directory. Each directory is created by the individual skill at the point it writes a deliverable.
 
 ## How paths are written in skill text
 
-Each SKILL.md and reference document writes data paths in the form `{DATA_ROOT}/career-private/profile.json`. `{DATA_ROOT}` is read as the `data_root` returned by `jc_config.py --show`. When the directory names have been changed from their defaults, use the `paths` returned by `--show`.
+Each SKILL.md and reference document writes data paths in the form `{DATA_ROOT}/career-private/wishes.json`. `{DATA_ROOT}` is read as the `data_root` returned by `jc_config.py --show`. When the directory names have been changed from their defaults, use the `paths` returned by `--show`.
 
 There are two placeholders that refer to a skill body itself. `{SKILL_DIR}` refers to that skill's own directory, and `{HUB_SKILL_DIR}` refers to the `job-change-support` directory.

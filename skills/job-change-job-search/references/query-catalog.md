@@ -138,14 +138,14 @@ The following sites each have a careers page per company, but have no entry poin
 
 | Site | Reason |
 |---|---|
-| Indeed Japan (`jp.indeed.com`) | robots.txt is a large file, and this catalog's tools have not been able to read its full text consistently (the summary obtained differed between the 2026-08-21 and 2026-09-04 retrievals). What agreed across multiple retrievals is that Indeed names `ClaudeBot`, `anthropic-ai`, `GPTBot`, and `CCBot` as a group of training crawlers and forbids the paths for job search and browsing. This is a prohibition the site itself expresses, and this skill does not use it as a matter of policy. The `site:jp.indeed.com` search route is also not used |
-| Green (`www.green-japan.com`) | robots.txt has a `User-agent: GPTBot` / `Disallow: /` block, forbidding a generative-AI crawler entirely, by name (confirmed 2026-08-21). `ClaudeBot` and `anthropic-ai` are absent from the list, though the expressed refusal is read as directed at crawlers of the same kind, and this site is treated the same as Indeed and not used. Also, `User-agent: *` has `/search?` as Disallow, so the search-results page itself cannot be followed |
+| Indeed Japan (`jp.indeed.com`) | robots.txt is a large file, and this catalog's tools have not been able to read its full text consistently (the summary obtained differed between the 2026-08-21 and 2026-09-04 retrievals). What agreed across multiple retrievals is that Indeed names `ClaudeBot`, `anthropic-ai`, `GPTBot`, and `CCBot` as a group of training crawlers and forbids the paths for job search and browsing. This is a prohibition the site itself expresses, and the searcher agent never opens it, including through `site:jp.indeed.com`. The main session reads Indeed in the user's own Chrome (SKILL.md Step 3); whether that use fits the site's terms is the user's decision |
+| Green (`www.green-japan.com`) | robots.txt has a `User-agent: GPTBot` / `Disallow: /` block, forbidding a generative-AI crawler entirely, by name (confirmed 2026-08-21). `ClaudeBot` and `anthropic-ai` are absent from the list, though the expressed refusal is read as directed at crawlers of the same kind, and this site is treated the same as Indeed: the searcher agent never opens it, and the main session reads it in the user's own Chrome (SKILL.md Step 3). Also, `User-agent: *` has `/search?` as Disallow, so the search-results page itself cannot be followed by a fetch |
 | Stanby (`jp.stanby.com`) | robots.txt's `User-agent: *` has `/search`, `/jobs/`, and `/*?*` as Disallow (confirmed 2026-08-21). The search-results page, individual posting pages, and any URL with a query string are all among the forbidden targets. Every route that public search could use is among them |
 | Hello Work Internet Service | A URL with the conditions already specified cannot be opened directly. Search state is held through screen transitions and a session, by design, so a search result cannot be opened by URL alone (re-confirmed 2026-09-04 that opening a `GECA110010.do`-style URL directly produces a system error). Not used except when the posting number is already known. The mechanism the Ministry of Health, Labour and Welfare provides for private job-placement businesses to receive posting information has not been investigated |
 | en-japan (`employment.en-japan.com`) | robots.txt has a `User-agent: ClaudeBot` / `Disallow: /` block, forbidding the entire site by name (confirmed 2026-09-04). `GPTBot` has `Crawl-delay: 30` and a Disallow on the search listing. `OAI-SearchBot` has Disallow on `/comp*/list*` and `/apply*`. Treated the same as Indeed and not used |
 | engage (`en-gage.net`) | robots.txt has a `User-agent: ClaudeBot` / `Disallow: /` block, forbidding the entire site (confirmed 2026-09-04). `/search/` and `/search2/` are also Disallow for `GPTBot`, `OAI-SearchBot`, `PerplexityBot`, and others. **Many companies' own careers pages (`en-gage.net/{company name}/…`) are placed under the same domain, and they receive the same prohibition.** Even when a careers-page URL learned through company research falls under this domain, it is not fetched |
 | LinkedIn Jobs (`www.linkedin.com`) | robots.txt does not name any AI crawler, yet it forbids `/jobs-guest/` (the only path for viewing postings without login) along with `/jobs?runSearch*`, `/jsearch*`, and `/api/jobPostings/jobs*`, for every User-agent other than `LinkedInBot` (confirmed 2026-09-04). Also, the company's own terms of service forbid automated collection. Even absent a refusal naming this crawler, it is not used as a matter of policy |
-| doda (`doda.jp`) job search | robots.txt's `User-agent: *` has `/DodaFront/View/JobSearchList.action*` and `/DodaFront/View/JobSearchList/*?*` as Disallow, forbidding the search-listing mechanism itself for every User-agent (confirmed 2026-09-04). There is no entry naming an AI crawler. The format of the individual posting page's URL has not been confirmed. The doda average-annual-income ranking in `{HUB_SKILL_DIR}/references/market-data-sources.md` is a separate page group and is unaffected by this exclusion |
+| doda (`doda.jp`) job search | robots.txt's `User-agent: *` has `/DodaFront/View/JobSearchList.action*` and `/DodaFront/View/JobSearchList/*?*` as Disallow, forbidding the search-listing mechanism itself for every User-agent (confirmed 2026-09-04). There is no entry naming an AI crawler. The format of the individual posting page's URL has not been confirmed. |
 | Talentio careers page (`talentio.co.jp`) | `/robots.txt` returns 403 (confirmed 2026-09-04). The policy cannot be read, and a 403 also shows a mechanism exists to block automated access. A site whose policy cannot be read is not treated as permitted |
 
 ## 5. Unconfirmed sites
@@ -179,7 +179,7 @@ This catalog's "excluded" and "unconfirmed" entries are decided by the following
 
 The queries run in one search are built from a combination of occupation-name rephrasing, region, and conditions, and increasing the number of rephrasings does not necessarily make results better.
 
-**The occupation-name variants are, as a base, the three of the user's original wording plus 2 rephrasings.** In a study verifying LLM-based query expansion, growing from 1 variant to 3 variants showed the most consistent improvement. Going to 5 variants increased noise (https://arxiv.org/abs/2510.10009, grade B). This is a preprint that has not been peer-reviewed, and is a primary report by its authors. It has also been reported that, for an ambiguous query, expansion itself can lower recall (https://arxiv.org/abs/2505.12694, grade B, also a non-peer-reviewed preprint and a primary report by its authors). The canonical definition of the evidence-grade scale is in `job-change-company-research/references/evidence-grading.md`.
+**The occupation-name variants are, as a base, the three of the user's original wording plus 2 rephrasings.** In a study verifying LLM-based query expansion, growing from 1 variant to 3 variants showed the most consistent improvement. Going to 5 variants increased noise (https://arxiv.org/abs/2510.10009, grade B). This is a preprint that has not been peer-reviewed, and is a primary report by its authors. It has also been reported that, for an ambiguous query, expansion itself can lower recall (https://arxiv.org/abs/2505.12694, grade B, also a non-peer-reviewed preprint and a primary report by its authors). The canonical definition of the evidence-grade scale is in `{HUB_SKILL_DIR}/references/evidence-grading.md`.
 
 Searching by rephrasing alone misses postings for the occupation the user explicitly named. **The occupation name the user explicitly stated is run as is, unexpanded, as one query.**
 
@@ -195,7 +195,6 @@ The query cap is **12 per search session**. The breakdown is as follows.
 
 Separate from these 12 (the primary set), queries for the derivation lanes the user chose are run. Up to 3 queries per lane. Even choosing all 10 lanes adds at most 30 more. The canonical definition of how lanes are built is `derivation-lanes.md`. The reason the primary set's query count is not reduced to make room for the lanes is in `search-methods.md`. A lane's queries are also recorded one by one in `search_log`, with `search_set` set to `derived` and `lane` set to the lane name. The same `search_set` and `lane` are written for the postings adopted. Whoever handles the primary set does not search the lanes, and whoever handles a lane searches only the lane assigned to them.
 
-Retrieval in `company_profile` mode is capped at 6 per company (the sources are described below in "Sources for company information").
 
 ### How to build synonyms
 
@@ -267,7 +266,7 @@ Even when the user requires full remote as a must, when the `remote_widen` lane 
 
 ### Expressions of salary
 
-A job posting's salary is written in one of 4 forms: 年収 (annual salary), 想定年収 (expected annual salary), モデル年収 (model annual salary), 月給 (monthly salary). A `site:` search is also run with 想定年収 as well as 年収. モデル年収 is an example for one tenure, separate from the offered amount, so it is not used as `value` in the observation layer (the canonical definition is `salary_condition` in `{HUB_SKILL_DIR}/references/screening-axes.md`). A posting stated only as a monthly salary is one whose floor simply cannot be confirmed. It is not necessarily below `salary_min`. Following the "Re-judging the salary floor" rule, keep it with `salary_range` set to `null`.
+A job posting's salary is written in one of 4 forms: 年収 (annual salary), 想定年収 (expected annual salary), モデル年収 (model annual salary), 月給 (monthly salary). A `site:` search is also run with 想定年収 as well as 年収. モデル年収 is an example for one tenure, separate from the offered amount, so it never fills `salary_range` and never decides `must_match` for a salary condition. A posting stated only as a monthly salary is one whose floor simply cannot be confirmed. It is not necessarily below `salary_min`. Following the "Re-judging the salary floor" rule, keep it with `salary_range` set to `null`.
 
 ### Rail lines and commuting range
 
@@ -316,48 +315,6 @@ So a second stage follows the exact match. A pair whose normalised company name 
 
 The salary range is not included as a matching condition in the second stage; when it does match, it is appended to `coverage_notes` as corroboration of identity.
 
-## Market-rate benchmark
-
-Whether a posting's offered amount is high or low is decided by comparison against a market rate. The canonical definition of the source of market-rate data and its handling rules is in `{HUB_SKILL_DIR}/references/market-data-sources.md`, and is not transcribed here. What job search uses is the following 2 points.
-
-The median returned by 求人ボックス (Kyujin Box) Salary Navi (`/{occupation}の年収・時給`) is used as the benchmark. **This is grade C, and `market-data-sources.md`'s rule requires stating alongside it that this is a reference value from the site's own independent estimate.** So it never settles a fact on its own, and is shown as a reference value.
-
-**The occupation name used to draw the benchmark must be the same as the one the candidate posting itself uses.** In a measurement (2026-08-21), "データアナリスト" (data analyst) came to 7.23 million yen. "データサイエンティスト" (data scientist) came to 5.53 million yen. In this measurement, changing the occupation name alone moved the benchmark by 1.7 million yen. If a posting calls itself "データサイエンティスト," the benchmark is also drawn under "データサイエンティスト."
-
-The obtained benchmark's value, source URL, and retrieval year and month are recorded in `coverage_notes` as a set of three, and for each posting, in `related_info.salary_benchmark` (the specification is in `job-search-format.md`).
-
-Comparison against the user's own current salary belongs to the judgement layer (the calling skill), because the job searcher does not know the user's own salary.
-
-## Sources for related information
-
-For a posting's own related information, under 2.3 the 2 per-posting keys are gathered into `related_info` (the specification is "Exploration set and related information" in `job-search-format.md`). Per-company information is gathered under "Sources for company information" below, and written into `company_profiles`. A key that could not be retrieved is either omitted, or has its `value` set to `null`.
-
-| Key | Source | Grade | Note |
-|---|---|---|---|
-| `posting_age` | The listing or update date shown on the posting page | A (the listing page's own display) | Omitted when not shown. Age is never treated as evidence the listing has ended |
-| `salary_benchmark` | The median from 求人ボックス (Kyujin Box) Salary Navi ("Market-rate benchmark") | C | Drawn under the same occupation name the candidate posting itself uses |
-
-## Sources for company information (company_profile mode)
-
-For every company appearing in the results, one `company_profiles` element is gathered (the specification is "Derivation lanes and company information (2.3)" in `job-search-format.md`). Only what can be read without login is gathered, and company research is still carried out separately. Retrieval is capped at 6 per company, and an item that could not be retrieved has its `value` set to `null` with the reason written in `note`.
-
-| Item → recorded to | Source | Grade | Agent retrieves |
-|---|---|---|---|
-| Average annual compensation → `metrics.compensation_level`; number of employees → `basics.employee_count`; average age and average tenure → `open_questions` or `note` | The 「従業員の状況」 (state of employees) section of the 有価証券報告書 (securities report). Since EDINET's viewing screen is rendered with JavaScript and its API requires an authentication key, read the securities-report PDF placed on the company's own IR page (search "{company name} 有価証券報告書" with `WebSearch`) | A | Yes. EDINET directly is tried only once; if unreadable, this is written in `note` |
-| Revenue growth rate, operating margin, equity ratio → `metrics.revenue_growth`, `operating_margin`, `equity_ratio` | The 「主要な経営指標等の推移」 (key management indicators over time) section of the securities report (the calculation rule is in `job-change-company-research/references/source-catalog.md`) | A | Yes |
-| Male childcare-leave utilisation rate → `metrics.male_childcare_leave_rate` | The human-capital disclosure in the securities report | A | Yes |
-| 「労働基準関係法令違反に係る公表事案」 (published cases of labour-law violations) → `negative_checks.labor_law_violation_list` | The latest nationwide PDF from the Ministry of Health, Labour and Welfare, https://www.mhlw.go.jp/kinkyu/151106.html | A | Yes. Retrieved once per batch, and cross-checked against every company in the batch. An absence from the list is never treated as evidence of an absence of violations. The published period covers roughly one year; a case outside that period does not appear |
-| Eruboshi certification → `basics.certifications` | The Ministry of Health, Labour and Welfare's list page of Eruboshi-certified companies | A | Yes |
-| Kurumin certification, the Database of Companies Promoting Women's Active Participation, Shokuba Rabo | — | A | No. These cannot be retrieved because they return 403 or require operating a search form ("Sources that cannot be fetched automatically" in `job-change-company-research/references/source-catalog.md`). What the user has looked up is received instead. For this reason `turnover_rate`, `monthly_overtime`, and `paid_leave_rate` are often `null` |
-| Health and Productivity Management Outstanding Organization, Youth Yell certification | Each program's list of certified companies | A | Tried once. Whether retrieval is possible is unconfirmed; failure to read it is never treated as evidence the certification is absent |
-| Overall review score → `basics.review_aggregate` | OpenWork's company page (the overall score and response count, readable without login) | C | Yes. The review text requires login and is not read. When the response count is small, this is written in `note` |
-| Company overview → `name`, `official_url`, `hq_location`, `industry`, `basics.founded_year`, `capital_yen`, `listed`, `business_summary` | The company overview page on the company's own official site | A (for the factual part; a company's own evaluative claim about itself is never used as grounds) | Yes. The figures in a company overview are the company's own self-reported figures, and can disagree with a securities report's or a registration's date. When they disagree, note both in `note` |
-| Careers page → `careers_url` | The company's own official site, or a company page on HRMOS or HERP Careers (only when the slug is known) | A | Yes |
-| `basics.edinet_code` | An EDINET document search | A | Tried once. Only a listed company, or one obligated to file a securities report, has one |
-| Recent reporting and announcements → `recent_news` | A company's own press release (A), major reporting outlets such as Nikkei (B) | A/B | Yes. The last 12 months, up to 3 items |
-
-When running `WebSearch` under a company name, the search terms are limited to the company name and the item name ("従業員数" (employee count), "有価証券報告書" (securities report)). The content of the condition sheet or the user's own information is never mixed in. A securities report's average annual compensation is an average across all employees, and is never read as the salary for the posting's occupation. A number is never inferred from a review's text and written into `metrics`.
-
 ## Confirming listing closure and re-listing
 
 Whether a posting is still open cannot be told from its wording alone. Perform the following 2 checks, in ascending order of cost.
@@ -367,7 +324,7 @@ Whether a posting is still open cannot be told from its wording alone. Perform t
 | Re-fetching the URL | Just before delivery, open each adopted posting's `url` again with `WebFetch`, one by one. If it shows a 404, a redirect to a listing page, or wording such as "掲載終了" (listing ended) or "募集を終了しました" (recruitment has ended), remove that posting from `results`, and write the URL and date into `coverage_notes` | `coverage_notes` |
 | Matching against past searches | The calling skill reads past deliverables under `{DATA_ROOT}/job-search/`; if a posting with the same normalised company name and occupation name also appears in a different `search_id` more than 60 days apart, this is written into `open_questions`. A posting that keeps appearing over a long span is either a posting that never gets filled, or a standing-recruitment posting, and the two cannot be told apart from the posting alone | `open_questions` |
 
-Matching against past searches is done locally by the calling skill. A past deliverable includes the judgement layer (matching against the user's own thresholds), so it is never passed to the job searcher agent, which holds a means of sending data to the web. These checks are never grounds for classifying a posting as `excluded`. The grounds for classification are the 8-axis judgement alone.
+Matching against past searches is done locally by the calling skill. A past deliverable holds the user's `considering` marks, so it is never passed to the job searcher agent, which holds a means of sending data to the web. These checks never remove a posting from the list; they add a note.
 
 ## Common fallback measures
 

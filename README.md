@@ -5,74 +5,60 @@
 [![Python](https://img.shields.io/badge/Python-3-3776AB.svg)](#導入)
 [![Harness](https://img.shields.io/badge/Harness-Claude%20Code%20%7C%20Codex-6b46c1.svg)](#導入)
 
-日本の中途採用での転職を AI エージェントに手伝わせるためのスキル群です。プロファイルの作成から企業研究、応募書類、面接対策まで行います。
+日本の中途採用での転職を AI エージェントに手伝わせるためのスキル群です。希望を一文で書くと求人検索が始まり、気になった求人を公式情報で調べ、2 社以上を比べて決めるところまでを支えます。
 
 ## スキル一覧
 
 | スキル | 役割 | 主な成果物 |
 |---|---|---|
-| `job-change-support` | 入口の hub。依頼を判別し、設定・職歴の記録・転職の軸を確認してから各スキルへ渡します | `config.json`・`company_index.json` |
-| `job-change-profile` | 職務経歴・実績・スキルを聞き取り記録します | `profile.json` |
-| `job-change-axis` | 転職理由・条件・仕事の特性・企業の採点軸を聞き取り、転職の軸として記録します | `axis.json` |
-| `job-change-self-analysis` | 行動の記録・他者からの評価・行動傾向の聞き取りをもとに自己分析を進めます | `self_analysis.json` |
-| `job-change-job-search` | Web 検索で求人を集め、掲載ページの引用と出典 URL を付けます。主条件に加えて、条件を良くする・範囲を広げる派生レーンを並列に検索し、結果に出た全企業の基本情報と公表値も集めます | `job_search_results.json` |
-| `job-change-company-research` | 求人を起点に企業を調べます | `job_posting.json`・`company_research.json` |
-| `job-change-fit-assessment` | 条件と本人が決めた評価基準を紐づけます | `fit_assessment.json`・`time_analysis.json` |
-| `job-change-documents` | 職務経歴書・履歴書・志望動機などを作成します。応募先を決める前の汎用版も作れます | `documents/` 配下の各書類 |
-| `job-change-exam-prep` | 筆記試験・適性検査の種別を調べ、対策を立てます | `exam_assessment.json`・`exam-prep-plan.md` |
-| `job-change-interview-prep` | 企業の面接について口コミ・採用ページを調べ、企業ごとの想定質問を作り、回答に評価を返します | `interview_intel.json`・`interview_questions.json`・`interview_evaluation.json`・`interview-prep-report.md` |
+| `job-change-support` | 入口の hub。データの保存先を確認し、依頼を 3 つのスキルへ渡します | `config.json`・`company_index.json` |
+| `job-change-job-search` | 希望の一文を条件シートにし、無償の公開 Web 検索と利用者の Chrome で求人を集めます。求人ごとに法定記載の点検と必須条件との照合を付けます | `wishes.json`・`job_search_results.json` |
+| `job-change-posting-check` | 求人 1 件と、その会社の有価証券報告書・厚生労働省・しょくばらぼの公表値を 1 つの JSON に記録し、希望条件と照合します | `posting-check.json`・`matches/{求人 ID}.json` |
+| `job-change-decision` | 価値観を条件として記録し、2〜5 件の求人や内定を書き出して比べます。重みはスイング法で聞き、5 通りの順位を並べ、決めた理由と妥協した項目を記録します | `decisions/{日付}-{件名}.json` |
 
-## 書類の系統と軸の系統
+書類作成、面接対策、適性検査の対策は、この版には含みません。3 つのスキルを実際の転職活動で使って確かめた後に、別の計画で作り直します。
 
-書類の整備と転職の軸は、別々の系統として進められます。
+## 使い方
 
-| 系統 | スキル | 原本 |
-|---|---|---|
-| 書類 | `job-change-profile`・`job-change-documents` | `profile.json`（職歴・実績・スキル） |
-| 軸 | `job-change-axis`・`job-change-self-analysis` | `axis.json`（転職理由・条件・仕事の特性・採点軸・希望年収） |
+`/job-change-support` を実行するか、「リモート中心、年収 600 万円以上、SaaS 業界の求人を探したい」のように希望を一文で書いてください。
 
-職歴の聞き取りが済めば、応募先を決める前でも汎用の職務経歴書と履歴書を作れます。求人検索と適合性評価は両方の原本を使います。
+1. **求人検索:** 希望の一文を 6 項目（職種、業界、年収の下限、勤務地とリモート、雇用形態、その他）の条件シートに整え、あいまいな項目だけを 0〜2 回確かめます。結果は求人ごとに 1 行の表で、必須条件との照合（満たす・満たさない・不明）と、記載のない法定項目（要確認）を付けます。
+2. **求人チェック:** 気になった求人を 1 件ずつ調べます。求人票の条件、有価証券報告書の従業員数・平均年齢・平均勤続年数・平均年間給与・業績、労働基準関係法令違反の公表、しょくばらぼの残業時間と有給休暇の取得率を、出典 URL 付きで並べます。
+3. **意思決定の支援:** 2 件以上の求人チェックがそろったら、必須条件で絞り、候補の間で値が異なる項目を表にし、重みを聞いて 5 通りの順位を並べます。決めるのは利用者です。
 
-schema_version 2.0 以前の `profile.json` は、職歴と転職の軸を 1 つのファイルに持っています。このファイルは最初の更新時に、バックアップを取ったうえで `profile.json` と `axis.json` へ分かれます。
+現在の勤務先名と現在の年収は、どのスキルも聞かず、記録しません。
 
-## エビデンスレベル
+## データの形
 
-企業についての主張には、1 件ごとに出典 URL・エビデンスレベル・原文のままの引用・取得日を付けます。レベルは A〜D の 4 段階で、誰が発信したかだけで決まります。
-
-| レベル | 区分 | 具体例 |
-|---|---|---|
-| **A** | 一次・公式 | EDINET 有価証券報告書、決算説明資料、企業公式サイト、統合報告書、公的統計・政府の認定制度データベース、査読済みの学術研究 |
-| **B** | 信頼できる二次 | 大手報道機関、就職四季報、業界レポート、公的機関の解説ページ |
-| **C** | 口コミ・集計サイト | OpenWork・Glassdoor 等の口コミ集計、選考体験記の集計サイト |
-| **D** | 個人ブログ・伝聞・未確認 | 個人ブログ、SNS の伝聞、出所不明の転載、単発の匿名投稿 |
-
-## 個人情報の分離
-
-利用者データは 2 つの系統に分かれます。個人情報を保存する `career-private/` と、企業別の成果物と求人検索結果を保存する `companies/`・`job-search/` です。
+利用者のデータは 4 種類の JSON で、同じ項目の辞書（`skills/job-change-support/references/field-catalog.md`）を使います。測った値はどのファイルでも `{value, unit, source_url, grade, as_of, quote}` の形です。`export_flat.py` が 4 種類を「1 行 = 1 候補 × 1 項目」の CSV に書き出すので、表計算ソフトで比較や振り返りができます。
 
 ```
 {data_root}/
-├─ career-private/            個人情報
-│   ├─ profile.json
-│   ├─ axis.json
-│   ├─ self_analysis.json
+├─ career-private/              個人情報
+│   ├─ wishes.json              条件シートと価値観、その変更の記録
 │   ├─ company_index.json
-│   ├─ commute.json
-│   ├─ documents/             応募先を決める前の汎用書類
-│   └─ fit/{企業スラッグ}/
-├─ companies/{企業スラッグ}/    企業ごとの成果物
-└─ job-search/{検索ID}/        求人検索の結果
+│   ├─ matches/{求人 ID}.json     希望条件との照合
+│   └─ decisions/{決定 ID}.json   比較と決定の記録
+├─ companies/{企業スラッグ}/postings/{求人 ID}/posting-check.json
+├─ job-search/{検索 ID}/job_search_results.json
+└─ export/flat.csv
 ```
 
-企業研究とその監査・求人票の取り込み・求人検索・試験情報の調査・面接情報の調査を担う 6 体のエージェントは、Web 検索と Web 取得を持ちます。この 6 体のコンテキストへは、`career-private/` 配下を加えません。
+## エビデンスレベル
+
+企業についての値には、1 件ごとに出典 URL、エビデンスレベル、引用、基準時点を付けます。レベルは A〜D の 4 段階で、誰が発信したかだけで決まります。求人チェックは A（有価証券報告書、厚生労働省、求人票、企業の公式サイト）だけを使います。報道、認定制度、口コミは使いません。
+
+## 個人情報の分離
+
+Web 検索と Web 取得を持つエージェントは、求人検索担当と求人調査担当の 2 体です。この 2 体のコンテキストへは、`career-private/` 配下を加えません。求人検索担当が受け取るのは、条件 ID と条件の文と必須か希望かだけの匿名化した条件シートです。求人調査担当が受け取るのは、会社名と求人票の本文か URL です。
+
+しょくばらぼ、Indeed、Green のように WebFetch で読めないページは、メインのセッションが利用者の Chrome（Claude in Chrome 拡張機能）で開いて読みます。各サイトの利用規約に沿うかどうかは利用者の判断です。
 
 この分離はエージェントへの指示と権限設計によるものです。個人情報が外部へ出ないことの保証は、各人のハーネス設計に依存します。
 
 ## 導入
 
-Python 3 が必要です。
-
-Web 検索と Web 取得の権限が必要です。
+Python 3 が必要です。Web 検索と Web 取得の権限が必要です。Chrome で読む手順には Claude in Chrome 拡張機能が必要です。
 
 ### Claude Code
 
@@ -81,16 +67,15 @@ Web 検索と Web 取得の権限が必要です。
 /plugin install job-change@job-change-skills
 ```
 
-プラグインを使わず手作業で配置する手順は [docs/install-claude-code.md](docs/install-claude-code.md) にあります。
+手作業で配置する手順は [docs/install-claude-code.md](docs/install-claude-code.md) にあります。
 
 ### Codex
 
-`skills/job-change-*` の 10 ディレクトリを配置してください。手順書は [docs/install-codex.md](docs/install-codex.md) にあります。Codex 版は動作を確認していません。
+`skills/job-change-*` の 4 ディレクトリを配置してください。手順書は [docs/install-codex.md](docs/install-codex.md) にあります。Codex では Chrome で読む手順が動かないため、しょくばらぼと Indeed、Green の値は入りません。Codex 版は動作を確認していません。
 
-## 使い方
+## 1.x からの移行
 
- `/job-change-support` を実行してください。
-
+2.0.0 は 1.x の `profile.json`、`axis.json`、`self_analysis.json`、`fit_assessment.json`、`company_research.json` を読みません。これらのファイルは `career-private/` に残したまま使えます。職歴の記録は、後続の書類作成スキルの計画で `career.json` へ移します。条件は、求人検索を 1 回実行すると `wishes.json` として作り直されます。
 
 ## 注意
 
@@ -100,7 +85,7 @@ Web 検索と Web 取得の権限が必要です。
 
 ### 免責
 
-このスキル群が作る書類・評価・想定質問は下書きです。応募で使う前に本人が確認してください。企業情報は収集時点の公開情報であり、正確さと最新性を保証しません。待遇・選考プロセス・労働条件は応募先の公式情報で確かめてください。
+このスキル群が作る一覧・調査結果・比較表は判断の材料です。応募や承諾の前に本人が確認してください。企業情報は収集時点の公開情報であり、正確さと最新性を保証しません。待遇、選考プロセス、労働条件は応募先の公式情報で確かめてください。
 
 ## ライセンス
 

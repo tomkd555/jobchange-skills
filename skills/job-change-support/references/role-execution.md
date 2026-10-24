@@ -21,10 +21,4 @@ Read each Step's "launch the agent" as "read the role prompt and execute as that
 
 Delegation has a cost even for a small piece of work. When one role is enough, launch only one. The same work is never doubled up across more than one role. Never launch an agent to check a deliverable you built yourself. Having the author reread it in their own context only brings that context into the judgment. The validation script handles checking the format and the rules.
 
-The exception is the audit in the skills covered under "Separating the writer from the auditor" below. For these skills, always launch the auditor after confirming that the mechanical validation has passed.
-
-## Separating the writer from the auditor
-
-`job-change-profile`, `job-change-axis`, `job-change-self-analysis`, `job-change-company-research`, and `job-change-documents` keep the role that creates a deliverable separate from the role that audits it. The auditor is never given the reasoning behind the writer's decisions. It judges from the deliverable and the specification alone. Keeping the writer's context out is a condition of the judgment, and rereading it in the same context is no substitute. This cost is paid to catch exaggeration, fabrication, and a mismatch with the specification apart from the writer's own intent.
-
-On a harness that cannot launch sub-agents, the same body handles both writing and auditing in the same context, which lowers this independence. In that case, during the audit stage, never refer to the reasoning behind the writer's decisions, the points of hesitation, or the history of revisions. Judge from the deliverable and the canonical definition (the specification in `references/`) alone. Do not read the writer's intent into it until the judgment is complete.
+No skill in this version launches an auditor. The validators check the format, and the main session reads the source URL of a value that looks doubtful.

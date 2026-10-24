@@ -1,0 +1,289 @@
+{
+  "schema_version": "1.0",
+  "posting_id": "S_アクメクラウド-20261025-01",
+  "company_slug": "S_アクメクラウド",
+  "source_type": "url",
+  "source_url": "https://example.com/careers/123",
+  "fetched_at": "2026-10-25",
+  "job": {
+    "company_name": {
+      "value": "アクメクラウド株式会社",
+      "unit": null,
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "アクメクラウド株式会社"
+    },
+    "job_title": {
+      "value": "インフラエンジニア",
+      "unit": null,
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "インフラエンジニア（AWS）"
+    },
+    "industry": {
+      "value": "SaaS",
+      "unit": null,
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "人事労務 SaaS を提供"
+    },
+    "employment_type": {
+      "value": "full_time",
+      "unit": null,
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "正社員"
+    },
+    "work_location": {
+      "value": "東京都千代田区",
+      "unit": null,
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "勤務地: 東京都千代田区"
+    },
+    "remote_policy": {
+      "value": null,
+      "unit": null,
+      "source_url": null,
+      "grade": null,
+      "as_of": null,
+      "quote": null
+    },
+    "salary_min": {
+      "value": 6500000,
+      "unit": "円",
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "年収 650 万〜900 万円"
+    },
+    "salary_max": {
+      "value": 9000000,
+      "unit": "円",
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "年収 650 万〜900 万円"
+    },
+    "salary_basis": {
+      "value": "annual",
+      "unit": null,
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "年収 650 万〜900 万円"
+    },
+    "fixed_overtime_included": {
+      "value": true,
+      "unit": null,
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "固定残業代を含む"
+    },
+    "fixed_overtime_hours": {
+      "value": 30,
+      "unit": "時間",
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "月 30 時間分の固定残業代を含む"
+    },
+    "scheduled_hours": {
+      "value": 7.5,
+      "unit": "時間",
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "所定労働時間 7 時間 30 分"
+    },
+    "annual_holidays": {
+      "value": 125,
+      "unit": "日",
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "年間休日 125 日"
+    },
+    "monthly_overtime_h": {
+      "value": null,
+      "unit": "時間",
+      "source_url": null,
+      "grade": null,
+      "as_of": null,
+      "quote": null
+    },
+    "paid_leave_rate": {
+      "value": null,
+      "unit": "%",
+      "source_url": null,
+      "grade": null,
+      "as_of": null,
+      "quote": null
+    },
+    "scope_of_change_duties": {
+      "value": "会社の定める業務",
+      "unit": null,
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "変更の範囲: 会社の定める業務"
+    },
+    "scope_of_change_location": {
+      "value": "会社の定める事業所",
+      "unit": null,
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "変更の範囲: 会社の定める事業所"
+    },
+    "contract_renewal_cap": {
+      "value": null,
+      "unit": null,
+      "source_url": null,
+      "grade": null,
+      "as_of": null,
+      "quote": null
+    },
+    "requirements_must": {
+      "value": [
+        "AWS の設計・構築経験 3 年以上"
+      ],
+      "unit": null,
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "必須: AWS の設計・構築経験 3 年以上"
+    },
+    "requirements_want": {
+      "value": [
+        "Terraform の実務経験"
+      ],
+      "unit": null,
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "歓迎: Terraform の実務経験"
+    },
+    "selection_process": {
+      "value": [
+        "書類選考",
+        "面接 2 回",
+        "内定"
+      ],
+      "unit": null,
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "書類選考、面接 2 回、内定"
+    },
+    "posted_at": {
+      "value": "2026-10-20",
+      "unit": null,
+      "source_url": "https://example.com/careers/123",
+      "grade": "A",
+      "as_of": "2026-10-25",
+      "quote": "掲載日 2026年10月20日"
+    }
+  },
+  "company": {
+    "legal_entity_name": {
+      "value": "アクメクラウド株式会社",
+      "unit": null,
+      "source_url": "https://disclosure2.edinet-fsa.go.jp/example",
+      "grade": "A",
+      "as_of": "2026-03",
+      "quote": "提出会社の名称"
+    },
+    "employee_count": {
+      "value": 820,
+      "unit": "人",
+      "source_url": "https://disclosure2.edinet-fsa.go.jp/example",
+      "grade": "A",
+      "as_of": "2026-03",
+      "quote": "従業員数 820 人"
+    },
+    "avg_age": {
+      "value": 35.2,
+      "unit": "歳",
+      "source_url": "https://disclosure2.edinet-fsa.go.jp/example",
+      "grade": "A",
+      "as_of": "2026-03",
+      "quote": "平均年齢 35.2 歳"
+    },
+    "avg_tenure_years": [
+      {
+        "value": 4.2,
+        "unit": "年",
+        "source_url": "https://disclosure2.edinet-fsa.go.jp/example",
+        "grade": "A",
+        "as_of": "2026-03",
+        "quote": "平均勤続年数 4.2 年"
+      },
+      {
+        "value": 4.5,
+        "unit": "年",
+        "source_url": "https://shokuba.mhlw.go.jp/example",
+        "grade": "A",
+        "as_of": "2025",
+        "quote": "平均勤続年数 4.5 年"
+      }
+    ],
+    "avg_annual_salary": {
+      "value": 7200000,
+      "unit": "円",
+      "source_url": "https://disclosure2.edinet-fsa.go.jp/example",
+      "grade": "A",
+      "as_of": "2026-03",
+      "quote": "平均年間給与 720 万円"
+    },
+    "revenue_growth": {
+      "value": 12.5,
+      "unit": "%",
+      "source_url": "https://disclosure2.edinet-fsa.go.jp/example",
+      "grade": "A",
+      "as_of": "2026-03",
+      "quote": "売上高 125 億円（前期比 12.5% 増）"
+    },
+    "operating_margin": {
+      "value": 8.1,
+      "unit": "%",
+      "source_url": "https://disclosure2.edinet-fsa.go.jp/example",
+      "grade": "A",
+      "as_of": "2026-03",
+      "quote": "営業利益率 8.1%"
+    },
+    "equity_ratio": {
+      "value": 55.0,
+      "unit": "%",
+      "source_url": "https://disclosure2.edinet-fsa.go.jp/example",
+      "grade": "A",
+      "as_of": "2026-03",
+      "quote": "自己資本比率 55.0%"
+    },
+    "labor_violation_listed": {
+      "value": false,
+      "unit": null,
+      "source_url": "https://www.mhlw.go.jp/kinkyu/151106.html",
+      "grade": "A",
+      "as_of": "2026-09-30",
+      "quote": null
+    },
+    "labor_violation_date": {
+      "value": null,
+      "unit": null,
+      "source_url": null,
+      "grade": null,
+      "as_of": null,
+      "quote": null
+    }
+  },
+  "open_questions": [
+    "求人票に月平均残業時間とリモートの記載がない"
+  ]
+}

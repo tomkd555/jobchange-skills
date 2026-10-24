@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "posting_id": "S_アクメクラウド-20261025-01",
+  "checked_at": "2026-10-25",
+  "match": [
+    {
+      "condition_id": "c001",
+      "result": "meets",
+      "basis_field_id": "salary_min",
+      "note": "下限 650 万円が条件の 600 万円以上を満たす"
+    },
+    {
+      "condition_id": "c002",
+      "result": "unknown",
+      "basis_field_id": "remote_policy",
+      "note": "求人票にリモートの記載がない"
+    },
+    {
+      "condition_id": "c003",
+      "result": "unknown",
+      "basis_field_id": null,
+      "note": "価値観の条件は意思決定の支援で評点する"
+    }
+  ],
+  "unknowns": [
+    "contract_renewal_cap",
+    "labor_violation_date",
+    "monthly_overtime_h",
+    "paid_leave_rate",
+    "remote_policy"
+  ]
+}

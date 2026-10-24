@@ -43,13 +43,15 @@ DEFAULTS: dict[str, str] = {
 }
 # private_dir 配下に置く、原本が1つだけのファイル。
 PRIVATE_FILES: dict[str, str] = {
-    "profile": "profile.json",
-    "axis": "axis.json",
+    "wishes": "wishes.json",
     "company_index": "company_index.json",
-    "self_analysis": "self_analysis.json",
-    "commute": "commute.json",
 }
-PATH_KEYS = ("data_root", "private", "companies", "job_search", *PRIVATE_FILES)
+# private_dir 配下に置く、1件1ファイルのディレクトリ。
+PRIVATE_DIRS: dict[str, str] = {
+    "matches": "matches",
+    "decisions": "decisions",
+}
+PATH_KEYS = ("data_root", "private", "companies", "job_search", *PRIVATE_FILES, *PRIVATE_DIRS)
 
 
 class ConfigError(Exception):
@@ -156,8 +158,8 @@ def resolve_paths(config: dict[str, Any]) -> dict[str, str]:
         "companies": str(data_root / config["companies_dir"]),
         "job_search": str(data_root / config["job_search_dir"]),
     }
-    for key, filename in PRIVATE_FILES.items():
-        paths[key] = str(private / filename)
+    for key, name in {**PRIVATE_FILES, **PRIVATE_DIRS}.items():
+        paths[key] = str(private / name)
     return paths
 
 
