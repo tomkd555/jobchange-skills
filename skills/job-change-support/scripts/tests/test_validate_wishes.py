@@ -65,7 +65,7 @@ def _cond(doc: dict, index: int = 0) -> dict:
 
 
 class ValidFixtureTest(unittest.TestCase):
-    def test_valid_has_no_findings(self) -> None:
+    def test_valid_no_findings(self) -> None:
         result = vw.validate(_valid())
         self.assertEqual((result.errors, result.warnings), ([], []))
 
@@ -149,15 +149,22 @@ class MainTest(unittest.TestCase):
                 code = vw.main([path, *flags])
         return code, buffer.getvalue()
 
-    def test_exit_codes_and_json(self) -> None:
+    def _broken(self) -> dict:
+        broken = copy.deepcopy(_valid())
+        _cond(broken)["kind"] = "nope"
+        return broken
+
+    def test_valid_json_exit_0_status_pass(self) -> None:
         code, output = self._run(_valid(), "--json")
         payload = json.loads(output)
         self.assertEqual((code, payload["status"], payload["error_count"], payload["warning_count"]), (0, "PASS", 0, 0))
-        broken = copy.deepcopy(_valid())
-        _cond(broken)["kind"] = "nope"
-        code, output = self._run(broken, "--json")
+
+    def test_broken_json_exit_1_status_fail(self) -> None:
+        code, output = self._run(self._broken(), "--json")
         self.assertEqual((code, json.loads(output)["status"]), (1, "FAIL"))
-        code, output = self._run(broken)
+
+    def test_broken_text_exit_1_prints_fail(self) -> None:
+        code, output = self._run(self._broken())
         self.assertEqual(code, 1)
         self.assertIn("検証結果: FAIL", output)
 

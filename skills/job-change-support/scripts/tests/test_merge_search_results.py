@@ -50,7 +50,7 @@ class MergeTest(unittest.TestCase):
             code = msr.main([self.dir, *args])
         return code, buf.getvalue()
 
-    def test_merge_concatenates_and_validates(self):
+    def _merge_searcher_and_chrome(self):
         searcher = make_doc()
         chrome = make_doc()
         chrome["results"] = [
@@ -64,15 +64,21 @@ class MergeTest(unittest.TestCase):
         _write(self.dir, _SEARCHER, searcher)
         _write(self.dir, _CHROME, chrome)
         self.assertEqual(self.run_main()[0], 0)
-        merged = _read(self.dir)
+        return _read(self.dir)
+
+    def test_merge_concatenates_partials(self):
+        merged = self._merge_searcher_and_chrome()
         self.assertEqual(len(merged["results"]), 3)
         self.assertEqual(len(merged["search_log"]), 3)
         self.assertEqual(merged["open_questions"], ["Q1", "Q2"])
         self.assertEqual(merged["coverage_notes"], "1 ページ目のみ\nChrome で 1 件読んだ")
+
+    def test_merge_output_passes_validate(self):
+        merged = self._merge_searcher_and_chrome()
         res = vjs.validate(merged)
         self.assertEqual(res.errors, [], res.errors)
 
-    def test_duplicates_removed_keep_first_and_note_count(self):
+    def _merge_with_duplicate(self):
         searcher = make_doc()
         chrome = make_doc()
         # 法人格・空白・全角半角・大文字小文字の差は同じ求人とみなす。
@@ -83,11 +89,17 @@ class MergeTest(unittest.TestCase):
         _write(self.dir, _SEARCHER, searcher)
         _write(self.dir, _CHROME, chrome)
         self.assertEqual(self.run_main("--json")[0], 0)
-        merged = _read(self.dir)
+        return _read(self.dir)
+
+    def test_duplicate_chrome_copy_removed(self):
+        merged = self._merge_with_duplicate()
         self.assertEqual([r["read_via"] for r in merged["results"]], ["webfetch", "webfetch"])
+
+    def test_duplicates_note_count(self):
+        merged = self._merge_with_duplicate()
         self.assertTrue(merged["coverage_notes"].endswith("重複 1 件を除いた"))
 
-    def test_same_company_different_title_kept(self):
+    def test_same_company_different_title_not_duplicate(self):
         doc = make_doc()
         doc["results"].append(make_result(title="別の職種"))
         _write(self.dir, _SEARCHER, doc)
@@ -104,7 +116,7 @@ class MergeTest(unittest.TestCase):
         self.run_main()
         self.assertEqual([d["lane"] for d in _read(self.dir)["derivations"]], ["better_salary", "remote_widen"])
 
-    def test_header_taken_from_searcher_even_when_chrome_sorts_first(self):
+    def test_header_from_searcher_over_chrome(self):
         searcher, chrome = make_doc(), make_doc()
         searcher["mode"] = "similar_better"
         searcher["baseline"] = {"posting_id": "アクメクラウド-20261020-01"}
@@ -116,7 +128,7 @@ class MergeTest(unittest.TestCase):
         self.assertEqual(merged["mode"], "similar_better")
         self.assertEqual(merged["baseline"], {"posting_id": "アクメクラウド-20261020-01"})
 
-    def test_header_from_first_partial_without_searcher(self):
+    def test_header_without_searcher_from_chrome(self):
         doc = make_doc()
         doc["search_id"] = "20261025-only-chrome"
         _write(self.dir, _CHROME, doc)
@@ -139,7 +151,7 @@ class MergeTest(unittest.TestCase):
         _write(self.dir, _SEARCHER, "[]")
         self.assertEqual(self.run_main()[0], 1)
 
-    def test_json_output(self):
+    def test_json_output_success_fields(self):
         _write(self.dir, _SEARCHER, make_doc())
         code, out = self.run_main("--json")
         data = json.loads(out)
@@ -149,7 +161,7 @@ class MergeTest(unittest.TestCase):
         self.assertEqual(data["output_path"], os.path.join(self.dir, _OUT))
         self.assertEqual(data["errors"], [])
 
-    def test_json_output_on_failure(self):
+    def test_json_output_without_partials_exit_1(self):
         code, out = self.run_main("--json")
         self.assertEqual(code, 1)
         self.assertTrue(json.loads(out)["errors"])
@@ -161,7 +173,7 @@ class MergeTest(unittest.TestCase):
         self.assertEqual(self.run_main("--cleanup")[0], 0)
         self.assertEqual(os.listdir(self.dir), [_OUT])
 
-    def test_cleanup_without_partials_is_ok(self):
+    def test_cleanup_without_partials_exit_0(self):
         self.assertEqual(self.run_main("--cleanup")[0], 0)
 
 

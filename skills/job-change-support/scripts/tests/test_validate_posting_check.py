@@ -72,7 +72,7 @@ class ValidateTest(unittest.TestCase):
         if needle:
             self.assertTrue(any(needle in m for m in r.errors + r.warnings), r.errors + r.warnings)
 
-    def test_valid(self):
+    def test_valid_doc_no_findings(self):
         self.check(_valid())
 
     def test_catalog_complete_for_always_write(self):
@@ -81,10 +81,10 @@ class ValidateTest(unittest.TestCase):
         self.assertEqual(set(doc["job"]), set(vpc.ALWAYS_WRITE_JOB))
         self.assertEqual(set(doc["company"]), set(vpc.ALWAYS_WRITE_COMPANY))
 
-    def test_root_not_object(self):
+    def test_root_not_object_error(self):
         self.check([], errors=1)
 
-    def test_missing_root_fields(self):
+    def test_missing_root_fields_fails(self):
         for key in ("schema_version", "posting_id", "source_type", "fetched_at", "job", "company", "open_questions"):
             doc = _valid()
             del doc[key]
@@ -95,38 +95,42 @@ class ValidateTest(unittest.TestCase):
         doc["schema_version"] = "9.9"
         self.check(doc, warnings=1)
 
-    def test_posting_id_malformed(self):
+    def test_posting_id_malformed_error(self):
         doc = _valid()
         doc["posting_id"] = "S_アクメクラウド-2026-1"
         self.check(doc, errors=1, needle="posting_id")
 
-    def test_posting_id_slug_mismatch(self):
+    def test_posting_id_slug_mismatch_error(self):
         doc = _valid()
         doc["company_slug"] = "S_別会社"
         self.check(doc, errors=1, needle="company_slug")
 
-    def test_posting_id_date_mismatch(self):
+    def test_posting_id_date_mismatch_error(self):
         doc = _valid()
         doc["fetched_at"] = "2026-10-26"
         self.check(doc, errors=1, needle="日付部分")
 
-    def test_parse_posting_id(self):
+    def test_parse_posting_id_valid_returns_slug_date_seq(self):
         self.assertEqual(vpc.parse_posting_id("S_アクメクラウド-20261025-01"), ("S_アクメクラウド", "20261025", "01"))
         self.assertEqual(vpc.parse_posting_id("a-b-20261025-02"), ("a-b", "20261025", "02"))
+
+    def test_parse_posting_id_malformed_returns_none(self):
         self.assertIsNone(vpc.parse_posting_id("-20261025-01"))
         self.assertIsNone(vpc.parse_posting_id(None))
 
-    def test_source_type_invalid(self):
+    def test_source_type_invalid_error(self):
         doc = _valid()
         doc["source_type"] = "mail"
         self.check(doc, errors=1, needle="source_type")
 
-    def test_source_url_required_for_url_and_search(self):
+    def test_source_url_missing_for_url_and_search_error(self):
         for st in ("url", "search"):
             doc = _valid()
             doc["source_type"] = st
             doc["source_url"] = None
             self.check(doc, errors=1, needle="source_url")
+
+    def test_source_url_ftp_scheme_error(self):
         doc = _valid()
         doc["source_url"] = "ftp://x"
         self.check(doc, errors=1, needle="source_url")
@@ -137,17 +141,17 @@ class ValidateTest(unittest.TestCase):
         doc["source_url"] = None
         self.check(doc)
 
-    def test_fetched_at_not_date(self):
+    def test_fetched_at_not_date_fails(self):
         doc = _valid()
         doc["fetched_at"] = "2026-13-40"
         self.assertFalse(vpc.validate(doc).ok)
 
-    def test_unknown_key(self):
+    def test_unknown_key_error(self):
         doc = _valid()
         doc["job"]["bogus"] = _v("x")
         self.check(doc, errors=1, needle="辞書に無い")
 
-    def test_wrong_section(self):
+    def test_wrong_section_error(self):
         doc = _valid()
         doc["job"]["employee_count"] = _v(10, "人")
         self.check(doc, errors=1, needle="company の項目")
@@ -155,7 +159,7 @@ class ValidateTest(unittest.TestCase):
         doc["company"]["job_title"] = _v("x")
         self.check(doc, errors=1, needle="posting の項目")
 
-    def test_job_value_array(self):
+    def test_job_value_array_error(self):
         doc = _valid()
         doc["job"]["salary_min"] = [_v(6500000, "円")]
         self.check(doc, errors=1, needle="配列にせず")
@@ -165,35 +169,39 @@ class ValidateTest(unittest.TestCase):
         doc["company"]["avg_tenure_years"][1]["unit"] = "月"
         self.check(doc, errors=1, needle="avg_tenure_years[1]")
 
-    def test_value_object_missing_key(self):
+    def test_value_object_missing_key_error(self):
         doc = _valid()
         del doc["job"]["salary_min"]["as_of"]
         self.check(doc, errors=1, needle="as_of")
 
-    def test_value_type_mismatch(self):
+    def test_value_type_mismatch_fails(self):
         for field, bad in (("salary_min", "650万"), ("employment_type", "forever"),
                            ("posted_at", "2026-02-30"), ("requirements_must", ["a", 1])):
             doc = _valid()
             doc["job"][field]["value"] = bad
             self.assertFalse(vpc.validate(doc).ok, field)
 
-    def test_unit_mismatch(self):
+    def test_unit_mismatch_error(self):
         doc = _valid()
         doc["job"]["salary_min"]["unit"] = "万円"
         self.check(doc, errors=1, needle="unit")
 
-    def test_value_without_source_grade_as_of(self):
+    def test_value_without_source_url_error(self):
         doc = _valid()
         doc["job"]["salary_min"]["source_url"] = None
         self.check(doc, errors=1, needle="source_url")
+
+    def test_value_grade_outside_enum_error(self):
         doc = _valid()
         doc["job"]["salary_min"]["grade"] = "Z"
         self.check(doc, errors=1, needle="grade")
+
+    def test_value_as_of_not_date_error(self):
         doc = _valid()
         doc["job"]["salary_min"]["as_of"] = "令和8年"
         self.check(doc, errors=1, needle="as_of")
 
-    def test_open_questions_non_string(self):
+    def test_open_questions_non_string_error(self):
         doc = _valid()
         doc["open_questions"] = ["ok", 3]
         self.check(doc, errors=1, needle="open_questions")
@@ -217,12 +225,12 @@ class ValidateTest(unittest.TestCase):
             doc["job"]["contract_renewal_cap"] = _v(None)
             self.check(doc, warnings=1, needle="更新上限")
 
-    def test_full_time_without_renewal_cap_is_fine(self):
+    def test_full_time_without_renewal_cap_no_findings(self):
         doc = _valid()
         doc["job"]["contract_renewal_cap"] = _v(None)
         self.check(doc)
 
-    def test_non_a_grade_warns(self):
+    def test_grade_c_warns(self):
         doc = _valid()
         doc["job"]["salary_min"]["grade"] = "C"
         self.check(doc, warnings=1, needle="grade が C")
@@ -263,7 +271,7 @@ class CliTest(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(vpc.main(["no-such-file.json"]), 1)
 
-    def test_json_output(self):
+    def test_json_output_warning_status_pass(self):
         doc = _valid()
         doc["schema_version"] = "9.9"
         code, out = self.run_cli(doc, "--json")

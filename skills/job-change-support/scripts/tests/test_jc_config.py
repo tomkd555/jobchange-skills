@@ -85,18 +85,20 @@ class FindConfigPathTest(TempTreeTestCase):
 
 
 class LoadConfigTest(TempTreeTestCase):
-    def test_defaults_and_overrides(self) -> None:
+    def test_unset_keys_return_defaults(self) -> None:
         config = jc.load_config(self.write_config(self.home / jc.CONFIG_DIRNAME))
         self.assertEqual(
             (config["private_dir"], config["companies_dir"], config["job_search_dir"], config["python"]),
             ("career-private", "companies", "job-search", "python"),
         )
+
+    def test_overrides_replace_defaults(self) -> None:
         config = jc.load_config(
             self.write_config(self.home / jc.CONFIG_DIRNAME, python="python3", companies_dir="corp")
         )
         self.assertEqual((config["python"], config["companies_dir"]), ("python3", "corp"))
 
-    def test_invalid_config_is_an_error(self) -> None:
+    def test_invalid_config_raises(self) -> None:
         directory = self.home / jc.CONFIG_DIRNAME
         raw = directory / "raw.json"
         directory.mkdir(parents=True)
@@ -114,7 +116,7 @@ class LoadConfigTest(TempTreeTestCase):
             with self.subTest(label), self.assertRaises(jc.ConfigError):
                 jc.load_config(path)
 
-    def test_tilde_in_data_root_is_expanded(self) -> None:
+    def test_tilde_data_root_expands_under_home(self) -> None:
         path = self.write_config(self.home / jc.CONFIG_DIRNAME, data_root="~/job-change-data")
         config = jc.load_config(path, home=self.home)
         self.assertEqual(config["data_root"], str(self.home / "job-change-data"))
@@ -141,14 +143,14 @@ class InitConfigTest(TempTreeTestCase):
         self.assertEqual(path, self.home / jc.CONFIG_DIRNAME / "config.json")
         self.assertEqual(jc.load_config(path)["data_root"], str(self.data_root))
 
-    def test_existing_config_is_kept(self) -> None:
+    def test_existing_config_unchanged(self) -> None:
         existing = self.write_config(self.home / jc.CONFIG_DIRNAME, data_root=str(self.root / "old"))
         before = existing.read_text(encoding="utf-8")
         with self.assertRaises(jc.ConfigError):
             jc.init_config(str(self.data_root), home=self.home)
         self.assertEqual(existing.read_text(encoding="utf-8"), before)
 
-    def test_relative_data_root_is_rejected(self) -> None:
+    def test_relative_data_root_raises(self) -> None:
         with self.assertRaises(jc.ConfigError):
             jc.init_config("relative-dir", home=self.home)
 
@@ -174,12 +176,18 @@ class MainTest(TempTreeTestCase):
                 self.assertEqual(json.loads(output)["status"], status)
                 shutil.rmtree(self.home / jc.CONFIG_DIRNAME, ignore_errors=True)
 
-    def test_show_output_keys_and_env_source(self) -> None:
+    def test_show_with_env_var_source_env(self) -> None:
         env_config = self.write_config(self.root / "explicit")
         code, output = self._run(["--show"], env={jc.ENV_VAR: str(env_config)})
         payload = json.loads(output)
         self.assertEqual(code, 0)
         self.assertEqual(payload["source"], "env")
+
+    def test_show_output_keys(self) -> None:
+        env_config = self.write_config(self.root / "explicit")
+        code, output = self._run(["--show"], env={jc.ENV_VAR: str(env_config)})
+        payload = json.loads(output)
+        self.assertEqual(code, 0)
         self.assertEqual(
             sorted(payload),
             ["config_path", "data_root", "paths", "python", "source", "status"],
@@ -191,9 +199,11 @@ class MainTest(TempTreeTestCase):
         code, output = self._run(["--init", "--data-root", str(self.data_root)])
         self.assertEqual((code, json.loads(output)["status"]), (1, "exists"))
 
-    def test_path_prints_one_path_or_reports_unconfigured(self) -> None:
+    def test_path_unconfigured_exit_2(self) -> None:
         code, _ = self._run(["--path", "wishes"])
         self.assertEqual(code, 2)
+
+    def test_path_configured_prints_one_path(self) -> None:
         self.write_config(self.home / jc.CONFIG_DIRNAME)
         for key, name in (("wishes", "wishes.json"), ("matches", "matches")):
             code, output = self._run(["--path", key])

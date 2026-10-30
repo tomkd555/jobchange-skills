@@ -68,10 +68,10 @@ class ValidateTest(unittest.TestCase):
         self.check(_valid())
         self.check(_valid(), pc=None)
 
-    def test_root_not_object(self):
+    def test_root_not_object_fails(self):
         self.assertFalse(vm.validate([], _wishes()).ok)
 
-    def test_missing_required_fields(self):
+    def test_missing_required_fields_fails(self):
         for key in ("schema_version", "posting_id", "checked_at", "match", "unknowns"):
             doc = _valid()
             del doc[key]
@@ -82,38 +82,38 @@ class ValidateTest(unittest.TestCase):
         doc["schema_version"] = "2.0"
         self.check(doc, warnings=1)
 
-    def test_posting_id_malformed(self):
+    def test_posting_id_malformed_error(self):
         doc = _valid()
         doc["posting_id"] = "bad"
         self.check(doc, errors=1, needle="posting_id", pc=None)
 
-    def test_posting_id_differs_from_posting_check(self):
+    def test_posting_id_differs_from_posting_check_error(self):
         doc = _valid()
         doc["posting_id"] = "S_アクメクラウド-20261025-02"
         self.check(doc, errors=1, needle="異なる")
         self.check(doc, pc=None)
 
-    def test_checked_at_not_date(self):
+    def test_checked_at_not_date_error(self):
         doc = _valid()
         doc["checked_at"] = "2026-02-30"
         self.check(doc, errors=1, needle="checked_at")
 
-    def test_condition_id_malformed(self):
+    def test_condition_id_malformed_error(self):
         doc = _valid()
         doc["match"][0]["condition_id"] = "c1"
         self.check(doc, errors=1, needle="3 桁", warnings=1)
 
-    def test_condition_id_duplicated(self):
+    def test_condition_id_duplicated_error(self):
         doc = _valid()
         doc["match"][1]["condition_id"] = "c001"
         self.check(doc, errors=1, needle="重複", warnings=1)
 
-    def test_condition_id_absent_from_wishes(self):
+    def test_condition_id_absent_from_wishes_error(self):
         doc = _valid()
         doc["match"][2]["condition_id"] = "c009"
         self.check(doc, errors=1, needle="c009", warnings=1)
 
-    def test_result_outside_enum(self):
+    def test_result_outside_enum_error(self):
         doc = _valid()
         doc["match"][0]["result"] = "maybe"
         self.check(doc, errors=1, needle="result")
@@ -132,38 +132,38 @@ class ValidateTest(unittest.TestCase):
         doc["match"][1]["basis_field_id"] = None
         self.check(doc)
 
-    def test_basis_not_in_catalog_for_unknown(self):
+    def test_basis_not_in_catalog_for_unknown_error(self):
         doc = _valid()
         doc["match"][1]["basis_field_id"] = "no_such_field"
         self.check(doc, errors=1, needle="辞書に無い")
 
-    def test_note_empty(self):
+    def test_note_empty_error(self):
         doc = _valid()
         doc["match"][0]["note"] = "  "
         self.check(doc, errors=1, needle="note")
 
-    def test_unknowns_element_not_in_catalog(self):
+    def test_unknowns_element_not_in_catalog_error(self):
         doc = _valid()
         doc["unknowns"].append("no_such_field")
         self.check(doc, errors=1, needle="辞書に無い", pc=None)
 
-    def test_unknowns_wrong_type(self):
+    def test_unknowns_wrong_type_error(self):
         doc = _valid()
         doc["unknowns"] = "x"
         self.check(doc, errors=1, needle="unknowns")
 
-    def test_unknowns_names_field_with_value(self):
+    def test_unknowns_names_field_with_value_error(self):
         doc = _valid()
         doc["unknowns"].append("salary_min")
         self.check(doc, errors=1, needle="非 null")
         self.check(doc, pc=None)
 
-    def test_unknowns_misses_null_only_field(self):
+    def test_unknowns_misses_null_only_field_error(self):
         doc = _valid()
         doc["unknowns"].remove("monthly_overtime_h")
         self.check(doc, errors=1, needle="monthly_overtime_h")
 
-    def test_partial_null_array_is_not_unknown(self):
+    def test_unknowns_with_partial_null_array_error(self):
         # avg_tenure_years は 1 件に値があるので unknowns に入れると ERROR
         doc = _valid()
         doc["unknowns"].append("avg_tenure_years")
@@ -179,7 +179,7 @@ class ValidateTest(unittest.TestCase):
         wishes["conditions"][2]["active"] = False
         self.check(_valid(), warnings=1, needle="無効", wishes=wishes)
 
-    def test_inactive_condition_missing_from_match_is_fine(self):
+    def test_inactive_condition_unmatched_no_findings(self):
         wishes = _wishes()
         wishes["conditions"][2]["active"] = False
         doc = _valid()
@@ -203,13 +203,13 @@ class CliTest(unittest.TestCase):
                 code = vm.main(argv)
         return code, out.getvalue()
 
-    def test_pass(self):
+    def test_valid_pass_exit_0(self):
         for flag in (True, False):
             code, out = self.run_cli(_valid(), flag)
             self.assertEqual(code, 0)
             self.assertIn("PASS", out)
 
-    def test_wishes_required(self):
+    def test_without_wishes_exit_2(self):
         with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as cm:
             vm.main(["matches.json"])
         self.assertEqual(cm.exception.code, 2)
@@ -230,7 +230,7 @@ class CliTest(unittest.TestCase):
     def test_invalid_json_exit_1(self):
         self.assertEqual(self.run_cli("{oops", False)[0], 1)
 
-    def test_json_output(self):
+    def test_json_output_warning_status_pass(self):
         doc = _valid()
         doc["schema_version"] = "2.0"
         code, out = self.run_cli(doc, True, "--json")

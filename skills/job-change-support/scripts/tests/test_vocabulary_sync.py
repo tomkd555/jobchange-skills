@@ -56,7 +56,7 @@ def _table_terms(md_path: str, heading: str) -> list[str]:
 
 
 class VocabularySyncTest(unittest.TestCase):
-    def test_derivation_lanes(self):
+    def test_derivation_lanes_match_lanes_table(self):
         terms = _table_terms(_LANES_MD, "## Lane list")
         self.assertEqual(len(terms), 10, terms)
         self.assertEqual(tuple(terms), vjs.DERIVATION_LANES)

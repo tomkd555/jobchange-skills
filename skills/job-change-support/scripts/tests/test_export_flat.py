@@ -104,17 +104,24 @@ class ExportTest(unittest.TestCase):
         with open(self.root / "export" / "flat.csv", encoding="utf-8-sig", newline="") as f:
             return list(csv.DictReader(f))
 
-    def test_rows_and_columns(self) -> None:
+    def test_row_count_14_for_full_data_root(self) -> None:
         code, out, _ = self._run()
         self.assertEqual(code, 0)
         rows = self._rows()
         # wishes 2 + posting (3 job + 2 tenure + 1 violation) + match 2 + decision 2 criteria x 2 candidates
         self.assertEqual(len(rows), 2 + 6 + 2 + 4)
         self.assertIn("14 行", out)
+
+    def test_header_matches_columns(self) -> None:
+        self._run()
+        rows = self._rows()
         self.assertEqual(list(rows[0]), list(ef.COLUMNS))
+
+    def test_csv_starts_with_bom(self) -> None:
+        self._run()
         self.assertTrue((self.root / "export" / "flat.csv").read_bytes().startswith(b"\xef\xbb\xbf"))
 
-    def test_sample_rows(self) -> None:
+    def test_rows_carry_values_from_each_source(self) -> None:
         self._run()
         rows = self._rows()
 
@@ -136,18 +143,20 @@ class ExportTest(unittest.TestCase):
         salary = pick(decision_id="20261115-infra-2sha", field_id="salary_min", posting_id=PID_B)
         self.assertEqual((salary["value"], salary["unit"]), ("7000000", "円"))
 
-    def test_unparsable_file_is_skipped(self) -> None:
+    def test_unparsable_file_skipped(self) -> None:
         _write(self.root / "career-private" / "matches" / "broken.json", "{ not json")
         code, _, err = self._run()
         self.assertEqual(code, 0)
         self.assertIn("broken.json", err)
         self.assertEqual(len(self._rows()), 14)
 
-    def test_custom_out_path_and_empty_root(self) -> None:
+    def test_custom_out_path_writes_file(self) -> None:
         target = self.root / "elsewhere" / "out.csv"
         code, _, _ = self._run("--out", str(target))
         self.assertEqual(code, 0)
         self.assertTrue(target.is_file())
+
+    def test_empty_root_exit_1(self) -> None:
         with tempfile.TemporaryDirectory() as empty:
             err = io.StringIO()
             with contextlib.redirect_stderr(err):

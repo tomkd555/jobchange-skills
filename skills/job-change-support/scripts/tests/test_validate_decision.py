@@ -68,40 +68,47 @@ def has(msgs, text):
 class VocabularySyncTest(unittest.TestCase):
     """検証スクリプトの定数が辞書の列挙値と一致すること。"""
 
-    def test_methods_and_follow_up_match_catalog(self):
+    def test_rank_methods_match_catalog(self):
         catalog = load_catalog()
         self.assertEqual(vd._RANK_METHODS, catalog.enum_values("weight_method"))
+
+    def test_follow_up_at_match_catalog(self):
+        catalog = load_catalog()
         self.assertEqual(tuple(vd._FOLLOW_UP_AT), catalog.enum_values("follow_up_at"))
 
 
 class PureFunctionTest(unittest.TestCase):
-    def test_scale_values_higher_lower_and_null(self):
+    def test_scale_values_direction_higher_lower(self):
         self.assertEqual(vd.scale_values({"a": 10, "b": 20, "c": 15}, "higher"), {"a": 0.0, "b": 1.0, "c": 0.5})
         self.assertEqual(vd.scale_values({"a": 10, "b": 20}, "lower"), {"a": 1.0, "b": 0.0})
+
+    def test_scale_values_null_value_returns_none(self):
         self.assertEqual(vd.scale_values({"a": 10, "b": None}, "higher"), {"a": 1.0, "b": None})
 
-    def test_scale_values_all_equal_and_all_null(self):
+    def test_scale_values_all_equal_returns_one(self):
         self.assertEqual(vd.scale_values({"a": 5, "b": 5}, "lower"), {"a": 1.0, "b": 1.0})
+
+    def test_scale_values_all_null_returns_none(self):
         self.assertEqual(vd.scale_values({"a": None}, "higher"), {"a": None})
 
-    def test_scale_ratings(self):
+    def test_scale_ratings_one_three_five_returns_unit_scale(self):
         self.assertEqual(vd.scale_ratings({"a": 1, "b": 3, "c": 5}), {"a": 0.0, "b": 0.5, "c": 1.0})
 
-    def test_swing_weights(self):
+    def test_swing_weights_points_normalise_by_total(self):
         w = vd.swing_weights({"k01": 100, "k03": 60, "k02": 40})
         self.assertAlmostEqual(w["k01"], 0.5)
         self.assertAlmostEqual(w["k03"], 0.3)
         self.assertAlmostEqual(w["k02"], 0.2)
 
-    def test_roc_weights_n3(self):
+    def test_roc_weights_three_criteria_returns_fixed_values(self):
         w = vd.roc_weights(["k01", "k03", "k02"])
         self.assertEqual({k: round(v, 4) for k, v in w.items()}, {"k01": 0.6111, "k03": 0.2778, "k02": 0.1111})
         self.assertAlmostEqual(sum(w.values()), 1.0)
 
-    def test_equal_weights(self):
+    def test_equal_weights_four_criteria_returns_quarter(self):
         self.assertEqual(vd.equal_weights(["a", "b", "c", "d"]), {"a": 0.25, "b": 0.25, "c": 0.25, "d": 0.25})
 
-    def test_weighted_scores(self):
+    def test_weighted_scores_full_data_returns_weighted_sum(self):
         crits = [{"id": "k01", "scaled": {A: 0.0, B: 1.0}}, {"id": "k02", "scaled": {A: 1.0, B: 0.5}}]
         s = vd.weighted_scores(crits, {"k01": 0.75, "k02": 0.25}, [A, B])
         self.assertAlmostEqual(s[A], 0.25)
@@ -113,20 +120,22 @@ class PureFunctionTest(unittest.TestCase):
         self.assertAlmostEqual(s[A], 1.0)  # k01 だけが残り、重み 0.5 が 1 に戻る
         self.assertAlmostEqual(s[B], 0.5)
 
-    def test_weighted_scores_all_null_is_none(self):
+    def test_weighted_scores_all_null_returns_none(self):
         crits = [{"id": "k01", "scaled": {A: None, B: 1.0}}]
         self.assertIsNone(vd.weighted_scores(crits, {"k01": 1.0}, [A, B])[A])
 
-    def test_rank_null_last_and_ties_keep_order(self):
+    def test_rank_null_sorts_last(self):
         self.assertEqual(vd.rank({A: None, B: 0.3}, [A, B]), [B, A])
+
+    def test_rank_ties_return_input_order(self):
         self.assertEqual(vd.rank({A: 0.5, B: 0.5}, [A, B]), [A, B])
         self.assertEqual(vd.rank({A: 0.5, B: 0.5}, [B, A]), [B, A])
 
-    def test_want_counts_without_wishes_is_none(self):
+    def test_want_counts_without_wishes_returns_none(self):
         crits = [{"id": "k01", "scaled": {A: 0.0, B: 1.0}}, {"id": "k02", "scaled": {A: 1.0, B: 1.0}}]
         self.assertIsNone(vd.want_counts(crits, [A, B], None))
 
-    def test_want_counts_with_wishes_counts_want_conditions_at_top(self):
+    def test_want_counts_with_wishes_counts_want_only(self):
         crits = [
             {"id": "k01", "condition_id": "c001", "scaled": {A: 0.0, B: 1.0}},
             {"id": "k03", "condition_id": "c003", "scaled": {A: 1.0, B: 0.0}},
@@ -134,23 +143,38 @@ class PureFunctionTest(unittest.TestCase):
         ]
         self.assertEqual(vd.want_counts(crits, [A, B], WISHES), {A: 1, B: 0})
 
-    def test_fill_values(self):
+    def test_fill_scaled_values_per_criterion(self):
         d = good()
         self.assertEqual(d["criteria"][0]["scaled"], {A: 0.0, B: 1.0})
         self.assertEqual(d["criteria"][1]["scaled"], {A: 0.0, B: 1.0})
         self.assertEqual(d["criteria"][2]["scaled"], {A: 0.75, B: 0.25})
-        self.assertEqual(d["weights"]["roc"], {"k01": 0.6111, "k03": 0.2778, "k02": 0.1111})
-        self.assertEqual(d["scores"]["swing"], {A: 0.225, B: 0.775})
-        self.assertEqual(d["rankings"]["swing"], [B, A])
-        self.assertEqual(d["scores"]["want_count"], {A: 0, B: 0})
+
+    def test_fill_roc_weights(self):
+        self.assertEqual(good()["weights"]["roc"], {"k01": 0.6111, "k03": 0.2778, "k02": 0.1111})
+
+    def test_fill_swing_scores(self):
+        self.assertEqual(good()["scores"]["swing"], {A: 0.225, B: 0.775})
+
+    def test_fill_swing_ranking(self):
+        self.assertEqual(good()["rankings"]["swing"], [B, A])
+
+    def test_fill_without_wishes_want_count_zero(self):
+        self.assertEqual(good()["scores"]["want_count"], {A: 0, B: 0})
+
+    def test_fill_with_wishes_want_count_zero_below_best(self):
         self.assertEqual(vd.fill(raw(), WISHES)["scores"]["want_count"], {A: 0, B: 0})  # k01 は must、k03 の A は 0.75
+
+    def test_fill_with_want_conditions_counts_best_values(self):
         wants = {"conditions": [{"id": "c001", "level": "want"}, {"id": "c003", "level": "want"}]}
         self.assertEqual(vd.fill(raw(), wants)["scores"]["want_count"], {A: 0, B: 1})
 
-    def test_sensitivity_details_and_unchanged_top(self):
+    def test_sensitivity_top_unchanged(self):
+        s = good()["sensitivity"]
+        self.assertFalse(s["top_changes"])
+
+    def test_sensitivity_details_two_changes_per_criterion(self):
         s = good()["sensitivity"]
         self.assertEqual(s["delta"], 0.2)
-        self.assertFalse(s["top_changes"])
         self.assertEqual([(x["criterion_id"], x["change"]) for x in s["details"]][:2], [("k01", "-20%"), ("k01", "+20%")])
         self.assertEqual(len(s["details"]), 6)
 
@@ -165,7 +189,7 @@ def close_race():
 
 
 class ValidateTest(unittest.TestCase):
-    def test_valid_fixture_is_clean(self):
+    def test_valid_fixture_no_findings(self):
         r = check(good())
         self.assertEqual((r.errors, r.warnings), ([], []))
         self.assertEqual(check(vd.fill(raw(), WISHES), WISHES).errors, [])
@@ -179,10 +203,10 @@ class ValidateTest(unittest.TestCase):
         r = self.mutate(fn, wishes)
         self.assertTrue(has(r.errors, text), r.errors)
 
-    def test_not_object_root(self):
+    def test_root_not_object_fails(self):
         self.assertFalse(check([]).ok)
 
-    def test_error_id_and_date(self):
+    def test_error_header_id_date_subject(self):
         self.assertError(lambda d: d.update(id="2026-infra"), "id は")
         self.assertError(lambda d: d.update(id="20261116-infra"), "日付部分")
         self.assertError(lambda d: d.update(date="2026-13-01"), "date は")
@@ -240,6 +264,8 @@ class ValidateTest(unittest.TestCase):
         self.assertError(lambda d: d["criteria"][0]["scaled"].update({A: 0.5}), "scaled")
         self.assertError(lambda d: d["scores"]["swing"].update({A: 0.5}), "scores.swing")
         self.assertError(lambda d: d["sensitivity"].update(top_changes=True), "sensitivity")
+
+    def test_derived_within_tolerance_no_error(self):
         d = good()
         d["scores"]["swing"][A] += 0.0004  # 許容差内
         self.assertTrue(check(d).ok)
@@ -258,7 +284,7 @@ class ValidateTest(unittest.TestCase):
     def test_error_condition_missing_in_wishes(self):
         self.assertError(lambda d: None, "wishes.json にない", wishes={"conditions": [{"id": "c001", "level": "must"}]})
 
-    def test_warn_schema_version(self):
+    def test_warn_unknown_schema_version(self):
         r = self.mutate(lambda d: d.update(schema_version="9.9"))
         self.assertTrue(has(r.warnings, "schema_version"))
         self.assertTrue(r.ok)
@@ -270,7 +296,7 @@ class ValidateTest(unittest.TestCase):
         self.assertTrue(has(r.warnings, "換算値が null"))
         self.assertTrue(r.ok)
 
-    def test_null_value_renormalises_in_fill(self):
+    def test_fill_null_value_renormalises(self):
         d = raw()
         d["criteria"][1]["values"][B] = None
         f = vd.fill(d, None)
@@ -280,6 +306,8 @@ class ValidateTest(unittest.TestCase):
     def test_warn_chosen_without_decisive(self):
         r = self.mutate(lambda d: d.update(decisive_fields=[]))
         self.assertTrue(has(r.warnings, "decisive_fields"))
+
+    def test_no_chosen_without_decisive_no_warnings(self):
         self.assertTrue(check(vd.fill(dict(raw(), chosen=None, decisive_fields=[]), None)).warnings == [])
 
     def test_warn_top_changes(self):
@@ -305,7 +333,7 @@ class CliTest(unittest.TestCase):
             json.dump(d, f, ensure_ascii=False)
         return path
 
-    def test_fill_writes_derived_fields_and_validates(self):
+    def test_fill_writes_derived_fields(self):
         path = self.write(raw())
         self.assertEqual(self.run_cli(path)[0], 1)
         code, out = self.run_cli(path, "--fill")
@@ -315,9 +343,13 @@ class CliTest(unittest.TestCase):
         self.assertTrue(text.endswith("}\n"))
         self.assertIn("アクメクラウド", text)
         self.assertEqual(json.loads(text)["rankings"]["swing"], [B, A])
+
+    def test_fill_output_passes_validate(self):
+        path = self.write(raw())
+        self.run_cli(path, "--fill")
         self.assertEqual(self.run_cli(path)[0], 0)
 
-    def test_fill_is_idempotent(self):
+    def test_fill_twice_unchanged(self):
         path = self.write(raw())
         self.run_cli(path, "--fill")
         with open(path, encoding="utf-8") as f:
@@ -335,14 +367,14 @@ class CliTest(unittest.TestCase):
         with open(path, encoding="utf-8") as f:
             self.assertNotIn("weights", json.load(f))
 
-    def test_json_output_and_wishes(self):
+    def test_json_output_with_wishes_status_pass(self):
         path = self.write(vd.fill(raw(), WISHES))
         wishes = self.write(WISHES)
         code, out = self.run_cli(path, "--wishes", wishes, "--json")
         self.assertEqual(code, 0)
         self.assertEqual(json.loads(out)["status"], "PASS")
 
-    def test_unreadable_file(self):
+    def test_unreadable_file_fails(self):
         code, out = self.run_cli(os.path.join(tempfile.gettempdir(), "no-such-decision.json"), "--json")
         self.assertEqual(code, 1)
         self.assertEqual(json.loads(out)["status"], "FAIL")

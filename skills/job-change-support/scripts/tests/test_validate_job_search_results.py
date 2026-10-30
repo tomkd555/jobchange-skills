@@ -104,20 +104,20 @@ class ValidateTest(unittest.TestCase):
             self.assertTrue(any(warn in w for w in res.warnings), res.warnings)
         return res
 
-    def test_valid(self):
+    def test_valid_doc_no_findings(self):
         res = v.validate(make_doc())
         self.assertEqual((res.errors, res.warnings), ([], []))
 
-    def test_example_asset_is_valid(self):
+    def test_example_asset_no_findings(self):
         skill_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         res = v.validate(v.load_json(os.path.join(skill_dir, "assets", "job_search_results_example.json")))
         self.assertEqual((res.errors, res.warnings), ([], []))
 
     # ---- ルート ERROR ----
-    def test_root_not_object(self):
+    def test_root_not_object_fails(self):
         self.assertFalse(v.validate([]).ok)
 
-    def test_missing_required_root_field(self):
+    def test_missing_required_root_field_error(self):
         for key in ("schema_version", "search_id", "mode", "executed_at", "conditions",
                     "derivations", "results", "search_log"):
             with self.subTest(key=key):
@@ -125,22 +125,22 @@ class ValidateTest(unittest.TestCase):
                 del doc[key]
                 self.assertTrue(any(e.startswith(f"[ERROR] {key}:") for e in v.validate(doc).errors))
 
-    def test_root_wrong_type(self):
+    def test_root_wrong_type_error(self):
         self.check(lambda d: d.update(results={}), error="results: list")
 
-    def test_search_id_malformed(self):
+    def test_search_id_malformed_error(self):
         self.check(lambda d: d.update(search_id="Remote_Infra"), error="search_id")
 
-    def test_search_id_date_mismatch(self):
+    def test_search_id_date_mismatch_error(self):
         self.check(lambda d: d.update(search_id="20261024-remote-infra"), error="日付部分")
 
-    def test_mode_invalid(self):
+    def test_mode_invalid_error(self):
         self.check(lambda d: d.update(mode="exact"), error="mode")
 
-    def test_executed_at_invalid(self):
+    def test_executed_at_invalid_error(self):
         self.check(lambda d: d.update(executed_at="2026-13-45", search_id="20261345-x"), error="executed_at")
 
-    def test_baseline_malformed(self):
+    def test_baseline_malformed_error(self):
         self.check(lambda d: d.update(baseline="x"), error="baseline", warn="fuzzy では baseline")
         self.check(lambda d: d.update(baseline={"posting_id": "bad id"}, mode="similar_better"),
                    error="baseline.posting_id")
@@ -156,7 +156,7 @@ class ValidateTest(unittest.TestCase):
         self.check(lambda d: d["derivations"][0].update(rationale=" "), error="rationale")
 
     # ---- results ERROR ----
-    def test_result_missing_key(self):
+    def test_result_missing_key_error(self):
         for key in ("title", "company_name", "url", "source_site", "read_via", "quote", "salary_range",
                     "location", "remote_policy", "employment_type", "annual_holidays", "posted_at",
                     "lane", "legal_check", "must_match", "match_notes", "considering"):
@@ -181,10 +181,10 @@ class ValidateTest(unittest.TestCase):
                                    employment_type=None, annual_holidays=None, posted_at=None)
         self.check(nullify)
 
-    def test_result_lane_absent_from_derivations(self):
+    def test_result_lane_absent_from_derivations_error(self):
         self.check(lambda d: d["results"][0].update(lane="remote_widen"), error="results[0].lane")
 
-    def test_result_lane_without_search_log(self):
+    def test_result_lane_without_search_log_error(self):
         self.check(lambda d: d["search_log"].pop(), error="lane better_salary を持つ search_log が無い")
 
     # ---- legal_check ----
@@ -208,7 +208,7 @@ class ValidateTest(unittest.TestCase):
                 scope_of_change_location={"result": "missing", "quote": None})
         self.check(two_missing, warn="missing が 2 件以上")
 
-    def test_legal_check_one_missing_is_quiet(self):
+    def test_legal_check_one_missing_no_findings(self):
         self.check(lambda d: d["results"][0]["legal_check"].update(
             scope_of_change_duties={"result": "missing", "quote": None}))
 
@@ -226,7 +226,7 @@ class ValidateTest(unittest.TestCase):
         self.check(lambda d: d["results"][0]["must_match"][0].update(result="not_meets", basis=None), error="basis")
 
     # ---- search_log ----
-    def test_search_log_empty(self):
+    def test_search_log_empty_error(self):
         self.check(lambda d: d.update(search_log=[], results=[make_result()]), error="search_log")
 
     def test_search_log_element_rules(self):
@@ -253,7 +253,7 @@ class ValidateTest(unittest.TestCase):
     def test_warn_empty_results(self):
         self.check(lambda d: d.update(results=[]), warn="results が空")
 
-    def test_warn_baseline_missing_under_similar_better(self):
+    def test_warn_similar_better_without_baseline(self):
         self.check(lambda d: d.update(mode="similar_better"), warn="baseline が必要")
 
     def test_warn_too_many_queries_for_lane(self):
@@ -312,7 +312,7 @@ class CliTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("JSON として読み込めない", out)
 
-    def test_json_output(self):
+    def test_json_output_fail_exit_1_status_fail(self):
         doc = make_doc()
         doc["mode"] = "x"
         code, out = self.run_cli(doc, "--json")
