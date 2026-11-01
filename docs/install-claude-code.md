@@ -2,7 +2,7 @@
 
 ## Installing as a plugin (recommended)
 
-The repository root is itself a plugin, and also a marketplace. The following two lines deploy 1 skill and 2 agents.
+The repository root is itself a plugin, and also a marketplace. The following two lines deploy 1 skill and 4 agents.
 
 ```
 /plugin marketplace add <this repository's URL or local path>
@@ -31,7 +31,7 @@ Without using the plugin mechanism, place the files as follows.
 | What to place | Where to place it |
 |---|---|
 | The `skills/job-change-support` directory | `~/.claude/skills/` |
-| The 2 `agents/job-change-*.md` files | `~/.claude/agents/` |
+| The 4 `agents/job-change-*.md` files | `~/.claude/agents/` |
 
 To scope this per project, place them under `<project>/.claude/`, which takes `~/.claude/`'s place for that project.
 

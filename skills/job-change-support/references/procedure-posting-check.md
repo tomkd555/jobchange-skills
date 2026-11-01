@@ -9,7 +9,7 @@ Turns one posting into the material the user needs to decide whether to apply: t
 3. **Side by side, never merged.** The same figure from two sources (average tenure in the 有価証券報告書 and in しょくばらぼ) is kept as two entries.
 4. **The researcher sees no personal information.** It receives the company name and the posting text or URL. The user's conditions, the match and the unknowns are written by the main session into `career-private/matches/`.
 5. **Absence is a finding, never a verdict.** A legally required item the posting lacks is shown as 要確認. A figure no source states is `null` and listed in `unknowns`.
-6. **Caveats travel with the figures.** The 有価証券報告書 average salary is the whole legal entity's average and never the posting's salary; the violation list keeps an entry for about one year; a company's claim about itself stays a claim.
+6. **Caveats travel with the figures.** The 有価証券報告書 average salary is the whole legal entity's average and never the posting's salary; the violation list keeps an entry for about one year; a statement from the company's own page is presented as a quotation from that page.
 
 
 ## Data layout

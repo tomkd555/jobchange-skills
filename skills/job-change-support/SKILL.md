@@ -1,30 +1,33 @@
 ---
 name: job-change-support
 description: >-
-  Support for a mid-career job change in Japan, in three procedures that share one configuration,
+  Support for a mid-career job change in Japan, in four procedures that share one configuration,
   one field catalog and one set of validators: the job search (find postings from a one-line wish
   with one searcher agent and the user's Chrome), the posting check (record one posting and the
-  official figures of its company, then match it against the user's conditions) and the decision
-  (compare two to five postings or offers with swing weighting and record the decision). It asks
-  for neither a career record nor the user's current employer or salary, and never ranks for the
-  user. Use when the user works on a job change in Japan: finding postings, checking a posting, a
-  company or a scout mail, or choosing between offers. trigger words: 転職, 転職支援, 転職活動,
-  何から始めればいい, 求人を探して, 求人検索, もっと良い条件, リモートの求人, この求人を調べて,
-  求人票を読んで, この会社を調べて, スカウトメール, 残業と年収の実態, 有価証券報告書, 2 社で迷っている,
-  内定をどちらにする, 比較したい, 何を重視するか, 価値観, 条件の重み.
+  official figures of its company, then match it against the user's conditions), the company
+  research (a sourced report on what one company is, the work, overtime and pay, and results and
+  risks, with parallel collectors, a quote check and a fresh-context verifier) and the decision (compare two to
+  five postings or offers with swing weighting and record the decision). It asks for neither a
+  career record nor the user's current employer or salary, and never ranks for the user. Use when
+  the user works on a job change in Japan: finding postings, checking a posting, a company or a
+  scout mail, researching a company in depth, or choosing between offers. trigger words: 転職,
+  転職支援, 転職活動, 何から始めればいい, 求人を探して, 求人検索, もっと良い条件, リモートの求人,
+  この求人を調べて, 求人票を読んで, この会社を調べて, 企業研究, 会社の評判, 口コミ, 配属先の仕事の実態,
+  面接で確かめる点, スカウトメール, 残業と年収の実態, 有価証券報告書, 2 社で迷っている, 内定をどちらにする,
+  比較したい, 何を重視するか, 価値観, 条件の重み.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, Agent, ToolSearch, mcp__claude-in-chrome__tabs_context_mcp, mcp__claude-in-chrome__tabs_create_mcp, mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__get_page_text, mcp__claude-in-chrome__read_page, mcp__claude-in-chrome__find, mcp__claude-in-chrome__computer, mcp__claude-in-chrome__form_input, mcp__claude-in-chrome__tabs_close_mcp
 ---
 
 # job-change-support
 
-Settles the configuration, resolves company slugs, and runs one of three procedures: the job search, the posting check or the decision. Each procedure is a file under `references/` and uses only this skill's own files.
+Settles the configuration, resolves company slugs, and runs one of four procedures: the job search, the posting check, the company research or the decision. Each procedure is a file under `references/` and uses only this skill's own files.
 
 ## Principles
 
 1. **The first reply carries a deliverable.** No registration comes before the first search result or the first posting check. The only thing the skill settles first is where the data lives.
 2. **The user decides.** The skills list options, state the facts with their sources and ask about trade-offs. Ranking and choosing stay with the user (the decision procedure).
-3. **Every fact carries a source URL and a grade.** The grade is A (official), B (reliable secondary), C (review sites), D (hearsay); the canonical definition is `references/evidence-grading.md`. The posting check uses grade A sources only.
-4. **Personal information never leaves the main session.** The two agents with web tools (`job-change-job-searcher`, `job-change-posting-researcher`) receive the anonymised condition sheet or the company name and posting text, and nothing under `career-private/`. The canonical definition is `references/pii-boundary.md`.
+3. **Every fact carries a source URL and a grade.** The grade is A (official), B (reliable secondary), C (review sites), D (hearsay); the canonical definition is `references/evidence-grading.md`. The posting check uses grade A sources only. The company research uses A to D, and a sentence resting on C or D names its source, its response count and its bias.
+4. **Personal information never leaves the main session.** The four agents with web tools (`job-change-job-searcher`, `job-change-posting-researcher`, `job-change-company-collector`, `job-change-research-verifier`) receive the anonymised condition sheet, or the company name, the posting text and the files under `companies/`, and nothing under `career-private/`. The canonical definition is `references/pii-boundary.md`.
 5. **The user's data is JSON with one field catalog.** Four files share the field ids, value shape and enumerations of `references/field-catalog.md`: `wishes.json`, `posting-check.json`, `matches/{posting id}.json` and the decision records. `scripts/export_flat.py` writes them to one CSV.
 6. **The skill never asks for the current employer's name or the current salary.** No file records either.
 
@@ -72,10 +75,11 @@ Tell the user the path of the configuration file that was created, and continue.
 | `career-private/matches/{posting id}.json` | The match of one posting against the conditions, and its unknown fields. Specification `references/matches-format.md` | posting check (main session) |
 | `career-private/decisions/{decision id}.json` | One comparison and its outcome. Specification `references/decision-format.md` | decision |
 | `companies/{company slug}/postings/{posting id}/posting-check.json` | One posting and the company's official figures. Specification `references/posting-check-format.md` | posting researcher, main session |
+| `companies/{company slug}/research/{YYYYMMDD}/` | One company research run: brief, evidence, cached pages, verdicts, `report.md`, `report.ja.md`, `sources.md`. Layout in `references/procedure-company-research.md` | company collectors, research verifier, main session |
 | `job-search/{search id}/job_search_results.json` | One search run. Specification `references/job-search-format.md` | job searcher, main session |
 | `export/flat.csv` | Every value of the four JSON types as one row per candidate and field. `scripts/export_flat.py` | main session on request |
 
-Everything under `career-private/` is personal information. `companies/` and `job-search/` hold no personal information; the agents with web tools write only there. Older files from version 1.x (`profile.json`, `axis.json`, `profile_interview_notes.md`, `documents/`) are left where they are and are neither read nor deleted by this version.
+Everything under `career-private/` is personal information. `companies/` and `job-search/` hold no personal information; the agents with web tools read and write only there. Older files from version 1.x (`profile.json`, `axis.json`, `profile_interview_notes.md`, `documents/`) are left where they are and are neither read nor deleted by this version.
 
 ## Company slug resolution
 
@@ -93,9 +97,10 @@ On FAIL, repair the list with the user following "Repairing a broken list" in `r
 |---|---|---|
 | Find postings | `references/procedure-job-search.md` | 「求人を探したい」「リモート中心で年収 600 万円以上の求人」「もっと良い条件を探したい」 |
 | Check one posting or company | `references/procedure-posting-check.md` | 「この求人を調べて」「この URL の求人を読んで」「スカウトメールが来た」「この会社の残業と年収の実態は」 |
+| Research one company in depth | `references/procedure-company-research.md` | 「企業研究をして」「この会社を詳しく調べて」「口コミや報道も含めて」「配属先の仕事の実態を知りたい」「面接で何を確かめるべきか」 |
 | Compare and decide | `references/procedure-decision.md` | 「2 社で迷っている」「内定をどちらにするか」「何を重視するか整理したい」「価値観を記録したい」 |
 
-A request that names none of these gets the recommended order in one line: search, then check the postings the user wants to consider, then compare. Read the procedure file and follow it with `{DATA_ROOT}` resolved. State the reply from the conclusion; no empty section, no preamble.
+A request about a company with a posting at hand goes to the posting check first; the company research adds secondary sources and a verified report on top of it. A request that names none of these gets the recommended order in one line: search, then check the postings the user wants to consider, research the companies that remain, then compare. Read the procedure file and follow it with `{DATA_ROOT}` resolved. State the reply from the conclusion; no empty section, no preamble.
 
 ## Harness without sub-agents
 
@@ -115,6 +120,7 @@ On a harness that cannot launch sub-agents (Codex), the procedure reads the role
 | `scripts/validate_posting_check.py` | Posting check. Exit 0 PASS, 1 FAIL |
 | `scripts/validate_matches.py` | Posting check. Exit 0 PASS, 1 FAIL |
 | `scripts/validate_decision.py` | Decision. `--fill` computes the derived values. Exit 0 PASS, 1 FAIL |
+| `scripts/research_team/*.py` | Company research. Copies of research-team's `triage_sources.py`, `fetch_page.py`, `check.py`, `select_claims.py`, `apply_verdicts.py`, `report_check.py` (`NOTICE-research-team.md` beside them); the usage table is in `references/procedure-company-research.md` |
 
 Unit tests: `cd {SKILL_DIR} && python -m unittest discover -s scripts/tests`. Fictitious examples are under `assets/`.
 
@@ -128,4 +134,4 @@ Unit tests: `cd {SKILL_DIR} && python -m unittest discover -s scripts/tests`. Fi
 | `references/pii-boundary.md` | The personal-information boundary and each agent's permission |
 | `references/evidence-grading.md` | Grades A to D and how to word a claim on each |
 | `references/role-execution.md` | Running a role without sub-agents |
-| `references/procedure-job-search.md`, `references/procedure-posting-check.md`, `references/procedure-decision.md` | The three procedures. Each lists the references it reads |
+| `references/procedure-job-search.md`, `references/procedure-posting-check.md`, `references/procedure-company-research.md`, `references/procedure-decision.md` | The four procedures. Each lists the references it reads |

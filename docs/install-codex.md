@@ -39,11 +39,11 @@ ls -d "$HOME"/.agents/skills/job-change-* | wc -l
 
 ## Step 2: Do not place agents/
 
-The 2 files under `<REPO>/agents/` are agent definitions specific to Claude Code, and are not used on Codex. Do not copy them.
+The 4 files under `<REPO>/agents/` are agent definitions specific to Claude Code, and are not used on Codex. Do not copy them.
 
 On Codex, each skill's own body reads `references/roles/*.md` and carries out the work by taking on that role itself. The procedure for this substitution is written in `job-change-support/references/role-execution.md`.
 
-**Completion condition.** The following command outputs `2` (confirming the role prompts are present on the skill side).
+**Completion condition.** The following command outputs `4` (confirming the role prompts are present on the skill side).
 
 ```bash
 ls "$HOME"/.agents/skills/job-change-*/references/roles/*.md | wc -l
@@ -84,7 +84,7 @@ Codex has no subagent mechanism. This skill family changes behavior as follows.
 
 | Item | Claude Code | Codex |
 |---|---|---|
-| Role execution | Delegated to the 2 subagents | The skill body itself reads `references/roles/*.md` and executes as that role |
+| Role execution | Delegated to the 4 subagents | The skill body itself reads `references/roles/*.md` and executes as that role |
 | Tool restriction | The role's `tools` frontmatter takes mechanical effect | Has no effect |
 
 The last item needs to be compensated for with rules. The agent observes the following.
