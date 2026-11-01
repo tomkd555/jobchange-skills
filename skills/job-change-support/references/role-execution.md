@@ -19,6 +19,6 @@ Read each Step's "launch the agent" as "read the role prompt and execute as that
 
 ## How many agents to launch
 
-Delegation has a cost even for a small piece of work. When one role is enough, launch only one. The same work is never doubled up across more than one role. Never launch an agent to check a deliverable you built yourself. Having the author reread it in their own context only brings that context into the judgment. The validation script handles checking the format and the rules.
+Delegation has a cost even for a small piece of work. When one role is enough, launch only one. The same work is never doubled up across more than one role. Never launch an agent to check a deliverable you built yourself with the context that built it. Having the author reread it in their own context only brings that context into the judgment. The validation script handles checking the format and the rules.
 
-No skill in this version launches an auditor. The validators check the format, and the main session reads the source URL of a value that looks doubtful.
+The one check by an agent is the company research verifier (`job-change-research-verifier`). It receives the report's sentences and their sources alone, by path, with the report, the brief and the digests withheld, so its verdict rests on the sources. The other procedures launch no auditor: the validators check the format, and the main session reads the source URL of a value that looks doubtful.

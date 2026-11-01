@@ -6,9 +6,10 @@ This is the canonical definition of the boundary that keeps the user's personal 
 |---|---|
 | Job search (`procedure-job-search.md`) | What the anonymised condition sheet may hold; what the searcher agent may read |
 | Posting check (`procedure-posting-check.md`) | What the researcher agent may receive; where the match record is written |
+| Company research (`procedure-company-research.md`) | What the collectors and the verifier may receive; that the run directory under `companies/` holds no personal information |
 | Decision (`procedure-decision.md`) | Confirms that the comparison runs in the main session with no agent |
 
-The enumeration of targets, the exceptions and the permission for each role live here alone. The role prompts (`agents/*.md` and `skills/*/references/roles/*.md`) repeat the substance of the principle verbatim, because a role prompt travels alone to a sub-agent that may not open this file. When this file changes, update both role prompts in the same change.
+The enumeration of targets, the exceptions and the permission for each role live here alone. The role prompts (`agents/*.md` and `skills/*/references/roles/*.md`) repeat the substance of the principle verbatim, because a role prompt travels alone to a sub-agent that may not open this file. When this file changes, update every role prompt in the same change.
 
 ## Boundary principle
 
@@ -34,7 +35,7 @@ A derived value stays inside the boundary of its source. A match result is deriv
 
 ### Files outside career-private/
 
-`companies/{company slug}/postings/{posting id}/posting-check.json` and `job-search/{search id}/job_search_results.json` hold facts about postings and companies. The roles with web tools write there and read there. Two fields in the search result are written by the main session and are about the user: `must_match` (the match against the required conditions, which the searcher also writes from the anonymised sheet) and `considering` (the user's mark). Both are allowed outside `career-private/` because the anonymised sheet is the one exception below, and a mark on a posting identifies nobody.
+`companies/{company slug}/postings/{posting id}/posting-check.json`, `companies/{company slug}/research/{YYYYMMDD}/` and `job-search/{search id}/job_search_results.json` hold facts about postings and companies. The roles with web tools write there and read there. The research run's brief names the company, the legal entity and the job title, and no condition of the user. Two fields in the search result are written by the main session and are about the user: `must_match` (the match against the required conditions, which the searcher also writes from the anonymised sheet) and `considering` (the user's mark). Both are allowed outside `career-private/` because the anonymised sheet is the one exception below, and a mark on a posting identifies nobody.
 
 ## The exception: the anonymised condition sheet
 
@@ -59,9 +60,11 @@ Whether a role may read under `career-private/` is decided by whether that role 
 |---|---|---|
 | `job-change-job-searcher` | Yes (WebSearch, WebFetch) | Never. Does not open a file there even when given the path. Reads no other search's directory and never the main session's `partial-chrome` file |
 | `job-change-posting-researcher` | Yes (WebSearch, WebFetch) | Never. Does not open a file there even when given the path. Reads no `job-search/` file and no other posting's directory |
-| The main session (the decision procedure, and the matching step of the posting check) | Holds web tools but uses none while doing this work | May read and write |
+| `job-change-company-collector` | Yes (WebSearch, WebFetch) | Never. Does not open a file there even when given the path. Reads the posting checks and the research run of its own company only |
+| `job-change-research-verifier` | Yes (WebSearch, WebFetch) | Never. Does not open a file there even when given the path. Reads `claims/` and `pages/` of its run only |
+| The main session (the decision procedure, the matching step of the posting check, and the brief and report of the company research) | Holds web tools but uses none while doing this work | May read and write |
 
-Adding one web tool to a role is enough to make that role unable to receive personal information. When a role's `tools` changes, update this table and the role prompt in the same change.
+Adding one web tool to a role is enough to make that role unable to receive personal information. When a role's `tools` changes, update this table and the role prompt in the same change. A research verifier checks sentences about a company against their sources; the report it reads from holds no condition of the user, so the fresh-context check costs no personal information.
 
 The main session reads pages in the user's Chrome (しょくばらぼ, Indeed, Green, pages WebFetch cannot open). It does so with the company name or the search conditions only; it never types a personal detail into a web form while doing so.
 
