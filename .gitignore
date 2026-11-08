@@ -1,3 +1,20 @@
+# ルート直下は、下で許可したもの以外をすべて無視する
+/*
+# 公開するファイルとフォルダー
+!/.gitignore
+!/.claude-plugin/
+!/LICENSE
+!/README.md
+!/agents/
+!/docs/
+!/skills/
+
+# 公開するフォルダーの中のテスト（配布物には含めない）
+tests/
+test_*.py
+*_test.py
+conftest.py
+
 # Python
 __pycache__/
 *.py[cod]

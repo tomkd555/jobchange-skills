@@ -2,7 +2,7 @@
 
 The scripts in this directory come from research-team
 (https://github.com/tomkd555/research-skill, `plugins/research-team/skills/research-team/scripts/`,
-commit 2d3a84d). Their tests live in that repository. `screen_claims.py` and the literature-review
+commit 2d3a84d). `screen_claims.py` and the literature-review
 scripts were left out: the company research procedure has neither a screening wave nor an academic
 route.
 
@@ -11,8 +11,7 @@ route.
 | `check.py` | the grade enumeration is `A`, `B`, `C`, `D` (this skill's `references/evidence-grading.md`); an item with `paper` set is rejected; the `paper_search` import and the abstract check are removed |
 | the other six | copied unchanged |
 
-`scripts/tests/test_research_check.py` covers the two changes. To update the copies, copy the files
-again, re-apply the two changes to `check.py`, and run that test.
+To update the copies, copy the files again and re-apply the two changes to `check.py`.
 
 MIT License
 
