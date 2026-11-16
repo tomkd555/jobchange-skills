@@ -26,13 +26,13 @@ Finds job postings from the user's wishes with free public web search and the us
 
 ### Step 1 The condition sheet
 
-1. When `wishes.json` exists and validates (`python {SKILL_DIR}/scripts/validate_wishes.py`), show its active conditions in one table (id, text, must/want) and ask once whether to use them as they are or change something. Skip to Step 2 when the user keeps them.
+1. When `wishes.json` exists and validates (`python {SKILL_DIR}/scripts/validate_wishes.py`), show its active conditions in one table (id, text, must/want) and ask once, in one AskUserQuestion call, whether to use them as they are or change something. Skip to Step 2 when the user keeps them.
 2. Otherwise take the user's one line and map it to the six sheet items: 職種 (`role`), 業界 (`industry`), 年収の下限 (`salary_min`), 勤務地とリモート (`location`, `remote`), 雇用形態 (`employment_type`), その他 (`other`). Each item becomes one condition with `kind`, `field_id`, `operator`, `value`, `text`, `level` as `wishes-format.md` defines.
-3. Ask at most two AskUserQuestion questions, only for items the line leaves open. The usual two are the salary floor (offer four amounts around any figure in the line) and the remote arrangement (フルリモートのみ / 週 3 日以上 / 週 1 日以上 / 問わない). Write the question text as a complete Japanese sentence with a concrete example, one decision per question, and run it through the reply lint before asking.
+3. Ask at most two AskUserQuestion calls, one question each, only for items the line leaves open (`references/question-protocol.md`). The usual two are the salary floor (offer four amounts around any figure in the line) and the remote arrangement (フルリモートのみ / 週 3 日以上 / 週 1 日以上 / 問わない). An item the line settles is not asked: a figure in the line is the salary floor, 「フルリモート」 in the line is the remote arrangement; show it in the table and ask 「違うところだけ」. Write the question text as a complete Japanese sentence with a concrete example, one decision per question, and run it through the reply lint before asking.
 4. Record `salary_min` and `remote` as `must`; `role` as `must`; `industry`, `location`, `employment_type`, `other` as `want` unless the user's words make one a requirement. Write `wishes.json` with `scripts/validate_wishes.py` passing, and append one `history` entry per new condition.
 5. Build the anonymised sheet for the searcher: `[{condition_id, kind, text, level}, ...]` for the active conditions. Nothing else from `wishes.json` leaves the main session.
 
-For `similar_better`, the baseline is a posting that has a posting check (`companies/{slug}/postings/{posting id}/posting-check.json`). Read its `job` values, show them, and ask one question: which items the search should beat (salary floor, annual holidays, remote days, overtime). Add the chosen items as conditions on top of the sheet, and record `baseline.posting_id`.
+For `similar_better`, the baseline is a posting that has a posting check (`companies/{slug}/postings/{posting id}/posting-check.json`). Read its `job` values, show them, and ask one multi-select question in one AskUserQuestion call: which items the search should beat (salary floor, annual holidays, remote days, overtime; with 「なし」 as an option). Add the chosen items as conditions on top of the sheet, and record `baseline.posting_id`.
 
 ### Step 2 The searcher agent
 
@@ -42,7 +42,7 @@ Launch one `job-change-job-searcher` (Agent tool; `model` is fixed in its defini
 - the anonymised sheet from Step 1;
 - the output directory `{DATA_ROOT}/job-search/{search id}/`, the partial file name `job_search_results.partial-searcher.json`, the `search_id` and `executed_at`;
 - `{SKILL_DIR}` (for `references/query-catalog.md`, `references/job-search-format.md`, `references/derivation-lanes.md`);
-- the derivation lanes to run, if any. The default is none; offer lanes only when the user asks for a wider search. The ten lanes are in `references/derivation-lanes.md`; pass at most three.
+- the derivation lanes to run, if any. The default is none; offer lanes only when the user asks for a wider search. The ten lanes are in `references/derivation-lanes.md`; the three single-select calls there yield at most three.
 
 The agent writes the partial file and returns `{"written": ..., "result_count": N, "query_count": M}`. On a harness without sub-agents, read `references/roles/job-searcher.md` and perform the role in the main session.
 
@@ -103,5 +103,6 @@ A fictitious example is `assets/job_search_results_example.json`.
 | `references/derivation-lanes.md` | The ten optional lanes that widen or improve the search | Step 2 when the user asks for a wider search |
 | `references/search-methods.md` | Why volume is never the goal and why the reply shows the method before the result | Writing Step 5 |
 | `{SKILL_DIR}/references/wishes-format.md` | `wishes.json` | Step 1 |
+| `{SKILL_DIR}/references/question-protocol.md` | One question per AskUserQuestion call and the check before asking | Step 1, Step 5 |
 | `{SKILL_DIR}/references/pii-boundary.md` | What may be passed to the searcher | Steps 1 and 2 |
 | `references/roles/job-searcher.md` | The searcher's role prompt | Step 2 |

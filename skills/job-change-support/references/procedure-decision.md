@@ -24,19 +24,19 @@ Runs in the main session only, with no agent, so nothing personal reaches a web 
 ## Part 1 Work values (before the first comparison)
 
 1. **Start.** When `wishes.json` does not exist, go to item 2 without asking. When it exists, show its active conditions in one table (text, must/want) and ask once whether to update them. When the user keeps them, go to Part 2.
-2. **The list.** Show the twelve work values of `references/work-values.md` in one AskUserQuestion of three questions with four options each, multi-select, Japanese labels. The user picks any number.
-3. **Free input.** Ask once, in one sentence, for anything the user values that the list lacks.
-4. **Must or want.** For each chosen and written item, one question: 必須か希望か.
-5. **How to judge.** For each item, propose one sentence saying what to look at in a posting check (`how_to_judge`); the user corrects it.
+2. **The list.** Show the twelve work values of `references/work-values.md` in four AskUserQuestion calls, one multi-select question each, three values and 該当なし per call, Japanese labels. The user picks any number.
+3. **Free input.** Ask once, in one plain sentence, for anything the user values that the list lacks. Not a tool call.
+4. **Must or want.** For each chosen and written item, one AskUserQuestion call naming the item: 「{item} は必須ですか、希望ですか」, options 必須／希望.
+5. **How to judge.** For each item, propose one sentence saying what to look at in a posting check (`how_to_judge`) in a plain message; the user corrects it.
 6. **Record.** Append each item to `wishes.json` as a condition with `kind: "value"` (or `"other"` for free input), `field_id: "custom"`, `source` the work-value id or `user`, `level`, `how_to_judge`, and one `history` entry. Validate with `python {SKILL_DIR}/scripts/validate_wishes.py`.
 
-Every question text is a complete Japanese sentence with a concrete example, one decision per question, run through the reply lint before asking.
+Every question text is a complete Japanese sentence with a concrete example, one decision per question, run through the reply lint before asking. Every call passes the check in `references/question-protocol.md` first: a value already active in `wishes.json` is not offered again, and nothing answered in this conversation is asked twice.
 
 ## Part 2 The comparison
 
 ### Step 1 Confirm the levels
 
-For each active condition whose `level` the user has not set in this or an earlier session, ask must or want. Conditions set in the job search or Part 1 are not asked again.
+For each active condition whose `level` the user has not set in this or an earlier session, ask must or want, one AskUserQuestion call per condition with the condition's `text` in the question. Conditions set in the job search or Part 1 are not asked again.
 
 ### Step 2 Filter by the required conditions
 
@@ -50,11 +50,11 @@ Read each candidate's `matches/{posting id}.json`. A candidate with `not_meets` 
 
 ### Step 4 Values
 
-For a numeric row, take each candidate's value from its posting check (the first entry when a field has two or more sources; say which). For a `custom` row and for a non-numeric field, show the candidates' relevant posting-check passages next to the `how_to_judge` sentence and ask the user to rate each candidate 1 to 5. Write `values` or `ratings` into the decision record.
+For a numeric row, take each candidate's value from its posting check (the first entry when a field has two or more sources; say which). For a `custom` row and for a non-numeric field, show the candidates' relevant posting-check passages next to the `how_to_judge` sentence and ask the user, in a plain message, to rate each candidate 1 to 5 (five values do not fit one AskUserQuestion). Write `values` or `ratings` into the decision record.
 
 ### Step 5 Weights (swing weighting)
 
-Ask: 「すべての項目が候補の中で最も低い値だとして、1 つだけ最も高い値に変えられるならどの項目ですか」. Remove the answer and repeat until one item remains; the questions number one less than the items. Then ask for 0 to 100 points per item with the first at 100. Record `swing_order` and `swing_points`. When an earlier decision record has the same `field_id` or `condition_id`, propose its points as the default and ask only about new items.
+Ask, one AskUserQuestion call per round with the remaining items as options (a plain message when more than four remain): 「すべての項目が候補の中で最も低い値だとして、1 つだけ最も高い値に変えられるならどの項目ですか」. Remove the answer and repeat until one item remains; the questions number one less than the items. Then ask for 0 to 100 points per item with the first at 100. Record `swing_order` and `swing_points`. When an earlier decision record has the same `field_id` or `condition_id`, propose its points as the default and ask only about new items.
 
 ### Step 6 Compute and show
 
@@ -66,7 +66,7 @@ Show one table with the five views side by side: the swing ranking, the rank-ord
 
 ### Step 7 Check the preferred candidate
 
-Ask which candidate the user leans to. For that candidate show three tables: conditions it does not meet, items on which it is last among the candidates, and its unknown items. Add the one-sentence bias note where it applies.
+Ask which candidate the user leans to, in one AskUserQuestion call with the candidates as options; with five candidates, name the fifth in the question text as the answer to give through Other. For that candidate show three tables: conditions it does not meet, items on which it is last among the candidates, and its unknown items. Add the one-sentence bias note where it applies.
 
 ### Step 8 Record
 
@@ -92,5 +92,6 @@ A fictitious example is `assets/decision_example.json`.
 |---|---|---|
 | `references/decision-format.md` | The record, the derived values and the validator | Steps 4 to 8 |
 | `references/work-values.md` | The twelve work values with ids, Japanese labels and the O*NET mapping | Part 1 |
+| `{SKILL_DIR}/references/question-protocol.md` | One question per AskUserQuestion call and the check before asking | Every question to the user |
 | `{SKILL_DIR}/references/wishes-format.md` | `wishes.json` | Part 1, Step 1 |
 | `{SKILL_DIR}/references/field-catalog.md` | Field ids, directions, labels | Steps 3 and 4 |

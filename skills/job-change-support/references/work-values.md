@@ -21,15 +21,16 @@ The twelve work values shown in Part 1 of `procedure-decision.md`. The ids are t
 
 ## How the list is shown
 
-One AskUserQuestion with three multi-select questions of four options each, in this order:
+Four AskUserQuestion calls, one multi-select question each (`references/question-protocol.md`). Each call offers three values and 「該当なし」, in this order:
 
-| Question | Header | Options |
+| Call | Header | Options |
 |---|---|---|
-| 1 | 成果と報酬 | 達成感, 収入, 社会的な評価, 安定 |
-| 2 | 仕事の中身 | 創造性, 知的な挑戦, 仕事の多様性, 独立性 |
-| 3 | 人と環境 | 同僚との関係, 上司との関係, 職場環境, 生活との両立 |
+| 1 | 成果と評価 | 達成感, 収入, 社会的な評価, 該当なし |
+| 2 | 安定と環境 | 安定, 生活との両立, 職場環境, 該当なし |
+| 3 | 仕事の中身 | 創造性, 知的な挑戦, 仕事の多様性, 該当なし |
+| 4 | 人と裁量 | 独立性, 同僚との関係, 上司との関係, 該当なし |
 
-The question text is 「次のうち、転職先で重視するものを選んでください。いくつでも選べます。」 with the gloss as each option's description. A value the user picks becomes a condition with `kind: "value"`, `field_id: "custom"`, `source` the id above, `text` the label, and a `how_to_judge` sentence the skill proposes and the user corrects. Examples of a judging sentence:
+The question text is 「次のうち、転職先で重視するものを選んでください。いくつでも選べます。」 with the gloss as each option's description; the description of 該当なし is 「この三つは重視しません」. 該当なし chosen together with a value is shown back to the user, who says which answer stands. A value already active in `wishes.json` is left out of the options and shown in the table instead. A value the user picks becomes a condition with `kind: "value"`, `field_id: "custom"`, `source` the id above, `text` the label, and a `how_to_judge` sentence the skill proposes and the user corrects. Examples of a judging sentence:
 
 | id | proposed `how_to_judge` |
 |---|---|

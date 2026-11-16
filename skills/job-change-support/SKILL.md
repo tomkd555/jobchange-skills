@@ -30,6 +30,7 @@ Settles the configuration, resolves company slugs, and runs one of four procedur
 4. **Personal information never leaves the main session.** The four agents with web tools (`job-change-job-searcher`, `job-change-posting-researcher`, `job-change-company-collector`, `job-change-research-verifier`) receive the anonymised condition sheet, or the company name, the posting text and the files under `companies/`, and nothing under `career-private/`. The canonical definition is `references/pii-boundary.md`.
 5. **The user's data is JSON with one field catalog.** Four files share the field ids, value shape and enumerations of `references/field-catalog.md`: `wishes.json`, `posting-check.json`, `matches/{posting id}.json` and the decision records. `scripts/export_flat.py` writes them to one CSV.
 6. **The skill never asks for the current employer's name or the current salary.** No file records either.
+7. **One question per AskUserQuestion call.** Every question to the user goes out alone, after the check in `references/question-protocol.md` (known answers, state, earlier answers, options). Figures and sentences to correct are asked in a plain message.
 
 ## Out of scope
 
@@ -134,4 +135,5 @@ Unit tests: `cd {SKILL_DIR} && python -m unittest discover -s scripts/tests`. Fi
 | `references/pii-boundary.md` | The personal-information boundary and each agent's permission |
 | `references/evidence-grading.md` | Grades A to D and how to word a claim on each |
 | `references/role-execution.md` | Running a role without sub-agents |
+| `references/question-protocol.md` | One question per AskUserQuestion call, the tool's constraints, the check before asking, contradictory answers |
 | `references/procedure-job-search.md`, `references/procedure-posting-check.md`, `references/procedure-company-research.md`, `references/procedure-decision.md` | The four procedures. Each lists the references it reads |

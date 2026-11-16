@@ -30,15 +30,15 @@ The count (three queries each) and the salary raise are operational conventions 
 
 ## How to choose
 
-Step 1 confirms lanes with a multiple-choice selection in AskUserQuestion. Since one question allows up to four options, this is split into three questions.
+Step 1 confirms lanes in three AskUserQuestion calls, one single-select question each (`references/question-protocol.md`). Each call offers the lanes of one group and 「この群からは追加しない」; the user picks one lane per group, so the three calls yield at most three lanes and the cap needs no further question.
 
-| Question | Heading | Options |
+| Call | Header | Options |
 |---|---|---|
-| 1 | Improving conditions | `better_salary`, `better_holidays`, `better_workstyle`, `company_type` |
-| 2 | Widening scope | `adjacent_role`, `industry_widen`, `seniority_shift`, `remote_widen` |
-| 3 | Location and entry point | `region_widen`, `direct_careers` |
+| 1 | 条件の改善 | `better_salary`, `better_holidays`, `better_workstyle`, 追加しない |
+| 2 | 範囲の拡大 | `adjacent_role`, `industry_widen`, `seniority_shift`, 追加しない |
+| 3 | 地域・入口・会社 | `region_widen`, `direct_careers`, `company_type`, 追加しない |
 
-The questions are asked only when the user asks for a wider search. Add the cost (the number of additional queries) to each question's description. A lane whose condition the table above marks "not used" is dropped from the options. At most three lanes are passed to the searcher.
+The calls are made only when the user asks for a wider search. Add the cost (the number of additional queries) to each option's description. Before each call, drop a lane whose condition the table above marks "not used" for this sheet; when a group keeps no lane, skip its call and say so. The lanes chosen are passed to the searcher.
 
 ## Recording
 
